@@ -96,6 +96,8 @@ interface SettingsActions {
     fun importFont(forClock: Boolean)
     fun exportBackup()
     fun importBackup()
+    fun chooseBackupFolder()
+    fun disableAutoBackup()
     fun close()
     fun showIntro()
 }
@@ -481,6 +483,16 @@ fun SettingsScreen(
                 FilledTonalButton(onClick = { actions.exportBackup() }) { Text(stringResource(R.string.export)) }
                 OutlinedButton(onClick = { actions.importBackup() }) { Text(stringResource(R.string.restore)) }
             }
+            SwitchRow(
+                stringResource(R.string.auto_backup),
+                if (settings.autoBackupUri.isBlank()) stringResource(R.string.auto_backup_sub)
+                else if (settings.lastAutoBackup == 0L) stringResource(R.string.auto_backup_pending)
+                else stringResource(
+                    R.string.auto_backup_last,
+                    java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT).format(java.util.Date(settings.lastAutoBackup)),
+                ),
+                settings.autoBackupUri.isNotBlank(),
+            ) { v -> if (v) actions.chooseBackupFolder() else actions.disableAutoBackup() }
         }
 
         TextButton(onClick = { actions.showIntro() }, modifier = Modifier.padding(top = 12.dp)) { Text(stringResource(R.string.intro_again)) }

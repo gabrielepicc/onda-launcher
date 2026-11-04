@@ -412,4 +412,8 @@
     <string name="intro_calendar_why">For the next event and the agenda</string>
     <string name="intro_style_title">Make it yours</string>
     <string name="intro_style_body">Pick a ready-made style with wallpaper, font, clock and icons, or keep the system look.</string>
+    <string name="auto_backup">Automatic daily backup</string>
+    <string name="auto_backup_sub">Choose a folder: Onda saves a copy every day and keeps the last 7</string>
+    <string name="auto_backup_pending">Active: the first copy is saved when you leave the home</string>
+    <string name="auto_backup_last">Last copy: %1$s</string>
 </resources>

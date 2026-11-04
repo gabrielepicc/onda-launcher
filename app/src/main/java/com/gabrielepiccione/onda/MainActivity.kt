@@ -71,6 +71,45 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         toast(getString(if (ok) R.string.toast_restored else R.string.toast_restore_failed))
     }
 
+    private val backupFolderLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
+        uri ?: return@registerForActivityResult
+        runCatching {
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+        }
+        vm.updateSettings { it.copy(autoBackupUri = uri.toString(), lastAutoBackup = 0) }
+        runAutoBackupIfDue()
+    }
+
+    /** Backup automatico: al massimo una volta al giorno, quando si esce dalla home. */
+    private fun runAutoBackupIfDue() {
+        val s = vm.settingsRepo.current
+        if (!com.gabrielepiccione.onda.data.AutoBackup.isDue(s)) return
+        val json = vm.settingsRepo.exportJson()
+        val uri = s.autoBackupUri
+        Thread {
+            val ok = com.gabrielepiccione.onda.data.AutoBackup.run(applicationContext, uri, json)
+            if (ok) vm.updateSettings { it.copy(lastAutoBackup = System.currentTimeMillis()) }
+        }.start()
+    }
+
+    override fun chooseBackupFolder() = backupFolderLauncher.launch(null)
+
+    override fun disableAutoBackup() {
+        val uri = vm.settingsRepo.current.autoBackupUri
+        if (uri.isNotBlank()) {
+            runCatching {
+                contentResolver.releasePersistableUriPermission(
+                    Uri.parse(uri),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+            }
+        }
+        vm.updateSettings { it.copy(autoBackupUri = "", lastAutoBackup = 0) }
+    }
+
     private var fontForClock = false
 
     /** Font scelto dall'utente: copiato nella memoria privata e usato dal tema. */
@@ -190,6 +229,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun onStop() {
         super.onStop()
         widgets.stopListening()
+        runAutoBackupIfDue()
     }
 
     override fun onResume() {

@@ -397,7 +397,7 @@
     <string name="intro_allow">Consenti</string>
     <string name="intro_granted">Concesso</string>
     <string name="intro_again">Rivedi l\'introduzione</string>
-    <string name="intro_welcome_title">Benvenuto in Onda</string>
+    <string name="intro_welcome_title">Ti diamo il benvenuto in Onda</string>
     <string name="intro_welcome_body">Un elenco tranquillo delle tue app preferite, sempre alla portata del pollice.</string>
     <string name="intro_gesture_right">Scorri un\'app verso destra: il suo pannello con scorciatoie, notifiche e widget</string>
     <string name="intro_gesture_left">Scorri verso sinistra: elimina le sue notifiche</string>
@@ -412,4 +412,8 @@
     <string name="intro_calendar_why">Per il prossimo evento e l\'agenda</string>
     <string name="intro_style_title">Rendila tua</string>
     <string name="intro_style_body">Scegli uno stile pronto con sfondo, carattere, orologio e icone, oppure tieni l\'aspetto di sistema.</string>
+    <string name="auto_backup">Backup automatico giornaliero</string>
+    <string name="auto_backup_sub">Scegli una cartella: Onda salva una copia ogni giorno e tiene le ultime 7</string>
+    <string name="auto_backup_pending">Attivo: la prima copia viene salvata quando esci dalla home</string>
+    <string name="auto_backup_last">Ultima copia: %1$s</string>
 </resources>

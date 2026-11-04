@@ -261,6 +261,10 @@ data class Settings(
      * Negativo = automatico: contenuto appoggiato in basso, vicino al pollice.
      */
     val homeOffset: Float = -1f,
+    /** Cartella (URI SAF) per il backup automatico giornaliero; vuoto = disattivato. */
+    val autoBackupUri: String = "",
+    /** Ultimo backup automatico riuscito (ms). */
+    val lastAutoBackup: Long = 0,
     /** Rotazione della home: AUTO (segue il sistema) o PORTRAIT (sempre verticale). */
     val orientation: String = "AUTO",
     /** Animazione di apertura delle app (vedi [com.gabrielepiccione.onda.util.LaunchAnimation]). */

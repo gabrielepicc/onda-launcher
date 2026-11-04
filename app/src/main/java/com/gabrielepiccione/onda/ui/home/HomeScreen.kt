@@ -148,6 +148,8 @@ interface HomeCallbacks {
     fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme)
     fun authenticate(title: String, onSuccess: () -> Unit)
     fun importTheme()
+    fun chooseBackupFolder()
+    fun disableAutoBackup()
 }
 
 data class HomeStatus(
@@ -842,6 +844,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun importFont(forClock: Boolean) = callbacks.importFont(forClock)
                         override fun exportBackup() = callbacks.exportBackup()
                         override fun importBackup() = callbacks.importBackup()
+                        override fun chooseBackupFolder() = callbacks.chooseBackupFolder()
+                        override fun disableAutoBackup() = callbacks.disableAutoBackup()
                         override fun close() = closeAll()
                         override fun showIntro() { closeAll(); showIntro = true }
                     },
