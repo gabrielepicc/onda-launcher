@@ -213,6 +213,8 @@ data class Settings(
     /** Font importati (percorso nella memoria privata dell'app), per lista e orologio; vuoto = carattere scelto. */
     val customFontList: String = "",
     val customFontClock: String = "",
+    /** Temi salvati dall'utente nel Theme Studio. */
+    val savedThemes: List<LookTheme> = emptyList(),
     /** Ultimo preset di stile applicato (solo informativo). */
     val stylePreset: String = "",
     val mutedNotifications: Set<String> = emptySet(),

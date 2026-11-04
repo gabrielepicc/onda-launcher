@@ -99,6 +99,47 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
         toast(getString(R.string.font_imported))
     }
 
+    private var themeToExport: com.gabrielepiccione.onda.data.LookTheme? = null
+
+    /** Esporta un tema come file .onda-theme, con i font incorporati. */
+    private val themeExportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
+        val theme = themeToExport ?: return@registerForActivityResult
+        uri ?: return@registerForActivityResult
+        val fonts = listOf(theme.customFontList, theme.customFontClock).filter { it.isNotBlank() }.mapNotNull { path ->
+            val f = java.io.File(path)
+            if (f.exists()) f.name to android.util.Base64.encodeToString(f.readBytes(), android.util.Base64.NO_WRAP) else null
+        }.toMap()
+        val ok = runCatching {
+            val text = com.gabrielepiccione.onda.data.ThemeFile.encode(com.gabrielepiccione.onda.data.ThemeFile(theme = theme, fonts = fonts))
+            contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray()) }
+        }.isSuccess
+        toast(getString(if (ok) R.string.studio_exported else R.string.toast_backup_failed))
+    }
+
+    /** Importa un file .onda-theme: salva i font nella memoria privata e aggiunge il tema. */
+    private val themeImportLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        uri ?: return@registerForActivityResult
+        val text = runCatching { contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } }.getOrNull()
+        val file = text?.let { com.gabrielepiccione.onda.data.ThemeFile.decode(it) }
+        if (file == null) {
+            toast(getString(R.string.studio_invalid)); return@registerForActivityResult
+        }
+        val dir = java.io.File(filesDir, "fonts").apply { mkdirs() }
+        val written = file.fonts.mapNotNull { (name, b64) ->
+            runCatching {
+                val safe = name.replace(Regex("[^A-Za-z0-9._-]"), "_")
+                val target = java.io.File(dir, "${System.currentTimeMillis()}_$safe")
+                target.writeBytes(android.util.Base64.decode(b64, android.util.Base64.DEFAULT))
+                name to target.absolutePath
+            }.getOrNull()
+        }.toMap()
+        fun remap(path: String) = if (path.isBlank()) "" else written[java.io.File(path).name] ?: ""
+        vm.settingsRepo.addImportedTheme(
+            file.theme.copy(customFontList = remap(file.theme.customFontList), customFontClock = remap(file.theme.customFontClock))
+        )
+        toast(getString(R.string.studio_imported))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -193,6 +234,13 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
         fontForClock = forClock
         fontLauncher.launch(arrayOf("font/ttf", "font/otf", "font/*", "application/x-font-ttf", "application/x-font-otf", "application/octet-stream"))
     }
+
+    override fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme) {
+        themeToExport = theme
+        themeExportLauncher.launch("${theme.name.replace(Regex("[^A-Za-z0-9 _-]"), "")}.onda-theme")
+    }
+
+    override fun importTheme() = themeImportLauncher.launch(arrayOf("application/json", "application/octet-stream", "*/*"))
 
     override fun exportBackup() = exportLauncher.launch("onda-backup-${LocalDate.now()}.json")
 

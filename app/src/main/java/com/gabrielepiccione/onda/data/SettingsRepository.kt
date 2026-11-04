@@ -243,6 +243,31 @@ class SettingsRepository(context: Context) {
         )
     }
 
+    // --- Theme Studio ---
+
+    fun saveCurrentAsTheme(name: String): LookTheme {
+        val theme = LookTheme.capture(current, "t" + System.currentTimeMillis().toString(36), name.ifBlank { "Tema" })
+        edit { it.copy(savedThemes = it.savedThemes + theme, stylePreset = "theme:${theme.id}") }
+        return theme
+    }
+
+    fun applyTheme(theme: LookTheme) = edit { theme.applyTo(it) }
+
+    fun renameTheme(id: String, name: String) = edit { s ->
+        s.copy(savedThemes = s.savedThemes.map { if (it.id == id) it.copy(name = name.ifBlank { it.name }) else it })
+    }
+
+    fun duplicateTheme(id: String, copySuffix: String) = edit { s ->
+        val src = s.savedThemes.firstOrNull { it.id == id } ?: return@edit s
+        s.copy(savedThemes = s.savedThemes + src.copy(id = "t" + System.currentTimeMillis().toString(36), name = "${src.name} $copySuffix"))
+    }
+
+    fun deleteTheme(id: String) = edit { s -> s.copy(savedThemes = s.savedThemes.filterNot { it.id == id }) }
+
+    fun addImportedTheme(theme: LookTheme) = edit { s ->
+        s.copy(savedThemes = s.savedThemes + theme.copy(id = "t" + System.currentTimeMillis().toString(36)))
+    }
+
     fun recordLaunch(appKey: String) = edit { s ->
         s.copy(launchCounts = s.launchCounts + (appKey to (s.launchCounts[appKey] ?: 0) + 1))
     }

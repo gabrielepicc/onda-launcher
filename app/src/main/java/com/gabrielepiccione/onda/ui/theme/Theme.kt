@@ -27,6 +27,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -136,6 +139,9 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
     val scheme = when {
         settings.dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        // Sotto Android 12: se i colori dinamici sono attivi, accento ricavato dallo sfondo
+        settings.dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 ->
+            staticScheme(rememberWallpaperAccent() ?: Color(settings.accent), dark)
         else -> staticScheme(Color(settings.accent), dark)
     }
     val family = fontFamilyOf(settings.font)
@@ -198,6 +204,36 @@ private fun staticScheme(accent: Color, dark: Boolean): ColorScheme {
             onSurfaceVariant = Color(0xFF42494D),
         )
     }
+}
+
+/** Colore principale dello sfondo (Android 8.1+), aggiornato quando lo sfondo cambia. */
+@androidx.annotation.RequiresApi(Build.VERSION_CODES.O_MR1)
+@Composable
+fun rememberWallpaperAccent(): Color? {
+    val context = LocalContext.current
+    val wm = remember { android.app.WallpaperManager.getInstance(context) }
+    var color by remember {
+        androidx.compose.runtime.mutableStateOf(
+            runCatching { wm.getWallpaperColors(android.app.WallpaperManager.FLAG_SYSTEM)?.primaryColor?.toArgb() }.getOrNull()
+        )
+    }
+    androidx.compose.runtime.DisposableEffect(wm) {
+        val listener = android.app.WallpaperManager.OnColorsChangedListener { colors, which ->
+            if (which and android.app.WallpaperManager.FLAG_SYSTEM != 0) color = colors?.primaryColor?.toArgb()
+        }
+        runCatching { wm.addOnColorsChangedListener(listener, android.os.Handler(android.os.Looper.getMainLooper())) }
+        onDispose { runCatching { wm.removeOnColorsChangedListener(listener) } }
+    }
+    return color?.let { vivid(Color(it)) }
+}
+
+/** Rende l'accento abbastanza saturo e luminoso da essere usabile su sfondo scuro o chiaro. */
+private fun vivid(c: Color): Color {
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(c.toArgb(), hsv)
+    hsv[1] = hsv[1].coerceIn(0.35f, 0.75f)
+    hsv[2] = hsv[2].coerceIn(0.7f, 0.95f)
+    return Color(android.graphics.Color.HSVToColor(hsv))
 }
 
 fun fontFamilyOf(font: FontChoice): FontFamily = when (font) {

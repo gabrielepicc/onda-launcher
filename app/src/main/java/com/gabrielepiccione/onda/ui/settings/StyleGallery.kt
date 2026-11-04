@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
@@ -66,15 +67,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 
-/** Galleria dei preset di stile, con anteprima reale di sfondo, carattere e orologio. */
+/** Azioni del Theme Studio (temi salvati dall'utente). */
+interface ThemeStudioActions {
+    fun saveCurrent(name: String)
+    fun apply(theme: com.gabrielepiccione.onda.data.LookTheme)
+    fun rename(id: String, name: String)
+    fun duplicate(id: String)
+    fun delete(id: String)
+    fun export(theme: com.gabrielepiccione.onda.data.LookTheme)
+    fun import()
+}
+
+/** Galleria: i temi dell'utente (Theme Studio) e i preset con anteprima reale. */
 @Composable
 fun StyleGallery(
     currentPresetId: String,
     onApply: (preset: StylePreset, withWallpaper: Boolean) -> Unit,
     onClose: () -> Unit,
+    savedThemes: List<com.gabrielepiccione.onda.data.LookTheme> = emptyList(),
+    studio: ThemeStudioActions? = null,
 ) {
     val colors = LocalOndaColors.current
     var confirm by remember { mutableStateOf<StylePreset?>(null) }
+    var naming by remember { mutableStateOf(false) }
+    var renaming by remember { mutableStateOf<com.gabrielepiccione.onda.data.LookTheme?>(null) }
+    var menuFor by remember { mutableStateOf<com.gabrielepiccione.onda.data.LookTheme?>(null) }
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 150.dp),
@@ -109,9 +126,86 @@ fun StyleGallery(
                 )
             }
         }
+        if (studio != null) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Column(Modifier.padding(top = 8.dp)) {
+                    Text(stringResource(R.string.studio_title), color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp))
+                    Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        androidx.compose.material3.FilledTonalButton(onClick = { naming = true }) { Text(stringResource(R.string.studio_save_current)) }
+                        androidx.compose.material3.OutlinedButton(onClick = { studio.import() }) { Text(stringResource(R.string.studio_import)) }
+                    }
+                    if (savedThemes.isEmpty()) {
+                        Text(stringResource(R.string.studio_empty), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
+                    }
+                    savedThemes.forEach { t ->
+                        val active = currentPresetId == "theme:${t.id}"
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 3.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (active) colors.accentContainer else colors.panel)
+                                .clickable { studio.apply(t) }
+                                .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+                        ) {
+                            Box(Modifier.size(24.dp).clip(CircleShape).background(Color(t.accent)))
+                            Spacer(Modifier.width(12.dp))
+                            Text(t.name, style = MaterialTheme.typography.titleMedium, color = if (active) colors.onAccentContainer else colors.onWallpaper, modifier = Modifier.weight(1f))
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.size(48.dp).clip(CircleShape).clickable { menuFor = t },
+                            ) {
+                                Icon(Icons.Filled.MoreVert, stringResource(R.string.more_options), tint = colors.onWallpaperMuted)
+                            }
+                        }
+                    }
+                    Text(stringResource(R.string.studio_presets), color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp, top = 16.dp))
+                }
+            }
+        }
         items(StylePresets.all, key = { it.id }) { preset ->
             PresetCard(preset, selected = preset.id == currentPresetId) { confirm = preset }
         }
+    }
+
+    if (naming && studio != null) {
+        com.gabrielepiccione.onda.ui.home.NameDialog(stringResource(R.string.studio_save_current), "", onDismiss = { naming = false }) {
+            studio.saveCurrent(it); naming = false
+        }
+    }
+    renaming?.let { t ->
+        com.gabrielepiccione.onda.ui.home.NameDialog(stringResource(R.string.rename), t.name, onDismiss = { renaming = null }) {
+            studio?.rename(t.id, it); renaming = null
+        }
+    }
+    menuFor?.let { t ->
+        AlertDialog(
+            onDismissRequest = { menuFor = null },
+            title = { Text(t.name) },
+            text = {
+                Column {
+                    listOf(
+                        R.string.styles_apply to { studio?.apply(t) },
+                        R.string.rename to { renaming = t },
+                        R.string.studio_duplicate to { studio?.duplicate(t.id) },
+                        R.string.studio_export to { studio?.export(t) },
+                        R.string.studio_delete to { studio?.delete(t.id) },
+                    ).forEach { (res, action) ->
+                        Text(
+                            stringResource(res),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { menuFor = null; action() }
+                                .padding(horizontal = 8.dp, vertical = 14.dp),
+                        )
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { menuFor = null }) { Text(stringResource(R.string.close)) } },
+        )
     }
 
     confirm?.let { preset ->

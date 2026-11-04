@@ -135,6 +135,8 @@ interface HomeCallbacks {
     fun exportBackup()
     fun importBackup()
     fun importFont(forClock: Boolean)
+    fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme)
+    fun importTheme()
 }
 
 data class HomeStatus(
@@ -702,6 +704,16 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 overlay = Overlay.NONE
             },
             onClose = { overlay = Overlay.SETTINGS },
+            savedThemes = settings.savedThemes,
+            studio = object : ThemeStudioActions {
+                override fun saveCurrent(name: String) { vm.settingsRepo.saveCurrentAsTheme(name) }
+                override fun apply(theme: com.gabrielepiccione.onda.data.LookTheme) = vm.settingsRepo.applyTheme(theme)
+                override fun rename(id: String, name: String) = vm.settingsRepo.renameTheme(id, name)
+                override fun duplicate(id: String) = vm.settingsRepo.duplicateTheme(id, context.getString(R.string.studio_copy_suffix))
+                override fun delete(id: String) = vm.settingsRepo.deleteTheme(id)
+                override fun export(theme: com.gabrielepiccione.onda.data.LookTheme) = callbacks.exportTheme(theme)
+                override fun import() = callbacks.importTheme()
+            },
         )
     }
 

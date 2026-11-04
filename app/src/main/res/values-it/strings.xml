@@ -260,4 +260,16 @@
     <string name="font_import">Importa…</string>
     <string name="font_invalid">Il file non è un font valido (.ttf o .otf)</string>
     <string name="font_imported">Font importato</string>
+    <string name="studio_title">I tuoi temi</string>
+    <string name="studio_save_current">Salva aspetto attuale</string>
+    <string name="studio_import">Importa tema</string>
+    <string name="studio_empty">Personalizza Onda come preferisci, poi salva l\'aspetto come tema per ritrovarlo o condividerlo.</string>
+    <string name="studio_presets">Stili pronti</string>
+    <string name="studio_duplicate">Duplica</string>
+    <string name="studio_export">Esporta file .onda-theme</string>
+    <string name="studio_delete">Elimina</string>
+    <string name="studio_copy_suffix">(copia)</string>
+    <string name="studio_imported">Tema importato</string>
+    <string name="studio_invalid">File di tema non valido</string>
+    <string name="studio_exported">Tema esportato</string>
 </resources>
