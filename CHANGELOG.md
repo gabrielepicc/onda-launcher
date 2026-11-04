@@ -2,6 +2,16 @@
 
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
+## [0.5.0]
+
+### Aggiunto
+- **Notifiche in home complete**: conversazioni (ultimi messaggi con mittente), **risposta diretta** (RemoteInput, es. WhatsApp/Telegram), pulsanti delle azioni dell'app, eliminazione con swipe o ×. Anche nel pannello rapido dell'app.
+- Guida alle **impostazioni con limitazioni** di Android 13+ con scorciatoia a Info app (necessaria per le app installate da APK).
+- **Home modificabile**: tenendo premuti orologio o widget si apre un foglio con anteprima dal vivo per cambiare altezza (widget), stile, dimensione e allineamento (orologio), posizione nella home, sostituire o eliminare.
+- **8 stili di orologio**: sottile, impilato, deciso, monospazio, contorno, sfumato, a parole (IT/EN), analogico.
+- **12 preset di stile** con sfondi generati proceduralmente (mesh, onde, dune, forme morbide, grana carta): sfondo + carattere + orologio + icone + colori, con galleria e anteprime.
+- Test per l'orologio "a parole".
+
 ## [0.4.0] – Fase 0: fondamenta
 
 ### Aggiunto
