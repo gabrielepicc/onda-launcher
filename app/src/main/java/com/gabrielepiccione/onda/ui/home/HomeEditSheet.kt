@@ -96,6 +96,7 @@ fun HomeEditSheet(
                         stack != null -> R.string.stack_title
                         block == HomeBlocks.MEDIA -> R.string.edit_media
                         block == HomeBlocks.AGENDA -> R.string.agenda_title
+                        block == HomeBlocks.SUMMARY -> R.string.summary_title
                         else -> R.string.edit_clock
                     }
                 ),
@@ -217,6 +218,12 @@ fun HomeEditSheet(
             if (block == HomeBlocks.AGENDA) {
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.agenda_hide)) {
                     actions.edit { it.copy(showAgenda = false) }
+                    actions.done()
+                }
+            }
+            if (block == HomeBlocks.SUMMARY) {
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.summary_hide)) {
+                    actions.edit { it.copy(showSummary = false) }
                     actions.done()
                 }
             }

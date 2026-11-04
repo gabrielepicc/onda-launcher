@@ -150,6 +150,7 @@ object HomeBlocks {
     const val MEDIA = "media"
     const val APPS = "apps"
     const val AGENDA = "agenda"
+    const val SUMMARY = "summary"
     const val WIDGET_PREFIX = "w:"
     const val STACK_PREFIX = "s:"
     fun widget(id: Int) = WIDGET_PREFIX + id
@@ -161,7 +162,7 @@ object HomeBlocks {
     fun resolve(settings: Settings): List<String> {
         val widgets = settings.widgetIds.map(::widget) +
             settings.widgetStacks.values.filter { it.widgets.isNotEmpty() }.map { stack(it.id) }
-        val optional = if (settings.showAgenda) listOf(AGENDA) else emptyList()
+        val optional = listOfNotNull(AGENDA.takeIf { settings.showAgenda }, SUMMARY.takeIf { settings.showSummary })
         val valid = setOf(CLOCK, MEDIA, APPS) + optional + widgets
         val saved = settings.homeLayout.filter { it in valid }.distinct()
         val missing = (listOf(CLOCK, MEDIA) + optional + widgets + APPS).filter { it !in saved }
@@ -251,6 +252,12 @@ data class Settings(
     val plugPlayApp: String = "",
     /** App che richiedono lo sblocco (impronta, volto o PIN) prima di aprirsi. */
     val protectedApps: Set<String> = emptySet(),
+    /** Blocco "riepilogo notifiche" in home (notifiche raggruppate per app). */
+    val showSummary: Boolean = false,
+    /** App (pacchetti) le cui notifiche vengono rinviate agli orari del riepilogo. */
+    val digestApps: Set<String> = emptySet(),
+    /** Orari del riepilogo in minuti dall'inizio del giorno. */
+    val digestTimes: List<Int> = listOf(9 * 60, 13 * 60 + 30, 19 * 60),
     /** Contatti preferiti in cima all'elenco app, raggiungibili con "@" sull'alfabeto. */
     val alphabetContacts: Boolean = false,
     /** Pausa consapevole: app che prima di aprirsi mostrano qualche secondo di respiro. */

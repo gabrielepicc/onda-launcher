@@ -356,4 +356,19 @@
     <string name="starred_contacts">Contatti preferiti</string>
     <string name="alphabet_contacts">Contatti dall\'alfabeto</string>
     <string name="alphabet_contacts_sub">I contatti con la stella in cima all\'elenco app, raggiungibili con @ sull\'alfabeto</string>
+    <string name="summary_title">Riepilogo notifiche</string>
+    <string name="summary_next">Prossimo riepilogo alle %1$s</string>
+    <string name="summary_clear_all">Cancella tutte</string>
+    <string name="summary_empty">Nessuna notifica</string>
+    <string name="summary_add">Aggiungi il riepilogo notifiche</string>
+    <string name="summary_hide">Togli il riepilogo</string>
+    <string name="summary_show">Riepilogo in home</string>
+    <string name="summary_show_sub">Notifiche raggruppate per app, in un blocco che puoi spostare</string>
+    <string name="digest_sub">Le notifiche delle app scelte vengono trattenute e arrivano tutte insieme agli orari scelti.</string>
+    <string name="digest_apps">App consegnate nel riepilogo</string>
+    <string name="digest_times">Orari del riepilogo</string>
+    <plurals name="summary_count">
+        <item quantity="one">%1$d notifica</item>
+        <item quantity="other">%1$d notifiche</item>
+    </plurals>
 </resources>

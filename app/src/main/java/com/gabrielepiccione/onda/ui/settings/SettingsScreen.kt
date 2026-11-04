@@ -114,6 +114,7 @@ fun SettingsScreen(
     var iconPackDialog by remember { mutableStateOf(false) }
     var plugDialog by remember { mutableStateOf(false) }
     var breakDialog by remember { mutableStateOf(false) }
+    var digestDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
     val onEdit = actions::edit
 
@@ -338,6 +339,36 @@ fun SettingsScreen(
             Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
         }
 
+        Group(stringResource(R.string.summary_title)) {
+            SwitchRow(stringResource(R.string.summary_show), stringResource(R.string.summary_show_sub), settings.showSummary) { v ->
+                onEdit { it.copy(showSummary = v) }
+                if (v && !status.notificationAccess) actions.notificationAccess()
+            }
+            Text(stringResource(R.string.digest_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
+            val digestLabels = allApps.filter { it.packageName in settings.digestApps }.map { it.label }.distinct()
+            ClickRow(
+                stringResource(R.string.digest_apps),
+                if (digestLabels.isEmpty()) stringResource(R.string.plug_play_none) else digestLabels.joinToString(),
+            ) { digestDialog = true }
+            Label(stringResource(R.string.digest_times))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                com.gabrielepiccione.onda.util.DigestSchedule.PRESETS.forEach { m ->
+                    val on = m in settings.digestTimes
+                    FilterChip(
+                        selected = on,
+                        onClick = {
+                            onEdit { s ->
+                                val next = if (on) s.digestTimes - m else (s.digestTimes + m).sorted()
+                                // Almeno un orario: senza orari le notifiche non verrebbero rinviate
+                                if (next.isEmpty()) s else s.copy(digestTimes = next)
+                            }
+                        },
+                        label = { Text(com.gabrielepiccione.onda.util.DigestSchedule.format(m)) },
+                    )
+                }
+            }
+        }
+
         Group(stringResource(R.string.section_break)) {
             Text(stringResource(R.string.break_settings_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             val breakApps = allApps.filter { it.key in settings.breakApps }
@@ -423,6 +454,26 @@ fun SettingsScreen(
             color = colors.onWallpaperMuted,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp),
+        )
+    }
+
+    if (digestDialog) {
+        val apps = remember(allApps) { allApps.distinctBy { it.packageName } }
+        AlertDialog(
+            onDismissRequest = { digestDialog = false },
+            title = { Text(stringResource(R.string.digest_apps)) },
+            text = {
+                androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
+                    items(apps.size) { i ->
+                        val pkg = apps[i].packageName
+                        val on = pkg in settings.digestApps
+                        ChoiceRow(apps[i].label, on) {
+                            onEdit { it.copy(digestApps = if (on) it.digestApps - pkg else it.digestApps + pkg) }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { digestDialog = false }) { Text(stringResource(R.string.close)) } },
         )
     }
 

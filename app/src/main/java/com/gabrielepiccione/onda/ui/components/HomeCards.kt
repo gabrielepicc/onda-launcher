@@ -44,6 +44,7 @@ import com.gabrielepiccione.onda.util.TimeInWords
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -628,6 +629,92 @@ fun AgendaCard(
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+/** Gruppo del riepilogo notifiche: un'app e le sue notifiche (dalla più recente). */
+data class SummaryGroup(
+    val packageName: String,
+    val label: String,
+    val icon: androidx.compose.ui.graphics.ImageBitmap?,
+    val items: List<com.gabrielepiccione.onda.data.NotificationItem>,
+)
+
+/** Riepilogo notifiche: una riga per app con il numero di notifiche e l'ultima ricevuta. */
+@Composable
+fun NotificationSummaryCard(
+    groups: List<SummaryGroup>,
+    nextDigest: String?,
+    onGroup: (SummaryGroup) -> Unit,
+    onClearAll: () -> Unit,
+    modifier: Modifier = Modifier,
+    highlighted: Boolean = false,
+    onLongPress: (() -> Unit)? = null,
+) {
+    val colors = LocalOndaColors.current
+    val total = groups.sumOf { it.items.size }
+    Column(
+        modifier
+            .fillMaxWidth()
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
+            .clip(RoundedCornerShape(28.dp))
+            .background(colors.panel.copy(alpha = 0.85f))
+            .combinedClickable(onClick = {}, onLongClick = onLongPress)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    androidx.compose.ui.res.pluralStringResource(R.plurals.summary_count, total, total),
+                    color = colors.accent,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                if (nextDigest != null) {
+                    Text(stringResource(R.string.summary_next, nextDigest), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            if (groups.any { g -> g.items.any { it.clearable } }) {
+                androidx.compose.material3.TextButton(onClick = onClearAll) { Text(stringResource(R.string.summary_clear_all)) }
+            }
+        }
+        if (groups.isEmpty()) {
+            Text(stringResource(R.string.summary_empty), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 6.dp))
+        }
+        groups.forEach { g ->
+            val last = g.items.first()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onGroup(g) }
+                    .padding(vertical = 6.dp)
+            ) {
+                if (g.icon != null) {
+                    androidx.compose.foundation.Image(g.icon, contentDescription = null, modifier = Modifier.size(28.dp))
+                } else {
+                    Box(Modifier.size(28.dp).clip(CircleShape).background(colors.accentContainer))
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        if (g.items.size > 1) "${g.label} · ${g.items.size}" else g.label,
+                        color = colors.onWallpaper,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        listOf(last.title, last.text).filter { it.isNotBlank() }.joinToString(": "),
+                        color = colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
         }

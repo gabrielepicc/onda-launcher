@@ -468,6 +468,27 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(vertical = 8.dp),
                         )
                     }
+                    block == HomeBlocks.SUMMARY -> item(key = "summary") {
+                        val groups = state.notifications.entries
+                            .filter { it.value.isNotEmpty() }
+                            .sortedByDescending { it.value.first().postTime }
+                            .map { (pkg, list) ->
+                                val app = state.allApps.firstOrNull { it.packageName == pkg }
+                                SummaryGroup(pkg, app?.label ?: pkg, app?.icon, list)
+                            }
+                        val nowMinute = java.time.LocalTime.now().let { it.hour * 60 + it.minute }
+                        NotificationSummaryCard(
+                            groups = groups,
+                            nextDigest = if (settings.digestApps.isEmpty()) null
+                            else com.gabrielepiccione.onda.util.DigestSchedule.nextSlot(nowMinute, settings.digestTimes)
+                                ?.let(com.gabrielepiccione.onda.util.DigestSchedule::format),
+                            onGroup = { g -> state.allApps.firstOrNull { it.packageName == g.packageName }?.let { panelFor = it } },
+                            onClearAll = { groups.forEach { g -> NotificationStore.dismissAll(g.packageName) } },
+                            highlighted = editing == HomeBlocks.SUMMARY,
+                            onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.SUMMARY },
+                            modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(vertical = 8.dp),
+                        )
+                    }
                     block == HomeBlocks.MEDIA -> item(key = "media") {
                         val m = media
                         AnimatedVisibility(
@@ -965,6 +986,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 if (!settings.lockLayout) {
                     SheetRow(Icons.Filled.Add, stringResource(R.string.new_folder)) { newFolder = true }
                     SheetRow(Icons.Filled.Add, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
+                    if (!settings.showSummary) {
+                        SheetRow(Icons.Filled.Notifications, stringResource(R.string.summary_add)) {
+                            homeMenu = false
+                            vm.updateSettings { it.copy(showSummary = true) }
+                            if (!status.notificationAccess) withRestrictedHelp(callbacks::openNotificationAccess)
+                        }
+                    }
                     if (!settings.showAgenda) {
                         SheetRow(Icons.Filled.Add, stringResource(R.string.agenda_add)) {
                             homeMenu = false

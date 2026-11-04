@@ -356,4 +356,19 @@
     <string name="starred_contacts">Favorite contacts</string>
     <string name="alphabet_contacts">Contacts from the alphabet</string>
     <string name="alphabet_contacts_sub">Starred contacts at the top of the app list, reachable with @ on the alphabet</string>
+    <string name="summary_title">Notification summary</string>
+    <string name="summary_next">Next summary at %1$s</string>
+    <string name="summary_clear_all">Clear all</string>
+    <string name="summary_empty">No notifications</string>
+    <string name="summary_add">Add notification summary</string>
+    <string name="summary_hide">Remove the summary</string>
+    <string name="summary_show">Summary in the home</string>
+    <string name="summary_show_sub">Notifications grouped by app, in a block you can move</string>
+    <string name="digest_sub">Notifications from the chosen apps are held back and arrive together at the chosen times.</string>
+    <string name="digest_apps">Apps delivered in the summary</string>
+    <string name="digest_times">Summary times</string>
+    <plurals name="summary_count">
+        <item quantity="one">%1$d notification</item>
+        <item quantity="other">%1$d notifications</item>
+    </plurals>
 </resources>
