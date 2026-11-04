@@ -84,6 +84,8 @@ dependencies {
     implementation("androidx.datastore:datastore:1.1.1")
     // Sblocco con impronta/volto/PIN per le app protette (Apache 2.0)
     implementation("androidx.biometric:biometric:1.1.0")
+    // biometric porta una Fragment vecchia: serve >= 1.3 per i risultati delle Activity
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation(project(":core:icons"))
 
