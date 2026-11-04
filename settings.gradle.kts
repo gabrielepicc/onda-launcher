@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "OndaLauncher"
 include(":app")
+include(":core:icons")

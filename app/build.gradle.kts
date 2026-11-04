@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 android {
@@ -12,8 +14,8 @@ android {
         applicationId = "com.gabrielepiccione.onda"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.3.1"
+        versionCode = 5
+        versionName = "0.4.0"
     }
 
     // Chiave di firma fissa per le build di sviluppo/CI, così gli aggiornamenti si installano sopra.
@@ -50,6 +52,19 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    lint {
+        // Il report viene pubblicato dalla CI; gli errori bloccanti restano tali.
+        abortOnError = true
+        warningsAsErrors = false
+        checkReleaseBuilds = true
+        disable += setOf("MissingTranslation")
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 }
 
@@ -62,7 +77,18 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+    implementation("androidx.datastore:datastore:1.1.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation(project(":core:icons"))
+
+    testImplementation("junit:junit:4.13.2")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+}
+
+ktlint {
+    // Segnala lo stile senza bloccare la build: il codice esistente verrà allineato gradualmente.
+    ignoreFailures.set(true)
+    android.set(true)
 }

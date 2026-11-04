@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import com.gabrielepiccione.onda.core.icons.IconPacks
 
 /**
  * Elenco delle app avviabili per tutti i profili (personale + lavoro),

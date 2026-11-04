@@ -50,7 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.FontChoice
-import com.gabrielepiccione.onda.data.IconPacks
+import com.gabrielepiccione.onda.core.icons.IconPacks
 import com.gabrielepiccione.onda.data.Settings
 import com.gabrielepiccione.onda.data.ThemeMode
 import com.gabrielepiccione.onda.data.WidgetManager

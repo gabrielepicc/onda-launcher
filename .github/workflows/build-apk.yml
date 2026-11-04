@@ -1,7 +1,8 @@
-name: Build APK
+name: CI
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -17,10 +18,25 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build release APK (ottimizzato R8)
+      - name: Unit test
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleRelease
+          ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Lint + ktlint
+        run: ./gradlew --no-daemon lintRelease ktlintCheck
+
+      - name: Build release APK (ottimizzato R8)
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
 
       - uses: actions/upload-artifact@v4
         with:

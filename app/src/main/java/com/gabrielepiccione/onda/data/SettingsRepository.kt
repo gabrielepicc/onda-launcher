@@ -1,26 +1,101 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.data
 
 import android.content.Context
+import androidx.datastore.core.CorruptionException
+import androidx.datastore.core.DataMigration
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.core.Serializer
+import androidx.datastore.dataStoreFile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.io.InputStream
+import java.io.OutputStream
 
-/** Preferenze persistenti del launcher, salvate come un unico JSON (comodo anche per backup/ripristino). */
-class SettingsRepository(context: Context) {
+/** Serializer DataStore: il file contiene il JSON prodotto da [SettingsCodec]. */
+object SettingsSerializer : Serializer<Settings> {
+    override val defaultValue: Settings = Settings()
 
+    override suspend fun readFrom(input: InputStream): Settings =
+        try {
+            SettingsCodec.decode(input.readBytes().decodeToString())
+        } catch (e: IllegalArgumentException) {
+            throw CorruptionException("Impostazioni illeggibili", e)
+        }
+
+    override suspend fun writeTo(t: Settings, output: OutputStream) {
+        output.write(SettingsCodec.encode(t).encodeToByteArray())
+    }
+}
+
+/** Importa una sola volta le impostazioni salvate da Onda 0.2/0.3 in SharedPreferences. */
+private class LegacyPrefsMigration(context: Context) : DataMigration<Settings> {
     private val prefs = context.getSharedPreferences("onda_settings", Context.MODE_PRIVATE)
 
-    private val _settings = MutableStateFlow(prefs.getString(K_JSON, null)?.let(::fromJson) ?: Settings())
+    override suspend fun shouldMigrate(currentData: Settings): Boolean = prefs.contains(LEGACY_KEY)
+
+    override suspend fun migrate(currentData: Settings): Settings =
+        prefs.getString(LEGACY_KEY, null)
+            ?.let { runCatching { SettingsCodec.decode(it) }.getOrNull() }
+            ?: currentData
+
+    override suspend fun cleanUp() {
+        prefs.edit().remove(LEGACY_KEY).apply()
+    }
+
+    companion object {
+        const val LEGACY_KEY = "settings_json"
+    }
+}
+
+/**
+ * Preferenze persistenti del launcher.
+ *
+ * La UI legge uno [StateFlow] sincrono (nessuna attesa al primo frame); le scritture su disco
+ * avvengono in background tramite DataStore, raggruppando le modifiche ravvicinate (es. slider).
+ */
+class SettingsRepository(context: Context) {
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val store: DataStore<Settings> = DataStoreFactory.create(
+        serializer = SettingsSerializer,
+        migrations = listOf(LegacyPrefsMigration(context)),
+        scope = scope,
+        produceFile = { context.dataStoreFile("settings.json") },
+    )
+
+    // Lettura iniziale bloccante ma minuscola (un file JSON di pochi KB), così il primo frame
+    // ha già i preferiti corretti.
+    private val _settings = MutableStateFlow(runBlocking { store.data.first() })
     val settings: StateFlow<Settings> = _settings.asStateFlow()
 
     val current: Settings get() = _settings.value
 
+    init {
+        scope.launch {
+            _settings.drop(1).collectLatest { snapshot ->
+                delay(WRITE_DEBOUNCE_MS)
+                store.updateData { snapshot }
+            }
+        }
+    }
+
     fun edit(transform: (Settings) -> Settings) {
         _settings.update(transform)
-        prefs.edit().putString(K_JSON, toJson(_settings.value).toString()).apply()
     }
 
     // --- Operazioni di comodo ---
@@ -136,112 +211,31 @@ class SettingsRepository(context: Context) {
 
     // --- Backup ---
 
-    /** JSON delle impostazioni (senza i widget, che sono legati a questo dispositivo). */
-    fun exportJson(): String = toJson(current.copy(widgetIds = emptyList())).toString(2)
+    /** JSON delle impostazioni, senza i widget (gli id sono validi solo su questo dispositivo). */
+    fun exportJson(): String = SettingsCodec.encode(
+        current.copy(
+            widgetIds = emptyList(),
+            appWidgets = emptyMap(),
+            folders = current.folders.mapValues { (_, f) -> f.copy(widgets = emptyList()) },
+        ),
+        prettyPrint = true,
+    )
 
+    /** Importa un backup (formato attuale o di Onda 0.2/0.3). I widget presenti restano. */
     fun importJson(json: String): Boolean {
-        val parsed = runCatching { fromJson(json) }.getOrNull() ?: return false
-        edit { parsed.copy(widgetIds = it.widgetIds, onboardingDone = true) }
+        val parsed = runCatching { SettingsCodec.decode(json) }.getOrNull() ?: return false
+        edit { now ->
+            parsed.copy(
+                widgetIds = now.widgetIds,
+                appWidgets = now.appWidgets,
+                folders = parsed.folders.mapValues { (id, f) -> f.copy(widgets = now.folders[id]?.widgets.orEmpty()) },
+                onboardingDone = true,
+            )
+        }
         return true
     }
 
-    // --- Serializzazione ---
-
-    private fun toJson(s: Settings): JSONObject = JSONObject().apply {
-        put("version", 2)
-        put("favorites", JSONArray(s.favorites))
-        put("hidden", JSONArray(s.hidden.toList()))
-        put("renames", JSONObject(s.renames as Map<*, *>))
-        put("swipeActions", JSONObject(s.swipeActions as Map<*, *>))
-        put("folders", JSONArray().apply {
-            s.folders.values.forEach { f ->
-                put(JSONObject().apply {
-                    put("id", f.id); put("name", f.name)
-                    put("apps", JSONArray(f.apps)); put("widgets", JSONArray(f.widgets))
-                })
-            }
-        })
-        put("appWidgets", JSONObject(s.appWidgets as Map<*, *>))
-        put("launchCounts", JSONObject(s.launchCounts as Map<*, *>))
-        put("swipeDown", s.swipeDown.name)
-        put("swipeUp", s.swipeUp.name)
-        put("hideStatusBar", s.hideStatusBar)
-        put("hideAlphabet", s.hideAlphabet)
-        put("hideFavoriteNames", s.hideFavoriteNames)
-        put("iconSize", s.iconSize.toDouble())
-        put("muted", JSONArray(s.mutedNotifications.toList()))
-        put("themeMode", s.themeMode.name)
-        put("dynamicColor", s.dynamicColor)
-        put("accent", s.accent)
-        put("font", s.font.name)
-        put("iconPack", s.iconPack)
-        put("themedIcons", s.themedIcons)
-        put("showIcons", s.showIcons)
-        put("textScale", s.textScale.toDouble())
-        put("showClock", s.showClock)
-        put("showCalendar", s.showCalendar)
-        put("showMedia", s.showMedia)
-        put("wallpaperDim", s.wallpaperDim.toDouble())
-        put("leftHanded", s.leftHanded)
-        put("doubleTapLock", s.doubleTapLock)
-        put("haptics", s.haptics)
-        put("widgets", JSONArray(s.widgetIds))
-        put("onboardingDone", s.onboardingDone)
-    }
-
-    private fun fromJson(json: String): Settings {
-        val o = JSONObject(json)
-        val d = Settings()
-        fun strings(name: String): List<String> =
-            o.optJSONArray(name)?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList()
-        fun map(name: String): Map<String, String> =
-            o.optJSONObject(name)?.let { m -> m.keys().asSequence().associateWith { m.getString(it) } } ?: emptyMap()
-        return Settings(
-            favorites = strings("favorites"),
-            hidden = strings("hidden").toSet(),
-            renames = map("renames"),
-            swipeActions = map("swipeActions"),
-            folders = o.optJSONArray("folders")?.let { a ->
-                (0 until a.length()).map { a.getJSONObject(it) }.associate { f ->
-                    val id = f.getString("id")
-                    id to Folder(
-                        id = id,
-                        name = f.optString("name", "Cartella"),
-                        apps = f.optJSONArray("apps")?.let { x -> (0 until x.length()).map { x.getString(it) } } ?: emptyList(),
-                        widgets = f.optJSONArray("widgets")?.let { x -> (0 until x.length()).map { x.getInt(it) } } ?: emptyList(),
-                    )
-                }
-            } ?: emptyMap(),
-            appWidgets = o.optJSONObject("appWidgets")?.let { m -> m.keys().asSequence().associateWith { m.getInt(it) } } ?: emptyMap(),
-            launchCounts = o.optJSONObject("launchCounts")?.let { m -> m.keys().asSequence().associateWith { m.getInt(it) } } ?: emptyMap(),
-            swipeDown = GestureAction.entries.firstOrNull { it.name == o.optString("swipeDown") } ?: d.swipeDown,
-            swipeUp = GestureAction.entries.firstOrNull { it.name == o.optString("swipeUp") } ?: d.swipeUp,
-            hideStatusBar = o.optBoolean("hideStatusBar", d.hideStatusBar),
-            hideAlphabet = o.optBoolean("hideAlphabet", d.hideAlphabet),
-            hideFavoriteNames = o.optBoolean("hideFavoriteNames", d.hideFavoriteNames),
-            iconSize = o.optDouble("iconSize", d.iconSize.toDouble()).toFloat(),
-            mutedNotifications = strings("muted").toSet(),
-            themeMode = ThemeMode.entries.firstOrNull { it.name == o.optString("themeMode") } ?: d.themeMode,
-            dynamicColor = o.optBoolean("dynamicColor", d.dynamicColor),
-            accent = o.optLong("accent", d.accent),
-            font = FontChoice.entries.firstOrNull { it.name == o.optString("font") } ?: d.font,
-            iconPack = o.optString("iconPack", d.iconPack),
-            themedIcons = o.optBoolean("themedIcons", d.themedIcons),
-            showIcons = o.optBoolean("showIcons", d.showIcons),
-            textScale = o.optDouble("textScale", d.textScale.toDouble()).toFloat(),
-            showClock = o.optBoolean("showClock", d.showClock),
-            showCalendar = o.optBoolean("showCalendar", d.showCalendar),
-            showMedia = o.optBoolean("showMedia", d.showMedia),
-            wallpaperDim = o.optDouble("wallpaperDim", d.wallpaperDim.toDouble()).toFloat(),
-            leftHanded = o.optBoolean("leftHanded", d.leftHanded),
-            doubleTapLock = o.optBoolean("doubleTapLock", d.doubleTapLock),
-            haptics = o.optBoolean("haptics", d.haptics),
-            widgetIds = o.optJSONArray("widgets")?.let { a -> (0 until a.length()).map { a.getInt(it) } } ?: emptyList(),
-            onboardingDone = o.optBoolean("onboardingDone", d.onboardingDone),
-        )
-    }
-
     private companion object {
-        const val K_JSON = "settings_json"
+        const val WRITE_DEBOUNCE_MS = 150L
     }
 }
