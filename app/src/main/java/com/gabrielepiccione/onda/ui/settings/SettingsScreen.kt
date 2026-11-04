@@ -85,6 +85,7 @@ interface SettingsActions {
     fun addWidget()
     fun removeWidget(id: Int)
     fun unhide(app: AppInfo)
+    fun authenticate(onSuccess: () -> Unit)
     fun wallpaper()
     fun openStyles()
     /** Importa un font da file per la lista (`forClock = false`) o per l'orologio. */
@@ -108,6 +109,7 @@ fun SettingsScreen(
     val pm = context.packageManager
     var iconPackDialog by remember { mutableStateOf(false) }
     var plugDialog by remember { mutableStateOf(false) }
+    var hiddenUnlocked by remember { mutableStateOf(false) }
     val onEdit = actions::edit
 
     Column(
@@ -346,6 +348,13 @@ fun SettingsScreen(
         }
 
         Group(stringResource(R.string.section_hidden)) {
+            SwitchRow(stringResource(R.string.protect_hidden), stringResource(R.string.protect_hidden_sub), settings.protectHidden) { v ->
+                if (!v) actions.authenticate { onEdit { it.copy(protectHidden = false) } } else onEdit { it.copy(protectHidden = true) }
+            }
+            if (settings.protectHidden && !hiddenUnlocked && hiddenApps.isNotEmpty()) {
+                FilledTonalButton(onClick = { actions.authenticate { hiddenUnlocked = true } }) { Text(stringResource(R.string.protect_show_hidden)) }
+                return@Group
+            }
             if (hiddenApps.isEmpty()) {
                 Text(stringResource(R.string.no_hidden_apps), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             }

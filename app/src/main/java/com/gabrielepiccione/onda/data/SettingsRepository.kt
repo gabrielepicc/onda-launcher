@@ -268,6 +268,10 @@ class SettingsRepository(context: Context) {
         s.copy(savedThemes = s.savedThemes + theme.copy(id = "t" + System.currentTimeMillis().toString(36)))
     }
 
+    fun toggleProtected(appKey: String) = edit { s ->
+        s.copy(protectedApps = if (appKey in s.protectedApps) s.protectedApps - appKey else s.protectedApps + appKey)
+    }
+
     fun recordLaunch(appKey: String) = edit { s ->
         s.copy(launchCounts = s.launchCounts + (appKey to (s.launchCounts[appKey] ?: 0) + 1))
     }

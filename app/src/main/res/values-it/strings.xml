@@ -311,4 +311,10 @@
     <string name="plug_play_none">Disattivato</string>
     <string name="plug_play_choose">Scegli l\'app</string>
     <string name="plug_play_connected">Cuffie collegate</string>
+    <string name="protect_on">Proteggi con sblocco</string>
+    <string name="protect_off">Togli protezione</string>
+    <string name="protect_no_lock">Imposta un blocco schermo per proteggere le app</string>
+    <string name="protect_hidden">Proteggi le app nascoste</string>
+    <string name="protect_hidden_sub">Chiede impronta, volto o PIN per vedere l\'elenco</string>
+    <string name="protect_show_hidden">Mostra app nascoste</string>
 </resources>

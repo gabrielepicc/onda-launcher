@@ -136,6 +136,7 @@ interface HomeCallbacks {
     fun importBackup()
     fun importFont(forClock: Boolean)
     fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme)
+    fun authenticate(title: String, onSuccess: () -> Unit)
     fun importTheme()
 }
 
@@ -186,8 +187,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     }
 
     fun launchApp(app: AppInfo) {
-        vm.launch(app)
-        scope.launch { delay(380); closeAll() }
+        val go = {
+            vm.launch(app)
+            scope.launch { delay(380); closeAll() }
+        }
+        // App protette: prima lo sblocco (impronta, volto o PIN)
+        if (app.key in vm.settingsRepo.current.protectedApps) callbacks.authenticate(app.label) { go() } else go()
     }
 
     fun openWidgetPicker(filter: String?, target: WidgetTarget) {
@@ -725,6 +730,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
+                        override fun authenticate(onSuccess: () -> Unit) = callbacks.authenticate(context.getString(R.string.section_hidden), onSuccess)
                         override fun wallpaper() = SystemActions.openWallpaperPicker(context)
                         override fun openStyles() { overlay = Overlay.STYLES }
                         override fun importFont(forClock: Boolean) = callbacks.importFont(forClock)
@@ -809,6 +815,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 folderName = inFolder?.name,
                 onMoveToFolder = { moveFor = app },
                 onChangeIcon = { iconPickerFor = app },
+                isProtected = app.key in settings.protectedApps,
+                onToggleProtected = {
+                    // Togliere la protezione richiede comunque lo sblocco
+                    if (app.key in settings.protectedApps) callbacks.authenticate(app.label) { vm.settingsRepo.toggleProtected(app.key) }
+                    else vm.settingsRepo.toggleProtected(app.key)
+                },
                 isMuted = app.packageName in settings.mutedNotifications,
                 favoriteIndex = favIndex,
                 favoriteCount = settings.favorites.size,

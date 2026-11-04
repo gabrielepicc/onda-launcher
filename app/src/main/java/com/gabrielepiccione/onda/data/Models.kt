@@ -227,6 +227,10 @@ data class Settings(
     val searchEngine: String = "SYSTEM",
     /** Plug & Play: app mostrata in cima quando si collegano cuffie o casse (chiave app, vuoto = off). */
     val plugPlayApp: String = "",
+    /** App che richiedono lo sblocco (impronta, volto o PIN) prima di aprirsi. */
+    val protectedApps: Set<String> = emptySet(),
+    /** Richiede lo sblocco anche per vedere l'elenco delle app nascoste. */
+    val protectHidden: Boolean = false,
     /** Temi salvati dall'utente nel Theme Studio. */
     val savedThemes: List<LookTheme> = emptyList(),
     /** Ultimo preset di stile applicato (solo informativo). */

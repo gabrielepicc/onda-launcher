@@ -74,6 +74,8 @@ data class AppActions(
     val onSetSwipe: (AppInfo?) -> Unit,
     val folderName: String?,
     val onChangeIcon: () -> Unit,
+    val isProtected: Boolean = false,
+    val onToggleProtected: () -> Unit = {},
     val onMoveToFolder: () -> Unit,
     val isMuted: Boolean,
     val favoriteIndex: Int,
@@ -156,6 +158,9 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
             }
             ActionRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
             ActionRow(Icons.Filled.Face, stringResource(R.string.icon_change)) { actions.onChangeIcon(); onDismiss() }
+            ActionRow(Icons.Filled.Lock, stringResource(if (actions.isProtected) R.string.protect_off else R.string.protect_on)) {
+                actions.onToggleProtected(); onDismiss()
+            }
             ActionRow(Icons.Filled.Lock, if (app.isHidden) stringResource(R.string.show_in_list) else stringResource(R.string.hide)) {
                 actions.onToggleHidden(); onDismiss()
             }

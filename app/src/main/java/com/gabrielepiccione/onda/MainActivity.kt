@@ -34,7 +34,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.gabrielepiccione.onda.util.SystemActions
 import java.time.LocalDate
 
-class MainActivity : ComponentActivity(), HomeCallbacks {
+class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     private val vm: LauncherViewModel by viewModels()
     private val ondaApp: OndaApp get() = application as OndaApp
@@ -241,6 +241,32 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
     }
 
     override fun importTheme() = themeImportLauncher.launch(arrayOf("application/json", "application/octet-stream", "*/*"))
+
+    /** Chiede impronta, volto o PIN del telefono; [onSuccess] solo se l'utente si autentica. */
+    override fun authenticate(title: String, onSuccess: () -> Unit) {
+        val authenticators = androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK or
+            androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        val canAuth = androidx.biometric.BiometricManager.from(this).canAuthenticate(authenticators)
+        if (canAuth != androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS) {
+            // Nessun blocco schermo configurato: non c'è nulla da verificare
+            toast(getString(R.string.protect_no_lock))
+            onSuccess()
+            return
+        }
+        val prompt = androidx.biometric.BiometricPrompt(
+            this,
+            androidx.core.content.ContextCompat.getMainExecutor(this),
+            object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) = onSuccess()
+            },
+        )
+        prompt.authenticate(
+            androidx.biometric.BiometricPrompt.PromptInfo.Builder()
+                .setTitle(title)
+                .setAllowedAuthenticators(authenticators)
+                .build()
+        )
+    }
 
     override fun exportBackup() = exportLauncher.launch("onda-backup-${LocalDate.now()}.json")
 

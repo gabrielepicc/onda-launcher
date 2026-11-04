@@ -82,6 +82,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
     implementation("androidx.datastore:datastore:1.1.1")
+    // Sblocco con impronta/volto/PIN per le app protette (Apache 2.0)
+    implementation("androidx.biometric:biometric:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation(project(":core:icons"))
 
