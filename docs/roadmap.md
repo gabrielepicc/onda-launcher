@@ -22,7 +22,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 2. 🟡 Fase 3 — Temi: ✅ `LookTheme` serializzabile, Theme Studio (salva/applica/rinomina/duplica/elimina), file `.onda-theme`
    con font incorporati, palette dallo sfondo anche su Android 8.1–11. ⬜ QR/deep link, sfondo automatico per orario
 3. 🟡 Fase 4 — ✅ agenda del calendario come blocco della home, ✅ blocca layout.
-   ⬜ widget stack, ⬜ meteo Open-Meteo (**in attesa di decisione**: richiede il permesso INTERNET, valutare flavor `offline`)
+   ✅ widget stack, ⬜ meteo Open-Meteo (**in attesa di decisione**: richiede il permesso INTERNET, valutare flavor `offline`)
 4. 🟡 Fase 5 — ✅ prefissi di ricerca (= @ /), ✅ scorciatoie impostazioni di sistema, ✅ motore web selezionabile,
    ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste.
    ⬜ Usage Breaker, ⬜ contatti dall'alfabeto, ⬜ riepilogo notifiche, ⬜ conversioni unità/valute

@@ -309,6 +309,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
                 vm.settingsRepo.replaceWidget(t.oldId, id)
             }
             WidgetTarget.ReplaceClock -> vm.settingsRepo.replaceClockWithWidget(id)
+            is WidgetTarget.ToStack -> vm.settingsRepo.addToStack(t.block, id)
             is WidgetTarget.ForApp -> {
                 vm.settingsRepo.current.appWidgets[t.appKey]?.let { old -> widgets.deleteId(old) }
                 vm.settingsRepo.setAppWidget(t.appKey, id)

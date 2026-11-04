@@ -317,6 +317,11 @@
     <string name="protect_hidden">Protect hidden apps</string>
     <string name="protect_hidden_sub">Asks for fingerprint, face or PIN to see the list</string>
     <string name="protect_show_hidden">Show hidden apps</string>
+    <string name="edit_stack">Widget stack</string>
+    <string name="stack_make">Stack another widget on this one</string>
+    <string name="stack_add">Add a widget to the stack</string>
+    <string name="stack_widgets">Widgets in the stack</string>
+    <string name="stack_page">Widget %1$d of %2$d</string>
     <string name="home_position">Position on screen</string>
     <string name="home_position_auto">Automatic (bottom)</string>
     <string name="home_position_manual">Choose</string>

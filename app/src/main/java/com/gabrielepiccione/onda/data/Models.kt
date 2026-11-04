@@ -134,6 +134,62 @@ enum class ClockStyle(@StringRes val labelRes: Int) {
 @Serializable
 enum class HAlign(@StringRes val labelRes: Int) { START(R.string.align_start), CENTER(R.string.align_center), END(R.string.align_end) }
 
+/** Pila di widget: occupa un solo blocco della home e si sfoglia in orizzontale. */
+@Immutable
+@Serializable
+data class WidgetStack(
+    val id: String,
+    val widgets: List<Int> = emptyList(),
+    /** Altezza scelta in dp; null = la maggiore tra le altezze predefinite dei widget. */
+    val heightDp: Int? = null,
+)
+
+/** Operazioni sulle pile di widget, senza dipendenze Android (testabili su JVM). */
+object WidgetStacks {
+
+    /** Aggiunge un widget alla pila [block], oppure crea una pila se [block] è un widget singolo. */
+    fun add(s: Settings, block: String, newId: Int, newStackId: String): Settings {
+        val existing = HomeBlocks.stackId(block)
+        if (existing != null) {
+            return s.copy(widgetStacks = s.widgetStacks.map { if (it.id == existing) it.copy(widgets = it.widgets + newId) else it })
+        }
+        val first = HomeBlocks.widgetId(block) ?: return s
+        return s.copy(
+            widgetIds = s.widgetIds - first,
+            widgetStacks = s.widgetStacks + WidgetStack(newStackId, listOf(first, newId), s.widgetHeights[first]),
+            widgetHeights = s.widgetHeights - first,
+            homeLayout = HomeBlocks.resolve(s).map { if (it == block) HomeBlocks.stack(newStackId) else it },
+        )
+    }
+
+    /** Toglie un widget dalla sua pila: con un solo widget rimasto, la pila torna un widget singolo. */
+    fun remove(s: Settings, widgetId: Int): Settings {
+        val stack = s.widgetStacks.firstOrNull { widgetId in it.widgets } ?: return s
+        val left = stack.widgets - widgetId
+        val block = HomeBlocks.stack(stack.id)
+        if (left.size >= 2) {
+            return s.copy(widgetStacks = s.widgetStacks.map { if (it.id == stack.id) it.copy(widgets = left) else it })
+        }
+        val others = s.widgetStacks.filterNot { it.id == stack.id }
+        val last = left.singleOrNull() ?: return s.copy(widgetStacks = others, homeLayout = s.homeLayout - block)
+        return s.copy(
+            widgetStacks = others,
+            widgetIds = s.widgetIds + last,
+            widgetHeights = stack.heightDp?.let { s.widgetHeights + (last to it) } ?: s.widgetHeights,
+            homeLayout = s.homeLayout.map { if (it == block) HomeBlocks.widget(last) else it },
+        )
+    }
+
+    /** Sostituisce un widget nella stessa posizione della sua pila. */
+    fun replace(s: Settings, oldId: Int, newId: Int): Settings = s.copy(
+        widgetStacks = s.widgetStacks.map { st -> st.copy(widgets = st.widgets.map { if (it == oldId) newId else it }) },
+    )
+
+    fun setHeight(s: Settings, stackId: String, dp: Int): Settings = s.copy(
+        widgetStacks = s.widgetStacks.map { if (it.id == stackId) it.copy(heightDp = dp) else it },
+    )
+}
+
 /** Blocchi della home, nell'ordine scelto. */
 object HomeBlocks {
     const val CLOCK = "clock"
@@ -143,10 +199,13 @@ object HomeBlocks {
     const val WIDGET_PREFIX = "w:"
     fun widget(id: Int) = WIDGET_PREFIX + id
     fun widgetId(block: String): Int? = block.removePrefix(WIDGET_PREFIX).toIntOrNull()?.takeIf { block.startsWith(WIDGET_PREFIX) }
+    const val STACK_PREFIX = "s:"
+    fun stack(id: String) = STACK_PREFIX + id
+    fun stackId(block: String): String? = block.takeIf { it.startsWith(STACK_PREFIX) }?.removePrefix(STACK_PREFIX)
 
     /** Ordine effettivo: quello salvato, ripulito, più gli elementi mancanti in coda (prima delle app). */
     fun resolve(settings: Settings): List<String> {
-        val widgets = settings.widgetIds.map(::widget)
+        val widgets = settings.widgetIds.map(::widget) + settings.widgetStacks.map { stack(it.id) }
         val optional = if (settings.showAgenda) listOf(AGENDA) else emptyList()
         val valid = setOf(CLOCK, MEDIA, APPS) + optional + widgets
         val saved = settings.homeLayout.filter { it in valid }.distinct()
@@ -263,6 +322,8 @@ data class Settings(
     val doubleTapLock: Boolean = false,
     val haptics: Boolean = true,
     val widgetIds: List<Int> = emptyList(),
+    /** Pile di widget in home; i loro widget non compaiono in [widgetIds]. */
+    val widgetStacks: List<WidgetStack> = emptyList(),
     val onboardingDone: Boolean = false,
 ) {
     companion object {

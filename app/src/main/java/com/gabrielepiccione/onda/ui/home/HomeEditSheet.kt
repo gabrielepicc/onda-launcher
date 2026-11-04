@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -47,6 +49,8 @@ interface HomeEditActions {
     fun setWidgetHeight(id: Int, dp: Int)
     fun replaceWidget(id: Int)
     fun replaceClock()
+    fun addToStack(block: String)
+    fun setStackHeight(stackId: String, dp: Int)
     fun deleteWidget(id: Int)
     fun done()
 }
@@ -61,6 +65,7 @@ fun HomeEditSheet(
     settings: Settings,
     blocks: List<String>,
     defaultWidgetHeight: (Int) -> Int,
+    widgetLabel: (Int) -> String?,
     actions: HomeEditActions,
 ) {
     val colors = LocalOndaColors.current
@@ -75,15 +80,18 @@ fun HomeEditSheet(
         Column(
             Modifier
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             val widgetId = HomeBlocks.widgetId(block)
+            val stack = settings.widgetStacks.firstOrNull { it.id == HomeBlocks.stackId(block) }
             Text(
                 stringResource(
                     when {
                         widgetId != null -> R.string.edit_widget
+                        stack != null -> R.string.edit_stack
                         block == HomeBlocks.MEDIA -> R.string.edit_media
                         block == HomeBlocks.AGENDA -> R.string.agenda_title
                         else -> R.string.edit_clock
@@ -160,6 +168,22 @@ fun HomeEditSheet(
                 )
             }
 
+            if (stack != null) {
+                SectionTitle(R.string.edit_height)
+                val current = stack.heightDp ?: (stack.widgets.maxOfOrNull(defaultWidgetHeight) ?: 160)
+                Slider(
+                    value = current.toFloat(),
+                    onValueChange = { v -> actions.setStackHeight(stack.id, v.roundToInt()) },
+                    valueRange = 64f..520f,
+                )
+                SectionTitle(R.string.stack_widgets)
+                stack.widgets.forEach { id ->
+                    val label = widgetLabel(id) ?: stringResource(R.string.widget_number, id)
+                    SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { actions.deleteWidget(id) }
+                }
+                SheetRow(Icons.Filled.Add, stringResource(R.string.stack_add)) { actions.addToStack(block) }
+            }
+
             SectionTitle(R.string.edit_position)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 FilledTonalIconButton(onClick = { actions.move(block, -1) }, enabled = index > 0) {
@@ -193,6 +217,7 @@ fun HomeEditSheet(
                 }
             }
             if (widgetId != null) {
+                SheetRow(Icons.Filled.Add, stringResource(R.string.stack_make)) { actions.addToStack(block) }
                 SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_widget)) { actions.replaceWidget(widgetId) }
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_delete_widget)) {
                     actions.deleteWidget(widgetId)

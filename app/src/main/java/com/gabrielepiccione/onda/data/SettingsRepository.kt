@@ -160,6 +160,7 @@ class SettingsRepository(context: Context) {
 
     /** Sostituisce un widget della home con un altro nella stessa posizione e con la stessa altezza. */
     fun replaceWidget(oldId: Int, newId: Int) = edit { s ->
+        if (s.widgetStacks.any { oldId in it.widgets }) return@edit WidgetStacks.replace(s, oldId, newId)
         val layout = HomeBlocks.resolve(s).map { if (it == HomeBlocks.widget(oldId)) HomeBlocks.widget(newId) else it }
         val height = s.widgetHeights[oldId]
         s.copy(
@@ -168,6 +169,13 @@ class SettingsRepository(context: Context) {
             widgetHeights = (s.widgetHeights - oldId).let { m -> if (height != null) m + (newId to height) else m },
         )
     }
+
+    /** Aggiunge un widget a una pila, oppure trasforma un widget singolo in una pila. */
+    fun addToStack(block: String, newId: Int) = edit {
+        WidgetStacks.add(it, block, newId, "s" + System.currentTimeMillis().toString(36))
+    }
+
+    fun setStackHeight(stackId: String, dp: Int) = edit { WidgetStacks.setHeight(it, stackId, dp) }
 
     /** Mette un widget al posto dell'orologio (che viene nascosto). */
     fun replaceClockWithWidget(newId: Int) = edit { s ->
@@ -275,12 +283,14 @@ class SettingsRepository(context: Context) {
     fun recordLaunch(appKey: String) = edit { s ->
         s.copy(launchCounts = s.launchCounts + (appKey to (s.launchCounts[appKey] ?: 0) + 1))
     }
-    fun removeWidget(id: Int) = edit {
-        it.copy(
-            widgetIds = it.widgetIds - id,
-            homeLayout = it.homeLayout - HomeBlocks.widget(id),
-            widgetHeights = it.widgetHeights - id,
-        )
+    fun removeWidget(id: Int) = edit { s ->
+        WidgetStacks.remove(s, id).let {
+            it.copy(
+                widgetIds = it.widgetIds - id,
+                homeLayout = it.homeLayout - HomeBlocks.widget(id),
+                widgetHeights = it.widgetHeights - id,
+            )
+        }
     }
 
     // --- Backup ---
@@ -289,6 +299,7 @@ class SettingsRepository(context: Context) {
     fun exportJson(): String = SettingsCodec.encode(
         current.copy(
             widgetIds = emptyList(),
+            widgetStacks = emptyList(),
             appWidgets = emptyMap(),
             folders = current.folders.mapValues { (_, f) -> f.copy(widgets = emptyList()) },
         ),
@@ -301,6 +312,7 @@ class SettingsRepository(context: Context) {
         edit { now ->
             parsed.copy(
                 widgetIds = now.widgetIds,
+                widgetStacks = now.widgetStacks,
                 appWidgets = now.appWidgets,
                 folders = parsed.folders.mapValues { (id, f) -> f.copy(widgets = now.folders[id]?.widgets.orEmpty()) },
                 onboardingDone = true,

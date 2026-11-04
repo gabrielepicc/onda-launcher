@@ -21,8 +21,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
@@ -113,6 +123,54 @@ fun HostedWidget(
                 .fillMaxWidth()
                 .height(animated),
         )
+    }
+}
+
+/** Pila di widget: un blocco solo che si sfoglia in orizzontale, con i puntini della pagina. */
+@Composable
+fun WidgetStackCard(
+    stack: com.gabrielepiccione.onda.data.WidgetStack,
+    widgets: WidgetManager,
+    highlighted: Boolean,
+    onLongPress: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    if (stack.widgets.isEmpty()) return
+    val colors = LocalOndaColors.current
+    val density = LocalDensity.current
+    val defaultHeight = remember(stack.widgets) {
+        stack.widgets.mapNotNull { widgets.infoFor(it) }
+            .maxOfOrNull { with(density) { it.minHeight.toDp().value.toInt() } }
+            ?.coerceIn(72, 320) ?: 160
+    }
+    val height = stack.heightDp ?: defaultHeight
+    val pager = rememberPagerState(pageCount = { stack.widgets.size })
+    val position = stringResource(R.string.stack_page, pager.currentPage + 1, stack.widgets.size)
+    Column(modifier.semantics { stateDescription = position }) {
+        HorizontalPager(
+            state = pager,
+            beyondViewportPageCount = 1,
+            modifier = Modifier.fillMaxWidth(),
+        ) { page ->
+            stack.widgets.getOrNull(page)?.let { id ->
+                androidx.compose.runtime.key(id) {
+                    HostedWidget(id, widgets, heightDp = height, highlighted = highlighted, onLongPress = onLongPress)
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+        ) {
+            repeat(stack.widgets.size) { i ->
+                Box(
+                    Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(if (i == pager.currentPage) colors.accent else colors.onWallpaperMuted.copy(alpha = 0.4f))
+                )
+            }
+        }
     }
 }
 

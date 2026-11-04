@@ -5,6 +5,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 ## [Non rilasciato]
 
 ### Aggiunto
+- **Pile di widget**: più widget nello stesso blocco della home, da sfogliare in orizzontale. Si creano dal foglio di modifica di un widget (pressione lunga).
 - **Posizione della home**: si sceglie il punto dello schermo in cui inizia il primo blocco (orologio o widget); gli altri blocchi e i preferiti lo seguono. Si regola dal foglio di modifica di un blocco o dalle impostazioni; il predefinito resta ancorato in basso.
 
 ## [0.8.0]

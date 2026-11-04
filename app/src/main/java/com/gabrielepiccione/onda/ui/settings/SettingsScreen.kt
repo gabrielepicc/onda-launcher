@@ -335,10 +335,11 @@ fun SettingsScreen(
         }
 
         Group(stringResource(R.string.section_widgets)) {
-            if (settings.widgetIds.isEmpty()) {
+            val homeWidgets = settings.widgetIds + settings.widgetStacks.flatMap { it.widgets }
+            if (homeWidgets.isEmpty()) {
                 Text(stringResource(R.string.no_home_widgets), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             }
-            settings.widgetIds.forEach { id ->
+            homeWidgets.forEach { id ->
                 val info = widgets.infoFor(id)
                 val label: String? = info?.let { i -> runCatching { i.loadLabel(pm) }.getOrNull() }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {

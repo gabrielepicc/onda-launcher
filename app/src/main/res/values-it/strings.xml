@@ -317,6 +317,11 @@
     <string name="protect_hidden">Proteggi le app nascoste</string>
     <string name="protect_hidden_sub">Chiede impronta, volto o PIN per vedere l\'elenco</string>
     <string name="protect_show_hidden">Mostra app nascoste</string>
+    <string name="edit_stack">Pila di widget</string>
+    <string name="stack_make">Impila un altro widget su questo</string>
+    <string name="stack_add">Aggiungi un widget alla pila</string>
+    <string name="stack_widgets">Widget nella pila</string>
+    <string name="stack_page">Widget %1$d di %2$d</string>
     <string name="home_position">Posizione sullo schermo</string>
     <string name="home_position_auto">Automatica (in basso)</string>
     <string name="home_position_manual">Scegli</string>

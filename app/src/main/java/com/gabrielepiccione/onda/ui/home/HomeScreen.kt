@@ -121,6 +121,8 @@ sealed interface WidgetTarget {
     data class ForApp(val appKey: String) : WidgetTarget
     data class Replace(val oldId: Int) : WidgetTarget
     data object ReplaceClock : WidgetTarget
+    /** Nella pila [block], o in una pila nuova se [block] è un widget singolo. */
+    data class ToStack(val block: String) : WidgetTarget
 }
 
 /** Azioni che richiedono l'Activity (permessi, risultati di altre schermate). */
@@ -364,6 +366,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val blocks = remember(settings) { HomeBlocks.resolve(settings) }
     var editing by remember { mutableStateOf<String?>(null) }
+    // Il blocco in modifica può sparire (es. una pila ridotta a un solo widget)
+    LaunchedEffect(blocks, editing) { if (editing != null && editing !in blocks) editing = null }
 
     val dimColor = if (colors.dark) Color.Black else Color.White
     Box(
@@ -464,6 +468,20 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                     highlighted = editing == HomeBlocks.MEDIA,
                                     onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.MEDIA },
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
+                                )
+                            }
+                        }
+                    }
+                    block.startsWith(HomeBlocks.STACK_PREFIX) -> {
+                        val stack = settings.widgetStacks.firstOrNull { it.id == HomeBlocks.stackId(block) }
+                        if (stack != null) {
+                            item(key = block) {
+                                WidgetStackCard(
+                                    stack = stack,
+                                    widgets = vm.widgets,
+                                    highlighted = editing == block,
+                                    onLongPress = { if (!settings.lockLayout) editing = block },
+                                    modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(horizontal = 4.dp),
                                 )
                             }
                         }
@@ -937,12 +955,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             defaultWidgetHeight = { id ->
                 vm.widgets.infoFor(id)?.let { with(density) { it.minHeight.toDp().value.toInt() } }?.coerceIn(72, 320) ?: 160
             },
+            widgetLabel = { id -> vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() } },
             actions = object : HomeEditActions {
                 override fun edit(transform: (com.gabrielepiccione.onda.data.Settings) -> com.gabrielepiccione.onda.data.Settings) = vm.updateSettings(transform)
                 override fun move(block: String, delta: Int) = vm.settingsRepo.moveBlock(block, delta)
                 override fun setWidgetHeight(id: Int, dp: Int) = vm.settingsRepo.setWidgetHeight(id, dp)
                 override fun replaceWidget(id: Int) { editing = null; openWidgetPicker(null, WidgetTarget.Replace(id)) }
                 override fun replaceClock() { editing = null; openWidgetPicker(null, WidgetTarget.ReplaceClock) }
+                override fun addToStack(block: String) { editing = null; openWidgetPicker(null, WidgetTarget.ToStack(block)) }
+                override fun setStackHeight(stackId: String, dp: Int) = vm.settingsRepo.setStackHeight(stackId, dp)
                 override fun deleteWidget(id: Int) = vm.removeWidget(id)
                 override fun done() { editing = null }
             },
