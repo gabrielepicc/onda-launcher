@@ -221,6 +221,12 @@ data class Settings(
     /** Agenda del calendario in home (blocco) e numero di giorni mostrati. */
     val showAgenda: Boolean = false,
     val agendaDays: Int = 3,
+    /**
+     * Posizione verticale del primo blocco della home (orologio o widget), come frazione dell'altezza
+     * utile dello schermo (0 = in alto, 0.75 = molto in basso); tutto il resto lo segue.
+     * Negativo = automatico: contenuto appoggiato in basso, vicino al pollice.
+     */
+    val homeOffset: Float = -1f,
     /** Blocca il layout: niente modifiche con la pressione lunga in home. */
     val lockLayout: Boolean = false,
     /** Motore per la ricerca web: SYSTEM, DUCKDUCKGO, STARTPAGE, GOOGLE, ECOSIA, BRAVE. */

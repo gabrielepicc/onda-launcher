@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -88,6 +89,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -374,11 +376,18 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         val bars = WindowInsets.systemBars.asPaddingValues()
         val letterSide = 48.dp
         val hiddenSide = 28.dp
+        val usableHeight = LocalConfiguration.current.screenHeightDp.dp - bars.calculateTopPadding() - bars.calculateBottomPadding()
+        val anchorHeight by androidx.compose.animation.core.animateDpAsState(
+            usableHeight * settings.homeOffset.coerceIn(0f, 0.75f),
+            Motion.bouncy(),
+            label = "homeOffset",
+        )
 
         // ---------------- HOME ----------------
         LazyColumn(
             state = homeList,
-            verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.Bottom),
+            // Automatico: contenuto in basso; con posizione scelta parte dall'alto dopo uno spazio
+            verticalArrangement = Arrangement.spacedBy(2.dp, if (settings.homeOffset >= 0f) Alignment.Top else Alignment.Bottom),
             // Orologio, widget e player: stesso margine a destra e a sinistra.
             // Solo le righe delle app si tengono lontane dalle lettere (vedi homeEntries).
             contentPadding = PaddingValues(
@@ -409,6 +418,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     )
                 }
         ) {
+            // Spazio prima del primo blocco, se l'utente ha scelto dove far iniziare la home
+            if (settings.homeOffset >= 0f) {
+                item(key = "anchor") { Spacer(Modifier.height(anchorHeight)) }
+            }
             // Blocchi della home nell'ordine scelto dall'utente (orologio, musica, widget, app)
             for (block in blocks) {
                 when {

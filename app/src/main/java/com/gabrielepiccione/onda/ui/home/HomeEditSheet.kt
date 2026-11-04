@@ -170,6 +170,10 @@ fun HomeEditSheet(
                 }
             }
 
+            // Dove inizia la home: sposta il primo blocco e, di conseguenza, tutti i preferiti
+            SectionTitle(R.string.home_offset)
+            HomeOffsetControl(settings.homeOffset) { v -> actions.edit { it.copy(homeOffset = v) } }
+
             if (block == HomeBlocks.CLOCK) {
                 SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_clock)) { actions.replaceClock() }
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_clock)) {
@@ -201,6 +205,18 @@ fun HomeEditSheet(
                 Text(stringResource(R.string.edit_done))
             }
         }
+    }
+}
+
+/** Scelta tra posizione automatica (in basso) e posizione personalizzata con slider. */
+@Composable
+fun HomeOffsetControl(value: Float, onChange: (Float) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(selected = value < 0f, onClick = { onChange(-1f) }, label = { Text(stringResource(R.string.home_offset_auto)) })
+        FilterChip(selected = value >= 0f, onClick = { if (value < 0f) onChange(0.2f) }, label = { Text(stringResource(R.string.home_offset_custom)) })
+    }
+    if (value >= 0f) {
+        Slider(value = value, onValueChange = onChange, valueRange = 0f..0.75f)
     }
 }
 

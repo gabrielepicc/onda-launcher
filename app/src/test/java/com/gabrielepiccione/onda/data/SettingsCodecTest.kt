@@ -63,6 +63,8 @@ class SettingsCodecTest {
         assertEquals(listOf("a"), s.favorites)
         assertEquals(Settings().haptics, s.haptics)
         assertEquals(Settings().swipeDown, s.swipeDown)
+        // Posizione della home: automatica (in basso) per chi aggiorna
+        assertTrue(s.homeOffset < 0f)
     }
 
     @Test

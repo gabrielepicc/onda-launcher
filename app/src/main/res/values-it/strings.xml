@@ -317,4 +317,8 @@
     <string name="protect_hidden">Proteggi le app nascoste</string>
     <string name="protect_hidden_sub">Chiede impronta, volto o PIN per vedere l\'elenco</string>
     <string name="protect_show_hidden">Mostra app nascoste</string>
+    <string name="home_offset">Inizio della home</string>
+    <string name="home_offset_sub">Dove comincia il primo blocco (orologio o widget); i preferiti lo seguono</string>
+    <string name="home_offset_auto">Automatico (in basso)</string>
+    <string name="home_offset_custom">Personalizzato</string>
 </resources>
