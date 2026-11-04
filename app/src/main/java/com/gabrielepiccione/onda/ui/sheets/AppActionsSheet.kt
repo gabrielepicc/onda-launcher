@@ -1,7 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.gabrielepiccione.onda.ui
+package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.components.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import android.content.pm.ShortcutInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -129,48 +140,48 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
                 HorizontalDivider(Modifier.padding(vertical = 6.dp, horizontal = 24.dp), color = colors.panelBorder)
             }
 
-            ActionRow(Icons.Filled.Star, if (app.isFavorite) "Rimuovi dai preferiti" else "Aggiungi ai preferiti") {
+            ActionRow(Icons.Filled.Star, if (app.isFavorite) stringResource(R.string.favorite_remove) else stringResource(R.string.favorite_add)) {
                 actions.onToggleFavorite(); onDismiss()
             }
             if (app.isFavorite && actions.favoriteIndex > 0) {
-                ActionRow(Icons.Filled.KeyboardArrowUp, "Sposta su") { actions.onMove(-1) }
+                ActionRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { actions.onMove(-1) }
             }
             if (app.isFavorite && actions.favoriteIndex in 0 until actions.favoriteCount - 1) {
-                ActionRow(Icons.Filled.KeyboardArrowDown, "Sposta giù") { actions.onMove(1) }
+                ActionRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { actions.onMove(1) }
             }
             if (app.isFavorite) {
                 ActionRow(
                     Icons.Filled.KeyboardArrowRight,
-                    actions.swipeTarget?.let { "Scorri a destra: apri ${it.label}" } ?: "Scorri a destra: pannello (cambia)",
+                    actions.swipeTarget?.let { stringResource(R.string.swipe_opens_app, it.label) } ?: stringResource(R.string.swipe_panel_default),
                 ) { pickingSwipe = true }
             }
-            ActionRow(Icons.Filled.Add, actions.folderName?.let { "In cartella «$it» · sposta" } ?: "Sposta in cartella…") {
+            ActionRow(Icons.Filled.Add, actions.folderName?.let { stringResource(R.string.in_folder_move, it) } ?: stringResource(R.string.move_to_folder_ellipsis)) {
                 actions.onMoveToFolder(); onDismiss()
             }
-            ActionRow(Icons.Filled.Edit, "Rinomina") { renaming = true }
-            ActionRow(Icons.Filled.Lock, if (app.isHidden) "Mostra nell'elenco" else "Nascondi") {
+            ActionRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
+            ActionRow(Icons.Filled.Lock, if (app.isHidden) stringResource(R.string.show_in_list) else stringResource(R.string.hide)) {
                 actions.onToggleHidden(); onDismiss()
             }
-            ActionRow(Icons.Filled.Notifications, if (actions.isMuted) "Mostra notifiche in home" else "Non mostrare notifiche in home") {
+            ActionRow(Icons.Filled.Notifications, if (actions.isMuted) stringResource(R.string.notif_show_home) else stringResource(R.string.notif_hide_home)) {
                 actions.onToggleMuted(); onDismiss()
             }
-            ActionRow(Icons.Filled.Add, "Aggiungi un widget di questa app") {
+            ActionRow(Icons.Filled.Add, stringResource(R.string.app_add_widget_this)) {
                 actions.onAddWidget(); onDismiss()
             }
-            ActionRow(Icons.Filled.Info, "Info app") { actions.onInfo(); onDismiss() }
-            ActionRow(Icons.Filled.Delete, "Disinstalla") { actions.onUninstall(); onDismiss() }
+            ActionRow(Icons.Filled.Info, stringResource(R.string.app_info)) { actions.onInfo(); onDismiss() }
+            ActionRow(Icons.Filled.Delete, stringResource(R.string.uninstall)) { actions.onUninstall(); onDismiss() }
         }
     }
 
     if (pickingSwipe) {
         AlertDialog(
             onDismissRequest = { pickingSwipe = false },
-            title = { Text("Scorrendo «${app.label}» verso destra apri…") },
+            title = { Text(stringResource(R.string.swipe_dialog_title, app.label)) },
             text = {
                 androidx.compose.foundation.lazy.LazyColumn(Modifier.heightIn(max = 420.dp)) {
                     item {
                         Text(
-                            "Pannello dell'app (predefinito)",
+                            stringResource(R.string.app_panel_default),
                             color = colors.onWallpaperMuted,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -194,7 +205,7 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { pickingSwipe = false }) { Text("Chiudi") } },
+            confirmButton = { TextButton(onClick = { pickingSwipe = false }) { Text(stringResource(R.string.close)) } },
         )
     }
 
@@ -202,15 +213,15 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
         var text by remember { mutableStateOf(app.label) }
         AlertDialog(
             onDismissRequest = { renaming = false },
-            title = { Text("Rinomina") },
+            title = { Text(stringResource(R.string.rename)) },
             text = {
                 OutlinedTextField(value = text, onValueChange = { text = it }, singleLine = true, label = { Text(app.originalLabel) })
             },
             confirmButton = {
-                TextButton(onClick = { actions.onRename(text); renaming = false }) { Text("Salva") }
+                TextButton(onClick = { actions.onRename(text); renaming = false }) { Text(stringResource(R.string.save)) }
             },
             dismissButton = {
-                TextButton(onClick = { actions.onRename(null); renaming = false }) { Text("Ripristina") }
+                TextButton(onClick = { actions.onRename(null); renaming = false }) { Text(stringResource(R.string.restore)) }
             },
         )
     }

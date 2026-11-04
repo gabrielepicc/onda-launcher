@@ -1,4 +1,13 @@
-package com.gabrielepiccione.onda.ui
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
+package com.gabrielepiccione.onda.ui.theme
+
+import com.gabrielepiccione.onda.ui.components.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
 
 import android.os.Build
 import androidx.compose.animation.core.CubicBezierEasing
@@ -112,6 +121,7 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalOndaColors provides colorsFrom(scheme, dark),
         LocalHapticsEnabled provides settings.haptics,
+        LocalOndaTokens provides OndaTokens(),
         LocalDensity provides Density(base.density, base.fontScale * settings.textScale),
     ) {
         MaterialTheme(colorScheme = scheme, typography = typography, content = content)

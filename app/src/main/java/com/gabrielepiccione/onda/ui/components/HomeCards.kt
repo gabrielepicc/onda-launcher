@@ -1,5 +1,16 @@
-package com.gabrielepiccione.onda.ui
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
+package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
@@ -108,7 +119,7 @@ fun ClockHeader(
                 Icon(Icons.Filled.DateRange, null, tint = colors.onAccentContainer, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "${eventWhen(event, locale)} · ${event.title}",
+                    "${eventWhen(event, locale, stringResource(R.string.today), stringResource(R.string.tomorrow_at, "%s"))} · ${event.title}",
                     color = colors.onAccentContainer,
                     style = MaterialTheme.typography.labelLarge,
                     maxLines = 1,
@@ -119,11 +130,11 @@ fun ClockHeader(
     }
 }
 
-private fun eventWhen(e: CalendarEvent, locale: Locale): String {
-    if (e.allDay) return "Oggi"
+private fun eventWhen(e: CalendarEvent, locale: Locale, today: String, tomorrowFormat: String): String {
+    if (e.allDay) return today
     val start = Instant.ofEpochMilli(e.begin).atZone(ZoneId.systemDefault())
     val hour = start.format(DateTimeFormatter.ofPattern("HH:mm", locale))
-    return if (start.toLocalDate() == LocalDate.now()) hour else "Domani $hour"
+    return if (start.toLocalDate() == LocalDate.now()) hour else tomorrowFormat.format(hour)
 }
 
 /** Mini-player per la sessione multimediale attiva. */
@@ -167,7 +178,7 @@ fun MediaCard(
                 Text(media.artist, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        MediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, "Precedente", tint = colors.onWallpaper) }
+        MediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper) }
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -177,10 +188,10 @@ fun MediaCard(
                 .clickable(onClick = onPlayPause)
         ) {
             AnimatedContent(targetState = media.playing, label = "playpause") { playing ->
-                if (playing) PauseGlyph(colors.onAccent) else Icon(Icons.Filled.PlayArrow, "Riproduci", tint = colors.onAccent)
+                if (playing) PauseGlyph(colors.onAccent) else Icon(Icons.Filled.PlayArrow, stringResource(R.string.media_play), tint = colors.onAccent)
             }
         }
-        MediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, "Successivo", tint = colors.onWallpaper) }
+        MediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper) }
     }
 }
 

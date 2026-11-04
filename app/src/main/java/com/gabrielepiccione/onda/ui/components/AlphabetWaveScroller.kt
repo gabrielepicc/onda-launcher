@@ -1,4 +1,13 @@
-package com.gabrielepiccione.onda.ui
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
+package com.gabrielepiccione.onda.ui.components
+
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring

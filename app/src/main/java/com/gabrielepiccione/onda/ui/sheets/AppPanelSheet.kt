@@ -1,7 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.gabrielepiccione.onda.ui
+package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.components.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import android.content.pm.ShortcutInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -95,14 +106,14 @@ fun AppPanelSheet(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(44.dp).clip(RoundedCornerShape(50)).clickable { onDismiss(); onMoreOptions() }
                 ) {
-                    Icon(Icons.Filled.MoreVert, "Altre opzioni", tint = colors.onWallpaperMuted)
+                    Icon(Icons.Filled.MoreVert, stringResource(R.string.more_options), tint = colors.onWallpaperMuted)
                 }
             }
 
             // Widget dell'app
             if (widgetId != null) {
                 HostedWidget(widgetId, widgets)
-                TextButton(onClick = onRemoveWidget) { Text("Rimuovi widget") }
+                TextButton(onClick = onRemoveWidget) { Text(stringResource(R.string.remove_widget)) }
             }
 
             // Scorciatoie
@@ -126,7 +137,7 @@ fun AppPanelSheet(
 
             // Notifiche
             if (notifications.isNotEmpty()) {
-                Text("Notifiche", color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
+                Text(stringResource(R.string.notifications), color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
                 notifications.forEach { n ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -141,7 +152,7 @@ fun AppPanelSheet(
                             if (n.title.isNotBlank()) Text(n.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             if (n.text.isNotBlank()) Text(n.text, style = MaterialTheme.typography.bodySmall, color = colors.onWallpaperMuted, maxLines = 3, overflow = TextOverflow.Ellipsis)
                         }
-                        if (n.clearable) TextButton(onClick = { onDismissNotification(n) }) { Text("Ignora") }
+                        if (n.clearable) TextButton(onClick = { onDismissNotification(n) }) { Text(stringResource(R.string.dismiss)) }
                     }
                 }
             }
@@ -150,12 +161,12 @@ fun AppPanelSheet(
                 FilledTonalButton(onClick = { onAddWidget(); onDismiss() }, modifier = Modifier.padding(top = 4.dp)) {
                     Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Aggiungi un widget di ${app.label}")
+                    Text(stringResource(R.string.app_panel_add_widget, app.label))
                 }
             }
             if (shortcuts.isEmpty() && notifications.isEmpty() && widgetId == null) {
                 Text(
-                    "Nessuna scorciatoia disponibile. Le scorciatoie compaiono quando Onda è il launcher predefinito.",
+                    stringResource(R.string.no_shortcuts),
                     color = colors.onWallpaperMuted,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(8.dp),

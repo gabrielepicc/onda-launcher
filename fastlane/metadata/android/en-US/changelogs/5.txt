@@ -1,0 +1,1 @@
+Persistence moved to DataStore with automatic migration, English and Italian translations, icon module, tests and CI.

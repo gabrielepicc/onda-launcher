@@ -1,7 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
-package com.gabrielepiccione.onda.ui
+package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
@@ -341,7 +352,7 @@ private fun NotificationCard(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(36.dp).clip(CircleShape).clickable(onClick = onDismiss)
                 ) {
-                    Icon(Icons.Filled.Close, contentDescription = "Ignora", tint = colors.onWallpaperMuted, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.cd_dismiss_notification), tint = colors.onWallpaperMuted, modifier = Modifier.size(16.dp))
                 }
             }
         }
@@ -396,7 +407,7 @@ fun AppListRow(
         )
         if (app.isWorkProfile) {
             Text(
-                "Lavoro",
+                stringResource(R.string.work),
                 color = colors.onAccentContainer,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier

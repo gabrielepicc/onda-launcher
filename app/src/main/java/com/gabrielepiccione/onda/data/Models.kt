@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.data
 
 import android.app.PendingIntent

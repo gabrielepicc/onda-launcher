@@ -1,7 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
-package com.gabrielepiccione.onda.ui
+package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.components.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -139,7 +150,7 @@ fun FolderRow(
             )
             if (unread > 0 && !open) {
                 Text(
-                    "$unread",
+                    unread.toString(),
                     color = colors.onAccentContainer,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
@@ -151,7 +162,7 @@ fun FolderRow(
             }
             Icon(
                 Icons.Filled.KeyboardArrowDown,
-                contentDescription = if (open) "Chiudi" else "Apri",
+                contentDescription = stringResource(if (open) R.string.cd_folder_close else R.string.cd_folder_open),
                 tint = colors.onWallpaperMuted,
                 modifier = Modifier.graphicsLayer { rotationZ = arrow },
             )
@@ -176,7 +187,7 @@ fun FolderRow(
                 }
                 if (apps.isEmpty() && folder.widgets.isEmpty()) {
                     Text(
-                        "Cartella vuota. Tieni premuta un'app e scegli «Sposta in cartella», oppure tieni premuta la cartella per aggiungere un widget.",
+                        stringResource(R.string.folder_empty),
                         color = colors.onWallpaperMuted,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(12.dp),
@@ -217,19 +228,19 @@ fun FolderSheet(
                 .padding(bottom = 12.dp)
         ) {
             Text(folder.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
-            SheetRow(Icons.Filled.Edit, "Rinomina") { renaming = true }
-            if (canMoveUp) SheetRow(Icons.Filled.KeyboardArrowUp, "Sposta su") { onMove(-1) }
-            if (canMoveDown) SheetRow(Icons.Filled.KeyboardArrowDown, "Sposta giù") { onMove(1) }
-            SheetRow(Icons.Filled.Add, "Aggiungi widget alla cartella") { onAddWidget(); onDismiss() }
+            SheetRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
+            if (canMoveUp) SheetRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { onMove(-1) }
+            if (canMoveDown) SheetRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { onMove(1) }
+            SheetRow(Icons.Filled.Add, stringResource(R.string.folder_add_widget)) { onAddWidget(); onDismiss() }
             folder.widgets.forEach { id ->
-                val label = widgets.infoFor(id)?.let { runCatching { it.loadLabel(pm) }.getOrNull() } ?: "Widget"
-                SheetRow(Icons.Filled.Delete, "Rimuovi widget «$label»") { onRemoveWidget(id) }
+                val label = widgets.infoFor(id)?.let { runCatching { it.loadLabel(pm) }.getOrNull() } ?: stringResource(R.string.section_widgets)
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { onRemoveWidget(id) }
             }
-            SheetRow(Icons.Filled.Delete, "Elimina cartella (le app restano in home)") { onDelete(); onDismiss() }
+            SheetRow(Icons.Filled.Delete, stringResource(R.string.folder_delete)) { onDelete(); onDismiss() }
         }
     }
     if (renaming) {
-        NameDialog("Rinomina cartella", folder.name, onDismiss = { renaming = false }) { onRename(it); renaming = false }
+        NameDialog(stringResource(R.string.folder_rename), folder.name, onDismiss = { renaming = false }) { onRename(it); renaming = false }
     }
 }
 
@@ -245,14 +256,14 @@ fun MoveToFolderDialog(
     var creating by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Sposta in cartella") },
+        title = { Text(stringResource(R.string.move_to_folder)) },
         text = {
             LazyColumn(Modifier.heightIn(max = 400.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 item {
-                    DialogChoice("+ Nuova cartella…", false) { creating = true }
+                    DialogChoice(stringResource(R.string.folder_new_ellipsis), false) { creating = true }
                 }
                 if (currentFolderId != null) {
-                    item { DialogChoice("Fuori dalle cartelle (in home)", false) { onPick(null) } }
+                    item { DialogChoice(stringResource(R.string.folder_outside), false) { onPick(null) } }
                 }
                 items(folders.size) { i ->
                     val f = folders[i]
@@ -260,10 +271,10 @@ fun MoveToFolderDialog(
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Annulla") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
     if (creating) {
-        NameDialog("Nuova cartella", "", onDismiss = { creating = false }) { onCreate(it); creating = false }
+        NameDialog(stringResource(R.string.new_folder), "", onDismiss = { creating = false }) { onCreate(it); creating = false }
     }
 }
 
@@ -273,9 +284,9 @@ fun NameDialog(title: String, initial: String, onDismiss: () -> Unit, onConfirm:
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
-        text = { OutlinedTextField(value = text, onValueChange = { text = it }, singleLine = true, label = { Text("Nome") }) },
-        confirmButton = { TextButton(onClick = { onConfirm(text.trim()) }, enabled = text.isNotBlank()) { Text("OK") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Annulla") } },
+        text = { OutlinedTextField(value = text, onValueChange = { text = it }, singleLine = true, label = { Text(stringResource(R.string.name)) }) },
+        confirmButton = { TextButton(onClick = { onConfirm(text.trim()) }, enabled = text.isNotBlank()) { Text(stringResource(R.string.ok)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 

@@ -1,0 +1,12 @@
+<p>Onda is a minimal home screen built around a single vertical list of your favorite apps and an alphabet scroller on the screen edge.</p>
+<ul>
+<li>Alphabet wave scroller on both screen edges (one side invisible) to reach any app with one thumb</li>
+<li>Notifications shown right under each favorite, with swipe to dismiss</li>
+<li>Quick app panel with a right swipe: shortcuts, notifications and a widget of that app</li>
+<li>Folders that hold apps and widgets</li>
+<li>Material You colors, themed icons and third-party icon packs</li>
+<li>Search for apps, contacts and the web, with a built-in calculator</li>
+<li>Music card, next calendar event, double-tap to lock</li>
+<li>Configurable gestures, hidden apps, backup and restore</li>
+</ul>
+<p>No ads, no tracking, no Google Play Services. Nothing leaves your device.</p>

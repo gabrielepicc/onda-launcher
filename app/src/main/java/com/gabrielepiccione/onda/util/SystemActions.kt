@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.util
 
 import android.annotation.SuppressLint
@@ -54,7 +56,7 @@ object SystemActions {
     }
 
     fun openWallpaperPicker(context: Context) =
-        start(context, Intent.createChooser(Intent(Intent.ACTION_SET_WALLPAPER), "Sfondo"))
+        start(context, Intent.createChooser(Intent(Intent.ACTION_SET_WALLPAPER), context.getString(com.gabrielepiccione.onda.R.string.wallpaper_chooser)))
 
     fun isDefaultLauncher(context: Context): Boolean {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)

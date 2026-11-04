@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
 import android.Manifest
@@ -21,12 +23,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gabrielepiccione.onda.data.NotificationStore
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.service.OndaAccessibilityService
-import com.gabrielepiccione.onda.ui.HomeCallbacks
-import com.gabrielepiccione.onda.ui.HomeScreen
-import com.gabrielepiccione.onda.ui.HomeStatus
-import com.gabrielepiccione.onda.ui.LocalOndaColors
-import com.gabrielepiccione.onda.ui.OndaTheme
-import com.gabrielepiccione.onda.ui.WidgetTarget
+import com.gabrielepiccione.onda.ui.home.HomeCallbacks
+import com.gabrielepiccione.onda.ui.home.HomeScreen
+import com.gabrielepiccione.onda.ui.home.HomeStatus
+import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
+import com.gabrielepiccione.onda.ui.theme.OndaTheme
+import com.gabrielepiccione.onda.ui.home.WidgetTarget
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.gabrielepiccione.onda.util.SystemActions
@@ -59,14 +61,14 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
         val ok = runCatching {
             contentResolver.openOutputStream(uri)?.use { it.write(vm.settingsRepo.exportJson().toByteArray()) }
         }.isSuccess
-        toast(if (ok) "Backup salvato" else "Impossibile salvare il backup")
+        toast(getString(if (ok) R.string.toast_backup_saved else R.string.toast_backup_failed))
     }
 
     private val importLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         uri ?: return@registerForActivityResult
         val text = runCatching { contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } }.getOrNull()
         val ok = text != null && vm.settingsRepo.importJson(text)
-        toast(if (ok) "Impostazioni ripristinate" else "File di backup non valido")
+        toast(getString(if (ok) R.string.toast_restored else R.string.toast_restore_failed))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -149,7 +151,7 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
     }
 
     override fun openAccessibilitySettings() {
-        toast("Attiva «Onda – blocco schermo»")
+        toast(getString(R.string.toast_enable_a11y))
         runCatching { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
     }
 

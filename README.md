@@ -1,5 +1,7 @@
 # Onda Launcher
 
+[![CI](https://github.com/gabrielepicc/onda-launcher/actions/workflows/build-apk.yml/badge.svg)](https://github.com/gabrielepicc/onda-launcher/actions) · Licenza: **GPL-3.0-or-later** · Niente Google Play Services, niente tracciamento
+
 Launcher Android minimale ispirato al concept dei launcher "a lista" (stile Niagara), scritto da zero in Kotlin + Jetpack Compose.
 
 ## Funzioni (v0.1)
@@ -61,3 +63,11 @@ app/src/main/java/com/gabrielepiccione/onda/
 ## Note
 - Codice, nome, icona e grafica sono originali: dell'app di riferimento è stato ripreso solo il concept d'uso.
 - La release è firmata con la chiave di debug, quindi va bene per l'uso personale. Per distribuirla, configura una tua `signingConfig`.
+
+## Licenza
+
+Copyright (C) 2026 Gabriele Piccione.
+
+Onda è software libero: puoi ridistribuirlo e/o modificarlo secondo i termini della **GNU General Public License** pubblicata dalla Free Software Foundation, versione 3 o (a tua scelta) qualsiasi versione successiva. Vedi [`LICENSE`](LICENSE).
+
+Documentazione per sviluppatori: [`docs/architecture.md`](docs/architecture.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`CHANGELOG.md`](CHANGELOG.md)

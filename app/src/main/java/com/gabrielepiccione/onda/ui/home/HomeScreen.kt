@@ -1,7 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.gabrielepiccione.onda.ui
+package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.components.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -392,7 +403,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             if (state.loaded && state.home.isEmpty()) {
                 item(key = "empty") {
                     Text(
-                        "Trascina sulle lettere a lato per trovare un'app, poi tienila premuta e scegli «Aggiungi ai preferiti».",
+                        stringResource(R.string.home_empty_hint),
                         color = colors.onWallpaperMuted,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(14.dp),
@@ -403,10 +414,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 item(key = "hints") {
                     Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (!status.notificationAccess) {
-                            HintChip(Icons.Filled.Notifications, "Notifiche qui") { callbacks.openNotificationAccess() }
+                            HintChip(Icons.Filled.Notifications, stringResource(R.string.hint_notifications)) { callbacks.openNotificationAccess() }
                         }
                         if (!status.isDefaultLauncher) {
-                            HintChip(Icons.Filled.Settings, "Imposta come home") { callbacks.requestDefaultLauncher() }
+                            HintChip(Icons.Filled.Settings, stringResource(R.string.hint_default)) { callbacks.requestDefaultLauncher() }
                         }
                     }
                 }
@@ -688,15 +699,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             contentColor = colors.onWallpaper,
         ) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
-                SheetRow(Icons.Filled.Settings, "Impostazioni") { homeMenu = false; overlay = Overlay.SETTINGS }
-                SheetRow(Icons.Filled.Add, "Nuova cartella") { newFolder = true }
-                SheetRow(Icons.Filled.Add, "Aggiungi widget") { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
-                SheetRow(Icons.Filled.Search, "Cerca") { homeMenu = false; overlay = Overlay.SEARCH }
-                SheetRow(Icons.Filled.Face, "Cambia sfondo") { homeMenu = false; SystemActions.openWallpaperPicker(context) }
+                SheetRow(Icons.Filled.Settings, stringResource(R.string.settings)) { homeMenu = false; overlay = Overlay.SETTINGS }
+                SheetRow(Icons.Filled.Add, stringResource(R.string.new_folder)) { newFolder = true }
+                SheetRow(Icons.Filled.Add, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
+                SheetRow(Icons.Filled.Search, stringResource(R.string.search)) { homeMenu = false; overlay = Overlay.SEARCH }
+                SheetRow(Icons.Filled.Face, stringResource(R.string.change_wallpaper)) { homeMenu = false; SystemActions.openWallpaperPicker(context) }
             }
         }
         if (newFolder) {
-            NameDialog("Nuova cartella", "", onDismiss = { newFolder = false }) { name ->
+            NameDialog(stringResource(R.string.new_folder), "", onDismiss = { newFolder = false }) { name ->
                 vm.createFolder(name, null)
                 newFolder = false
                 homeMenu = false

@@ -1,7 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.gabrielepiccione.onda.ui
+package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import android.os.Build
 import android.os.Bundle
 import android.util.SizeF
@@ -106,14 +117,14 @@ fun WidgetPickerSheet(
         contentColor = colors.onWallpaper,
     ) {
         Text(
-            "Aggiungi widget",
+            stringResource(R.string.add_widget),
             fontSize = 22.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
         )
         if (providers.isEmpty()) {
             Text(
-                if (packageFilter != null) "Questa app non ha widget." else "Caricamento…",
+                if (packageFilter != null) stringResource(R.string.app_no_widgets) else stringResource(R.string.loading),
                 color = colors.onWallpaperMuted,
                 modifier = Modifier.padding(24.dp),
             )

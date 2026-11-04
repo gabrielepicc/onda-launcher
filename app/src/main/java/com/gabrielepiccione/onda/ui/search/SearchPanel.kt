@@ -1,5 +1,16 @@
-package com.gabrielepiccione.onda.ui
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
+package com.gabrielepiccione.onda.ui.search
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.components.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.settings.*
+import com.gabrielepiccione.onda.ui.sheets.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -93,7 +104,7 @@ fun SearchPanel(
             Spacer(Modifier.width(12.dp))
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (results.query.isEmpty()) {
-                    Text("Cerca app, contatti, web", color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyLarge, fontSize = 18.sp)
+                    Text(stringResource(R.string.search_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyLarge, fontSize = 18.sp)
                 }
                 BasicTextField(
                     value = results.query,
@@ -118,13 +129,13 @@ fun SearchPanel(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(44.dp).clip(CircleShape).clickable(onClick = onClose)
             ) {
-                Icon(Icons.Filled.Close, contentDescription = "Chiudi", tint = colors.onWallpaperMuted)
+                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close), tint = colors.onWallpaperMuted)
             }
         }
 
         LazyColumn(Modifier.fillMaxSize()) {
             if (results.query.isBlank() && suggestions.isNotEmpty()) {
-                item(key = "sugg_label") { SectionLabel("Usate spesso") }
+                item(key = "sugg_label") { SectionLabel(stringResource(R.string.frequent_apps)) }
                 items(suggestions, key = { "s_" + it.key }) { app ->
                     AppListRow(
                         app = app,
@@ -150,7 +161,7 @@ fun SearchPanel(
                             .padding(horizontal = 18.dp, vertical = 14.dp)
                     ) {
                         Text("= $value", color = colors.onAccentContainer, fontSize = 30.sp, fontWeight = FontWeight.Medium)
-                        Text("Tocca per copiare", color = colors.onAccentContainer.copy(alpha = 0.7f), fontSize = 12.sp)
+                        Text(stringResource(R.string.tap_to_copy), color = colors.onAccentContainer.copy(alpha = 0.7f), fontSize = 12.sp)
                     }
                 }
             }
@@ -167,18 +178,18 @@ fun SearchPanel(
             }
             if (results.query.isNotBlank()) {
                 if (results.contacts.isNotEmpty()) {
-                    item { SectionLabel("Contatti") }
+                    item { SectionLabel(stringResource(R.string.contacts)) }
                     items(results.contacts, key = { "c_${it.id}" }) { c ->
                         SimpleRow(icon = { Icon(Icons.Filled.Person, null, tint = colors.accent) }, label = c.name) { onContact(c) }
                     }
                 } else if (!contactsPermission) {
                     item {
-                        SimpleRow(icon = { Icon(Icons.Filled.Person, null, tint = colors.onWallpaperMuted) }, label = "Cerca anche nei contatti…", muted = true, onClick = onRequestContacts)
+                        SimpleRow(icon = { Icon(Icons.Filled.Person, null, tint = colors.onWallpaperMuted) }, label = stringResource(R.string.search_contacts_too), muted = true, onClick = onRequestContacts)
                     }
                 }
-                item { SectionLabel("Web") }
+                item { SectionLabel(stringResource(R.string.web)) }
                 item {
-                    SimpleRow(icon = { Icon(Icons.Filled.Search, null, tint = colors.accent) }, label = "Cerca «${results.query}» sul web") {
+                    SimpleRow(icon = { Icon(Icons.Filled.Search, null, tint = colors.accent) }, label = stringResource(R.string.web_search_for, results.query)) {
                         onWebSearch(results.query)
                     }
                 }

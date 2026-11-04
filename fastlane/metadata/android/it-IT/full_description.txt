@@ -1,0 +1,12 @@
+<p>Onda è una home minimale costruita attorno a un'unica lista verticale delle tue app preferite e a un alfabeto sul bordo dello schermo.</p>
+<ul>
+<li>Alfabeto "a onda" su entrambi i bordi (uno invisibile) per raggiungere ogni app con un pollice</li>
+<li>Notifiche mostrate sotto ogni preferito, con swipe per eliminarle</li>
+<li>Pannello rapido con uno swipe a destra: scorciatoie, notifiche e un widget dell'app</li>
+<li>Cartelle che contengono app e widget</li>
+<li>Colori Material You, icone a tema e icon pack di terze parti</li>
+<li>Ricerca di app, contatti e web, con calcolatrice integrata</li>
+<li>Card della musica, prossimo evento del calendario, doppio tocco per bloccare</li>
+<li>Gesti configurabili, app nascoste, backup e ripristino</li>
+</ul>
+<p>Niente pubblicità, niente tracciamento, niente Google Play Services. Nessun dato lascia il tuo dispositivo.</p>

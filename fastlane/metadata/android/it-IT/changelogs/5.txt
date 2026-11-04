@@ -1,0 +1,1 @@
+Salvataggio impostazioni su DataStore con migrazione automatica, traduzioni italiano e inglese, modulo icone, test e CI.

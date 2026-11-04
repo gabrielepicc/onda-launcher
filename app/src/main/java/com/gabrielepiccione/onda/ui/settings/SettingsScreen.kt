@@ -1,5 +1,16 @@
-package com.gabrielepiccione.onda.ui
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Gabriele Piccione
+package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.ui.theme.*
+import com.gabrielepiccione.onda.ui.components.*
+import com.gabrielepiccione.onda.ui.home.*
+import com.gabrielepiccione.onda.ui.drawer.*
+import com.gabrielepiccione.onda.ui.search.*
+import com.gabrielepiccione.onda.ui.sheets.*
+
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -107,22 +118,22 @@ fun SettingsScreen(
                 modifier = Modifier.size(48.dp).clip(CircleShape).clickable { actions.close() }
             ) {
                 @Suppress("DEPRECATION")
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Indietro", tint = colors.onWallpaper)
+                Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.onWallpaper)
             }
             Spacer(Modifier.width(8.dp))
-            Text("Impostazioni", style = MaterialTheme.typography.headlineMedium, color = colors.onWallpaper)
+            Text(stringResource(R.string.settings), style = MaterialTheme.typography.headlineMedium, color = colors.onWallpaper)
         }
 
-        Group("Configurazione") {
-            StatusRow("Launcher predefinito", status.isDefaultLauncher, "Onda è la tua home", "Imposta Onda come home") { actions.requestDefault() }
-            StatusRow("Notifiche e musica in home", status.notificationAccess, "Accesso alle notifiche attivo", "Concedi l'accesso alle notifiche") { actions.notificationAccess() }
-            StatusRow("Calendario", status.calendarPermission, "Mostra il prossimo evento", "Consenti la lettura del calendario") { actions.calendarPermission() }
+        Group(stringResource(R.string.section_setup)) {
+            StatusRow(stringResource(R.string.default_launcher), status.isDefaultLauncher, stringResource(R.string.default_launcher_ok), stringResource(R.string.default_launcher_ko)) { actions.requestDefault() }
+            StatusRow(stringResource(R.string.notif_access), status.notificationAccess, stringResource(R.string.notif_access_ok), stringResource(R.string.notif_access_ko)) { actions.notificationAccess() }
+            StatusRow(stringResource(R.string.calendar), status.calendarPermission, stringResource(R.string.calendar_ok), stringResource(R.string.calendar_ko)) { actions.calendarPermission() }
         }
 
-        Group("Colori e stile") {
-            Label("Tema")
+        Group(stringResource(R.string.section_style)) {
+            Label(stringResource(R.string.theme))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(ThemeMode.SYSTEM to "Sistema", ThemeMode.LIGHT to "Chiaro", ThemeMode.DARK to "Scuro").forEach { (mode, label) ->
+                listOf(ThemeMode.SYSTEM to stringResource(R.string.theme_system), ThemeMode.LIGHT to stringResource(R.string.theme_light), ThemeMode.DARK to stringResource(R.string.theme_dark)).forEach { (mode, label) ->
                     FilterChip(
                         selected = settings.themeMode == mode,
                         onClick = { onEdit { it.copy(themeMode = mode) } },
@@ -131,10 +142,10 @@ fun SettingsScreen(
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                SwitchRow("Colori dinamici (Material You)", "Prende i colori dallo sfondo", settings.dynamicColor) { v -> onEdit { it.copy(dynamicColor = v) } }
+                SwitchRow(stringResource(R.string.dynamic_color), stringResource(R.string.dynamic_color_sub), settings.dynamicColor) { v -> onEdit { it.copy(dynamicColor = v) } }
             }
             if (!settings.dynamicColor || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                Label("Colore d'accento")
+                Label(stringResource(R.string.accent_color))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(bottom = 8.dp)) {
                     AccentChoices.forEach { argb ->
                         val selected = settings.accent == argb
@@ -152,105 +163,106 @@ fun SettingsScreen(
                     }
                 }
             }
-            Label("Carattere")
+            Label(stringResource(R.string.font))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
                 FontChoice.entries.forEach { f ->
-                    FilterChip(selected = settings.font == f, onClick = { onEdit { it.copy(font = f) } }, label = { Text(f.label) })
+                    FilterChip(selected = settings.font == f, onClick = { onEdit { it.copy(font = f) } }, label = { Text(stringResource(f.labelRes)) })
                 }
             }
             Spacer(Modifier.height(8.dp))
-            Label("Dimensione testo")
+            Label(stringResource(R.string.text_size))
             Slider(value = settings.textScale, onValueChange = { v -> onEdit { it.copy(textScale = v) } }, valueRange = 0.8f..1.3f, steps = 4)
-            Label("Oscuramento sfondo")
+            Label(stringResource(R.string.wallpaper_dim))
             Slider(value = settings.wallpaperDim, onValueChange = { v -> onEdit { it.copy(wallpaperDim = v) } }, valueRange = 0f..0.8f)
-            TextButton(onClick = { actions.wallpaper() }) { Text("Cambia sfondo…") }
+            TextButton(onClick = { actions.wallpaper() }) { Text(stringResource(R.string.change_wallpaper_ellipsis)) }
         }
 
-        Group("Icone") {
-            SwitchRow("Mostra icone", null, settings.showIcons) { v -> onEdit { it.copy(showIcons = v) } }
+        Group(stringResource(R.string.section_icons)) {
+            SwitchRow(stringResource(R.string.show_icons), null, settings.showIcons) { v -> onEdit { it.copy(showIcons = v) } }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                SwitchRow("Icone a tema", "Icone monocromatiche nei colori del tema (se l'app le supporta)", settings.themedIcons) { v -> onEdit { it.copy(themedIcons = v) } }
+                SwitchRow(stringResource(R.string.themed_icons), stringResource(R.string.themed_icons_sub), settings.themedIcons) { v -> onEdit { it.copy(themedIcons = v) } }
             }
-            val packLabel = remember(settings.iconPack) {
-                if (settings.iconPack.isBlank()) "Predefinito di sistema"
+            val systemDefault = stringResource(R.string.system_default)
+            val packLabel = remember(settings.iconPack, systemDefault) {
+                if (settings.iconPack.isBlank()) systemDefault
                 else runCatching { pm.getApplicationLabel(pm.getApplicationInfo(settings.iconPack, 0)).toString() }.getOrDefault(settings.iconPack)
             }
-            ClickRow("Icon pack", packLabel) { iconPackDialog = true }
-            Label("Dimensione icone")
+            ClickRow(stringResource(R.string.icon_pack), packLabel) { iconPackDialog = true }
+            Label(stringResource(R.string.icon_size))
             Slider(value = settings.iconSize, onValueChange = { v -> onEdit { it.copy(iconSize = v) } }, valueRange = 0.75f..1.4f)
         }
 
-        Group("Home") {
-            SwitchRow("Orologio e data", null, settings.showClock) { v -> onEdit { it.copy(showClock = v) } }
-            SwitchRow("Prossimo evento", "Dal calendario, nelle prossime 24 ore", settings.showCalendar) { v -> onEdit { it.copy(showCalendar = v) } }
-            SwitchRow("Player musicale", "Controlli della musica in riproduzione", settings.showMedia) { v -> onEdit { it.copy(showMedia = v) } }
-            SwitchRow("Alfabeto a sinistra", "Modalità mancini (il lato opposto resta attivo ma invisibile)", settings.leftHanded) { v -> onEdit { it.copy(leftHanded = v) } }
-            SwitchRow("Nascondi alfabeto in home", "Resta attivo e visibile accanto all'elenco delle app", settings.hideAlphabet) { v -> onEdit { it.copy(hideAlphabet = v) } }
-            SwitchRow("Nascondi nomi dei preferiti", "Solo icone, per mettere in risalto lo sfondo", settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
-            SwitchRow("Nascondi barra di stato", null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
+        Group(stringResource(R.string.section_home)) {
+            SwitchRow(stringResource(R.string.clock_date), null, settings.showClock) { v -> onEdit { it.copy(showClock = v) } }
+            SwitchRow(stringResource(R.string.next_event), stringResource(R.string.next_event_sub), settings.showCalendar) { v -> onEdit { it.copy(showCalendar = v) } }
+            SwitchRow(stringResource(R.string.music_player), stringResource(R.string.music_player_sub), settings.showMedia) { v -> onEdit { it.copy(showMedia = v) } }
+            SwitchRow(stringResource(R.string.alphabet_left), stringResource(R.string.alphabet_left_sub), settings.leftHanded) { v -> onEdit { it.copy(leftHanded = v) } }
+            SwitchRow(stringResource(R.string.hide_alphabet), stringResource(R.string.hide_alphabet_sub), settings.hideAlphabet) { v -> onEdit { it.copy(hideAlphabet = v) } }
+            SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
+            SwitchRow(stringResource(R.string.hide_status_bar), null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
         }
 
-        Group("Gesti e feedback") {
-            Label("Scorri verso il basso")
+        Group(stringResource(R.string.section_gestures)) {
+            Label(stringResource(R.string.swipe_down))
             GestureChips(settings.swipeDown) { g -> onEdit { it.copy(swipeDown = g) } }
-            Label("Scorri verso l'alto")
+            Label(stringResource(R.string.swipe_up))
             GestureChips(settings.swipeUp) { g -> onEdit { it.copy(swipeUp = g) } }
             SwitchRow(
-                "Doppio tocco per bloccare",
-                if (status.accessibilityEnabled) "Tocca due volte uno spazio vuoto della home" else "Richiede di attivare il servizio di accessibilità di Onda",
+                stringResource(R.string.double_tap_lock),
+                if (status.accessibilityEnabled) stringResource(R.string.double_tap_lock_on) else stringResource(R.string.double_tap_lock_off),
                 settings.doubleTapLock,
             ) { v ->
                 onEdit { it.copy(doubleTapLock = v) }
                 if (v && !status.accessibilityEnabled) actions.accessibility()
             }
-            SwitchRow("Vibrazione", "Feedback aptico su scroller e pressioni lunghe", settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
+            SwitchRow(stringResource(R.string.haptics), stringResource(R.string.haptics_sub), settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
             Text(
-                "Scorri a destra su un'app: pannello rapido · Tieni premuto: opzioni · Bordi dello schermo: alfabeto (anche il lato senza lettere)",
+                stringResource(R.string.gestures_help),
                 color = colors.onWallpaperMuted,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 6.dp),
             )
         }
 
-        Group("Widget") {
+        Group(stringResource(R.string.section_widgets)) {
             if (settings.widgetIds.isEmpty()) {
-                Text("Nessun widget in home.", color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.no_home_widgets), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             }
             settings.widgetIds.forEach { id ->
                 val info = widgets.infoFor(id)
                 val label: String? = info?.let { i -> runCatching { i.loadLabel(pm) }.getOrNull() }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(label ?: "Widget #$id", color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { actions.removeWidget(id) }) { Text("Rimuovi") }
+                    Text(label ?: stringResource(R.string.widget_number, id), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { actions.removeWidget(id) }) { Text(stringResource(R.string.remove)) }
                 }
             }
-            FilledTonalButton(onClick = { actions.addWidget() }, modifier = Modifier.padding(top = 6.dp)) { Text("Aggiungi widget") }
+            FilledTonalButton(onClick = { actions.addWidget() }, modifier = Modifier.padding(top = 6.dp)) { Text(stringResource(R.string.add_widget)) }
         }
 
-        Group("App nascoste") {
+        Group(stringResource(R.string.section_hidden)) {
             if (hiddenApps.isEmpty()) {
-                Text("Nessuna app nascosta. Tieni premuta un'app per nasconderla.", color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.no_hidden_apps), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             }
             hiddenApps.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                     Image(app.icon, null, Modifier.size(32.dp))
                     Spacer(Modifier.width(14.dp))
                     Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { actions.unhide(app) }) { Text("Mostra") }
+                    TextButton(onClick = { actions.unhide(app) }) { Text(stringResource(R.string.show)) }
                 }
             }
         }
 
-        Group("Backup") {
-            Text("Salva preferiti, nomi, nascoste e aspetto in un file, e ripristinali su un altro telefono.", color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+        Group(stringResource(R.string.section_backup)) {
+            Text(stringResource(R.string.backup_desc), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
-                FilledTonalButton(onClick = { actions.exportBackup() }) { Text("Esporta") }
-                OutlinedButton(onClick = { actions.importBackup() }) { Text("Ripristina") }
+                FilledTonalButton(onClick = { actions.exportBackup() }) { Text(stringResource(R.string.export)) }
+                OutlinedButton(onClick = { actions.importBackup() }) { Text(stringResource(R.string.restore)) }
             }
         }
 
         Text(
-            "Onda 0.3 · launcher minimale",
+            stringResource(R.string.version_line, com.gabrielepiccione.onda.BuildConfig.VERSION_NAME),
             color = colors.onWallpaperMuted,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp),
@@ -261,10 +273,10 @@ fun SettingsScreen(
         val packs = remember { IconPacks.installed(context) }
         AlertDialog(
             onDismissRequest = { iconPackDialog = false },
-            title = { Text("Icon pack") },
+            title = { Text(stringResource(R.string.icon_pack)) },
             text = {
                 Column {
-                    ChoiceRow("Predefinito di sistema", settings.iconPack.isBlank()) {
+                    ChoiceRow(stringResource(R.string.system_default), settings.iconPack.isBlank()) {
                         onEdit { it.copy(iconPack = "") }; iconPackDialog = false
                     }
                     packs.forEach { p ->
@@ -274,14 +286,14 @@ fun SettingsScreen(
                     }
                     if (packs.isEmpty()) {
                         Text(
-                            "Nessun icon pack installato. Scaricane uno dal Play Store (compatibile con Nova/ADW).",
+                            stringResource(R.string.no_icon_packs),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(top = 8.dp),
                         )
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { iconPackDialog = false }) { Text("Chiudi") } },
+            confirmButton = { TextButton(onClick = { iconPackDialog = false }) { Text(stringResource(R.string.close)) } },
         )
     }
 }
@@ -290,7 +302,7 @@ fun SettingsScreen(
 private fun GestureChips(selected: com.gabrielepiccione.onda.data.GestureAction, onPick: (com.gabrielepiccione.onda.data.GestureAction) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState()).padding(bottom = 6.dp)) {
         com.gabrielepiccione.onda.data.GestureAction.entries.forEach { g ->
-            FilterChip(selected = selected == g, onClick = { onPick(g) }, label = { Text(g.label) })
+            FilterChip(selected = selected == g, onClick = { onPick(g) }, label = { Text(stringResource(g.labelRes)) })
         }
     }
 }
