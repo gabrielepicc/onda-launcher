@@ -291,21 +291,8 @@ fun NotificationPreview(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
-    val state = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value != SwipeToDismissBoxValue.Settled && item.clearable) {
-                onDismiss(); true
-            } else false
-        }
-    )
     val body = item.messages.lastOrNull()?.text ?: item.text
-    SwipeToDismissBox(
-        state = state,
-        enableDismissFromStartToEnd = item.clearable,
-        enableDismissFromEndToStart = item.clearable,
-        backgroundContent = {},
-        modifier = modifier,
-    ) {
+    Box(modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier

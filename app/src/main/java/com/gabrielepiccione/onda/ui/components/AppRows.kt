@@ -133,6 +133,8 @@ fun FavoriteRow(
     onLongClick: () -> Unit,
     onSwipe: () -> Unit,
     hideName: Boolean = false,
+    /** Apre il pannello dell'app (swipe a sinistra, o a destra se non c'è un'app associata). */
+    onOpenPanel: () -> Unit = onSwipe,
     iconScale: Float = 1f,
     onNotificationClick: (NotificationItem) -> Unit,
     onNotificationDismiss: (NotificationItem) -> Unit,
@@ -149,7 +151,7 @@ fun FavoriteRow(
     var expanded by rememberSaveable(app.key) { mutableStateOf(false) }
 
     val offsetX = remember { Animatable(0f) }
-    val triggerPx = with(density) { 96.dp.toPx() }
+    val triggerPx = with(density) { 72.dp.toPx() }
     val maxPx = with(density) { 140.dp.toPx() }
     var armed by remember { mutableStateOf(false) }
 
@@ -158,18 +160,19 @@ fun FavoriteRow(
 
     Box(modifier.fillMaxWidth()) {
         // Sfondo rivelato dallo scorrimento
-        if (offsetX.value > 1f) {
+        if (kotlin.math.abs(offsetX.value) > 1f) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .matchParentSize()
                     .clip(RoundedCornerShape(28.dp))
                     .background(if (armed) colors.accentContainer else colors.panel)
-                    .padding(start = 20.dp)
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = if (offsetX.value > 0f) Arrangement.Start else Arrangement.End,
             ) {
-                val p = (offsetX.value / triggerPx).coerceIn(0f, 1f)
+                val p = (kotlin.math.abs(offsetX.value) / triggerPx).coerceIn(0f, 1f)
                 Box(Modifier.graphicsLayer { alpha = p; scaleX = 0.6f + 0.4f * p; scaleY = 0.6f + 0.4f * p }) {
-                    if (swipeTarget != null) {
+                    if (swipeTarget != null && offsetX.value > 0f) {
                         AppIcon(swipeTarget, 32.dp, themedIcons)
                     } else {
                         Icon(Icons.Filled.KeyboardArrowRight, null, tint = colors.onAccentContainer)
@@ -184,15 +187,16 @@ fun FavoriteRow(
                 .fillMaxWidth()
                 .pressScale(interaction)
                 .clip(RoundedCornerShape(28.dp))
-                .then(if (offsetX.value > 1f) Modifier.background(colors.scrim) else Modifier)
+                .then(if (kotlin.math.abs(offsetX.value) > 1f) Modifier.background(colors.scrim) else Modifier)
                 .draggable(
                     enabled = canSwipe,
                     orientation = Orientation.Horizontal,
                     state = rememberDraggableState { delta ->
                         scope.launch {
-                            val next = (offsetX.value + delta * if (offsetX.value > triggerPx) 0.35f else 1f).coerceIn(0f, maxPx)
+                            val resist = if (kotlin.math.abs(offsetX.value) > triggerPx) 0.35f else 1f
+                            val next = (offsetX.value + delta * resist).coerceIn(-maxPx, maxPx)
                             offsetX.snapTo(next)
-                            val nowArmed = next >= triggerPx
+                            val nowArmed = kotlin.math.abs(next) >= triggerPx
                             if (nowArmed != armed) {
                                 armed = nowArmed
                                 if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -201,7 +205,7 @@ fun FavoriteRow(
                     },
                     onDragStopped = {
                         if (armed) {
-                            onSwipe()
+                            if (offsetX.value > 0f && swipeTarget != null) onSwipe() else onOpenPanel()
                         }
                         armed = false
                         offsetX.animateTo(0f, spring(dampingRatio = 0.7f, stiffness = 500f))
