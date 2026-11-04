@@ -156,6 +156,13 @@ class SettingsRepository(context: Context) {
         s.copy(homeLayout = list)
     }
 
+    fun setHomeLayout(order: List<String>) = edit { it.copy(homeLayout = order) }
+
+    /** Nuovo ordine delle voci visibili; quelle nascoste o non installate restano in coda. */
+    fun setHomeEntries(order: List<String>) = edit { s ->
+        s.copy(favorites = order + s.favorites.filterNot { it in order })
+    }
+
     fun setWidgetHeight(id: Int, dp: Int) = edit { it.copy(widgetHeights = it.widgetHeights + (id to dp)) }
 
     /** Sostituisce un widget della home con un altro nella stessa posizione e con la stessa altezza. */
@@ -244,7 +251,24 @@ class SettingsRepository(context: Context) {
         s.copy(appWidgets = if (widgetId == null) s.appWidgets - appKey else s.appWidgets + (appKey to widgetId))
     }
 
+    /** Forma per una sola app; null = quella generale. */
+    fun setIconShape(appKey: String, shape: String?) = edit { s ->
+        s.copy(iconShapeOverrides = if (shape == null) s.iconShapeOverrides - appKey else s.iconShapeOverrides + (appKey to shape))
+    }
+
+    /** Immagine scelta dall'utente come icona, già copiata nella memoria privata. */
+    fun setIconImage(appKey: String, path: String) {
+        deleteIconImage(appKey)
+        edit { it.copy(iconOverrides = it.iconOverrides + (appKey to ICON_FILE_PREFIX + path)) }
+    }
+
+    private fun deleteIconImage(appKey: String) {
+        val value = current.iconOverrides[appKey] ?: return
+        if (value.startsWith(ICON_FILE_PREFIX)) runCatching { java.io.File(value.removePrefix(ICON_FILE_PREFIX)).delete() }
+    }
+
     fun setIconOverride(appKey: String, packPackage: String?, drawable: String?) = edit { s ->
+        deleteIconImage(appKey)
         s.copy(
             iconOverrides = if (packPackage == null || drawable == null) s.iconOverrides - appKey
             else s.iconOverrides + (appKey to "$packPackage|$drawable"),

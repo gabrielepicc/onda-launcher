@@ -338,6 +338,13 @@
     <string name="styles_applied_wallpaper">Stile applicato. Annulla non ripristina lo sfondo.</string>
     <string name="widget_delete_title">Rimuovere questo widget?</string>
     <string name="widget_delete_body">La sua configurazione andrà persa e dovrai impostarlo di nuovo.</string>
+    <string name="reorder_home">Riordina la home</string>
+    <string name="reorder_blocks">Blocchi</string>
+    <string name="reorder_favorites">Preferiti</string>
+    <string name="reorder_handle">Trascina per spostare</string>
+    <string name="icon_from_image">Usa un\'immagine…</string>
+    <string name="icon_image_invalid">Questa immagine non si può usare</string>
+    <string name="icon_shape_default">Come le altre</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>

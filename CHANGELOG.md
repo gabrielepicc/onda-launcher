@@ -4,6 +4,10 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 ## [Non rilasciato]
 
+### Aggiunto
+- **Riordina la home**: blocchi e preferiti si spostano trascinandoli (dal menu della home).
+- **Icone delle singole app**: immagine dalla galleria e forma diversa per ogni app, disponibili anche senza icon pack. L'icona scelta ha la precedenza su pack e stili generati.
+
 ### Modificato
 - **Impostazioni a pagine** (Aspetto, Home, Gesti, Ricerca, App, Backup) con **anteprima dal vivo** di orologio e preferiti nella pagina Aspetto.
 - Dopo aver applicato un preset si può **annullare** per qualche secondo; rimuovere un widget chiede conferma.

@@ -93,7 +93,7 @@ fun AppIcon(app: AppInfo, size: Dp, themed: Boolean, modifier: Modifier = Modifi
     val colors = LocalOndaColors.current
     val mono = app.mono
     val style = LocalIconStyle.current
-    if (style in GENERATED_ICON_STYLES) {
+    if (style in GENERATED_ICON_STYLES && !app.hasCustomIcon) {
         GeneratedIcon(app, size, style, modifier)
     } else if (themed && mono != null) {
         Box(

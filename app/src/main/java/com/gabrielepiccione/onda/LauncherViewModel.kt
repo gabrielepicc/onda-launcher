@@ -97,6 +97,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 isFavorite = r.key in settings.favorites,
                 isHidden = r.key in settings.hidden,
                 swipeTarget = settings.swipeActions[r.key],
+                hasCustomIcon = r.key in settings.iconOverrides || r.key in settings.iconShapeOverrides,
             )
         }.sortedWith { a, b -> collator.compare(a.label, b.label) }
 

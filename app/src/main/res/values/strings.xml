@@ -338,6 +338,13 @@
     <string name="styles_applied_wallpaper">Style applied. Undo won\'t restore the wallpaper.</string>
     <string name="widget_delete_title">Remove this widget?</string>
     <string name="widget_delete_body">Its settings will be lost and you\'ll have to set it up again.</string>
+    <string name="reorder_home">Reorder home</string>
+    <string name="reorder_blocks">Blocks</string>
+    <string name="reorder_favorites">Favorites</string>
+    <string name="reorder_handle">Drag to move</string>
+    <string name="icon_from_image">Use an image…</string>
+    <string name="icon_image_invalid">This image can\'t be used</string>
+    <string name="icon_shape_default">Like the others</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>

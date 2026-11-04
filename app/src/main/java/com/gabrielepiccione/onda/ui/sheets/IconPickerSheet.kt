@@ -28,7 +28,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
+import com.gabrielepiccione.onda.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -72,6 +74,11 @@ fun IconPickerSheet(
     onPick: (packPackage: String, drawable: String) -> Unit,
     onReset: () -> Unit,
     onDismiss: () -> Unit,
+    /** Forma scelta solo per questa app; null = quella generale. */
+    currentShape: String? = null,
+    onShape: (String?) -> Unit = {},
+    onPickImage: () -> Unit = {},
+    themedIcons: Boolean = false,
 ) {
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -106,8 +113,29 @@ fun IconPickerSheet(
     ) {
         Column(Modifier.navigationBarsPadding().imePadding().padding(horizontal = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.icon_change), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                // L'icona si aggiorna dal vivo mentre si sceglie la forma
+                AppIcon(app, 44.dp, themedIcons)
+                Text(
+                    stringResource(R.string.icon_change),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f).padding(start = 12.dp),
+                )
                 TextButton(onClick = { onReset(); onDismiss() }) { Text(stringResource(R.string.icon_reset)) }
+            }
+
+            FilledTonalButton(onClick = { onPickImage(); onDismiss() }, modifier = Modifier.padding(top = 8.dp)) {
+                Text(stringResource(R.string.icon_from_image))
+            }
+
+            Label(stringResource(R.string.icon_shape))
+            Row(Modifier.horizontalScroll(rememberScrollState()).padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(selected = currentShape == null, onClick = { onShape(null) }, label = { Text(stringResource(R.string.icon_shape_default)) })
+                listOf(
+                    "CIRCLE" to R.string.shape_circle, "SQUIRCLE" to R.string.shape_squircle, "ROUNDED_SQUARE" to R.string.shape_rounded,
+                    "TEARDROP" to R.string.shape_teardrop, "CYLINDER" to R.string.shape_cylinder, "PETAL" to R.string.shape_petal,
+                ).forEach { (id, res) ->
+                    FilterChip(selected = currentShape == id, onClick = { onShape(id) }, label = { Text(stringResource(res)) })
+                }
             }
 
             if (installed.isEmpty()) {

@@ -75,8 +75,8 @@ class AppRepository(
     // Cache in memoria delle icone già elaborate: chiave = app + parametri di resa
     private val iconCache = android.util.LruCache<String, ImageBitmap>(600)
 
-    private data class IconParams(val pack: String, val shape: String, val style: String, val overrides: Map<String, String>)
-    private fun Settings.iconParams() = IconParams(iconPack, iconShape, iconStyle, iconOverrides)
+    private data class IconParams(val pack: String, val shape: String, val style: String, val overrides: Map<String, String>, val shapes: Map<String, String>)
+    private fun Settings.iconParams() = IconParams(iconPack, iconShape, iconStyle, iconOverrides, iconShapeOverrides)
 
     init {
         launcherApps.registerCallback(callback, Handler(Looper.getMainLooper()))
@@ -107,7 +107,7 @@ class AppRepository(
         val serial = userManager.getSerialNumberForUser(user)
         val key = "${componentName.flattenToShortString()}#$serial"
         val s = settings.value
-        val cacheKey = "$key|${s.iconPack}|${s.iconShape}|${s.iconStyle}|${s.iconOverrides[key]}"
+        val cacheKey = "$key|${s.iconPack}|${s.iconShape}|${s.iconStyle}|${s.iconOverrides[key]}|${s.iconShapeOverrides[key]}"
         val base by lazy { getIcon(densityDpi) }
 
         val icon = iconCache.get(cacheKey) ?: buildIcon(key, componentName.packageName, base, pack, s).let { bmp ->
@@ -138,8 +138,9 @@ class AppRepository(
 
     /**
      * Pipeline delle icone, in ordine di priorità:
-     * 1. icona scelta a mano (override) → 2. icona dedicata del pack → 3. fallback del pack
-     * (iconback/mask/upon) → 4. icona originale nella forma scelta. Lo stile "Puntini" la sostituisce.
+     * 1. icona scelta a mano (immagine o pack) o forma scelta per questa app → 2. stile "Puntini"
+     * → 3. icona dedicata del pack → 4. fallback del pack (iconback/mask/upon)
+     * → 5. icona originale nella forma scelta.
      */
     private fun LauncherActivityInfo.buildIcon(
         key: String,
@@ -148,18 +149,39 @@ class AppRepository(
         pack: IconPacks.Loaded?,
         s: Settings,
     ): android.graphics.Bitmap {
-        val style = runCatching { IconStyle.valueOf(s.iconStyle) }.getOrDefault(IconStyle.ORIGINAL)
-        if (style == IconStyle.DOTS) return IconRenderer.dot(base, iconSizePx)
-
-        s.iconOverrides[key]?.split('|')?.takeIf { it.size == 2 }?.let { (pkg, name) ->
+        val override = s.iconOverrides[key]
+        if (override != null && override.startsWith(ICON_FILE_PREFIX)) {
+            imageIcon(override.removePrefix(ICON_FILE_PREFIX))?.let { return it }
+        }
+        override?.split('|')?.takeIf { it.size == 2 }?.let { (pkg, name) ->
             packs.get(pkg)?.drawable(name, densityDpi)?.let { return it.toBitmap(iconSizePx, iconSizePx) }
         }
-        pack?.iconFor(componentName, densityDpi)?.let { return it.toBitmap(iconSizePx, iconSizePx) }
-        pack?.fallbackParts(packageName, densityDpi)?.let { (back, mask, upon) ->
-            return IconRenderer.packFallback(base, back, mask, upon, pack.filter.scale, iconSizePx)
+        val ownShape = s.iconShapeOverrides[key]
+        if (ownShape == null) {
+            val style = runCatching { IconStyle.valueOf(s.iconStyle) }.getOrDefault(IconStyle.ORIGINAL)
+            if (style == IconStyle.DOTS) return IconRenderer.dot(base, iconSizePx)
+            pack?.iconFor(componentName, densityDpi)?.let { return it.toBitmap(iconSizePx, iconSizePx) }
+            pack?.fallbackParts(packageName, densityDpi)?.let { (back, mask, upon) ->
+                return IconRenderer.packFallback(base, back, mask, upon, pack.filter.scale, iconSizePx)
+            }
         }
-        val shape = runCatching { IconShape.valueOf(s.iconShape) }.getOrDefault(IconShape.SYSTEM)
+        val shape = runCatching { IconShape.valueOf(ownShape ?: s.iconShape) }.getOrDefault(IconShape.SYSTEM)
         return IconRenderer.render(base, shape, iconSizePx)
+    }
+
+    /** Immagine scelta dall'utente: ritaglio quadrato al centro, con gli angoli arrotondati. */
+    private fun imageIcon(path: String): Bitmap? {
+        val source = android.graphics.BitmapFactory.decodeFile(path) ?: return null
+        val side = minOf(source.width, source.height)
+        val srcRect = Rect((source.width - side) / 2, (source.height - side) / 2, (source.width + side) / 2, (source.height + side) / 2)
+        val out = Bitmap.createBitmap(iconSizePx, iconSizePx, Bitmap.Config.ARGB_8888)
+        val dst = android.graphics.RectF(0f, 0f, iconSizePx.toFloat(), iconSizePx.toFloat())
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG or android.graphics.Paint.FILTER_BITMAP_FLAG)
+        val canvas = Canvas(out)
+        canvas.drawRoundRect(dst, iconSizePx * 0.25f, iconSizePx * 0.25f, paint)
+        paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(source, srcRect, dst, paint)
+        return out
     }
 
     /** Estrae il livello monocromatico di un'icona adattiva (Android 13+) come maschera alpha. */

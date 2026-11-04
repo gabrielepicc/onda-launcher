@@ -12,7 +12,12 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.activity.viewModels
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -98,6 +103,32 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         }
         toast(getString(R.string.font_imported))
     }
+
+    private var iconImageFor: String? = null
+
+    /** Immagine scelta come icona: ridotta e copiata nella memoria privata, senza chiedere permessi. */
+    private val iconImageLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+        val appKey = iconImageFor ?: return@registerForActivityResult
+        uri ?: return@registerForActivityResult
+        lifecycleScope.launch {
+            val path = withContext(Dispatchers.IO) { copyIconImage(uri) }
+            if (path != null) vm.settingsRepo.setIconImage(appKey, path) else toast(getString(R.string.icon_image_invalid))
+        }
+    }
+
+    private fun copyIconImage(uri: Uri): String? = runCatching {
+        val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        contentResolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, bounds) }
+        var sample = 1
+        while (minOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= ICON_IMAGE_SIZE) sample *= 2
+        val options = android.graphics.BitmapFactory.Options().apply { inSampleSize = sample }
+        val bitmap = contentResolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, options) }
+            ?: return@runCatching null
+        val dir = java.io.File(filesDir, "icons").apply { mkdirs() }
+        val target = java.io.File(dir, "${System.currentTimeMillis()}.png")
+        target.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+        target.absolutePath
+    }.getOrNull()
 
     private var themeToExport: com.gabrielepiccione.onda.data.LookTheme? = null
 
@@ -236,6 +267,11 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         fontLauncher.launch(arrayOf("font/ttf", "font/otf", "font/*", "application/x-font-ttf", "application/x-font-otf", "application/octet-stream"))
     }
 
+    override fun pickIconImage(appKey: String) {
+        iconImageFor = appKey
+        iconImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
     override fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme) {
         themeToExport = theme
         themeExportLauncher.launch("${theme.name.replace(Regex("[^A-Za-z0-9 _-]"), "")}.onda-theme")
@@ -343,5 +379,6 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         const val REQ_BIND = 4101
         const val REQ_CONFIGURE = 4102
         const val KEY_PENDING = "pending_widget"
+        const val ICON_IMAGE_SIZE = 256
     }
 }

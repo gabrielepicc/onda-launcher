@@ -59,6 +59,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Notifications
@@ -147,6 +148,7 @@ interface HomeCallbacks {
     fun exportBackup()
     fun importBackup()
     fun importFont(forClock: Boolean)
+    fun pickIconImage(appKey: String)
     fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme)
     fun authenticate(title: String, onSuccess: () -> Unit)
     fun importTheme()
@@ -402,6 +404,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     // Annulla dopo un preset: aspetto precedente e nome del preset che era attivo
     var undoLook by remember { mutableStateOf<Pair<com.gabrielepiccione.onda.data.LookTheme, String>?>(null) }
     var undoKeepsWallpaper by remember { mutableStateOf(false) }
+    var reorderOpen by remember { mutableStateOf(false) }
     var summaryOpen by remember { mutableStateOf(false) }
     val digest = remember(state.notifications) { com.gabrielepiccione.onda.data.NotificationDigest.of(state.notifications) }
     val packageLabel: (String) -> String = { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
@@ -986,13 +989,50 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         )
     }
 
-    iconPickerFor?.let { app ->
+    iconPickerFor?.let { requested ->
+        val app = state.app(requested.key) ?: requested
         IconPickerSheet(
             app = app,
             packs = vm.appsRepo.packs,
             onPick = { pkg, name -> vm.settingsRepo.setIconOverride(app.key, pkg, name) },
-            onReset = { vm.settingsRepo.setIconOverride(app.key, null, null) },
+            onReset = {
+                vm.settingsRepo.setIconOverride(app.key, null, null)
+                vm.settingsRepo.setIconShape(app.key, null)
+            },
             onDismiss = { iconPickerFor = null },
+            currentShape = settings.iconShapeOverrides[app.key],
+            onShape = { vm.settingsRepo.setIconShape(app.key, it) },
+            onPickImage = { callbacks.pickIconImage(app.key) },
+            themedIcons = settings.themedIcons,
+        )
+    }
+
+    if (reorderOpen) {
+        HomeReorderSheet(
+            blocks = blocks.map { block ->
+                val widgetId = HomeBlocks.widgetId(block)
+                block to when {
+                    block == HomeBlocks.CLOCK -> stringResource(R.string.edit_clock)
+                    block == HomeBlocks.MEDIA -> stringResource(R.string.edit_media)
+                    block == HomeBlocks.AGENDA -> stringResource(R.string.agenda_title)
+                    block == HomeBlocks.NOTIFICATIONS -> stringResource(R.string.summary_title)
+                    block == HomeBlocks.APPS -> stringResource(R.string.reorder_favorites)
+                    block.startsWith(HomeBlocks.STACK_PREFIX) -> stringResource(R.string.edit_stack)
+                    widgetId != null ->
+                        vm.widgets.infoFor(widgetId)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() }
+                            ?: stringResource(R.string.widget_number, widgetId)
+                    else -> block
+                }
+            },
+            entries = state.home.map { entry ->
+                when (entry) {
+                    is HomeEntry.App -> entry.app.key to entry.app.label
+                    is HomeEntry.Group -> (FOLDER_PREFIX + entry.folder.id) to entry.folder.name
+                }
+            },
+            onBlocks = { vm.settingsRepo.setHomeLayout(it) },
+            onEntries = { vm.settingsRepo.setHomeEntries(it) },
+            onDismiss = { reorderOpen = false },
         )
     }
 
@@ -1037,6 +1077,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
                 SheetRow(Icons.Filled.Settings, stringResource(R.string.settings)) { homeMenu = false; overlay = Overlay.SETTINGS }
                 if (!settings.lockLayout) {
+                    SheetRow(Icons.Filled.SwapVert, stringResource(R.string.reorder_home)) { homeMenu = false; reorderOpen = true }
                     SheetRow(Icons.Filled.CreateNewFolder, stringResource(R.string.new_folder)) { newFolder = true }
                     SheetRow(Icons.Filled.Widgets, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
                     if (!settings.showNotificationSummary) {

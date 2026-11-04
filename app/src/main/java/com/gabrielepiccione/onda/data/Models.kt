@@ -43,6 +43,8 @@ data class AppInfo(
     val isHidden: Boolean,
     /** Chiave dell'app aperta scorrendo la riga verso destra, se impostata. */
     val swipeTarget: String?,
+    /** Icona scelta a mano: ha la precedenza sugli stili generati. */
+    val hasCustomIcon: Boolean = false,
 ) {
     val packageName: String get() = component.packageName
     val section: Char get() = sectionOf(label)
@@ -114,6 +116,9 @@ data class Folder(
     val apps: List<String> = emptyList(),
     val widgets: List<Int> = emptyList(),
 )
+
+/** Prefisso delle icone da immagine in [Settings.iconOverrides]; segue il percorso del file. */
+const val ICON_FILE_PREFIX = "file:"
 
 /** Prefisso delle voci "cartella" nell'elenco dei preferiti. */
 const val FOLDER_PREFIX = "folder:"
@@ -327,6 +332,8 @@ data class Settings(
     val iconStyle: String = "ORIGINAL",
     /** Icona scelta a mano per singola app: chiave app -> "pacchetto_pack|nome_drawable". */
     val iconOverrides: Map<String, String> = emptyMap(),
+    /** Forma scelta per singola app: chiave app -> nome di [com.gabrielepiccione.onda.core.icons.IconShape]. */
+    val iconShapeOverrides: Map<String, String> = emptyMap(),
     val themedIcons: Boolean = false,
     val showIcons: Boolean = true,
     val textScale: Float = 1f,
