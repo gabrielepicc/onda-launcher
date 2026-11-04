@@ -196,6 +196,7 @@ object HomeBlocks {
     const val MEDIA = "media"
     const val APPS = "apps"
     const val AGENDA = "agenda"
+    const val NOTIFICATIONS = "notifications"
     const val WIDGET_PREFIX = "w:"
     fun widget(id: Int) = WIDGET_PREFIX + id
     fun widgetId(block: String): Int? = block.removePrefix(WIDGET_PREFIX).toIntOrNull()?.takeIf { block.startsWith(WIDGET_PREFIX) }
@@ -206,7 +207,10 @@ object HomeBlocks {
     /** Ordine effettivo: quello salvato, ripulito, più gli elementi mancanti in coda (prima delle app). */
     fun resolve(settings: Settings): List<String> {
         val widgets = settings.widgetIds.map(::widget) + settings.widgetStacks.map { stack(it.id) }
-        val optional = if (settings.showAgenda) listOf(AGENDA) else emptyList()
+        val optional = listOfNotNull(
+            AGENDA.takeIf { settings.showAgenda },
+            NOTIFICATIONS.takeIf { settings.showNotificationSummary },
+        )
         val valid = setOf(CLOCK, MEDIA, APPS) + optional + widgets
         val saved = settings.homeLayout.filter { it in valid }.distinct()
         val missing = (listOf(CLOCK, MEDIA) + optional + widgets + APPS).filter { it !in saved }
@@ -287,6 +291,8 @@ data class Settings(
     /** Agenda del calendario in home (blocco) e numero di giorni mostrati. */
     val showAgenda: Boolean = false,
     val agendaDays: Int = 3,
+    /** Riepilogo delle notifiche come blocco della home. */
+    val showNotificationSummary: Boolean = false,
     /** Blocca il layout: niente modifiche con la pressione lunga in home. */
     val lockLayout: Boolean = false,
     /** Motore per la ricerca web: SYSTEM, DUCKDUCKGO, STARTPAGE, GOOGLE, ECOSIA, BRAVE. */
@@ -342,6 +348,19 @@ data class Settings(
          * 3 = swipe giù sempre sulla tendina: lo swipe su, se era "notifiche", diventa "ricerca".
          */
         const val CURRENT_SCHEMA = 3
+    }
+}
+
+/** Riepilogo delle notifiche attive: quante sono e di quali app, dalla più recente. */
+data class NotificationDigest(val total: Int, val packages: List<String>) {
+    companion object {
+        fun of(byPackage: Map<String, List<NotificationItem>>): NotificationDigest {
+            val active = byPackage.filterValues { it.isNotEmpty() }
+            return NotificationDigest(
+                total = active.values.sumOf { it.size },
+                packages = active.entries.sortedByDescending { (_, list) -> list.maxOf { it.postTime } }.map { it.key },
+            )
+        }
     }
 }
 

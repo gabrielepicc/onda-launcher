@@ -319,6 +319,13 @@
     <string name="protect_show_hidden">Show hidden apps</string>
     <string name="contacts_in_alphabet">Contacts in the alphabet</string>
     <string name="contacts_in_alphabet_sub">Lists your contacts with the apps under each letter. Needs access to contacts.</string>
+    <string name="summary_title">Notification summary</string>
+    <string name="summary_sub">A home card with all your notifications grouped by app</string>
+    <string name="summary_add">Add notification summary</string>
+    <string name="summary_hide">Hide summary</string>
+    <string name="summary_count">Notifications: %1$d · Apps: %2$d</string>
+    <string name="summary_empty">No notifications.</string>
+    <string name="summary_clear">Clear all</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>

@@ -319,6 +319,13 @@
     <string name="protect_show_hidden">Mostra app nascoste</string>
     <string name="contacts_in_alphabet">Contatti nell\'alfabeto</string>
     <string name="contacts_in_alphabet_sub">Mostra i contatti con le app sotto ogni lettera. Richiede l\'accesso ai contatti.</string>
+    <string name="summary_title">Riepilogo notifiche</string>
+    <string name="summary_sub">Una scheda in home con tutte le notifiche raggruppate per app</string>
+    <string name="summary_add">Aggiungi riepilogo notifiche</string>
+    <string name="summary_hide">Nascondi riepilogo</string>
+    <string name="summary_count">Notifiche: %1$d · App: %2$d</string>
+    <string name="summary_empty">Nessuna notifica.</string>
+    <string name="summary_clear">Elimina tutte</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>

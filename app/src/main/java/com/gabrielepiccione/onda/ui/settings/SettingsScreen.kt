@@ -299,6 +299,10 @@ fun SettingsScreen(
                 onEdit { it.copy(showAgenda = v) }
                 if (v && !status.calendarPermission) actions.calendarPermission()
             }
+            SwitchRow(stringResource(R.string.summary_title), stringResource(R.string.summary_sub), settings.showNotificationSummary) { v ->
+                onEdit { it.copy(showNotificationSummary = v) }
+                if (v && !status.notificationAccess) actions.notificationAccess()
+            }
             SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
         }
 

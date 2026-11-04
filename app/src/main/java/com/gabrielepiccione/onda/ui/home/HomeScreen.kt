@@ -378,6 +378,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val blocks = remember(settings) { HomeBlocks.resolve(settings) }
     var editing by remember { mutableStateOf<String?>(null) }
+    var summaryOpen by remember { mutableStateOf(false) }
+    val digest = remember(state.notifications) { com.gabrielepiccione.onda.data.NotificationDigest.of(state.notifications) }
+    val packageLabel: (String) -> String = { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
     // Il blocco in modifica può sparire (es. una pila ridotta a un solo widget)
     LaunchedEffect(blocks, editing) { if (editing != null && editing !in blocks) editing = null }
 
@@ -458,6 +461,23 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             onEmptyClick = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
                             modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(vertical = 8.dp),
                         )
+                    }
+                    block == HomeBlocks.NOTIFICATIONS -> item(key = "notifications") {
+                        AnimatedVisibility(
+                            visible = digest.total > 0,
+                            enter = fadeIn(Motion.enter()) + expandVertically(Motion.enter()),
+                            exit = fadeOut(Motion.exit()) + shrinkVertically(Motion.exit()),
+                            modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
+                        ) {
+                            NotificationSummaryCard(
+                                digest = digest,
+                                appLabel = packageLabel,
+                                highlighted = editing == HomeBlocks.NOTIFICATIONS,
+                                onClick = { summaryOpen = true },
+                                onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.NOTIFICATIONS },
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                            )
+                        }
                     }
                     block == HomeBlocks.MEDIA -> item(key = "media") {
                         val m = media
@@ -932,6 +952,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 if (!settings.lockLayout) {
                     SheetRow(Icons.Filled.Add, stringResource(R.string.new_folder)) { newFolder = true }
                     SheetRow(Icons.Filled.Add, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
+                    if (!settings.showNotificationSummary) {
+                        SheetRow(Icons.Filled.Add, stringResource(R.string.summary_add)) {
+                            homeMenu = false
+                            vm.updateSettings { it.copy(showNotificationSummary = true) }
+                        }
+                    }
                     if (!settings.showAgenda) {
                         SheetRow(Icons.Filled.Add, stringResource(R.string.agenda_add)) {
                             homeMenu = false
@@ -984,6 +1010,16 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun deleteWidget(id: Int) = vm.removeWidget(id)
                 override fun done() { editing = null }
             },
+        )
+    }
+
+    if (summaryOpen) {
+        NotificationSummarySheet(
+            notifications = state.notifications,
+            appLabel = packageLabel,
+            onNotification = { NotificationStore.open(context, it) },
+            onDismissAll = { digest.packages.forEach(NotificationStore::dismissAll); summaryOpen = false },
+            onDismiss = { summaryOpen = false },
         )
     }
 
