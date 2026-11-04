@@ -27,13 +27,19 @@ import com.gabrielepiccione.onda.data.NotificationItem
 data class AppSection(val letter: Char, val apps: List<AppInfo>, val firstIndex: Int)
 
 /** Raggruppa le app (già ordinate) per lettera e calcola l'indice d'inizio di ogni sezione. */
-fun buildSections(apps: List<AppInfo>): List<AppSection> {
+/**
+ * Raggruppa le app per lettera; dentro ogni lettera le più usate vengono prima,
+ * a parità di utilizzo resta l'ordine alfabetico.
+ */
+fun buildSections(apps: List<AppInfo>, launchCounts: Map<String, Int> = emptyMap()): List<AppSection> {
     val grouped = LinkedHashMap<Char, MutableList<AppInfo>>()
     apps.filter { it.section == '#' }.takeIf { it.isNotEmpty() }?.let { grouped['#'] = it.toMutableList() }
     apps.filter { it.section != '#' }.forEach { grouped.getOrPut(it.section) { mutableListOf() }.add(it) }
     var index = 0
     return grouped.map { (letter, list) ->
-        AppSection(letter, list, index).also { index += 1 + list.size }
+        // sortedByDescending è stabile: a parità di conteggio resta l'ordine alfabetico
+        val ordered = list.sortedByDescending { launchCounts[it.key] ?: 0 }
+        AppSection(letter, ordered, index).also { index += 1 + ordered.size }
     }
 }
 
@@ -48,6 +54,7 @@ fun AllAppsPanel(
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit,
     contentPadding: PaddingValues,
+    onOpenPanel: (AppInfo) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
@@ -74,6 +81,9 @@ fun AllAppsPanel(
                     AppListRow(
                         app = app,
                         hasNotification = notifications[app.packageName].orEmpty().isNotEmpty(),
+                        notification = notifications[app.packageName]?.firstOrNull(),
+                        notificationCount = notifications[app.packageName]?.size ?: 0,
+                        onOpenPanel = { onOpenPanel(app) },
                         showIcon = showIcons,
                         themedIcons = themedIcons,
                         onClick = { onClick(app) },

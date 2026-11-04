@@ -60,6 +60,8 @@ fun AlphabetWaveScroller(
     onTouchStart: () -> Unit = {},
     onLetter: (Char) -> Unit,
     onTouchEnd: () -> Unit = {},
+    /** Doppio tocco sulla colonna (es. blocco schermo); null = disattivato. */
+    onDoubleTap: (() -> Unit)? = null,
 ) {
     if (letters.isEmpty()) return
     val colors = LocalOndaColors.current
@@ -76,6 +78,8 @@ fun AlphabetWaveScroller(
     val currentOnLetter by rememberUpdatedState(onLetter)
     val currentOnStart by rememberUpdatedState(onTouchStart)
     val currentOnEnd by rememberUpdatedState(onTouchEnd)
+    val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
+    val lastTapUp = remember { longArrayOf(0L) }
 
     val letterStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, color = colors.onWallpaperMuted)
     val bubbleStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold, color = colors.onAccentContainer)
@@ -106,14 +110,33 @@ fun AlphabetWaveScroller(
                     }
                     update(down.position.y)
 
+                    var moved = 0f
+                    var upTime = down.uptimeMillis
                     while (true) {
                         val event = awaitPointerEvent()
                         val change = event.changes.firstOrNull() ?: break
+                        upTime = change.uptimeMillis
                         if (!change.pressed) break
+                        moved = maxOf(moved, kotlin.math.abs(change.position.y - down.position.y))
                         update(change.position.y)
                         change.consume()
                     }
                     currentOnEnd()
+
+                    // Riconoscimento del doppio tocco (tocchi brevi e fermi, ravvicinati)
+                    val isTap = upTime - down.uptimeMillis < viewConfiguration.longPressTimeoutMillis &&
+                        moved < viewConfiguration.touchSlop
+                    if (isTap) {
+                        val gap = down.uptimeMillis - lastTapUp[0]
+                        if (gap in 1 until viewConfiguration.doubleTapTimeoutMillis) {
+                            lastTapUp[0] = 0L
+                            currentOnDoubleTap?.invoke()
+                        } else {
+                            lastTapUp[0] = upTime
+                        }
+                    } else {
+                        lastTapUp[0] = 0L
+                    }
                     scope.launch {
                         intensity.animateTo(0f, tween(300, easing = Motion.Standard))
                         selected.intValue = -1

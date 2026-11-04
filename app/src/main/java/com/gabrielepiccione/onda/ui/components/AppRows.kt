@@ -291,6 +291,10 @@ fun AppListRow(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
     highlighted: Boolean = false,
+    /** Ultima notifica dell'app, mostrata sotto il nome (tocco = pannello dell'app). */
+    notification: NotificationItem? = null,
+    notificationCount: Int = 0,
+    onOpenPanel: () -> Unit = {},
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
@@ -318,14 +322,23 @@ fun AppListRow(
             AppIcon(app, 36.dp, themedIcons)
             Spacer(Modifier.width(16.dp))
         }
-        Text(
-            app.label,
-            color = colors.onWallpaper,
-            style = MaterialTheme.typography.titleMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                app.label,
+                color = colors.onWallpaper,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (notification != null) {
+                NotificationPreview(
+                    item = notification,
+                    extraCount = (notificationCount - 1).coerceAtLeast(0),
+                    onOpen = onOpenPanel,
+                    onDismiss = {},
+                )
+            }
+        }
         if (app.isWorkProfile) {
             Text(
                 stringResource(R.string.work),
@@ -338,7 +351,7 @@ fun AppListRow(
                     .padding(horizontal = 8.dp, vertical = 2.dp),
             )
         }
-        if (hasNotification) {
+        if (hasNotification && notification == null) {
             Box(Modifier.size(8.dp).clip(CircleShape).background(colors.accent))
         }
     }

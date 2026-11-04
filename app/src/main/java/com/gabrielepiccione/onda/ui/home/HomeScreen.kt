@@ -170,7 +170,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val homeList = rememberLazyListState()
     val allAppsList = rememberLazyListState()
-    val sections = remember(state.allApps) { buildSections(state.allApps) }
+    val sections = remember(state.allApps, settings.launchCounts) { buildSections(state.allApps, settings.launchCounts) }
     val letters = remember(sections) { sections.map { it.letter } }
     val iconScale = settings.iconSize
 
@@ -538,6 +538,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             themedIcons = settings.themedIcons,
             onClick = { launchApp(it) },
             onLongClick = { actionsFor = it },
+            onOpenPanel = { panelFor = it },
             contentPadding = PaddingValues(
                 start = if (settings.leftHanded) letterSide else hiddenSide,
                 end = if (settings.leftHanded) hiddenSide else letterSide,
@@ -558,6 +559,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             top = bars.calculateTopPadding() + 72.dp,
             bottom = bars.calculateBottomPadding() + 40.dp,
         )
+        // Doppio tocco sull'alfabeto (visibile o invisibile): blocca lo schermo
+        val lockFromAlphabet: (() -> Unit)? = if (settings.doubleTapLock) {
+            {
+                closeAll()
+                if (!OndaAccessibilityService.lockScreen()) withRestrictedHelp(callbacks::openAccessibilitySettings)
+            }
+        } else null
         val onLetter: (Char) -> Unit = { letter ->
             sections.firstOrNull { it.letter == letter }?.let { s ->
                 scope.launch { allAppsList.scrollToItem(s.firstIndex) }
@@ -576,6 +584,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     .padding(horizontal = 6.dp),
                 onTouchStart = { overlay = Overlay.ALL_APPS },
                 onLetter = onLetter,
+                onDoubleTap = lockFromAlphabet,
             )
             AlphabetWaveScroller(
                 letters = letters,
@@ -587,6 +596,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     .then(scrollerPadding),
                 onTouchStart = { overlay = Overlay.ALL_APPS },
                 onLetter = onLetter,
+                onDoubleTap = lockFromAlphabet,
             )
         }
 
