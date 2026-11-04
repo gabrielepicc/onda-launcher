@@ -25,7 +25,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ widget stack, ⬜ meteo Open-Meteo (**in attesa di decisione**: richiede il permesso INTERNET, valutare flavor `offline`)
 4. 🟡 Fase 5 — ✅ prefissi di ricerca (= @ /), ✅ scorciatoie impostazioni di sistema, ✅ motore web selezionabile,
    ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste.
-   ⬜ Usage Breaker, ⬜ contatti dall'alfabeto, ⬜ riepilogo notifiche, ⬜ conversioni unità/valute
+   ✅ Usage Breaker, ⬜ contatti dall'alfabeto, ⬜ riepilogo notifiche, ⬜ conversioni unità/valute
 5. ⬜ Fase 6 — Gesture configurabili estese, animazioni di apertura app, landscape/tablet, Private Space, onboarding, backup automatico
 
 ## Decisioni prese (modificabili)

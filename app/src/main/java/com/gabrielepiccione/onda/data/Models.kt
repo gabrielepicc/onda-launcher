@@ -295,6 +295,14 @@ data class Settings(
     val protectedApps: Set<String> = emptySet(),
     /** Richiede lo sblocco anche per vedere l'elenco delle app nascoste. */
     val protectHidden: Boolean = false,
+    /** Usage Breaker: app che mostrano una pausa prima di aprirsi. */
+    val breakerApps: Set<String> = emptySet(),
+    /** Durata della pausa in secondi. */
+    val breakerSeconds: Int = 10,
+    /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
+    val breakerDay: String = "",
+    /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */
+    val breakerOpens: Map<String, Int> = emptyMap(),
     /** Temi salvati dall'utente nel Theme Studio. */
     val savedThemes: List<LookTheme> = emptyList(),
     /** Ultimo preset di stile applicato (solo informativo). */
@@ -333,6 +341,20 @@ data class Settings(
          */
         const val CURRENT_SCHEMA = 3
     }
+}
+
+/** Contatore giornaliero di Usage Breaker: i conteggi ripartono da zero ogni giorno. */
+object UsageBreaker {
+    fun opensToday(s: Settings, key: String, today: String): Int =
+        if (s.breakerDay == today) s.breakerOpens[key] ?: 0 else 0
+
+    fun recordOpen(s: Settings, key: String, today: String): Settings {
+        val opens = if (s.breakerDay == today) s.breakerOpens else emptyMap()
+        return s.copy(breakerDay = today, breakerOpens = opens + (key to (opens[key] ?: 0) + 1))
+    }
+
+    fun toggle(s: Settings, key: String): Settings =
+        s.copy(breakerApps = if (key in s.breakerApps) s.breakerApps - key else s.breakerApps + key)
 }
 
 /** Lettera di sezione: maiuscola senza accenti, '#' per numeri e simboli. */

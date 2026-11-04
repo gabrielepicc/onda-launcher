@@ -334,6 +334,26 @@ fun SettingsScreen(
             ClickRow(stringResource(R.string.plug_play_choose), current?.label ?: stringResource(R.string.plug_play_none)) { plugDialog = true }
         }
 
+        Group(stringResource(R.string.section_breaker)) {
+            Text(stringResource(R.string.breaker_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            Label(stringResource(R.string.breaker_seconds, settings.breakerSeconds))
+            Slider(
+                value = settings.breakerSeconds.toFloat(),
+                onValueChange = { v -> onEdit { it.copy(breakerSeconds = v.roundToInt()) } },
+                valueRange = 3f..60f,
+            )
+            val breakerApps = allApps.filter { it.key in settings.breakerApps }
+            if (breakerApps.isEmpty()) {
+                Text(stringResource(R.string.breaker_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            }
+            breakerApps.forEach { app ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { onEdit { com.gabrielepiccione.onda.data.UsageBreaker.toggle(it, app.key) } }) { Text(stringResource(R.string.remove)) }
+                }
+            }
+        }
+
         Group(stringResource(R.string.section_widgets)) {
             val homeWidgets = settings.widgetIds + settings.widgetStacks.flatMap { it.widgets }
             if (homeWidgets.isEmpty()) {

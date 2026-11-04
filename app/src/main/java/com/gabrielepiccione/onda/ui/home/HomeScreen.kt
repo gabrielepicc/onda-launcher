@@ -188,13 +188,20 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         vm.clearSearch()
     }
 
-    fun launchApp(app: AppInfo) {
+    var breakerFor by remember { mutableStateOf<AppInfo?>(null) }
+
+    fun startApp(app: AppInfo) {
         val go = {
             vm.launch(app)
             scope.launch { delay(380); closeAll() }
         }
         // App protette: prima lo sblocco (impronta, volto o PIN)
         if (app.key in vm.settingsRepo.current.protectedApps) callbacks.authenticate(app.label) { go() } else go()
+    }
+
+    fun launchApp(app: AppInfo) {
+        // Usage Breaker: prima la pausa, poi l'eventuale sblocco
+        if (app.key in vm.settingsRepo.current.breakerApps) breakerFor = app else startApp(app)
     }
 
     fun openWidgetPicker(filter: String?, target: WidgetTarget) {
@@ -231,6 +238,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             folderSheet = null
             homeMenu = false
             widgetPicker = false
+            breakerFor = null
         }
     }
 
@@ -843,6 +851,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     if (app.key in settings.protectedApps) callbacks.authenticate(app.label) { vm.settingsRepo.toggleProtected(app.key) }
                     else vm.settingsRepo.toggleProtected(app.key)
                 },
+                hasBreaker = app.key in settings.breakerApps,
+                onToggleBreaker = { vm.updateSettings { com.gabrielepiccione.onda.data.UsageBreaker.toggle(it, app.key) } },
                 isMuted = app.packageName in settings.mutedNotifications,
                 favoriteIndex = favIndex,
                 favoriteCount = settings.favorites.size,
@@ -967,6 +977,21 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun deleteWidget(id: Int) = vm.removeWidget(id)
                 override fun done() { editing = null }
             },
+        )
+    }
+
+    breakerFor?.let { app ->
+        val today = remember(app.key) { java.time.LocalDate.now().toString() }
+        UsageBreakerDialog(
+            app = app,
+            seconds = settings.breakerSeconds,
+            opensToday = com.gabrielepiccione.onda.data.UsageBreaker.opensToday(settings, app.key, today),
+            onOpen = {
+                breakerFor = null
+                vm.updateSettings { com.gabrielepiccione.onda.data.UsageBreaker.recordOpen(it, app.key, today) }
+                startApp(app)
+            },
+            onDismiss = { breakerFor = null },
         )
     }
 
