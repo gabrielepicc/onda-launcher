@@ -2,7 +2,7 @@
 
 Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo concluso.
 
-## Fatto finora (0.1 → 0.8)
+## Fatto finora (0.1 → 0.9)
 - ✅ Home a lista, alfabeto "a onda" su Canvas (lato invisibile opposto), doppio tocco sull'alfabeto per bloccare
 - ✅ Elenco app nella stessa pagina, app per lettera ordinate per utilizzo, notifiche anche nell'elenco
 - ✅ Swipe righe (home ed elenco): destra = pannello app, sinistra = elimina notifiche; giù = tendina (fisso), su = configurabile
@@ -20,12 +20,21 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    font importati (.ttf/.otf) per lista e orologio. (Meteo nell'orologio spostato in Fase 4: richiede INTERNET)
 2. 🟡 Fase 3 — Temi: ✅ `LookTheme` serializzabile, Theme Studio (salva/applica/rinomina/duplica/elimina), file `.onda-theme`
    con font incorporati, palette dallo sfondo anche su Android 8.1–11. ⬜ QR/deep link, sfondo automatico per orario
-3. 🟡 Fase 4 — ✅ agenda del calendario come blocco della home, ✅ blocca layout.
-   ⬜ widget stack, ⬜ meteo Open-Meteo (**in attesa di decisione**: richiede il permesso INTERNET, valutare flavor `offline`)
+3. 🟡 Fase 4 — ✅ agenda del calendario come blocco della home, ✅ blocca layout, ✅ pile di widget (scorrimento laterale),
+   ✅ posizione di partenza della home scelta dall'utente.
+   ⬜ meteo Open-Meteo (**in attesa di decisione**: richiede il permesso INTERNET, valutare flavor `offline`)
 4. 🟡 Fase 5 — ✅ prefissi di ricerca (= @ /), ✅ scorciatoie impostazioni di sistema, ✅ motore web selezionabile,
-   ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste.
-   ⬜ Usage Breaker, ⬜ contatti dall'alfabeto, ⬜ riepilogo notifiche, ⬜ conversioni unità/valute
-5. ⬜ Fase 6 — Gesture configurabili estese, animazioni di apertura app, landscape/tablet, Private Space, onboarding, backup automatico
+   ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste,
+   ✅ pausa consapevole (Usage Breaker), ✅ contatti preferiti dall'alfabeto, ✅ riepilogo notifiche (blocco + consegna a orari).
+   ⬜ conversioni unità/valute (le valute richiedono INTERNET: stessa decisione del meteo)
+5. ✅ Fase 6 — ✅ gesti configurabili estesi (swipe su e doppio tocco), ✅ animazioni di apertura app,
+   ✅ orizzontale/tablet (larghezza leggibile, rotazione), ✅ Spazio privato Android 15, ✅ introduzione al primo avvio,
+   ✅ backup automatico giornaliero in una cartella scelta
+
+## Idee successive
+- Conversioni di unità offline (valute solo con il meteo/INTERNET)
+- Fase 1 restante: cache icone su disco, "applica a tutta la categoria", forme SVG, parametri degli stili generati
+- Fase 3 restante: temi via QR/deep link, sfondo automatico per orario
 
 ## Decisioni prese (modificabili)
 - Il pannello dell'app è un foglio dal basso (non pop-up ancorato) per lasciare spazio alla tastiera nella risposta.
@@ -33,3 +42,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - Meteo rimandato: aggiungerebbe la prima connessione a internet dell'app; serve l'OK dell'utente.
 - Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
 - App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).
+- "Usage Breaker" nell'interfaccia si chiama **Pausa consapevole**; il limite giornaliero non blocca l'app, raddoppia la pausa.
+- Riepilogo notifiche programmato: usa lo snooze di sistema del NotificationListener (nessuna notifica viene persa).
+- Posizione della home: automatica (in basso, default) o frazione dell'altezza dello schermo; tutto segue il primo blocco.
+- Introduzione mostrata solo ai nuovi utenti (prima della proposta dei preferiti); rivedibile dalle impostazioni.

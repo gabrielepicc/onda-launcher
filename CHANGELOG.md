@@ -2,6 +2,28 @@
 
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
+## [0.9.0]
+
+### Aggiunto
+- **Posizione della home**: si sceglie dove inizia il primo blocco (orologio o widget); preferiti e altri blocchi lo seguono.
+  Regolabile dal foglio di modifica (pressione lunga) con anteprima dal vivo e dalle impostazioni.
+- **Pile di widget**: più widget nello stesso posto, si cambiano scorrendo di lato; altezza comune, aggiunta e rimozione.
+- **Pausa consapevole** (Usage Breaker): prima di aprire le app scelte, qualche secondo di respiro con le aperture di oggi
+  e, se consentito, i minuti di utilizzo; limite giornaliero opzionale che raddoppia la pausa.
+- **Contatti dall'alfabeto**: i contatti preferiti in cima all'elenco app, raggiungibili con `@`.
+- **Riepilogo notifiche**: blocco della home con le notifiche raggruppate per app; consegna a orari scelti per le app indicate.
+- **Gesti estesi**: swipe su e doppio tocco scelgono tra ricerca, tendina, tutte le app, blocca schermo, impostazioni rapide,
+  app recenti, screenshot, impostazioni di Onda o un'app.
+- **Animazioni di apertura** delle app (cresce o si svela dal tocco, scorre dal basso, dissolvenza).
+- **Tablet e orizzontale**: liste di larghezza leggibile e centrate; rotazione bloccabile in verticale.
+- **Spazio privato** di Android 15 in fondo all'elenco app, con Sblocca/Blocca.
+- **Introduzione** al primo avvio con i gesti e i permessi spiegati.
+- **Backup automatico** giornaliero nella cartella scelta (ultime 7 copie).
+
+### Modificato
+- Schema impostazioni 4: "doppio tocco per bloccare" diventa il gesto doppio tocco = Blocca schermo.
+- Il servizio di accessibilità serve ora a tutte le azioni globali scelte per i gesti (mai al contenuto dello schermo).
+
 ## [0.8.0]
 
 ### Aggiunto

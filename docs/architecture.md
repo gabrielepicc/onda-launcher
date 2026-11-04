@@ -51,7 +51,19 @@ graph LR
 2. Se esiste la vecchia chiave SharedPreferences `settings_json` (Onda 0.2/0.3), `LegacyPrefsMigration` la converte e poi la elimina.
 3. `SettingsCodec.migrate` porta qualunque JSON (anche i backup) allo schema corrente:
    - schema 1 → 2: `muted` → `mutedNotifications`, `widgets` → `widgetIds`, cartelle da array a mappa.
+   - schema 2 → 3: lo swipe su "notifiche" diventa "ricerca" (lo swipe giù è fisso sulla tendina).
+   - schema 3 → 4: `doubleTapLock` → `doubleTap` = `LOCK_SCREEN`.
 4. Campi sconosciuti ignorati, campi mancanti con default: i backup restano compatibili in avanti e all'indietro.
+
+## Blocchi della home
+`HomeBlocks.resolve` ordina orologio, media, agenda, riepilogo notifiche (`summary`), widget (`w:<id>`), pile di widget
+(`s:<id>`, in `Settings.widgetStacks`) e app. `Settings.homeOffset` sposta l'inizio della home (negativo = in basso).
+
+## Servizi e utilità
+- `OndaNotificationListener`: notifiche in home e consegna a orari del riepilogo (snooze, orari in `DigestSchedule`).
+- `UsageAccess`: minuti di utilizzo di oggi (facoltativo) per la pausa consapevole.
+- `LaunchAnimation`: opzioni di apertura delle app dal punto toccato.
+- `AutoBackup`: backup giornaliero via Storage Access Framework.
 
 ## Prestazioni
 - Scroller alfabetico disegnato in una sola `Canvas`; lo stato del dito è letto solo in fase di disegno.
