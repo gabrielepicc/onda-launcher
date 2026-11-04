@@ -57,6 +57,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
@@ -84,6 +86,8 @@ interface SettingsActions {
     fun unhide(app: AppInfo)
     fun wallpaper()
     fun openStyles()
+    /** Importa un font da file per la lista (`forClock = false`) o per l'orologio. */
+    fun importFont(forClock: Boolean)
     fun exportBackup()
     fun importBackup()
     fun close()
@@ -187,6 +191,51 @@ fun SettingsScreen(
             Label(stringResource(R.string.wallpaper_dim))
             Slider(value = settings.wallpaperDim, onValueChange = { v -> onEdit { it.copy(wallpaperDim = v) } }, valueRange = 0f..0.8f)
             TextButton(onClick = { actions.wallpaper() }) { Text(stringResource(R.string.change_wallpaper_ellipsis)) }
+        }
+
+        Group(stringResource(R.string.section_text)) {
+            Label(stringResource(R.string.text_color))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.horizontalScroll(rememberScrollState()).padding(bottom = 6.dp)) {
+                FilterChip(selected = settings.textColor == 0L, onClick = { onEdit { it.copy(textColor = 0) } }, label = { Text(stringResource(R.string.text_color_auto)) })
+                listOf(0xFFFFFFFF, 0xFFF2EDE4, 0xFF1A1C1E, 0xFF7FE3D1, 0xFFC3A6FF, 0xFFFFD27F, 0xFFFFAB91).forEach { argb ->
+                    val sel = settings.textColor == argb
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color(argb))
+                            .border(BorderStroke(if (sel) 3.dp else 1.dp, if (sel) colors.accent else colors.panelBorder), CircleShape)
+                            .clickable { onEdit { it.copy(textColor = argb) } }
+                    ) {
+                        if (sel) Icon(Icons.Filled.Check, null, tint = if (Color(argb).luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(18.dp))
+                    }
+                }
+            }
+            Label(stringResource(R.string.list_alignment))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.gabrielepiccione.onda.data.HAlign.entries.forEach { a ->
+                    FilterChip(selected = settings.listAlign == a, onClick = { onEdit { it.copy(listAlign = a) } }, label = { Text(stringResource(a.labelRes)) })
+                }
+            }
+            Label(stringResource(R.string.font_weight))
+            Slider(
+                value = settings.listFontWeight.toFloat(),
+                onValueChange = { v -> onEdit { it.copy(listFontWeight = (v / 100).roundToInt() * 100) } },
+                valueRange = 100f..900f,
+                steps = 7,
+            )
+            Label(stringResource(R.string.letter_spacing))
+            Slider(
+                value = settings.listLetterSpacing,
+                onValueChange = { v -> onEdit { it.copy(listLetterSpacing = v) } },
+                valueRange = -0.05f..0.2f,
+            )
+            SwitchRow(stringResource(R.string.text_shadow), stringResource(R.string.text_shadow_sub), settings.textShadow) { v -> onEdit { it.copy(textShadow = v) } }
+            SwitchRow(stringResource(R.string.show_battery), null, settings.showBattery) { v -> onEdit { it.copy(showBattery = v) } }
+            Label(stringResource(R.string.custom_fonts))
+            FontRow(stringResource(R.string.font_for_list), settings.customFontList, onImport = { actions.importFont(false) }, onClear = { onEdit { it.copy(customFontList = "") } })
+            FontRow(stringResource(R.string.font_for_clock), settings.customFontClock, onImport = { actions.importFont(true) }, onClear = { onEdit { it.copy(customFontClock = "") } })
         }
 
         Group(stringResource(R.string.section_icons)) {
@@ -336,6 +385,23 @@ private fun GestureChips(selected: com.gabrielepiccione.onda.data.GestureAction,
         com.gabrielepiccione.onda.data.GestureAction.entries.forEach { g ->
             FilterChip(selected = selected == g, onClick = { onPick(g) }, label = { Text(stringResource(g.labelRes)) })
         }
+    }
+}
+
+@Composable
+private fun FontRow(title: String, path: String, onImport: () -> Unit, onClear: () -> Unit) {
+    val colors = LocalOndaColors.current
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Column(Modifier.weight(1f)) {
+            Text(title, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                if (path.isBlank()) stringResource(R.string.font_from_theme) else java.io.File(path).name.substringAfter('_'),
+                color = colors.onWallpaperMuted,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        if (path.isNotBlank()) TextButton(onClick = onClear) { Text(stringResource(R.string.remove)) }
+        TextButton(onClick = onImport) { Text(stringResource(R.string.font_import)) }
     }
 }
 

@@ -134,6 +134,7 @@ interface HomeCallbacks {
     fun pickWidget(provider: WidgetManager.Provider, target: WidgetTarget)
     fun exportBackup()
     fun importBackup()
+    fun importFont(forClock: Boolean)
 }
 
 data class HomeStatus(
@@ -413,6 +414,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 align = settings.clockAlign,
                                 highlighted = editing == HomeBlocks.CLOCK,
                                 onLongPress = { editing = HomeBlocks.CLOCK },
+                                showBattery = settings.showBattery,
                                 modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
                             )
                         }
@@ -671,6 +673,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
                         override fun wallpaper() = SystemActions.openWallpaperPicker(context)
                         override fun openStyles() { overlay = Overlay.STYLES }
+                        override fun importFont(forClock: Boolean) = callbacks.importFont(forClock)
                         override fun exportBackup() = callbacks.exportBackup()
                         override fun importBackup() = callbacks.importBackup()
                         override fun close() = closeAll()

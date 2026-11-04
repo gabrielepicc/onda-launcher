@@ -98,8 +98,10 @@ fun ClockHeader(
     highlighted: Boolean = false,
     onLongPress: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    showBattery: Boolean = false,
 ) {
     val colors = LocalOndaColors.current
+    val shadow = LocalTextShadow.current
     val now by produceState(LocalDateTime.now()) {
         while (true) {
             value = LocalDateTime.now()
@@ -128,13 +130,25 @@ fun ClockHeader(
             .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
         ClockFace(now, style, scale, textAlign)
-        Text(
-            now.format(DateTimeFormatter.ofPattern("EEEE d MMMM", locale)).replaceFirstChar { it.titlecase(locale) },
-            color = colors.onWallpaperMuted,
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = textAlign,
-            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onDate).padding(vertical = 2.dp),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                now.format(DateTimeFormatter.ofPattern("EEEE d MMMM", locale)).replaceFirstChar { it.titlecase(locale) },
+                color = colors.onWallpaperMuted,
+                style = MaterialTheme.typography.titleMedium.copy(shadow = shadow),
+                textAlign = textAlign,
+                modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onDate).padding(vertical = 2.dp),
+            )
+            if (showBattery) {
+                val battery = rememberBatteryState()
+                if (battery.level >= 0) {
+                    Text(
+                        "  ·  " + (if (battery.charging) "⚡" else "") + "${battery.level}%",
+                        color = if (!battery.charging && battery.level <= 15) MaterialTheme.colorScheme.error else colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.titleMedium.copy(shadow = shadow),
+                    )
+                }
+            }
+        }
         if (event != null) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -159,6 +173,35 @@ fun ClockHeader(
     }
 }
 
+/** Livello e stato di carica della batteria, aggiornati dal broadcast di sistema. */
+data class BatteryState(val level: Int, val charging: Boolean)
+
+@Composable
+fun rememberBatteryState(): BatteryState {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var state by remember { mutableStateOf(BatteryState(-1, false)) }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        fun read(i: android.content.Intent?) {
+            if (i == null) return
+            val level = i.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1)
+            val scale = i.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, 100).coerceAtLeast(1)
+            val status = i.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1)
+            val charging = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING || status == android.os.BatteryManager.BATTERY_STATUS_FULL
+            state = BatteryState(if (level < 0) -1 else level * 100 / scale, charging)
+        }
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(c: android.content.Context?, i: android.content.Intent?) = read(i)
+        }
+        // ACTION_BATTERY_CHANGED è "sticky": la registrazione restituisce subito l'ultimo valore
+        read(androidx.core.content.ContextCompat.registerReceiver(
+            context, receiver, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED),
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED,
+        ))
+        onDispose { runCatching { context.unregisterReceiver(receiver) } }
+    }
+    return state
+}
+
 /** Solo il quadrante, riusato anche nelle anteprime dei preset. */
 @Composable
 fun ClockFace(now: LocalDateTime, style: ClockStyle, scale: Float, textAlign: TextAlign = TextAlign.Start) {
@@ -166,7 +209,9 @@ fun ClockFace(now: LocalDateTime, style: ClockStyle, scale: Float, textAlign: Te
     val locale = Locale.getDefault()
     val hh = now.format(DateTimeFormatter.ofPattern("HH", locale))
     val mm = now.format(DateTimeFormatter.ofPattern("mm", locale))
-    val base = MaterialTheme.typography.displayLarge.copy(color = colors.onWallpaper)
+    val clockFont = LocalClockFont.current
+    val base = MaterialTheme.typography.displayLarge.copy(color = colors.onWallpaper, shadow = LocalTextShadow.current)
+        .let { if (clockFont != null) it.copy(fontFamily = clockFont) else it }
     when (style) {
         ClockStyle.LARGE_THIN -> AnimatedDigits("$hh:$mm", base.copy(fontSize = 76.sp * scale, fontWeight = FontWeight.Light))
         ClockStyle.STACKED -> Column {

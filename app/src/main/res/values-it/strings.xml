@@ -244,4 +244,20 @@
     <string name="style_sticker">Sticker</string>
     <string name="style_watercolor">Acquerello</string>
     <string name="style_marble">Marmo</string>
+    <string name="section_text">Testo</string>
+    <string name="text_color">Colore del testo</string>
+    <string name="text_color_auto">Automatico</string>
+    <string name="list_alignment">Allineamento della lista</string>
+    <string name="font_weight">Spessore del carattere</string>
+    <string name="letter_spacing">Spaziatura tra le lettere</string>
+    <string name="text_shadow">Ombra del testo</string>
+    <string name="text_shadow_sub">Migliora la leggibilità su sfondi chiari o pieni di dettagli</string>
+    <string name="show_battery">Batteria accanto alla data</string>
+    <string name="custom_fonts">Font personalizzati</string>
+    <string name="font_for_list">Lista delle app</string>
+    <string name="font_for_clock">Orologio</string>
+    <string name="font_from_theme">Carattere del tema</string>
+    <string name="font_import">Importa…</string>
+    <string name="font_invalid">Il file non è un font valido (.ttf o .otf)</string>
+    <string name="font_imported">Font importato</string>
 </resources>

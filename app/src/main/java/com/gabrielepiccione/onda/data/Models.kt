@@ -198,6 +198,21 @@ data class Settings(
     /** Player: compatto su una riga (true) o esteso con barra di avanzamento. */
     val mediaCompact: Boolean = true,
     val mediaScale: Float = 1f,
+    /** Colore del testo sopra lo sfondo (ARGB); 0 = automatico dal tema. */
+    val textColor: Long = 0,
+    /** Allineamento delle righe dei preferiti. */
+    val listAlign: HAlign = HAlign.START,
+    /** Peso del carattere dei nomi delle app (100–900). */
+    val listFontWeight: Int = 400,
+    /** Spaziatura tra le lettere dei nomi delle app, in em. */
+    val listLetterSpacing: Float = 0f,
+    /** Ombra sotto i testi, utile con sfondi chiari o molto dettagliati. */
+    val textShadow: Boolean = false,
+    /** Mostra la percentuale di batteria accanto alla data. */
+    val showBattery: Boolean = true,
+    /** Font importati (percorso nella memoria privata dell'app), per lista e orologio; vuoto = carattere scelto. */
+    val customFontList: String = "",
+    val customFontClock: String = "",
     /** Ultimo preset di stile applicato (solo informativo). */
     val stylePreset: String = "",
     val mutedNotifications: Set<String> = emptySet(),

@@ -244,4 +244,20 @@
     <string name="style_sticker">Sticker</string>
     <string name="style_watercolor">Watercolor</string>
     <string name="style_marble">Marble</string>
+    <string name="section_text">Text</string>
+    <string name="text_color">Text color</string>
+    <string name="text_color_auto">Automatic</string>
+    <string name="list_alignment">List alignment</string>
+    <string name="font_weight">Font weight</string>
+    <string name="letter_spacing">Letter spacing</string>
+    <string name="text_shadow">Text shadow</string>
+    <string name="text_shadow_sub">Improves readability on light or busy wallpapers</string>
+    <string name="show_battery">Battery next to the date</string>
+    <string name="custom_fonts">Custom fonts</string>
+    <string name="font_for_list">App list</string>
+    <string name="font_for_clock">Clock</string>
+    <string name="font_from_theme">Theme font</string>
+    <string name="font_import">Import…</string>
+    <string name="font_invalid">The file is not a valid font (.ttf or .otf)</string>
+    <string name="font_imported">Font imported</string>
 </resources>

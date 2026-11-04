@@ -60,6 +60,32 @@ data class OndaColors(
 val LocalOndaColors = staticCompositionLocalOf { colorsFrom(darkColorScheme(), true) }
 val LocalHapticsEnabled = staticCompositionLocalOf { true }
 
+/** Ombra da applicare ai testi sopra lo sfondo (null = nessuna). */
+val LocalTextShadow = staticCompositionLocalOf<androidx.compose.ui.graphics.Shadow?> { null }
+
+/** Font importati dall'utente per la lista e per l'orologio (null = carattere del tema). */
+val LocalListFont = staticCompositionLocalOf<FontFamily?> { null }
+val LocalClockFont = staticCompositionLocalOf<FontFamily?> { null }
+
+/** Font da un file importato; null se il file non esiste o non è leggibile. */
+@androidx.compose.runtime.Composable
+fun rememberFileFont(path: String): FontFamily? = remember(path) {
+    if (path.isBlank()) null
+    else runCatching {
+        val f = java.io.File(path)
+        if (!f.exists()) null else FontFamily(androidx.compose.ui.text.font.Font(f))
+    }.getOrNull()
+}
+
+/** Aspetto delle righe dei preferiti (Fase 2). */
+@androidx.compose.runtime.Immutable
+data class ListStyle(
+    val align: com.gabrielepiccione.onda.data.HAlign = com.gabrielepiccione.onda.data.HAlign.START,
+    val weight: Int = 400,
+    val letterSpacingEm: Float = 0f,
+)
+val LocalListStyle = staticCompositionLocalOf { ListStyle() }
+
 /** Stile delle icone corrente (ORIGINAL, DOTS, MATERIAL, OUTLINE, STICKER, WATERCOLOR, MARBLE). */
 val LocalIconStyle = staticCompositionLocalOf { "ORIGINAL" }
 
@@ -116,7 +142,16 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
     val typography = remember(family) { typographyWith(family) }
     val base = LocalDensity.current
     CompositionLocalProvider(
-        LocalOndaColors provides colorsFrom(scheme, dark),
+        LocalOndaColors provides colorsFrom(scheme, dark).let { c ->
+            if (settings.textColor == 0L) c
+            else Color(settings.textColor).let { t -> c.copy(onWallpaper = t, onWallpaperMuted = t.copy(alpha = 0.7f)) }
+        },
+        LocalTextShadow provides if (settings.textShadow) {
+            androidx.compose.ui.graphics.Shadow(Color.Black.copy(alpha = if (dark) 0.55f else 0.35f), androidx.compose.ui.geometry.Offset(0f, 2f), 8f)
+        } else null,
+        LocalListFont provides rememberFileFont(settings.customFontList),
+        LocalListStyle provides ListStyle(settings.listAlign, settings.listFontWeight, settings.listLetterSpacing),
+        LocalClockFont provides rememberFileFont(settings.customFontClock),
         LocalHapticsEnabled provides settings.haptics,
         LocalIconStyle provides settings.iconStyle,
         LocalOndaTokens provides OndaTokens(),

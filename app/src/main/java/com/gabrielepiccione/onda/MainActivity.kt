@@ -71,6 +71,34 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
         toast(getString(if (ok) R.string.toast_restored else R.string.toast_restore_failed))
     }
 
+    private var fontForClock = false
+
+    /** Font scelto dall'utente: copiato nella memoria privata e usato dal tema. */
+    private val fontLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        uri ?: return@registerForActivityResult
+        val name = runCatching {
+            contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+                if (c.moveToFirst()) c.getString(0) else null
+            }
+        }.getOrNull() ?: "font.ttf"
+        val dir = java.io.File(filesDir, "fonts").apply { mkdirs() }
+        val target = java.io.File(dir, "${System.currentTimeMillis()}_${name.replace(Regex("[^A-Za-z0-9._-]"), "_")}")
+        val ok = runCatching {
+            contentResolver.openInputStream(uri)?.use { input -> target.outputStream().use { input.copyTo(it) } }
+            // Verifica che sia davvero un font leggibile
+            android.graphics.Typeface.createFromFile(target)
+        }.isSuccess
+        if (!ok) {
+            target.delete()
+            toast(getString(R.string.font_invalid))
+            return@registerForActivityResult
+        }
+        vm.updateSettings {
+            if (fontForClock) it.copy(customFontClock = target.absolutePath) else it.copy(customFontList = target.absolutePath)
+        }
+        toast(getString(R.string.font_imported))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -159,6 +187,11 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
     override fun openAccessibilitySettings() {
         toast(getString(R.string.toast_enable_a11y))
         runCatching { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+    }
+
+    override fun importFont(forClock: Boolean) {
+        fontForClock = forClock
+        fontLauncher.launch(arrayOf("font/ttf", "font/otf", "font/*", "application/x-font-ttf", "application/x-font-otf", "application/octet-stream"))
     }
 
     override fun exportBackup() = exportLauncher.launch("onda-backup-${LocalDate.now()}.json")

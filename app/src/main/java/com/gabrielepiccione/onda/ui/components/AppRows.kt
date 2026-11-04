@@ -78,8 +78,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.data.HAlign
 import com.gabrielepiccione.onda.data.NotificationItem
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -230,7 +232,17 @@ fun FavoriteRow(
                 .padding(horizontal = 12.dp, vertical = 10.dp)
                 .animateContentSize(Motion.bouncy())
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            val listStyle = LocalListStyle.current
+            val listFont = LocalListFont.current
+            val shadow = LocalTextShadow.current
+            val rowDirection = if (listStyle.align == HAlign.END) androidx.compose.ui.unit.LayoutDirection.Rtl
+            else androidx.compose.ui.platform.LocalLayoutDirection.current
+            androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides rowDirection) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = if (listStyle.align == HAlign.CENTER) Arrangement.Center else Arrangement.Start,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 if (showIcon) {
                     Box {
                         AppIcon(app, 44.dp * iconScale, themedIcons)
@@ -252,12 +264,19 @@ fun FavoriteRow(
                     Spacer(Modifier.width(18.dp))
                 }
                 // Nome dell'app e, accanto all'icona, l'anteprima dell'ultima notifica
-                Column(Modifier.weight(1f)) {
+                Column(
+                    if (listStyle.align == HAlign.CENTER) Modifier.weight(1f, fill = false) else Modifier.weight(1f),
+                    horizontalAlignment = if (listStyle.align == HAlign.CENTER) Alignment.CenterHorizontally else Alignment.Start,
+                ) {
                     if (!(hideName && showIcon)) {
                         Text(
                             text = app.label,
                             color = colors.onWallpaper,
-                            style = if (latest != null) MaterialTheme.typography.titleMedium else MaterialTheme.typography.headlineSmall,
+                            style = (if (latest != null) MaterialTheme.typography.titleMedium else MaterialTheme.typography.headlineSmall).copy(
+                                fontWeight = FontWeight(listStyle.weight.coerceIn(100, 900)),
+                                letterSpacing = listStyle.letterSpacingEm.em,
+                                shadow = shadow,
+                            ).let { st -> if (listFont != null) st.copy(fontFamily = listFont) else st },
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -282,6 +301,7 @@ fun FavoriteRow(
                 if (!showIcon && latest != null) {
                     Box(Modifier.size(8.dp).clip(CircleShape).background(colors.accent))
                 }
+            }
             }
         }
     }
