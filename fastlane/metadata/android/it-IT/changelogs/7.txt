@@ -1,0 +1,1 @@
+Stessi gesti in home e nell elenco app, motore icone con forme e stili generati, personalizzazione di testo e orologio, Theme Studio con file .onda-theme.

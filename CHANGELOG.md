@@ -2,6 +2,24 @@
 
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
+## [0.7.0]
+
+### Aggiunto
+- **Gesti uguali in home e nell'elenco app**: destra apre il pannello dell'app, sinistra elimina le notifiche; giù apre sempre la tendina.
+- **Fase 1 – icone**: forme adattive (cerchio, squircle, quadrato, goccia, cilindro, petalo), fallback degli icon pack
+  (iconback/iconmask/iconupon/scale), icone calendario dinamiche, "Cambia icona" con suggerimenti da tutti i pack, cache in memoria,
+  icone generate per categoria negli stili Material, Contorno, Sticker, Acquerello, Marmo e Puntini, classificatore delle app.
+- **Fase 2 – testo e orologio**: colore del testo, allineamento della lista, peso e spaziatura del carattere, ombra del testo,
+  batteria accanto alla data, font importati da file per lista e orologio.
+- **Fase 3 – temi**: Theme Studio per salvare l'aspetto come tema, applicarlo, rinominarlo, duplicarlo ed eliminarlo;
+  esportazione/importazione di file `.onda-theme` con i font incorporati; palette dallo sfondo anche su Android 8.1–11.
+- Player compatto ed esteso riprogettati; margini simmetrici per orologio, widget e player.
+- App di ogni lettera ordinate per utilizzo; notifiche anche nell'elenco app; doppio tocco sull'alfabeto per bloccare.
+- `CLAUDE.md` e `docs/roadmap.md` per lo sviluppo continuo.
+
+### Modificato
+- Schema impostazioni 3: lo swipe su impostato su "notifiche" diventa "ricerca" (lo swipe giù è ora fisso sulla tendina).
+
 ## [0.5.0]
 
 ### Aggiunto

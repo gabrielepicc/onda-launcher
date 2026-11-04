@@ -1,0 +1,1 @@
+Same gestures in home and app list, icon engine with shapes and generated styles, text and clock customization, Theme Studio with .onda-theme files.
