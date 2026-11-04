@@ -35,7 +35,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -107,8 +109,9 @@ fun WidgetPickerSheet(
     onDismiss: () -> Unit,
 ) {
     val colors = LocalOndaColors.current
-    val providers by produceState(initialValue = emptyList<WidgetManager.Provider>(), packageFilter) {
-        value = withContext(Dispatchers.IO) { widgets.providers(packageFilter) }
+    var providers by remember(packageFilter) { mutableStateOf(emptyList<WidgetManager.Provider>()) }
+    LaunchedEffect(packageFilter) {
+        providers = withContext(Dispatchers.IO) { widgets.providers(packageFilter) }
     }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -131,8 +134,9 @@ fun WidgetPickerSheet(
         }
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 560.dp)) {
             items(providers, key = { it.info.provider.flattenToString() + it.info.profile.hashCode() }) { p ->
-                val preview by produceState<ImageBitmap?>(initialValue = null, p) {
-                    value = withContext(Dispatchers.IO) {
+                var preview by remember(p) { mutableStateOf<ImageBitmap?>(null) }
+                LaunchedEffect(p) {
+                    preview = withContext(Dispatchers.IO) {
                         runCatching {
                             val d = widgets.previewOf(p) ?: return@runCatching null
                             val w = d.intrinsicWidth.takeIf { it > 0 } ?: 300
