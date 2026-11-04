@@ -345,6 +345,16 @@
     <string name="icon_from_image">Use an image…</string>
     <string name="icon_image_invalid">This image can\'t be used</string>
     <string name="icon_shape_default">Like the others</string>
+    <string name="gesture_lock">Lock screen</string>
+    <string name="gesture_open_app">Open an app</string>
+    <string name="gesture_choose_app">Choose app</string>
+    <string name="gesture_app_none">No app chosen</string>
+    <string name="double_tap">Double tap</string>
+    <string name="open_animation">App opening animation</string>
+    <string name="anim_system">System</string>
+    <string name="anim_fade">Fade</string>
+    <string name="anim_scale">Zoom</string>
+    <string name="anim_slide">Slide up</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>

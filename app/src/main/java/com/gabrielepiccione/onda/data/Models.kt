@@ -104,7 +104,19 @@ enum class GestureAction(@StringRes val labelRes: Int) {
     SEARCH(R.string.gesture_search),
     NOTIFICATIONS(R.string.gesture_notifications),
     ALL_APPS(R.string.gesture_all_apps),
+    LOCK_SCREEN(R.string.gesture_lock),
+    SETTINGS(R.string.settings),
+    OPEN_APP(R.string.gesture_open_app),
     NONE(R.string.gesture_none),
+}
+
+/** Animazione con cui si aprono le app dal launcher. */
+@Serializable
+enum class OpenAnimation(@StringRes val labelRes: Int) {
+    SYSTEM(R.string.anim_system),
+    FADE(R.string.anim_fade),
+    SCALE(R.string.anim_scale),
+    SLIDE(R.string.anim_slide),
 }
 
 /** Cartella in home: contiene app (per chiave) e widget (per id). */
@@ -342,7 +354,12 @@ data class Settings(
     val showMedia: Boolean = true,
     val wallpaperDim: Float = 0.2f,
     val leftHanded: Boolean = false,
-    val doubleTapLock: Boolean = false,
+    /** Doppio tocco su uno spazio vuoto della home o sull'alfabeto. */
+    val doubleTapAction: GestureAction = GestureAction.NONE,
+    /** App aperte dai gesti con azione [GestureAction.OPEN_APP] (chiave app). */
+    val swipeUpApp: String = "",
+    val doubleTapApp: String = "",
+    val openAnimation: OpenAnimation = OpenAnimation.SYSTEM,
     val haptics: Boolean = true,
     val widgetIds: List<Int> = emptyList(),
     /** Pile di widget in home; i loro widget non compaiono in [widgetIds]. */
@@ -352,9 +369,10 @@ data class Settings(
     companion object {
         /**
          * 1 = formato JSON "libero" delle versioni 0.2/0.3; 2 = formato kotlinx.serialization (0.4+);
-         * 3 = swipe giù sempre sulla tendina: lo swipe su, se era "notifiche", diventa "ricerca".
+         * 3 = swipe giù sempre sulla tendina: lo swipe su, se era "notifiche", diventa "ricerca";
+         * 4 = "doubleTapLock" sostituito da "doubleTapAction".
          */
-        const val CURRENT_SCHEMA = 3
+        const val CURRENT_SCHEMA = 4
     }
 }
 

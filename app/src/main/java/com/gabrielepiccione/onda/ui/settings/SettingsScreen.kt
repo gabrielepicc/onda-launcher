@@ -78,6 +78,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.FontChoice
+import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.core.icons.IconPacks
 import com.gabrielepiccione.onda.data.Settings
 import com.gabrielepiccione.onda.data.ThemeMode
@@ -128,6 +129,8 @@ fun SettingsScreen(
     var hiddenUnlocked by remember { mutableStateOf(false) }
     var page by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
+    // Dove salvare l'app scelta per un gesto; null = scelta chiusa
+    var gestureAppPick by remember { mutableStateOf<((String) -> Unit)?>(null) }
     val onEdit = actions::edit
     BackHandler(enabled = page != null) { page = null }
 
@@ -361,15 +364,35 @@ fun SettingsScreen(
 
         if (page == SettingsPage.GESTURES) Group(stringResource(R.string.section_gestures)) {
             Text(stringResource(R.string.swipe_down_fixed), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
-            Label(stringResource(R.string.swipe_up))
-            GestureChips(settings.swipeUp) { g -> onEdit { it.copy(swipeUp = g) } }
-            SwitchRow(
-                stringResource(R.string.double_tap_lock),
-                if (status.accessibilityEnabled) stringResource(R.string.double_tap_lock_on) else stringResource(R.string.double_tap_lock_off),
-                settings.doubleTapLock,
-            ) { v ->
-                onEdit { it.copy(doubleTapLock = v) }
-                if (v && !status.accessibilityEnabled) actions.accessibility()
+            GestureSetting(
+                title = stringResource(R.string.swipe_up),
+                action = settings.swipeUp,
+                appKey = settings.swipeUpApp,
+                allApps = allApps,
+                accessibilityEnabled = status.accessibilityEnabled,
+                onAction = { g ->
+                    onEdit { it.copy(swipeUp = g) }
+                    if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                },
+                onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(swipeUpApp = key) } } },
+            )
+            GestureSetting(
+                title = stringResource(R.string.double_tap),
+                action = settings.doubleTapAction,
+                appKey = settings.doubleTapApp,
+                allApps = allApps,
+                accessibilityEnabled = status.accessibilityEnabled,
+                onAction = { g ->
+                    onEdit { it.copy(doubleTapAction = g) }
+                    if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                },
+                onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(doubleTapApp = key) } } },
+            )
+            Label(stringResource(R.string.open_animation))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState()).padding(bottom = 6.dp)) {
+                com.gabrielepiccione.onda.data.OpenAnimation.entries.forEach { a ->
+                    FilterChip(selected = settings.openAnimation == a, onClick = { onEdit { it.copy(openAnimation = a) } }, label = { Text(stringResource(a.labelRes)) })
+                }
             }
             SwitchRow(stringResource(R.string.haptics), stringResource(R.string.haptics_sub), settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
             Text(
@@ -467,6 +490,25 @@ fun SettingsScreen(
 
     widgetToRemove?.let { id ->
         ConfirmDeleteWidgetDialog(onConfirm = { actions.removeWidget(id); widgetToRemove = null }, onDismiss = { widgetToRemove = null })
+    }
+
+    gestureAppPick?.let { save ->
+        AlertDialog(
+            onDismissRequest = { gestureAppPick = null },
+            title = { Text(stringResource(R.string.gesture_choose_app)) },
+            text = {
+                androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
+                    items(allApps.size) { i ->
+                        val app = allApps[i]
+                        ChoiceRow(app.label, false) {
+                            save(app.key)
+                            gestureAppPick = null
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { gestureAppPick = null }) { Text(stringResource(R.string.close)) } },
+        )
     }
 
     if (plugDialog) {
@@ -578,6 +620,27 @@ private fun SettingsPreview(settings: Settings, allApps: List<AppInfo>) {
             }
         }
         Box(Modifier.matchParentSize().blockTouches())
+    }
+}
+
+/** Azione di un gesto, con la scelta dell'app e l'avviso sull'accessibilità quando servono. */
+@Composable
+private fun GestureSetting(
+    title: String,
+    action: GestureAction,
+    appKey: String,
+    allApps: List<AppInfo>,
+    accessibilityEnabled: Boolean,
+    onAction: (GestureAction) -> Unit,
+    onChooseApp: () -> Unit,
+) {
+    Label(title)
+    GestureChips(action, onAction)
+    if (action == GestureAction.OPEN_APP) {
+        ClickRow(stringResource(R.string.gesture_choose_app), allApps.firstOrNull { it.key == appKey }?.label ?: stringResource(R.string.gesture_app_none), onChooseApp)
+    }
+    if (action == GestureAction.LOCK_SCREEN && !accessibilityEnabled) {
+        Text(stringResource(R.string.double_tap_lock_off), color = LocalOndaColors.current.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
     }
 }
 

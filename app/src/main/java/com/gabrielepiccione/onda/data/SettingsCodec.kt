@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.intOrNull
@@ -53,8 +54,18 @@ object SettingsCodec {
             ?: if ("version" in obj) 1 else Settings.CURRENT_SCHEMA
         if (version < 2) obj = fromSchema1(obj)
         if (version < 3) obj = fromSchema2(obj)
-        // Passi futuri: if (version < 4) obj = fromSchema3(obj) ...
+        if (version < 4) obj = fromSchema3(obj)
+        // Passi futuri: if (version < 5) obj = fromSchema4(obj) ...
         return obj
+    }
+
+    /** Schema 3 -> 4: il doppio tocco per bloccare diventa un'azione configurabile. */
+    private fun fromSchema3(old: JsonObject): JsonObject = buildJsonObject {
+        for ((key, value) in old) {
+            if (key != "doubleTapLock") put(key, value)
+        }
+        if (old["doubleTapLock"]?.jsonPrimitive?.booleanOrNull == true) put("doubleTapAction", JsonPrimitive("LOCK_SCREEN"))
+        put("schemaVersion", JsonPrimitive(4))
     }
 
     /** Schema 1 (0.2/0.3): "muted" -> mutedNotifications, "widgets" -> widgetIds, cartelle da array a mappa. */

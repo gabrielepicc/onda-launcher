@@ -73,6 +73,12 @@ class SettingsCodecTest {
     }
 
     @Test
+    fun schema3DoubleTapLockBecomesAnAction() {
+        assertEquals(GestureAction.LOCK_SCREEN, SettingsCodec.decode("""{"schemaVersion": 3, "doubleTapLock": true}""").doubleTapAction)
+        assertEquals(GestureAction.NONE, SettingsCodec.decode("""{"schemaVersion": 3, "doubleTapLock": false}""").doubleTapAction)
+    }
+
+    @Test
     fun unknownEnumValueFallsBackToDefault() {
         val s = SettingsCodec.decode("""{"schemaVersion": 2, "themeMode": "PURPLE"}""")
         assertEquals(ThemeMode.SYSTEM, s.themeMode)

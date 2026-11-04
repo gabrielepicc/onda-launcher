@@ -345,6 +345,16 @@
     <string name="icon_from_image">Usa un\'immagine…</string>
     <string name="icon_image_invalid">Questa immagine non si può usare</string>
     <string name="icon_shape_default">Come le altre</string>
+    <string name="gesture_lock">Blocca lo schermo</string>
+    <string name="gesture_open_app">Apri un\'app</string>
+    <string name="gesture_choose_app">Scegli l\'app</string>
+    <string name="gesture_app_none">Nessuna app scelta</string>
+    <string name="double_tap">Doppio tocco</string>
+    <string name="open_animation">Animazione di apertura delle app</string>
+    <string name="anim_system">Di sistema</string>
+    <string name="anim_fade">Dissolvenza</string>
+    <string name="anim_scale">Zoom</string>
+    <string name="anim_slide">Dal basso</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>

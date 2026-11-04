@@ -31,7 +31,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ valori e ripristino sugli slider, ✅ popup all'altezza dell'icona al posto dei fogli dal basso (la risposta alle notifiche resta sopra la tastiera),
    ✅ anteprima dal vivo e pagine nelle impostazioni, ✅ riordino trascinando, ✅ modifica completa delle singole icone,
    ✅ annulla dopo un preset e conferma prima di eliminare un widget
-6. ⬜ Fase 6 — Gesture configurabili estese, animazioni di apertura app, landscape/tablet, Private Space, onboarding, backup automatico
+6. 🟡 Fase 6 — ✅ gesture configurabili estese, ✅ animazioni di apertura app, ⬜ landscape/tablet, ⬜ Private Space, ⬜ onboarding, ⬜ backup automatico
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".

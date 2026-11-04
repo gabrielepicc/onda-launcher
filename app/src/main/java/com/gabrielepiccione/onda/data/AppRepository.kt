@@ -204,7 +204,18 @@ class AppRepository(
     // --- Azioni ---
 
     fun launch(app: AppInfo, bounds: Rect? = null) {
-        runCatching { launcherApps.startMainActivity(app.component, app.user, bounds, null) }
+        runCatching { launcherApps.startMainActivity(app.component, app.user, bounds, openOptions()) }
+    }
+
+    /** Animazione di apertura scelta dall'utente; null = quella di sistema. */
+    private fun openOptions(): android.os.Bundle? {
+        val enter = when (settings.value.openAnimation) {
+            OpenAnimation.SYSTEM -> return null
+            OpenAnimation.FADE -> com.gabrielepiccione.onda.R.anim.onda_open_fade
+            OpenAnimation.SCALE -> com.gabrielepiccione.onda.R.anim.onda_open_scale
+            OpenAnimation.SLIDE -> com.gabrielepiccione.onda.R.anim.onda_open_slide
+        }
+        return android.app.ActivityOptions.makeCustomAnimation(context, enter, com.gabrielepiccione.onda.R.anim.onda_stay).toBundle()
     }
 
     fun openAppInfo(app: AppInfo) {
