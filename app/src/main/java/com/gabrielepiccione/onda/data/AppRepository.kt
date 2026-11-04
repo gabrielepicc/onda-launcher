@@ -181,8 +181,8 @@ class AppRepository(
 
     // --- Azioni ---
 
-    fun launch(app: AppInfo, bounds: Rect? = null) {
-        runCatching { launcherApps.startMainActivity(app.component, app.user, bounds, null) }
+    fun launch(app: AppInfo, bounds: Rect? = null, options: android.os.Bundle? = null) {
+        runCatching { launcherApps.startMainActivity(app.component, app.user, bounds, options) }
     }
 
     fun openAppInfo(app: AppInfo) {

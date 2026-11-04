@@ -334,6 +334,20 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
             )
             SwitchRow(stringResource(R.string.haptics), stringResource(R.string.haptics_sub), settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
+            Label(stringResource(R.string.open_animation))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                val names = mapOf(
+                    "SYSTEM" to R.string.anim_system, "SCALE" to R.string.anim_scale, "REVEAL" to R.string.anim_reveal,
+                    "SLIDE" to R.string.anim_slide, "FADE" to R.string.anim_fade,
+                )
+                com.gabrielepiccione.onda.util.LaunchAnimation.ALL.forEach { id ->
+                    FilterChip(
+                        selected = settings.openAnimation == id,
+                        onClick = { onEdit { it.copy(openAnimation = id) } },
+                        label = { Text(stringResource(names.getValue(id))) },
+                    )
+                }
+            }
             Text(
                 stringResource(R.string.gestures_help),
                 color = colors.onWallpaperMuted,

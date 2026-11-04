@@ -379,4 +379,10 @@
     <string name="gesture_open_app">Open an app</string>
     <string name="gesture_app">App for the gesture</string>
     <string name="double_tap">Double tap</string>
+    <string name="open_animation">App opening animation</string>
+    <string name="anim_system">System</string>
+    <string name="anim_scale">Grow from touch</string>
+    <string name="anim_reveal">Reveal from touch</string>
+    <string name="anim_slide">Slide up</string>
+    <string name="anim_fade">Fade</string>
 </resources>

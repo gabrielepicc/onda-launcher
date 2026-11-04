@@ -221,7 +221,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     // --- Azioni sulle app ---
     fun launch(app: AppInfo) {
-        appsRepo.launch(app)
+        appsRepo.launch(app, options = com.gabrielepiccione.onda.util.LaunchAnimation.options(settingsRepo.current.openAnimation))
         viewModelScope.launch { delay(600); settingsRepo.recordLaunch(app.key) }
     }
 

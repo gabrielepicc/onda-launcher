@@ -255,6 +255,8 @@ data class Settings(
      * Negativo = automatico: contenuto appoggiato in basso, vicino al pollice.
      */
     val homeOffset: Float = -1f,
+    /** Animazione di apertura delle app (vedi [com.gabrielepiccione.onda.util.LaunchAnimation]). */
+    val openAnimation: String = "SYSTEM",
     /** Blocca il layout: niente modifiche con la pressione lunga in home. */
     val lockLayout: Boolean = false,
     /** Motore per la ricerca web: SYSTEM, DUCKDUCKGO, STARTPAGE, GOOGLE, ECOSIA, BRAVE. */

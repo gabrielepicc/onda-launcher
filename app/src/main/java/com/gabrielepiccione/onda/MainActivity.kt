@@ -140,9 +140,16 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         toast(getString(R.string.studio_imported))
     }
 
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        // Punto di partenza dell'animazione di apertura delle app
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) com.gabrielepiccione.onda.util.LaunchAnimation.onTouch(ev.x, ev.y)
+        return super.dispatchTouchEvent(ev)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        com.gabrielepiccione.onda.util.LaunchAnimation.attach(window.decorView)
         pendingWidgetId = savedInstanceState?.getInt(KEY_PENDING, -1) ?: -1
 
         setContent {
