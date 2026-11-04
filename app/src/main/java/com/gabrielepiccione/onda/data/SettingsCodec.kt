@@ -52,7 +52,8 @@ object SettingsCodec {
         val version = obj["schemaVersion"]?.jsonPrimitive?.intOrNull
             ?: if ("version" in obj) 1 else Settings.CURRENT_SCHEMA
         if (version < 2) obj = fromSchema1(obj)
-        // Passi futuri: if (version < 3) obj = fromSchema2(obj) ...
+        if (version < 3) obj = fromSchema2(obj)
+        // Passi futuri: if (version < 4) obj = fromSchema3(obj) ...
         return obj
     }
 
@@ -67,6 +68,15 @@ object SettingsCodec {
             }
         }
         put("schemaVersion", JsonPrimitive(2))
+    }
+
+    /** Schema 2 -> 3: lo swipe giù è fisso sulla tendina, quindi lo swipe su non la duplica. */
+    private fun fromSchema2(old: JsonObject): JsonObject = buildJsonObject {
+        for ((key, value) in old) {
+            if (key == "swipeUp" && value.jsonPrimitive.content == "NOTIFICATIONS") put(key, JsonPrimitive("SEARCH"))
+            else put(key, value)
+        }
+        put("schemaVersion", JsonPrimitive(3))
     }
 
     private fun foldersArrayToMap(value: JsonElement): JsonElement {

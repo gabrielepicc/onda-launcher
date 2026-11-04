@@ -91,7 +91,7 @@
     <string name="double_tap_lock_off">Richiede di attivare il servizio di accessibilità di Onda</string>
     <string name="haptics">Vibrazione</string>
     <string name="haptics_sub">Feedback aptico su scroller e pressioni lunghe</string>
-    <string name="gestures_help">Scorri a destra su un\'app: pannello rapido · Tieni premuto: opzioni · Bordi dello schermo: alfabeto (anche il lato senza lettere)</string>
+    <string name="gestures_help">Scorri a destra su un\'app: pannello · a sinistra: elimina le notifiche · Tieni premuto: opzioni · Bordi dello schermo: alfabeto (anche il lato senza lettere) · Doppio tocco sull\'alfabeto: blocca</string>
     <string name="section_widgets">Widget</string>
     <string name="no_home_widgets">Nessun widget in home.</string>
     <string name="remove">Rimuovi</string>
@@ -238,4 +238,5 @@
     <string name="style_original">Originali</string>
     <string name="style_dots">Puntini</string>
     <string name="icon_shape_hint">La forma si applica alle icone adattive senza icon pack.</string>
+    <string name="swipe_down_fixed">Scorri verso il basso: apre sempre la tendina delle notifiche.</string>
 </resources>

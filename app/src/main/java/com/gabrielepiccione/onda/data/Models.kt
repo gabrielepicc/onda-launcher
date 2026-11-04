@@ -178,7 +178,7 @@ data class Settings(
     val appWidgets: Map<String, Int> = emptyMap(),
     val launchCounts: Map<String, Int> = emptyMap(),
     val swipeDown: GestureAction = GestureAction.SEARCH,
-    val swipeUp: GestureAction = GestureAction.NOTIFICATIONS,
+    val swipeUp: GestureAction = GestureAction.SEARCH,
     val hideStatusBar: Boolean = false,
     val hideAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,
@@ -221,8 +221,11 @@ data class Settings(
     val onboardingDone: Boolean = false,
 ) {
     companion object {
-        /** 1 = formato JSON "libero" delle versioni 0.2/0.3; 2 = formato kotlinx.serialization (0.4+). */
-        const val CURRENT_SCHEMA = 2
+        /**
+         * 1 = formato JSON "libero" delle versioni 0.2/0.3; 2 = formato kotlinx.serialization (0.4+);
+         * 3 = swipe giù sempre sulla tendina: lo swipe su, se era "notifiche", diventa "ricerca".
+         */
+        const val CURRENT_SCHEMA = 3
     }
 }
 

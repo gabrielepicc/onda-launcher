@@ -135,6 +135,8 @@ fun FavoriteRow(
     hideName: Boolean = false,
     /** Apre il pannello dell'app (swipe a sinistra, o a destra se non c'è un'app associata). */
     onOpenPanel: () -> Unit = onSwipe,
+    /** Swipe a sinistra: elimina le notifiche dell'app (se ce ne sono). */
+    onSwipeLeft: () -> Unit = {},
     iconScale: Float = 1f,
     onNotificationClick: (NotificationItem) -> Unit,
     onNotificationDismiss: (NotificationItem) -> Unit,
@@ -157,6 +159,7 @@ fun FavoriteRow(
 
     val latest = notifications.firstOrNull()
     val canSwipe = true
+    val canDismiss = notifications.any { it.clearable }
 
     Box(modifier.fillMaxWidth()) {
         // Sfondo rivelato dallo scorrimento
@@ -172,10 +175,10 @@ fun FavoriteRow(
             ) {
                 val p = (kotlin.math.abs(offsetX.value) / triggerPx).coerceIn(0f, 1f)
                 Box(Modifier.graphicsLayer { alpha = p; scaleX = 0.6f + 0.4f * p; scaleY = 0.6f + 0.4f * p }) {
-                    if (swipeTarget != null && offsetX.value > 0f) {
-                        AppIcon(swipeTarget, 32.dp, themedIcons)
-                    } else {
+                    if (offsetX.value > 0f) {
                         Icon(Icons.Filled.KeyboardArrowRight, null, tint = colors.onAccentContainer)
+                    } else if (canDismiss) {
+                        Icon(Icons.Filled.Close, null, tint = colors.onAccentContainer)
                     }
                 }
             }
@@ -194,9 +197,10 @@ fun FavoriteRow(
                     state = rememberDraggableState { delta ->
                         scope.launch {
                             val resist = if (kotlin.math.abs(offsetX.value) > triggerPx) 0.35f else 1f
-                            val next = (offsetX.value + delta * resist).coerceIn(-maxPx, maxPx)
+                            // A sinistra si "tira" davvero solo se c'è qualcosa da eliminare
+                            val next = (offsetX.value + delta * resist).coerceIn(if (canDismiss) -maxPx else -maxPx * 0.2f, maxPx)
                             offsetX.snapTo(next)
-                            val nowArmed = kotlin.math.abs(next) >= triggerPx
+                            val nowArmed = next >= triggerPx || (canDismiss && next <= -triggerPx)
                             if (nowArmed != armed) {
                                 armed = nowArmed
                                 if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -205,7 +209,7 @@ fun FavoriteRow(
                     },
                     onDragStopped = {
                         if (armed) {
-                            if (offsetX.value > 0f && swipeTarget != null) onSwipe() else onOpenPanel()
+                            if (offsetX.value > 0f) onOpenPanel() else onSwipeLeft()
                         }
                         armed = false
                         offsetX.animateTo(0f, spring(dampingRatio = 0.7f, stiffness = 500f))

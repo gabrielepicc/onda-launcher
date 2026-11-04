@@ -91,7 +91,7 @@
     <string name="double_tap_lock_off">Requires enabling Onda\'s accessibility service</string>
     <string name="haptics">Vibration</string>
     <string name="haptics_sub">Haptic feedback on scroller and long-presses</string>
-    <string name="gestures_help">Swipe right on an app: quick panel · Long-press: options · Screen edges: alphabet (including the edge without letters)</string>
+    <string name="gestures_help">Swipe right on an app: panel · left: dismiss its notifications · Long-press: options · Screen edges: alphabet (including the edge without letters) · Double-tap the alphabet: lock</string>
     <string name="section_widgets">Widgets</string>
     <string name="no_home_widgets">No widgets on home.</string>
     <string name="remove">Remove</string>
@@ -238,4 +238,5 @@
     <string name="style_original">Original</string>
     <string name="style_dots">Dots</string>
     <string name="icon_shape_hint">The shape applies to adaptive icons when no icon pack is set.</string>
+    <string name="swipe_down_fixed">Swipe down: always opens the notification shade.</string>
 </resources>

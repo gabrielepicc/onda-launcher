@@ -232,8 +232,7 @@ fun SettingsScreen(
         }
 
         Group(stringResource(R.string.section_gestures)) {
-            Label(stringResource(R.string.swipe_down))
-            GestureChips(settings.swipeDown) { g -> onEdit { it.copy(swipeDown = g) } }
+            Text(stringResource(R.string.swipe_down_fixed), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
             Label(stringResource(R.string.swipe_up))
             GestureChips(settings.swipeUp) { g -> onEdit { it.copy(swipeUp = g) } }
             SwitchRow(

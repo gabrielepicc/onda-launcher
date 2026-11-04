@@ -255,7 +255,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                 if (source != NestedScrollSource.UserInput || available.y == 0f) return Offset.Zero
-                val action = if (available.y > 0) currentSettings.swipeDown else currentSettings.swipeUp
+                val action = if (available.y > 0) GestureAction.NOTIFICATIONS else currentSettings.swipeUp
                 if (action == GestureAction.NONE) return Offset.Zero
                 val next = pull.value + available.y
                 scope.launch { pull.snapTo(next) }
@@ -272,7 +272,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 if (p == 0f) return Velocity.Zero
                 val fire = abs(p) >= threshold || (abs(p) > threshold / 3 && abs(available.y) > 2200f && sign(available.y) == sign(p))
                 armed = false
-                if (fire) perform(if (p > 0) currentSettings.swipeDown else currentSettings.swipeUp)
+                if (fire) perform(if (p > 0) GestureAction.NOTIFICATIONS else currentSettings.swipeUp)
                 scope.launch { pull.animateTo(0f, spring(dampingRatio = 0.8f, stiffness = 400f)) }
                 return available
             }
@@ -299,11 +299,17 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     // Voci della home (preferiti e cartelle), inserite nella posizione del blocco "app"
     fun androidx.compose.foundation.lazy.LazyListScope.homeEntries() {
         items(state.home, key = { it.key }) { entry ->
-            val itemMod = Modifier.animateItem(
-                fadeInSpec = Motion.enter(),
-                placementSpec = Motion.offsetEnter,
-                fadeOutSpec = Motion.exit(),
-            )
+            val clearOfLetters = 48.dp - 28.dp
+            val itemMod = Modifier
+                .animateItem(
+                    fadeInSpec = Motion.enter(),
+                    placementSpec = Motion.offsetEnter,
+                    fadeOutSpec = Motion.exit(),
+                )
+                .padding(
+                    start = if (settings.leftHanded) clearOfLetters else 0.dp,
+                    end = if (settings.leftHanded) 0.dp else clearOfLetters,
+                )
             when (entry) {
                 is HomeEntry.App -> {
                     val app = entry.app
@@ -318,8 +324,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         iconScale = iconScale,
                         onClick = { launchApp(app) },
                         onLongClick = { actionsFor = app },
-                        onSwipe = { target?.let { launchApp(it) } },
+                        onSwipe = { panelFor = app },
                         onOpenPanel = { panelFor = app },
+                        onSwipeLeft = { NotificationStore.dismissAll(app.packageName) },
                         onNotificationClick = { panelFor = app },
                         onNotificationDismiss = { NotificationStore.dismiss(it) },
                         onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
@@ -361,9 +368,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         LazyColumn(
             state = homeList,
             verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.Bottom),
+            // Orologio, widget e player: stesso margine a destra e a sinistra.
+            // Solo le righe delle app si tengono lontane dalle lettere (vedi homeEntries).
             contentPadding = PaddingValues(
-                start = if (settings.leftHanded) letterSide else hiddenSide,
-                end = if (settings.leftHanded) hiddenSide else letterSide,
+                start = hiddenSide,
+                end = hiddenSide,
                 top = bars.calculateTopPadding() + 24.dp,
                 bottom = bars.calculateBottomPadding() + 28.dp,
             ),
@@ -482,7 +491,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         // Indicatore del gesto verticale (cresce col dito, si "accende" oltre la soglia)
         val pv = pull.value
         if (pv != 0f) {
-            val action = if (pv > 0) settings.swipeDown else settings.swipeUp
+            val action = if (pv > 0) GestureAction.NOTIFICATIONS else settings.swipeUp
             val progress = (abs(pv) / threshold).coerceIn(0f, 1.2f)
             Box(
                 contentAlignment = Alignment.Center,

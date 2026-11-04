@@ -151,12 +151,6 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
             if (app.isFavorite && actions.favoriteIndex in 0 until actions.favoriteCount - 1) {
                 ActionRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { actions.onMove(1) }
             }
-            if (app.isFavorite) {
-                ActionRow(
-                    Icons.Filled.KeyboardArrowRight,
-                    actions.swipeTarget?.let { stringResource(R.string.swipe_opens_app, it.label) } ?: stringResource(R.string.swipe_panel_default),
-                ) { pickingSwipe = true }
-            }
             ActionRow(Icons.Filled.Add, actions.folderName?.let { stringResource(R.string.in_folder_move, it) } ?: stringResource(R.string.move_to_folder_ellipsis)) {
                 actions.onMoveToFolder(); onDismiss()
             }
