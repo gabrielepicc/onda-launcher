@@ -2,6 +2,16 @@
 
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
+## [0.8.0]
+
+### Aggiunto
+- **Agenda** del calendario come blocco della home (1–7 giorni, colori dei calendari), modificabile con pressione lunga.
+- **Blocca layout** per evitare modifiche accidentali.
+- **Ricerca**: prefissi `=` (calcolo), `@` (solo contatti), `/` (impostazioni di sistema e di Onda); motore web selezionabile
+  (DuckDuckGo, Startpage, Google, Ecosia, Brave); Invio apre il primo risultato della modalità.
+- **Plug & Play**: con cuffie o casse collegate, l'app scelta compare in cima alla home.
+- **App protette** con impronta, volto o PIN; protezione opzionale dell'elenco delle app nascoste.
+
 ## [0.7.0]
 
 ### Aggiunto

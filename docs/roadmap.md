@@ -2,7 +2,7 @@
 
 Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo concluso.
 
-## Fatto finora (0.1 → 0.7)
+## Fatto finora (0.1 → 0.8)
 - ✅ Home a lista, alfabeto "a onda" su Canvas (lato invisibile opposto), doppio tocco sull'alfabeto per bloccare
 - ✅ Elenco app nella stessa pagina, app per lettera ordinate per utilizzo, notifiche anche nell'elenco
 - ✅ Swipe righe (home ed elenco): destra = pannello app, sinistra = elimina notifiche; giù = tendina (fisso), su = configurabile
@@ -20,12 +20,16 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    font importati (.ttf/.otf) per lista e orologio. (Meteo nell'orologio spostato in Fase 4: richiede INTERNET)
 2. 🟡 Fase 3 — Temi: ✅ `LookTheme` serializzabile, Theme Studio (salva/applica/rinomina/duplica/elimina), file `.onda-theme`
    con font incorporati, palette dallo sfondo anche su Android 8.1–11. ⬜ QR/deep link, sfondo automatico per orario
-3. ⬜ Fase 4 — Widget stack, pop-up avanzati, agenda calendario nativa, meteo Open-Meteo (richiede INTERNET: valutare flavor offline),
-   blocca layout
-4. ⬜ Fase 5 — Benessere (Usage Breaker), Plug & Play cuffie, contatti dall'alfabeto, riepilogo notifiche, prefissi di ricerca,
-   ricerca estesa, app protette con biometria
+3. 🟡 Fase 4 — ✅ agenda del calendario come blocco della home, ✅ blocca layout.
+   ⬜ widget stack, ⬜ meteo Open-Meteo (**in attesa di decisione**: richiede il permesso INTERNET, valutare flavor `offline`)
+4. 🟡 Fase 5 — ✅ prefissi di ricerca (= @ /), ✅ scorciatoie impostazioni di sistema, ✅ motore web selezionabile,
+   ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste.
+   ⬜ Usage Breaker, ⬜ contatti dall'alfabeto, ⬜ riepilogo notifiche, ⬜ conversioni unità/valute
 5. ⬜ Fase 6 — Gesture configurabili estese, animazioni di apertura app, landscape/tablet, Private Space, onboarding, backup automatico
 
 ## Decisioni prese (modificabili)
 - Il pannello dell'app è un foglio dal basso (non pop-up ancorato) per lasciare spazio alla tastiera nella risposta.
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.
+- Meteo rimandato: aggiungerebbe la prima connessione a internet dell'app; serve l'OK dell'utente.
+- Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
+- App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).
