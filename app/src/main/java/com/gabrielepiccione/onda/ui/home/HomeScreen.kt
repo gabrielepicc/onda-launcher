@@ -424,8 +424,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             .background(dimColor.copy(alpha = settings.wallpaperDim))
     ) {
         val bars = WindowInsets.systemBars.asPaddingValues()
-        val letterSide = 48.dp
-        val hiddenSide = 28.dp
+        // Su tablet e in orizzontale il contenuto resta centrato, con la stessa larghezza leggibile
+        val wideInset = com.gabrielepiccione.onda.data.ScreenLayout.sideInsetDp(androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp).dp
+        val letterSide = 48.dp + wideInset
+        val hiddenSide = 28.dp + wideInset
         // Posizione scelta dall'utente: il primo blocco parte da lì e il resto lo segue
         val manualTop = settings.homeTopFraction >= 0f
         val screenHeight = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp
@@ -898,6 +900,17 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun export(theme: com.gabrielepiccione.onda.data.LookTheme) = callbacks.exportTheme(theme)
                 override fun import() = callbacks.importTheme()
             },
+        )
+    }
+
+    // ---------------- BENVENUTO AL PRIMO AVVIO ----------------
+    if (state.loaded && !settings.welcomeDone) {
+        OnboardingScreen(
+            isDefaultLauncher = status.isDefaultLauncher,
+            notificationAccess = status.notificationAccess,
+            onRequestDefault = callbacks::requestDefaultLauncher,
+            onNotificationAccess = { withRestrictedHelp(callbacks::openNotificationAccess) },
+            onDone = { vm.updateSettings { it.copy(welcomeDone = true) } },
         )
     }
 

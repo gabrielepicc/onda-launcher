@@ -59,12 +59,13 @@ object SettingsCodec {
         return obj
     }
 
-    /** Schema 3 -> 4: il doppio tocco per bloccare diventa un'azione configurabile. */
+    /** Schema 3 -> 4: il doppio tocco per bloccare diventa un'azione; chi aggiorna non rivede il benvenuto. */
     private fun fromSchema3(old: JsonObject): JsonObject = buildJsonObject {
         for ((key, value) in old) {
             if (key != "doubleTapLock") put(key, value)
         }
         if (old["doubleTapLock"]?.jsonPrimitive?.booleanOrNull == true) put("doubleTapAction", JsonPrimitive("LOCK_SCREEN"))
+        put("welcomeDone", JsonPrimitive(true))
         put("schemaVersion", JsonPrimitive(4))
     }
 

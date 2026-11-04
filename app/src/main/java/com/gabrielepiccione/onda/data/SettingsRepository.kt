@@ -340,6 +340,7 @@ class SettingsRepository(context: Context) {
                 appWidgets = now.appWidgets,
                 folders = parsed.folders.mapValues { (id, f) -> f.copy(widgets = now.folders[id]?.widgets.orEmpty()) },
                 onboardingDone = true,
+                welcomeDone = true,
             )
         }
         return true

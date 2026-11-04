@@ -73,6 +73,13 @@ class SettingsCodecTest {
     }
 
     @Test
+    fun onlyFreshInstallsSeeTheWelcome() {
+        assertTrue(SettingsCodec.decode("""{"schemaVersion": 3}""").welcomeDone)
+        assertEquals(false, Settings().welcomeDone)
+        assertEquals(false, SettingsCodec.decode(SettingsCodec.encode(Settings())).welcomeDone)
+    }
+
+    @Test
     fun schema3DoubleTapLockBecomesAnAction() {
         assertEquals(GestureAction.LOCK_SCREEN, SettingsCodec.decode("""{"schemaVersion": 3, "doubleTapLock": true}""").doubleTapAction)
         assertEquals(GestureAction.NONE, SettingsCodec.decode("""{"schemaVersion": 3, "doubleTapLock": false}""").doubleTapAction)

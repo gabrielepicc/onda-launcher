@@ -5,6 +5,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 ## [Non rilasciato]
 
 ### Aggiunto
+- **Benvenuto al primo avvio**: spiega alfabeto e gesti e propone i permessi; si può saltare e non compare a chi aggiorna.
+- **Tablet e orizzontale**: home, elenco e impostazioni restano centrati con una larghezza leggibile; la rotazione non ricrea l'Activity.
 - **Gesti configurabili**: swipe su e doppio tocco possono aprire ricerca, elenco, tendina, impostazioni, bloccare lo schermo o aprire un'app a scelta. Schema impostazioni 4: chi aveva "doppio tocco per bloccare" mantiene lo stesso comportamento.
 - **Animazioni di apertura delle app**: di sistema, dissolvenza, zoom o dal basso.
 - **Riordina la home**: blocchi e preferiti si spostano trascinandoli (dal menu della home).

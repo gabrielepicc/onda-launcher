@@ -167,7 +167,10 @@ fun SettingsScreen(
                 .background(colors.scrim)
                 .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(
+                    horizontal = 16.dp + com.gabrielepiccione.onda.data.ScreenLayout.sideInsetDp(LocalConfiguration.current.screenWidthDp).dp,
+                    vertical = 8.dp,
+                )
         ) {
         if (page == null) {
             Group(stringResource(R.string.section_setup)) {

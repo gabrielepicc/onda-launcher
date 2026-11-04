@@ -365,12 +365,14 @@ data class Settings(
     /** Pile di widget in home; i loro widget non compaiono in [widgetIds]. */
     val widgetStacks: List<WidgetStack> = emptyList(),
     val onboardingDone: Boolean = false,
+    /** Benvenuto già visto; chi aggiorna da una versione precedente non lo rivede. */
+    val welcomeDone: Boolean = false,
 ) {
     companion object {
         /**
          * 1 = formato JSON "libero" delle versioni 0.2/0.3; 2 = formato kotlinx.serialization (0.4+);
          * 3 = swipe giù sempre sulla tendina: lo swipe su, se era "notifiche", diventa "ricerca";
-         * 4 = "doubleTapLock" sostituito da "doubleTapAction".
+         * 4 = "doubleTapLock" sostituito da "doubleTapAction"; il benvenuto è già visto per chi aggiorna.
          */
         const val CURRENT_SCHEMA = 4
     }
