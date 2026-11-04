@@ -109,13 +109,7 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
             if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         else -> staticScheme(Color(settings.accent), dark)
     }
-    val family = when (settings.font) {
-        FontChoice.SYSTEM -> FontFamily.Default
-        FontChoice.SANS -> FontFamily.SansSerif
-        FontChoice.SERIF -> FontFamily.Serif
-        FontChoice.MONO -> FontFamily.Monospace
-        FontChoice.ROUNDED -> FontFamily.Cursive
-    }
+    val family = fontFamilyOf(settings.font)
     val typography = remember(family) { typographyWith(family) }
     val base = LocalDensity.current
     CompositionLocalProvider(
@@ -167,7 +161,15 @@ private fun staticScheme(accent: Color, dark: Boolean): ColorScheme {
     }
 }
 
-private fun typographyWith(family: FontFamily): Typography {
+fun fontFamilyOf(font: FontChoice): FontFamily = when (font) {
+    FontChoice.SYSTEM -> FontFamily.Default
+    FontChoice.SANS -> FontFamily.SansSerif
+    FontChoice.SERIF -> FontFamily.Serif
+    FontChoice.MONO -> FontFamily.Monospace
+    FontChoice.ROUNDED -> FontFamily.Cursive
+}
+
+fun typographyWith(family: FontFamily): Typography {
     val t = Typography()
     fun TextStyle.f() = copy(fontFamily = family)
     return Typography(

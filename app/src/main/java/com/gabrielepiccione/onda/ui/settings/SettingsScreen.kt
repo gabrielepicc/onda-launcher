@@ -83,6 +83,7 @@ interface SettingsActions {
     fun removeWidget(id: Int)
     fun unhide(app: AppInfo)
     fun wallpaper()
+    fun openStyles()
     fun exportBackup()
     fun importBackup()
     fun close()
@@ -128,6 +129,17 @@ fun SettingsScreen(
             StatusRow(stringResource(R.string.default_launcher), status.isDefaultLauncher, stringResource(R.string.default_launcher_ok), stringResource(R.string.default_launcher_ko)) { actions.requestDefault() }
             StatusRow(stringResource(R.string.notif_access), status.notificationAccess, stringResource(R.string.notif_access_ok), stringResource(R.string.notif_access_ko)) { actions.notificationAccess() }
             StatusRow(stringResource(R.string.calendar), status.calendarPermission, stringResource(R.string.calendar_ok), stringResource(R.string.calendar_ko)) { actions.calendarPermission() }
+        }
+
+        Group(stringResource(R.string.section_styles)) {
+            Text(stringResource(R.string.styles_subtitle), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            FilledTonalButton(onClick = { actions.openStyles() }, modifier = Modifier.padding(top = 10.dp)) { Text(stringResource(R.string.styles_open)) }
+            Label(stringResource(R.string.clock_style_setting))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                com.gabrielepiccione.onda.data.ClockStyle.entries.forEach { st ->
+                    FilterChip(selected = settings.clockStyle == st, onClick = { onEdit { it.copy(clockStyle = st) } }, label = { Text(stringResource(st.labelRes)) })
+                }
+            }
         }
 
         Group(stringResource(R.string.section_style)) {

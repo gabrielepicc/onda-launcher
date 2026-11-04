@@ -112,7 +112,7 @@ import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.sqrt
 
-enum class Overlay { NONE, ALL_APPS, SEARCH, SETTINGS }
+enum class Overlay { NONE, ALL_APPS, SEARCH, SETTINGS, STYLES }
 
 /** Dove finisce un widget appena scelto. */
 sealed interface WidgetTarget {
@@ -283,7 +283,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     // Profondità: quando si apre un pannello la home arretra e sfuma
     // Profondità solo per ricerca e impostazioni; l'elenco app resta sullo stesso piano
     val depth by animateFloatAsState(
-        if (overlay == Overlay.SEARCH || overlay == Overlay.SETTINGS) 1f else 0f,
+        if (overlay == Overlay.SEARCH || overlay == Overlay.SETTINGS || overlay == Overlay.STYLES) 1f else 0f,
         Motion.enter(450),
         label = "depth",
     )
@@ -643,6 +643,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
                         override fun wallpaper() = SystemActions.openWallpaperPicker(context)
+                        override fun openStyles() { overlay = Overlay.STYLES }
                         override fun exportBackup() = callbacks.exportBackup()
                         override fun importBackup() = callbacks.importBackup()
                         override fun close() = closeAll()
@@ -650,6 +651,28 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 )
             }
         }
+    }
+
+    // ---------------- GALLERIA STILI (fuori dal Box: copre tutto) ----------------
+    AnimatedVisibility(
+        visible = overlay == Overlay.STYLES,
+        enter = fadeIn(Motion.enter(300)) + slideInVertically(Motion.offsetEnter) { it / 8 },
+        exit = fadeOut(Motion.exit()) + slideOutVertically(Motion.offsetExit) { it / 12 },
+    ) {
+        StyleGallery(
+            currentPresetId = settings.stylePreset,
+            onApply = { preset, withWallpaper ->
+                vm.updateSettings { preset.applyTo(it) }
+                if (withWallpaper) {
+                    scope.launch {
+                        com.gabrielepiccione.onda.data.StylePresets.applyWallpaper(context, preset)
+                    }
+                }
+                android.widget.Toast.makeText(context, R.string.styles_applied, android.widget.Toast.LENGTH_SHORT).show()
+                overlay = Overlay.NONE
+            },
+            onClose = { overlay = Overlay.SETTINGS },
+        )
     }
 
     // ---------------- FOGLI MODALI ----------------
