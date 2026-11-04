@@ -29,6 +29,11 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.gabrielepiccione.onda.ui.components.ConfirmDeleteWidgetDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -72,6 +77,18 @@ fun HomeEditSheet(
 ) {
     val colors = LocalOndaColors.current
     val index = blocks.indexOf(block)
+    var widgetToDelete by remember { mutableStateOf<Int?>(null) }
+    widgetToDelete?.let { id ->
+        ConfirmDeleteWidgetDialog(
+            onConfirm = {
+                widgetToDelete = null
+                actions.deleteWidget(id)
+                // Un widget singolo sparisce con il suo blocco; in una pila il foglio resta aperto
+                if (HomeBlocks.widgetId(block) != null) actions.done()
+            },
+            onDismiss = { widgetToDelete = null },
+        )
+    }
     ModalBottomSheet(
         onDismissRequest = { actions.done() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -181,7 +198,7 @@ fun HomeEditSheet(
                 SectionTitle(R.string.stack_widgets)
                 stack.widgets.forEach { id ->
                     val label = widgetLabel(id) ?: stringResource(R.string.widget_number, id)
-                    SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { actions.deleteWidget(id) }
+                    SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { widgetToDelete = id }
                 }
                 SheetRow(Icons.Filled.Add, stringResource(R.string.stack_add)) { actions.addToStack(block) }
             }
@@ -227,10 +244,7 @@ fun HomeEditSheet(
             if (widgetId != null) {
                 SheetRow(Icons.Filled.Add, stringResource(R.string.stack_make)) { actions.addToStack(block) }
                 SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_widget)) { actions.replaceWidget(widgetId) }
-                SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_delete_widget)) {
-                    actions.deleteWidget(widgetId)
-                    actions.done()
-                }
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_delete_widget)) { widgetToDelete = widgetId }
             }
 
             Button(onClick = { actions.done() }, modifier = Modifier.padding(top = 8.dp).align(Alignment.End)) {

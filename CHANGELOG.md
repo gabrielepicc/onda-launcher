@@ -5,6 +5,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 ## [Non rilasciato]
 
 ### Modificato
+- **Impostazioni a pagine** (Aspetto, Home, Gesti, Ricerca, App, Backup) con **anteprima dal vivo** di orologio e preferiti nella pagina Aspetto.
+- Dopo aver applicato un preset si può **annullare** per qualche secondo; rimuovere un widget chiede conferma.
 - **Popup dell'app all'altezza della riga** al posto dei fogli dal basso: pressione lunga e swipe a destra mostrano notifiche, scorciatoie, widget dell'app e azioni rapide. "Rispondi" apre il pannello con il campo sopra la tastiera, "Altre opzioni" l'elenco completo.
 - "Nascondi nomi" vale anche per le cartelle (il nome resta disponibile per TalkBack).
 - Selettore widget con ricerca e widget raggruppati per app.

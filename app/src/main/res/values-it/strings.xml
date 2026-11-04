@@ -331,6 +331,13 @@
     <string name="value_dp">%1$d dp</string>
     <string name="widget_search">Cerca nei widget</string>
     <string name="widget_no_results">Nessun widget trovato.</string>
+    <string name="page_customize">Personalizza</string>
+    <string name="page_look">Aspetto</string>
+    <string name="page_apps">App</string>
+    <string name="undo">Annulla</string>
+    <string name="styles_applied_wallpaper">Stile applicato. Annulla non ripristina lo sfondo.</string>
+    <string name="widget_delete_title">Rimuovere questo widget?</string>
+    <string name="widget_delete_body">La sua configurazione andrà persa e dovrai impostarlo di nuovo.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>

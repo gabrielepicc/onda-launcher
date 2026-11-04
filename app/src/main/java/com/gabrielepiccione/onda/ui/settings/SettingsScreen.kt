@@ -12,6 +12,20 @@ import com.gabrielepiccione.onda.ui.sheets.*
 import androidx.compose.ui.res.stringResource
 import com.gabrielepiccione.onda.R
 import android.os.Build
+import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.runtime.key
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -112,37 +126,77 @@ fun SettingsScreen(
     var iconPackDialog by remember { mutableStateOf(false) }
     var plugDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
+    var page by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
+    var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     val onEdit = actions::edit
+    BackHandler(enabled = page != null) { page = null }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(colors.scrim)
-            .blockTouches()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
+    Column(Modifier.fillMaxSize().blockTouches()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(colors.scrim)
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(48.dp).clip(CircleShape).clickable { actions.close() }
+                modifier = Modifier.size(48.dp).clip(CircleShape).clickable { if (page != null) page = null else actions.close() }
             ) {
                 @Suppress("DEPRECATION")
                 Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.onWallpaper)
             }
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.settings), style = MaterialTheme.typography.headlineMedium, color = colors.onWallpaper)
+            Text(stringResource(page?.titleRes ?: R.string.settings), style = MaterialTheme.typography.headlineMedium, color = colors.onWallpaper)
         }
 
-        Group(stringResource(R.string.section_setup)) {
-            StatusRow(stringResource(R.string.default_launcher), status.isDefaultLauncher, stringResource(R.string.default_launcher_ok), stringResource(R.string.default_launcher_ko)) { actions.requestDefault() }
-            StatusRow(stringResource(R.string.notif_access), status.notificationAccess, stringResource(R.string.notif_access_ok), stringResource(R.string.notif_access_ko)) { actions.notificationAccess() }
-            StatusRow(stringResource(R.string.calendar), status.calendarPermission, stringResource(R.string.calendar_ok), stringResource(R.string.calendar_ko)) { actions.calendarPermission() }
+        // Anteprima dal vivo sopra lo sfondo vero: lista e orologio reagiscono mentre si modifica
+        if (page == SettingsPage.LOOK && LocalConfiguration.current.screenHeightDp >= MIN_HEIGHT_FOR_PREVIEW) {
+            SettingsPreview(settings, allApps)
         }
 
-        Group(stringResource(R.string.section_styles)) {
+        key(page) {
+        Column(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .background(colors.scrim)
+                .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+        if (page == null) {
+            Group(stringResource(R.string.section_setup)) {
+                StatusRow(stringResource(R.string.default_launcher), status.isDefaultLauncher, stringResource(R.string.default_launcher_ok), stringResource(R.string.default_launcher_ko)) { actions.requestDefault() }
+                StatusRow(stringResource(R.string.notif_access), status.notificationAccess, stringResource(R.string.notif_access_ok), stringResource(R.string.notif_access_ko)) { actions.notificationAccess() }
+                StatusRow(stringResource(R.string.calendar), status.calendarPermission, stringResource(R.string.calendar_ok), stringResource(R.string.calendar_ko)) { actions.calendarPermission() }
+            }
+            Group(stringResource(R.string.page_customize)) {
+                SettingsPage.entries.forEach { p ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { page = p }
+                            .padding(vertical = 14.dp),
+                    ) {
+                        Icon(p.icon, null, tint = colors.accent)
+                        Spacer(Modifier.width(16.dp))
+                        Text(stringResource(p.titleRes), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+            Text(
+                stringResource(R.string.version_line, com.gabrielepiccione.onda.BuildConfig.VERSION_NAME),
+                color = colors.onWallpaperMuted,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp),
+            )
+        }
+
+        if (page == SettingsPage.LOOK) Group(stringResource(R.string.section_styles)) {
             Text(stringResource(R.string.styles_subtitle), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             FilledTonalButton(onClick = { actions.openStyles() }, modifier = Modifier.padding(top = 10.dp)) { Text(stringResource(R.string.styles_open)) }
             Label(stringResource(R.string.clock_style_setting))
@@ -153,7 +207,7 @@ fun SettingsScreen(
             }
         }
 
-        Group(stringResource(R.string.section_style)) {
+        if (page == SettingsPage.LOOK) Group(stringResource(R.string.section_style)) {
             Label(stringResource(R.string.theme))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(ThemeMode.SYSTEM to stringResource(R.string.theme_system), ThemeMode.LIGHT to stringResource(R.string.theme_light), ThemeMode.DARK to stringResource(R.string.theme_dark)).forEach { (mode, label) ->
@@ -198,7 +252,7 @@ fun SettingsScreen(
             TextButton(onClick = { actions.wallpaper() }) { Text(stringResource(R.string.change_wallpaper_ellipsis)) }
         }
 
-        Group(stringResource(R.string.section_text)) {
+        if (page == SettingsPage.LOOK) Group(stringResource(R.string.section_text)) {
             Label(stringResource(R.string.text_color))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.horizontalScroll(rememberScrollState()).padding(bottom = 6.dp)) {
                 FilterChip(selected = settings.textColor == 0L, onClick = { onEdit { it.copy(textColor = 0) } }, label = { Text(stringResource(R.string.text_color_auto)) })
@@ -245,7 +299,7 @@ fun SettingsScreen(
             FontRow(stringResource(R.string.font_for_clock), settings.customFontClock, onImport = { actions.importFont(true) }, onClear = { onEdit { it.copy(customFontClock = "") } })
         }
 
-        Group(stringResource(R.string.section_icons)) {
+        if (page == SettingsPage.LOOK) Group(stringResource(R.string.section_icons)) {
             SwitchRow(stringResource(R.string.show_icons), null, settings.showIcons) { v -> onEdit { it.copy(showIcons = v) } }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 SwitchRow(stringResource(R.string.themed_icons), stringResource(R.string.themed_icons_sub), settings.themedIcons) { v -> onEdit { it.copy(themedIcons = v) } }
@@ -280,7 +334,7 @@ fun SettingsScreen(
             ValueSlider(stringResource(R.string.icon_size), percentText(settings.iconSize), settings.iconSize, Settings().iconSize, 0.75f..1.4f) { v -> onEdit { it.copy(iconSize = v) } }
         }
 
-        Group(stringResource(R.string.section_home)) {
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_home)) {
             Label(stringResource(R.string.home_position))
             HomePositionControl(settings) { onEdit(it) }
             SwitchRow(stringResource(R.string.clock_date), null, settings.showClock) { v -> onEdit { it.copy(showClock = v) } }
@@ -305,7 +359,7 @@ fun SettingsScreen(
             SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
         }
 
-        Group(stringResource(R.string.section_gestures)) {
+        if (page == SettingsPage.GESTURES) Group(stringResource(R.string.section_gestures)) {
             Text(stringResource(R.string.swipe_down_fixed), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
             Label(stringResource(R.string.swipe_up))
             GestureChips(settings.swipeUp) { g -> onEdit { it.copy(swipeUp = g) } }
@@ -326,7 +380,7 @@ fun SettingsScreen(
             )
         }
 
-        Group(stringResource(R.string.section_search)) {
+        if (page == SettingsPage.SEARCH) Group(stringResource(R.string.section_search)) {
             Label(stringResource(R.string.search_engine))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
                 FilterChip(selected = settings.searchEngine == "SYSTEM", onClick = { onEdit { it.copy(searchEngine = "SYSTEM") } }, label = { Text(stringResource(R.string.engine_system)) })
@@ -337,13 +391,13 @@ fun SettingsScreen(
             Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
         }
 
-        Group(stringResource(R.string.section_plug_play)) {
+        if (page == SettingsPage.APPS) Group(stringResource(R.string.section_plug_play)) {
             Text(stringResource(R.string.plug_play_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             val current = allApps.firstOrNull { it.key == settings.plugPlayApp }
             ClickRow(stringResource(R.string.plug_play_choose), current?.label ?: stringResource(R.string.plug_play_none)) { plugDialog = true }
         }
 
-        Group(stringResource(R.string.section_breaker)) {
+        if (page == SettingsPage.APPS) Group(stringResource(R.string.section_breaker)) {
             Text(stringResource(R.string.breaker_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             Label(stringResource(R.string.breaker_seconds, settings.breakerSeconds))
             Slider(
@@ -363,7 +417,7 @@ fun SettingsScreen(
             }
         }
 
-        Group(stringResource(R.string.section_widgets)) {
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_widgets)) {
             val homeWidgets = settings.widgetIds + settings.widgetStacks.flatMap { it.widgets }
             if (homeWidgets.isEmpty()) {
                 Text(stringResource(R.string.no_home_widgets), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
@@ -373,13 +427,13 @@ fun SettingsScreen(
                 val label: String? = info?.let { i -> runCatching { i.loadLabel(pm) }.getOrNull() }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(label ?: stringResource(R.string.widget_number, id), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { actions.removeWidget(id) }) { Text(stringResource(R.string.remove)) }
+                    TextButton(onClick = { widgetToRemove = id }) { Text(stringResource(R.string.remove)) }
                 }
             }
             FilledTonalButton(onClick = { actions.addWidget() }, modifier = Modifier.padding(top = 6.dp)) { Text(stringResource(R.string.add_widget)) }
         }
 
-        Group(stringResource(R.string.section_hidden)) {
+        if (page == SettingsPage.APPS) Group(stringResource(R.string.section_hidden)) {
             SwitchRow(stringResource(R.string.protect_hidden), stringResource(R.string.protect_hidden_sub), settings.protectHidden) { v ->
                 if (!v) actions.authenticate { onEdit { it.copy(protectHidden = false) } } else onEdit { it.copy(protectHidden = true) }
             }
@@ -400,20 +454,19 @@ fun SettingsScreen(
             }
         }
 
-        Group(stringResource(R.string.section_backup)) {
+        if (page == SettingsPage.BACKUP) Group(stringResource(R.string.section_backup)) {
             Text(stringResource(R.string.backup_desc), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
                 FilledTonalButton(onClick = { actions.exportBackup() }) { Text(stringResource(R.string.export)) }
                 OutlinedButton(onClick = { actions.importBackup() }) { Text(stringResource(R.string.restore)) }
             }
         }
+        }
+        }
+    }
 
-        Text(
-            stringResource(R.string.version_line, com.gabrielepiccione.onda.BuildConfig.VERSION_NAME),
-            color = colors.onWallpaperMuted,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp),
-        )
+    widgetToRemove?.let { id ->
+        ConfirmDeleteWidgetDialog(onConfirm = { actions.removeWidget(id); widgetToRemove = null }, onDismiss = { widgetToRemove = null })
     }
 
     if (plugDialog) {
@@ -465,6 +518,66 @@ fun SettingsScreen(
             },
             confirmButton = { TextButton(onClick = { iconPackDialog = false }) { Text(stringResource(R.string.close)) } },
         )
+    }
+}
+
+/** Pagine delle impostazioni, nell'ordine mostrato nell'indice. */
+private enum class SettingsPage(@StringRes val titleRes: Int, val icon: ImageVector) {
+    LOOK(R.string.page_look, Icons.Filled.Palette),
+    HOME(R.string.section_home, Icons.Filled.Home),
+    GESTURES(R.string.section_gestures, Icons.Filled.TouchApp),
+    SEARCH(R.string.section_search, Icons.Filled.Search),
+    APPS(R.string.page_apps, Icons.Filled.Apps),
+    BACKUP(R.string.section_backup, Icons.Filled.Backup),
+}
+
+private const val MIN_HEIGHT_FOR_PREVIEW = 600
+
+/** Anteprima con orologio e preferiti veri: usa gli stessi componenti della home, non è toccabile. */
+@Composable
+private fun SettingsPreview(settings: Settings, allApps: List<AppInfo>) {
+    val apps = remember(settings.favorites, allApps) {
+        allApps.filter { it.key in settings.favorites }.take(2).ifEmpty { allApps.take(2) }
+    }
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(max = 260.dp)
+            .clipToBounds()
+            .clearAndSetSemantics { }
+            .padding(horizontal = 28.dp, vertical = 8.dp),
+    ) {
+        Column {
+            if (settings.showClock) {
+                ClockHeader(
+                    event = null,
+                    onTime = {},
+                    onDate = {},
+                    onEvent = {},
+                    style = settings.clockStyle,
+                    scale = settings.clockScale,
+                    align = settings.clockAlign,
+                    showBattery = settings.showBattery,
+                )
+            }
+            apps.forEach { app ->
+                FavoriteRow(
+                    app = app,
+                    swipeTarget = null,
+                    notifications = emptyList(),
+                    showIcon = settings.showIcons,
+                    themedIcons = settings.themedIcons,
+                    hideName = settings.hideFavoriteNames,
+                    iconScale = settings.iconSize,
+                    onClick = {},
+                    onLongClick = {},
+                    onSwipe = {},
+                    onNotificationClick = {},
+                    onNotificationDismiss = {},
+                )
+            }
+        }
+        Box(Modifier.matchParentSize().blockTouches())
     }
 }
 

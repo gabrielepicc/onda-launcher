@@ -331,6 +331,13 @@
     <string name="value_dp">%1$d dp</string>
     <string name="widget_search">Search widgets</string>
     <string name="widget_no_results">No widgets found.</string>
+    <string name="page_customize">Customize</string>
+    <string name="page_look">Look</string>
+    <string name="page_apps">Apps</string>
+    <string name="undo">Undo</string>
+    <string name="styles_applied_wallpaper">Style applied. Undo won\'t restore the wallpaper.</string>
+    <string name="widget_delete_title">Remove this widget?</string>
+    <string name="widget_delete_body">Its settings will be lost and you\'ll have to set it up again.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>

@@ -128,6 +128,22 @@ fun HostedWidget(
     }
 }
 
+/** Conferma prima di eliminare un widget: la sua configurazione andrebbe persa. */
+@Composable
+fun ConfirmDeleteWidgetDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.widget_delete_title)) },
+        text = { Text(stringResource(R.string.widget_delete_body)) },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onConfirm) { Text(stringResource(R.string.remove)) }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    )
+}
+
 /** Pila di widget: un blocco solo che si sfoglia in orizzontale, con i puntini della pagina. */
 @Composable
 fun WidgetStackCard(

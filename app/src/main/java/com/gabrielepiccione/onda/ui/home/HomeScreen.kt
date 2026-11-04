@@ -122,6 +122,8 @@ import kotlin.math.sqrt
 
 enum class Overlay { NONE, ALL_APPS, SEARCH, SETTINGS, STYLES }
 
+private const val UNDO_VISIBLE_MS = 8000L
+
 /** Dove finisce un widget appena scelto. */
 sealed interface WidgetTarget {
     data object Home : WidgetTarget
@@ -397,6 +399,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val blocks = remember(settings) { HomeBlocks.resolve(settings) }
     var editing by remember { mutableStateOf<String?>(null) }
+    // Annulla dopo un preset: aspetto precedente e nome del preset che era attivo
+    var undoLook by remember { mutableStateOf<Pair<com.gabrielepiccione.onda.data.LookTheme, String>?>(null) }
+    var undoKeepsWallpaper by remember { mutableStateOf(false) }
     var summaryOpen by remember { mutableStateOf(false) }
     val digest = remember(state.notifications) { com.gabrielepiccione.onda.data.NotificationDigest.of(state.notifications) }
     val packageLabel: (String) -> String = { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
@@ -819,6 +824,35 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 )
             }
         }
+
+        // ---------------- ANNULLA DOPO UN PRESET ----------------
+        undoLook?.let { (look, previousPreset) ->
+            LaunchedEffect(look) {
+                delay(UNDO_VISIBLE_MS)
+                undoLook = null
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(3f)
+                    .padding(start = 16.dp, end = 16.dp, bottom = bars.calculateBottomPadding() + 16.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(colors.panelHigh)
+                    .padding(start = 20.dp, end = 8.dp),
+            ) {
+                Text(
+                    stringResource(if (undoKeepsWallpaper) R.string.styles_applied_wallpaper else R.string.styles_applied),
+                    color = colors.onWallpaper,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                androidx.compose.material3.TextButton(onClick = {
+                    vm.updateSettings { look.applyTo(it).copy(stylePreset = previousPreset) }
+                    undoLook = null
+                }) { Text(stringResource(R.string.undo)) }
+            }
+        }
     }
 
     // ---------------- GALLERIA STILI (fuori dal Box: copre tutto) ----------------
@@ -830,13 +864,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         StyleGallery(
             currentPresetId = settings.stylePreset,
             onApply = { preset, withWallpaper ->
+                val before = vm.settingsRepo.current
+                undoLook = com.gabrielepiccione.onda.data.LookTheme.capture(before, "undo", "undo") to before.stylePreset
+                undoKeepsWallpaper = withWallpaper
                 vm.updateSettings { preset.applyTo(it) }
                 if (withWallpaper) {
                     scope.launch {
                         com.gabrielepiccione.onda.data.StylePresets.applyWallpaper(context, preset)
                     }
                 }
-                android.widget.Toast.makeText(context, R.string.styles_applied, android.widget.Toast.LENGTH_SHORT).show()
                 overlay = Overlay.NONE
             },
             onClose = { overlay = Overlay.SETTINGS },
