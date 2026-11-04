@@ -67,8 +67,6 @@ fun HomeReorderSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        // Il trascinamento delle righe non deve spostare il foglio
-        sheetGesturesEnabled = false,
         containerColor = colors.panel,
         contentColor = colors.onWallpaper,
     ) {
