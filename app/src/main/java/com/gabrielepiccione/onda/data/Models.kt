@@ -251,6 +251,8 @@ data class Settings(
     val plugPlayApp: String = "",
     /** App che richiedono lo sblocco (impronta, volto o PIN) prima di aprirsi. */
     val protectedApps: Set<String> = emptySet(),
+    /** Contatti preferiti in cima all'elenco app, raggiungibili con "@" sull'alfabeto. */
+    val alphabetContacts: Boolean = false,
     /** Pausa consapevole: app che prima di aprirsi mostrano qualche secondo di respiro. */
     val breakApps: Set<String> = emptySet(),
     /** Durata della pausa in secondi. */

@@ -2,6 +2,29 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.drawer
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
+import com.gabrielepiccione.onda.data.ContactHit
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.home.*
@@ -23,6 +46,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.NotificationItem
+
+/** Lettera dell'alfabeto che porta ai contatti preferiti. */
+const val CONTACTS_LETTER = '@'
+
+/** Righe occupate dalla sezione dei contatti in cima all'elenco (intestazione + contatti). */
+fun contactsRows(contacts: List<ContactHit>): Int = if (contacts.isEmpty()) 0 else contacts.size + 1
+
+@Composable
+private fun ContactListRow(contact: ContactHit, loadPhoto: suspend (ContactHit) -> android.graphics.Bitmap?, onClick: () -> Unit) {
+    val colors = LocalOndaColors.current
+    var photo by remember(contact.id) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    LaunchedEffect(contact.id) { photo = loadPhoto(contact)?.asImageBitmap() }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 52.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(36.dp).clip(CircleShape).background(colors.accentContainer),
+        ) {
+            val p = photo
+            if (p != null) {
+                Image(p, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(36.dp))
+            } else {
+                Text(contact.name.take(1).uppercase(), color = colors.onAccentContainer, style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        Spacer(Modifier.width(14.dp))
+        Text(contact.name, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+    }
+}
 
 data class AppSection(val letter: Char, val apps: List<AppInfo>, val firstIndex: Int)
 
@@ -56,6 +115,9 @@ fun AllAppsPanel(
     contentPadding: PaddingValues,
     onOpenPanel: (AppInfo) -> Unit = {},
     onDismissNotifications: (AppInfo) -> Unit = {},
+    contacts: List<ContactHit> = emptyList(),
+    onContact: (ContactHit) -> Unit = {},
+    loadPhoto: suspend (ContactHit) -> android.graphics.Bitmap? = { null },
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
@@ -64,6 +126,20 @@ fun AllAppsPanel(
         contentPadding = contentPadding,
         modifier = modifier.fillMaxSize(),
     ) {
+        // Contatti preferiti: sezione "@" in cima, raggiungibile dall'alfabeto
+        if (contacts.isNotEmpty()) {
+            item(key = "h_contacts") {
+                Text(
+                    text = stringResource(R.string.starred_contacts),
+                    color = if (activeLetter == CONTACTS_LETTER) colors.accent else colors.onWallpaperMuted,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 4.dp),
+                )
+            }
+            items(contacts.size, key = { "c_" + contacts[it].id }) { i ->
+                ContactListRow(contacts[i], loadPhoto) { onContact(contacts[i]) }
+            }
+        }
         sections.forEach { section ->
             item(key = "h_${section.letter}") {
                 val color by animateColorAsState(

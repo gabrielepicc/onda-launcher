@@ -105,7 +105,7 @@ fun UsageBreakScreen(
                 color = colors.onWallpaper,
             )
             Text(
-                pluralStringResource(R.plurals.break_opens_today, opensToday, opensToday, app.label),
+                pluralStringResource(R.plurals.break_opens_today, opensToday, opensToday),
                 style = MaterialTheme.typography.bodyLarge,
                 color = colors.onWallpaperMuted,
                 textAlign = TextAlign.Center,

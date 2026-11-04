@@ -353,4 +353,7 @@
         <item quantity="one">%1$d minuto di utilizzo oggi</item>
         <item quantity="other">%1$d minuti di utilizzo oggi</item>
     </plurals>
+    <string name="starred_contacts">Contatti preferiti</string>
+    <string name="alphabet_contacts">Contatti dall\'alfabeto</string>
+    <string name="alphabet_contacts_sub">I contatti con la stella in cima all\'elenco app, raggiungibili con @ sull\'alfabeto</string>
 </resources>

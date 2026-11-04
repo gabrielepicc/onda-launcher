@@ -141,6 +141,16 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // --- Contatti preferiti (in cima all'elenco app) ---
+    private val _starred = MutableStateFlow<List<ContactHit>>(emptyList())
+    val starred: StateFlow<List<ContactHit>> = _starred.asStateFlow()
+
+    fun refreshStarred() {
+        viewModelScope.launch {
+            _starred.value = if (settingsRepo.current.alphabetContacts) contacts.starred() else emptyList()
+        }
+    }
+
     // --- Tasto Home premuto: chiude pannelli e torna in cima ---
     private val _homePressed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val homePressed: SharedFlow<Unit> = _homePressed

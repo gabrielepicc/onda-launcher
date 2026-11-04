@@ -44,6 +44,41 @@ class ContactsRepository(private val context: Context) {
         result
     }
 
+    /** Contatti preferiti (con la stella), in ordine alfabetico. */
+    suspend fun starred(limit: Int = 40): List<ContactHit> = withContext(Dispatchers.IO) {
+        if (!hasPermission()) return@withContext emptyList()
+        val projection = arrayOf(
+            ContactsContract.Contacts._ID,
+            ContactsContract.Contacts.LOOKUP_KEY,
+            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
+            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+        )
+        val result = mutableListOf<ContactHit>()
+        runCatching {
+            context.contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                projection,
+                "${ContactsContract.Contacts.STARRED} = 1",
+                null,
+                "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} COLLATE LOCALIZED ASC",
+            )?.use { c ->
+                while (c.moveToNext() && result.size < limit) {
+                    val name = c.getString(2) ?: continue
+                    result += ContactHit(c.getLong(0), c.getString(1) ?: "", name, c.getString(3))
+                }
+            }
+        }
+        result
+    }
+
+    /** Foto miniatura del contatto, se presente. */
+    suspend fun photo(hit: ContactHit): android.graphics.Bitmap? = withContext(Dispatchers.IO) {
+        val uri = hit.photoUri ?: return@withContext null
+        runCatching {
+            context.contentResolver.openInputStream(Uri.parse(uri))?.use { android.graphics.BitmapFactory.decodeStream(it) }
+        }.getOrNull()
+    }
+
     fun open(hit: ContactHit) {
         val uri = ContactsContract.Contacts.getLookupUri(hit.id, hit.lookupKey)
         val intent = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

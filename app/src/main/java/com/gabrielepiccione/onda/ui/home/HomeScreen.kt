@@ -184,7 +184,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val homeList = rememberLazyListState()
     val allAppsList = rememberLazyListState()
     val sections = remember(state.allApps, settings.launchCounts) { buildSections(state.allApps, settings.launchCounts) }
-    val letters = remember(sections) { sections.map { it.letter } }
+    val starred by vm.starred.collectAsStateWithLifecycle()
+    val contactsInList = if (settings.alphabetContacts) starred else emptyList()
+    // "@" in cima all'alfabeto porta ai contatti preferiti
+    val letters = remember(sections, contactsInList.isNotEmpty()) {
+        (if (contactsInList.isNotEmpty()) listOf(CONTACTS_LETTER) else emptyList()) + sections.map { it.letter }
+    }
     val iconScale = settings.iconSize
 
     fun closeAll() {
@@ -230,6 +235,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     LaunchedEffect(state.loaded) { if (state.loaded) vm.seedFavoritesIfNeeded() }
     LaunchedEffect(settings.showAgenda, settings.agendaDays, status.calendarPermission) { vm.refreshCalendar() }
+    LaunchedEffect(settings.alphabetContacts, status.contactsPermission, overlay == Overlay.ALL_APPS) { vm.refreshStarred() }
 
     LaunchedEffect(Unit) {
         vm.homePressed.collect {
@@ -639,6 +645,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onLongClick = { actionsFor = it },
             onOpenPanel = { panelFor = it },
             onDismissNotifications = { NotificationStore.dismissAll(it.packageName) },
+            contacts = contactsInList,
+            onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
+            loadPhoto = { vm.contacts.photo(it) },
             contentPadding = PaddingValues(
                 start = if (settings.leftHanded) letterSide else hiddenSide,
                 end = if (settings.leftHanded) hiddenSide else letterSide,
@@ -666,9 +675,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 if (!OndaAccessibilityService.lockScreen()) withRestrictedHelp(callbacks::openAccessibilitySettings)
             }
         } else null
+        val contactOffset = contactsRows(contactsInList)
         val onLetter: (Char) -> Unit = { letter ->
-            sections.firstOrNull { it.letter == letter }?.let { s ->
-                scope.launch { allAppsList.scrollToItem(s.firstIndex) }
+            if (letter == CONTACTS_LETTER) {
+                scope.launch { allAppsList.scrollToItem(0) }
+            } else {
+                sections.firstOrNull { it.letter == letter }?.let { s ->
+                    scope.launch { allAppsList.scrollToItem(s.firstIndex + contactOffset) }
+                }
             }
         }
         if (scrollerAlpha > 0.01f) {
@@ -757,6 +771,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         calendarPermission = status.calendarPermission,
                         accessibilityEnabled = status.accessibilityEnabled,
                         usageAccess = status.usageAccess,
+                        contactsPermission = status.contactsPermission,
                     ),
                     widgets = vm.widgets,
                     actions = object : SettingsActions {
@@ -765,6 +780,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun notificationAccess() = withRestrictedHelp(callbacks::openNotificationAccess)
                         override fun calendarPermission() = callbacks.requestCalendarPermission()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
+                        override fun contactsPermission() = callbacks.requestContactsPermission()
                         override fun usageAccess() = com.gabrielepiccione.onda.util.UsageAccess.openSettings(context)
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)

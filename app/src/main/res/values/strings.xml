@@ -353,4 +353,7 @@
         <item quantity="one">%1$d minute of use today</item>
         <item quantity="other">%1$d minutes of use today</item>
     </plurals>
+    <string name="starred_contacts">Favorite contacts</string>
+    <string name="alphabet_contacts">Contacts from the alphabet</string>
+    <string name="alphabet_contacts_sub">Starred contacts at the top of the app list, reachable with @ on the alphabet</string>
 </resources>
