@@ -324,6 +324,8 @@ class SettingsRepository(context: Context) {
         current.copy(
             widgetIds = emptyList(),
             widgetStacks = emptyList(),
+            autoBackupUri = "",
+            autoBackupLastDay = "",
             appWidgets = emptyMap(),
             folders = current.folders.mapValues { (_, f) -> f.copy(widgets = emptyList()) },
         ),
@@ -337,6 +339,8 @@ class SettingsRepository(context: Context) {
             parsed.copy(
                 widgetIds = now.widgetIds,
                 widgetStacks = now.widgetStacks,
+                autoBackupUri = now.autoBackupUri,
+                autoBackupLastDay = now.autoBackupLastDay,
                 appWidgets = now.appWidgets,
                 folders = parsed.folders.mapValues { (id, f) -> f.copy(widgets = now.folders[id]?.widgets.orEmpty()) },
                 onboardingDone = true,

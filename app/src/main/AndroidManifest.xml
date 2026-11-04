@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <!-- Permesso "normal": mostra lo Spazio privato di Android 15+ quando Onda è il launcher predefinito -->
+    <uses-permission android:name="android.permission.ACCESS_HIDDEN_PROFILES" />
 
     <!-- Visibilità delle app installabili da launcher (Android 11+) -->
     <queries>

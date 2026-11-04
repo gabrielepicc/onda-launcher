@@ -5,6 +5,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 ## [Non rilasciato]
 
 ### Aggiunto
+- **Spazio privato** (Android 15+): contenitore separato in fondo all'elenco, con blocco, sblocco e opzione per nasconderlo. Da bloccato le sue app non sono visibili né cercabili. Richiede il permesso `ACCESS_HIDDEN_PROFILES` (di tipo "normal") e che Onda sia il launcher predefinito.
+- **Backup automatico**: una copia al giorno delle impostazioni nella cartella scelta, conservando le ultime 7.
 - **Benvenuto al primo avvio**: spiega alfabeto e gesti e propone i permessi; si può saltare e non compare a chi aggiorna.
 - **Tablet e orizzontale**: home, elenco e impostazioni restano centrati con una larghezza leggibile; la rotazione non ricrea l'Activity.
 - **Gesti configurabili**: swipe su e doppio tocco possono aprire ricerca, elenco, tendina, impostazioni, bloccare lo schermo o aprire un'app a scelta. Schema impostazioni 4: chi aveva "doppio tocco per bloccare" mantiene lo stesso comportamento.

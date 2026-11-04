@@ -104,6 +104,45 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         toast(getString(R.string.font_imported))
     }
 
+    /** Cartella del backup automatico: il permesso resta valido anche dopo il riavvio. */
+    private val backupFolderLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
+        uri ?: return@registerForActivityResult
+        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        val ok = runCatching { contentResolver.takePersistableUriPermission(uri, flags) }.isSuccess
+        if (!ok) {
+            toast(getString(R.string.toast_backup_failed))
+            return@registerForActivityResult
+        }
+        releaseBackupFolder()
+        vm.updateSettings { it.copy(autoBackupUri = uri.toString(), autoBackupLastDay = "") }
+    }
+
+    private fun releaseBackupFolder() {
+        val current = vm.settingsRepo.current.autoBackupUri
+        if (current.isBlank()) return
+        runCatching {
+            contentResolver.releasePersistableUriPermission(
+                Uri.parse(current),
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+        }
+    }
+
+    /** Backup automatico al massimo una volta al giorno, quando si esce dal launcher. */
+    private fun runAutoBackupIfDue() {
+        val today = LocalDate.now().toString()
+        val settings = vm.settingsRepo.current
+        if (!com.gabrielepiccione.onda.data.AutoBackup.isDue(settings, today)) return
+        val json = vm.settingsRepo.exportJson()
+        val appContext = applicationContext
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                com.gabrielepiccione.onda.data.AutoBackup.write(appContext, Uri.parse(settings.autoBackupUri), today, json)
+            }
+            if (ok) vm.updateSettings { it.copy(autoBackupLastDay = today) }
+        }
+    }
+
     private var iconImageFor: String? = null
 
     /** Immagine scelta come icona: ridotta e copiata nella memoria privata, senza chiedere permessi. */
@@ -206,6 +245,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun onStop() {
         super.onStop()
         widgets.stopListening()
+        runAutoBackupIfDue()
     }
 
     override fun onResume() {
@@ -308,6 +348,13 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun exportBackup() = exportLauncher.launch("onda-backup-${LocalDate.now()}.json")
 
     override fun importBackup() = importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
+
+    override fun chooseBackupFolder() = backupFolderLauncher.launch(null)
+
+    override fun disableAutoBackup() {
+        releaseBackupFolder()
+        vm.updateSettings { it.copy(autoBackupUri = "", autoBackupLastDay = "") }
+    }
 
     @Suppress("DEPRECATION")
     override fun pickWidget(provider: WidgetManager.Provider, target: WidgetTarget) {

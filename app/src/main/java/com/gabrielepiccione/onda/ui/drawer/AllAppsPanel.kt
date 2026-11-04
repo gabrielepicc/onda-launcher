@@ -27,10 +27,15 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.res.stringResource
+import com.gabrielepiccione.onda.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -99,6 +104,10 @@ fun AllAppsPanel(
     onContact: (ContactHit) -> Unit = {},
     /** Modifier della riga di un'app, ad esempio per conoscerne la posizione. */
     rowModifier: (AppInfo) -> Modifier = { Modifier },
+    /** Stato dello Spazio privato e sue app; null = nessun contenitore da mostrare. */
+    privateLocked: Boolean? = null,
+    privateApps: List<AppInfo> = emptyList(),
+    onTogglePrivateLock: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
@@ -140,6 +149,40 @@ fun AllAppsPanel(
             }
             section.contacts.forEach { contact ->
                 item(key = "c_${contact.id}") { ContactListRow(contact, onClick = { onContact(contact) }) }
+            }
+        }
+        // Contenitore separato dello Spazio privato, dopo tutte le lettere
+        if (privateLocked != null) {
+            item(key = "private_header") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 24.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.private_space),
+                        color = colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = onTogglePrivateLock) {
+                        Icon(if (privateLocked) Icons.Filled.LockOpen else Icons.Filled.Lock, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(if (privateLocked) R.string.private_unlock else R.string.private_lock))
+                    }
+                }
+            }
+            privateApps.forEach { app ->
+                item(key = "p_" + app.key) {
+                    AppListRow(
+                        app = app,
+                        hasNotification = notifications[app.packageName].orEmpty().isNotEmpty(),
+                        showIcon = showIcons,
+                        themedIcons = themedIcons,
+                        onClick = { onClick(app) },
+                        onLongClick = { onLongClick(app) },
+                        modifier = rowModifier(app),
+                    )
+                }
             }
         }
     }

@@ -78,8 +78,39 @@ class AppRepository(
     private data class IconParams(val pack: String, val shape: String, val style: String, val overrides: Map<String, String>, val shapes: Map<String, String>)
     private fun Settings.iconParams() = IconParams(iconPack, iconShape, iconStyle, iconOverrides, iconShapeOverrides)
 
+    /** Stato dello Spazio privato; null = assente (o Android precedente al 15). */
+    data class PrivateSpace(val user: UserHandle, val locked: Boolean)
+
+    private val _privateSpace = MutableStateFlow<PrivateSpace?>(null)
+    val privateSpace: StateFlow<PrivateSpace?> = _privateSpace.asStateFlow()
+
+    private fun isPrivateProfile(user: UserHandle): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM &&
+            runCatching { launcherApps.getLauncherUserInfo(user)?.userType == UserManager.USER_TYPE_PROFILE_PRIVATE }.getOrDefault(false)
+
+    /** Blocca (true) o sblocca (false) lo Spazio privato; lo sblocco chiede l'autenticazione di sistema. */
+    fun setPrivateSpaceLocked(locked: Boolean) {
+        val user = _privateSpace.value?.user ?: return
+        runCatching { userManager.requestQuietModeEnabled(locked, user) }
+    }
+
     init {
         launcherApps.registerCallback(callback, Handler(Looper.getMainLooper()))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            // Blocco e sblocco dello Spazio privato: le sue app compaiono o spariscono subito
+            val filter = android.content.IntentFilter().apply {
+                addAction(android.content.Intent.ACTION_PROFILE_AVAILABLE)
+                addAction(android.content.Intent.ACTION_PROFILE_UNAVAILABLE)
+            }
+            androidx.core.content.ContextCompat.registerReceiver(
+                context,
+                object : android.content.BroadcastReceiver() {
+                    override fun onReceive(c: Context, intent: android.content.Intent) = reload()
+                },
+                filter,
+                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED,
+            )
+        }
         reload()
         scope.launch {
             settings.map { it.iconParams() }.distinctUntilChanged().drop(1).collect { reload() }
@@ -92,13 +123,23 @@ class AppRepository(
             val pack = packs.get(settings.value.iconPack)
             val myUser = Process.myUserHandle()
             val result = mutableListOf<RawApp>()
+            var privateSpace: PrivateSpace? = null
             for (user in launcherApps.profiles) {
+                val isPrivate = isPrivateProfile(user)
+                if (isPrivate) {
+                    val locked = runCatching { userManager.isQuietModeEnabled(user) }.getOrDefault(true)
+                    privateSpace = PrivateSpace(user, locked)
+                    // Da bloccato nessuna app dello Spazio privato deve restare visibile o trovabile
+                    if (locked) continue
+                }
                 val activities = runCatching { launcherApps.getActivityList(null, user) }.getOrDefault(emptyList())
                 for (info in activities) {
                     if (info.componentName.packageName == context.packageName) continue
-                    result += runCatching { info.toRawApp(user, user != myUser, pack) }.getOrNull() ?: continue
+                    val app = runCatching { info.toRawApp(user, !isPrivate && user != myUser, pack) }.getOrNull() ?: continue
+                    result += app.copy(isPrivate = isPrivate)
                 }
             }
+            _privateSpace.value = privateSpace
             _apps.value = result
         }
     }

@@ -109,6 +109,8 @@ interface SettingsActions {
     fun importFont(forClock: Boolean)
     fun exportBackup()
     fun importBackup()
+    fun chooseBackupFolder()
+    fun disableAutoBackup()
     fun close()
 }
 
@@ -117,6 +119,7 @@ fun SettingsScreen(
     settings: Settings,
     hiddenApps: List<AppInfo>,
     allApps: List<AppInfo> = emptyList(),
+    hasPrivateSpace: Boolean = false,
     status: SettingsStatus,
     widgets: WidgetManager,
     actions: SettingsActions,
@@ -459,6 +462,10 @@ fun SettingsScreen(
             FilledTonalButton(onClick = { actions.addWidget() }, modifier = Modifier.padding(top = 6.dp)) { Text(stringResource(R.string.add_widget)) }
         }
 
+        if (page == SettingsPage.APPS && hasPrivateSpace) Group(stringResource(R.string.private_space)) {
+            SwitchRow(stringResource(R.string.private_hide), stringResource(R.string.private_hide_sub), settings.hidePrivateSpace) { v -> onEdit { it.copy(hidePrivateSpace = v) } }
+        }
+
         if (page == SettingsPage.APPS) Group(stringResource(R.string.section_hidden)) {
             SwitchRow(stringResource(R.string.protect_hidden), stringResource(R.string.protect_hidden_sub), settings.protectHidden) { v ->
                 if (!v) actions.authenticate { onEdit { it.copy(protectHidden = false) } } else onEdit { it.copy(protectHidden = true) }
@@ -485,6 +492,24 @@ fun SettingsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
                 FilledTonalButton(onClick = { actions.exportBackup() }) { Text(stringResource(R.string.export)) }
                 OutlinedButton(onClick = { actions.importBackup() }) { Text(stringResource(R.string.restore)) }
+            }
+            Label(stringResource(R.string.auto_backup))
+            Text(stringResource(R.string.auto_backup_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            if (settings.autoBackupUri.isNotBlank()) {
+                Text(
+                    if (settings.autoBackupLastDay.isBlank()) stringResource(R.string.auto_backup_pending) else stringResource(R.string.auto_backup_last, settings.autoBackupLastDay),
+                    color = colors.accent,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
+                FilledTonalButton(onClick = { actions.chooseBackupFolder() }) {
+                    Text(stringResource(if (settings.autoBackupUri.isBlank()) R.string.auto_backup_enable else R.string.auto_backup_change))
+                }
+                if (settings.autoBackupUri.isNotBlank()) {
+                    OutlinedButton(onClick = { actions.disableAutoBackup() }) { Text(stringResource(R.string.auto_backup_disable)) }
+                }
             }
         }
         }

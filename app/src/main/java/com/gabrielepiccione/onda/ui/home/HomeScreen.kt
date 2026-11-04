@@ -148,6 +148,8 @@ interface HomeCallbacks {
     fun pickWidget(provider: WidgetManager.Provider, target: WidgetTarget)
     fun exportBackup()
     fun importBackup()
+    fun chooseBackupFolder()
+    fun disableAutoBackup()
     fun importFont(forClock: Boolean)
     fun pickIconImage(appKey: String)
     fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme)
@@ -201,6 +203,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val homeList = rememberLazyListState()
     val allAppsList = rememberLazyListState()
+    val privateSpace by vm.appsRepo.privateSpace.collectAsStateWithLifecycle()
     val alphabetContacts by vm.alphabetContacts.collectAsStateWithLifecycle()
     val sections = remember(state.allApps, settings.launchCounts, alphabetContacts) {
         buildSections(state.allApps, settings.launchCounts, alphabetContacts)
@@ -695,6 +698,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onLongClick = { openQuick(it, "a_" + it.key) },
             onOpenPanel = { openQuick(it, "a_" + it.key) },
             rowModifier = { rowTracker("a_" + it.key) },
+            privateLocked = privateSpace?.locked?.takeUnless { settings.hidePrivateSpace },
+            privateApps = state.privateApps,
+            onTogglePrivateLock = { privateSpace?.let { vm.appsRepo.setPrivateSpaceLocked(!it.locked) } },
             onDismissNotifications = { NotificationStore.dismissAll(it.packageName) },
             onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
             contentPadding = PaddingValues(
@@ -809,6 +815,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     settings = settings,
                     hiddenApps = state.hiddenApps,
                     allApps = state.allApps,
+                    hasPrivateSpace = privateSpace != null,
                     status = SettingsStatus(
                         isDefaultLauncher = status.isDefaultLauncher,
                         notificationAccess = status.notificationAccess,
@@ -833,6 +840,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun importFont(forClock: Boolean) = callbacks.importFont(forClock)
                         override fun exportBackup() = callbacks.exportBackup()
                         override fun importBackup() = callbacks.importBackup()
+                        override fun chooseBackupFolder() = callbacks.chooseBackupFolder()
+                        override fun disableAutoBackup() = callbacks.disableAutoBackup()
                         override fun close() = closeAll()
                     },
                 )

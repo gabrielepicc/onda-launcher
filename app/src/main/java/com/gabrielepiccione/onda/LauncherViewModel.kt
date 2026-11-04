@@ -40,6 +40,7 @@ sealed interface HomeEntry {
 
 data class LauncherState(
     val allApps: List<AppInfo> = emptyList(),     // visibili, ordinate A-Z
+    val privateApps: List<AppInfo> = emptyList(), // Spazio privato sbloccato, ordinate A-Z
     val favorites: List<AppInfo> = emptyList(),   // solo app preferite (fuori dalle cartelle), in ordine
     val home: List<HomeEntry> = emptyList(),      // app + cartelle, nell'ordine scelto
     val suggestions: List<AppInfo> = emptyList(), // app più usate
@@ -48,7 +49,7 @@ data class LauncherState(
     val settings: Settings = Settings(),
     val loaded: Boolean = false,
 ) {
-    private val byKey: Map<String, AppInfo> by lazy { (allApps + hiddenApps).associateBy { it.key } }
+    private val byKey: Map<String, AppInfo> by lazy { (allApps + hiddenApps + privateApps).associateBy { it.key } }
     fun app(key: String?): AppInfo? = key?.let { byKey[it] }
 }
 
@@ -98,6 +99,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 isHidden = r.key in settings.hidden,
                 swipeTarget = settings.swipeActions[r.key],
                 hasCustomIcon = r.key in settings.iconOverrides || r.key in settings.iconShapeOverrides,
+                isPrivate = r.isPrivate,
             )
         }.sortedWith { a, b -> collator.compare(a.label, b.label) }
 
@@ -110,17 +112,19 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 byKey[entry]?.takeIf { !it.isHidden }?.let { HomeEntry.App(it) }
             }
         }
-        val visible = all.filterNot { it.isHidden }
+        // Lo Spazio privato ha il suo contenitore: fuori da alfabeto, ricerca e suggerimenti
+        val visible = all.filterNot { it.isHidden || it.isPrivate }
         LauncherState(
             allApps = visible,
+            privateApps = all.filter { it.isPrivate },
             favorites = home.filterIsInstance<HomeEntry.App>().map { it.app },
             home = home,
             suggestions = settings.launchCounts.entries
                 .sortedByDescending { it.value }
-                .mapNotNull { byKey[it.key]?.takeIf { a -> !a.isHidden } }
+                .mapNotNull { byKey[it.key]?.takeIf { a -> !a.isHidden && !a.isPrivate } }
                 .take(8)
                 .ifEmpty { visible.take(8) },
-            hiddenApps = all.filter { it.isHidden },
+            hiddenApps = all.filter { it.isHidden && !it.isPrivate },
             notifications = notifs.filterKeys { it !in settings.mutedNotifications },
             settings = settings,
             loaded = raw.isNotEmpty(),

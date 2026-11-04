@@ -25,6 +25,8 @@ data class RawApp(
     val category: AppCategory = AppCategory.OTHER,
     /** Colore dominante dell'icona originale (ARGB), per gli stili generati. */
     val color: Int = 0xFF808080.toInt(),
+    /** App dello Spazio privato (Android 15+): non è un'app del profilo di lavoro. */
+    val isPrivate: Boolean = false,
 )
 
 /** App pronta per la UI, con nome personalizzato applicato. */
@@ -45,6 +47,7 @@ data class AppInfo(
     val swipeTarget: String?,
     /** Icona scelta a mano: ha la precedenza sugli stili generati. */
     val hasCustomIcon: Boolean = false,
+    val isPrivate: Boolean = false,
 ) {
     val packageName: String get() = component.packageName
     val section: Char get() = sectionOf(label)
@@ -364,6 +367,12 @@ data class Settings(
     val widgetIds: List<Int> = emptyList(),
     /** Pile di widget in home; i loro widget non compaiono in [widgetIds]. */
     val widgetStacks: List<WidgetStack> = emptyList(),
+    /** Nasconde il contenitore dello Spazio privato dall'elenco delle app. */
+    val hidePrivateSpace: Boolean = false,
+    /** Cartella scelta per il backup automatico (URI di documento); vuoto = disattivato. */
+    val autoBackupUri: String = "",
+    /** Giorno (AAAA-MM-GG) dell'ultimo backup automatico riuscito. */
+    val autoBackupLastDay: String = "",
     val onboardingDone: Boolean = false,
     /** Benvenuto già visto; chi aggiorna da una versione precedente non lo rivede. */
     val welcomeDone: Boolean = false,
