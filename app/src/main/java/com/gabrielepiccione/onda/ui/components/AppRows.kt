@@ -268,16 +268,13 @@ fun FavoriteRow(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(start = if (showIcon) 44.dp * iconScale + 18.dp else 0.dp, top = 8.dp),
                 ) {
-                    shown.forEach { n ->
+                    notifications.firstOrNull()?.let { n ->
                         key(n.key) {
-                            NotificationCard(
+                            NotificationPreview(
                                 item = n,
-                                extraCount = if (!expanded && notifications.size > 1) notifications.size - 1 else 0,
-                                onClick = { onNotificationClick(n) },
+                                extraCount = notifications.size - 1,
+                                onOpen = { onNotificationClick(n) },
                                 onDismiss = { onNotificationDismiss(n) },
-                                onToggleExpand = { expanded = !expanded },
-                                onReply = { text -> onNotificationReply(n, text) },
-                                onAction = { a -> onNotificationAction(n, a) },
                             )
                         }
                     }

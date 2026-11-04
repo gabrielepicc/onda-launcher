@@ -61,7 +61,13 @@ data class NotificationItem(
     val replyAction: android.app.Notification.Action? = null,
     /** Altre azioni senza input (es. "Segna come letto"), al massimo tre. */
     val actions: List<android.app.Notification.Action> = emptyList(),
+    /** Foto del contatto o icona grande della notifica. */
+    val largeIcon: ImageBitmap? = null,
+    /** Nome della conversazione (gruppi) se diverso dal titolo. */
+    val conversationTitle: String? = null,
 ) {
+    /** A chi si risponde: titolo della conversazione o mittente. */
+    val replyTo: String get() = conversationTitle ?: title
     val canReply: Boolean get() = replyAction != null
 }
 

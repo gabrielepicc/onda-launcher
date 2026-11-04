@@ -4,37 +4,41 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
-import com.gabrielepiccione.onda.ui.theme.*
-import com.gabrielepiccione.onda.ui.components.*
-import com.gabrielepiccione.onda.ui.home.*
-import com.gabrielepiccione.onda.ui.drawer.*
-import com.gabrielepiccione.onda.ui.search.*
-import com.gabrielepiccione.onda.ui.settings.*
-
-import androidx.compose.ui.res.stringResource
-import com.gabrielepiccione.onda.R
+import android.app.Notification
 import android.content.pm.ShortcutInfo
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -42,20 +46,40 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.WidgetManager
+import com.gabrielepiccione.onda.ui.components.AppIcon
+import com.gabrielepiccione.onda.ui.components.HostedWidget
+import com.gabrielepiccione.onda.ui.components.relativeTime
+import com.gabrielepiccione.onda.ui.theme.LocalHapticsEnabled
+import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
 
 /**
- * Pannello rapido di un'app, aperto con lo swipe sulla riga:
- * scorciatoie, tutte le notifiche e un widget dell'app a scelta.
+ * Pannello dell'app (swipe a destra sulla riga o tocco sull'anteprima della notifica):
+ * conversazioni con foto, azioni, scorciatoie, widget dell'app e barra di risposta fissa
+ * in basso che sale sopra la tastiera.
  */
 @Composable
 fun AppPanelSheet(
@@ -71,13 +95,23 @@ fun AppPanelSheet(
     onNotification: (NotificationItem) -> Unit,
     onDismissNotification: (NotificationItem) -> Unit,
     onReplyNotification: (NotificationItem, String) -> Boolean,
-    onNotificationAction: (NotificationItem, android.app.Notification.Action) -> Unit,
+    onNotificationAction: (NotificationItem, Notification.Action) -> Unit,
     onAddWidget: () -> Unit,
     onRemoveWidget: () -> Unit,
     onMoreOptions: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val colors = LocalOndaColors.current
+    val haptics = LocalHapticFeedback.current
+    val hapticsOn = LocalHapticsEnabled.current
+
+    // Conversazione a cui si risponde: di default la più recente che lo consente
+    var replyKey by rememberSaveable(app.key) { mutableStateOf(notifications.firstOrNull { it.canReply }?.key) }
+    val replyTarget = notifications.firstOrNull { it.key == replyKey && it.canReply }
+        ?: notifications.firstOrNull { it.canReply }
+    var draft by rememberSaveable(app.key) { mutableStateOf("") }
+    var sentTo by remember { mutableStateOf<String?>(null) }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -86,90 +120,283 @@ fun AppPanelSheet(
     ) {
         Column(
             Modifier
-                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .imePadding()
         ) {
-            // Intestazione: tocco = apri l'app
+            // Intestazione: icona e nome (tocco = apri l'app), elimina tutte, altre opzioni
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .clickable { onOpenApp(); onDismiss() }
-                    .padding(8.dp)
+                modifier = Modifier.padding(start = 16.dp, end = 8.dp, bottom = 4.dp),
             ) {
-                AppIcon(app, 52.dp, themedIcons)
-                Spacer(Modifier.width(16.dp))
-                Text(app.label, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                androidx.compose.foundation.layout.Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(50)).clickable { onDismiss(); onMoreOptions() }
-                ) {
-                    Icon(Icons.Filled.MoreVert, stringResource(R.string.more_options), tint = colors.onWallpaperMuted)
-                }
-            }
-
-            // Widget dell'app
-            if (widgetId != null) {
-                HostedWidget(widgetId, widgets)
-                TextButton(onClick = onRemoveWidget) { Text(stringResource(R.string.remove_widget)) }
-            }
-
-            // Scorciatoie
-            shortcuts.forEach { sc ->
-                val icon = remember(sc.id) { shortcutIcon(sc) }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(colors.panelHigh)
-                        .clickable { onShortcut(sc); onDismiss() }
-                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                        .clickable { onOpenApp(); onDismiss() }
+                        .padding(8.dp)
                 ) {
-                    if (icon != null) Image(icon, null, Modifier.size(24.dp))
-                    else Icon(Icons.Filled.PlayArrow, null, tint = colors.accent, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.width(16.dp))
-                    Text((sc.shortLabel ?: sc.longLabel ?: "").toString(), style = MaterialTheme.typography.bodyLarge)
+                    AppIcon(app, 36.dp, themedIcons)
+                    Spacer(Modifier.width(14.dp))
+                    Text(app.label, style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
+                if (notifications.any { it.clearable }) {
+                    RoundAction(Icons.Filled.Clear, stringResource(R.string.notif_clear_all)) {
+                        notifications.filter { it.clearable }.forEach(onDismissNotification)
+                    }
+                }
+                RoundAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { onDismiss(); onMoreOptions() }
             }
 
-            // Notifiche
-            if (notifications.isNotEmpty()) {
-                Text(stringResource(R.string.notifications), color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
-                notifications.forEach { n ->
-                    androidx.compose.runtime.key(n.key) {
-                        NotificationCard(
-                            item = n,
-                            extraCount = 0,
-                            onClick = { onNotification(n); onDismiss() },
-                            onDismiss = { onDismissNotification(n) },
-                            onToggleExpand = {},
-                            onReply = { text -> onReplyNotification(n, text) },
-                            onAction = { a -> onNotificationAction(n, a) },
-                        )
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .heightIn(max = 620.dp),
+            ) {
+                items(notifications, key = { it.key }) { n ->
+                    Conversation(
+                        item = n,
+                        selectedForReply = replyTarget?.key == n.key && notifications.count { it.canReply } > 1,
+                        onOpen = { onNotification(n); onDismiss() },
+                        onSelectReply = { replyKey = n.key },
+                        onAction = { a -> onNotificationAction(n, a) },
+                        onDismiss = { onDismissNotification(n) },
+                    )
+                }
+
+                if (widgetId != null) {
+                    item(key = "widget") {
+                        Column(Modifier.padding(horizontal = 12.dp)) {
+                            HostedWidget(widgetId, widgets)
+                            TextButton(onClick = onRemoveWidget) { Text(stringResource(R.string.remove_widget)) }
+                        }
+                    }
+                }
+
+                items(shortcuts, key = { "sc_" + it.id }) { sc ->
+                    val icon = remember(sc.id) { shortcutIcon(sc) }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onShortcut(sc); onDismiss() }
+                            .padding(horizontal = 24.dp, vertical = 14.dp)
+                    ) {
+                        Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                            if (icon != null) Image(icon, null, Modifier.size(32.dp).clip(CircleShape))
+                            else Icon(Icons.Filled.PlayArrow, null, tint = colors.accent)
+                        }
+                        Spacer(Modifier.width(18.dp))
+                        Text((sc.shortLabel ?: sc.longLabel ?: "").toString(), style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+
+                if (widgetId == null) {
+                    item(key = "addWidget") {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onAddWidget(); onDismiss() }
+                                .padding(horizontal = 24.dp, vertical = 14.dp)
+                        ) {
+                            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                                Icon(Icons.Filled.Add, null, tint = colors.accent)
+                            }
+                            Spacer(Modifier.width(18.dp))
+                            Text(stringResource(R.string.app_panel_add_widget, app.label), style = MaterialTheme.typography.titleMedium, color = colors.onWallpaperMuted)
+                        }
                     }
                 }
             }
 
-            if (widgetId == null) {
-                FilledTonalButton(onClick = { onAddWidget(); onDismiss() }, modifier = Modifier.padding(top = 4.dp)) {
-                    Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.app_panel_add_widget, app.label))
+            // Barra di risposta fissa in basso
+            if (replyTarget != null) {
+                fun send() {
+                    if (draft.isNotBlank() && onReplyNotification(replyTarget, draft)) {
+                        if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        sentTo = replyTarget.replyTo
+                        draft = ""
+                    }
+                }
+                sentTo?.let {
+                    Text(
+                        stringResource(R.string.notif_sent_to, it),
+                        color = colors.accent,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(start = 28.dp, top = 6.dp),
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(28.dp))
+                        .border(2.dp, colors.accent, RoundedCornerShape(28.dp))
+                        .background(colors.panelHigh)
+                        .padding(start = 20.dp, end = 6.dp)
+                        .animateContentSize()
+                ) {
+                    Box(Modifier.weight(1f).heightIn(min = 56.dp), contentAlignment = Alignment.CenterStart) {
+                        if (draft.isEmpty()) {
+                            Text(
+                                stringResource(R.string.notif_reply_to, replyTarget.replyTo),
+                                color = colors.onWallpaperMuted,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        BasicTextField(
+                            value = draft,
+                            onValueChange = { draft = it; sentTo = null },
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onWallpaper),
+                            cursorBrush = SolidColor(colors.accent),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                            keyboardActions = KeyboardActions(onSend = { send() }),
+                            maxLines = 5,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        )
+                    }
+                    val cdSend = stringResource(R.string.notif_send)
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(if (draft.isBlank()) colors.panelHigh else colors.accent)
+                            .semantics { contentDescription = cdSend }
+                            .clickable(enabled = draft.isNotBlank()) { send() }
+                    ) {
+                        @Suppress("DEPRECATION")
+                        Icon(Icons.Filled.Send, null, tint = if (draft.isBlank()) colors.onWallpaperMuted else colors.onAccent)
+                    }
                 }
             }
-            if (shortcuts.isEmpty() && notifications.isEmpty() && widgetId == null) {
+        }
+    }
+}
+
+/** Una conversazione/notifica nel pannello: foto, mittente · tempo, messaggi, azioni. */
+@Composable
+private fun Conversation(
+    item: NotificationItem,
+    selectedForReply: Boolean,
+    onOpen: () -> Unit,
+    onSelectReply: () -> Unit,
+    onAction: (Notification.Action) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val colors = LocalOndaColors.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(if (selectedForReply) colors.accentContainer.copy(alpha = 0.35f) else colors.panelHigh.copy(alpha = 0.5f))
+            .clickable(onClick = onOpen)
+            .padding(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Avatar(item)
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.no_shortcuts),
-                    color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(8.dp),
+                    item.replyTo.ifBlank { item.title },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
+                Text(relativeTime(item.postTime), style = MaterialTheme.typography.bodySmall, color = colors.onWallpaperMuted)
+            }
+            if (item.clearable) {
+                RoundAction(Icons.Filled.Clear, stringResource(R.string.cd_dismiss_notification), onClick = onDismiss)
             }
         }
+        Spacer(Modifier.size(10.dp))
+        if (item.messages.isNotEmpty()) {
+            item.messages.forEach { m ->
+                val showSender = m.sender.isNotBlank() && m.sender != item.title && m.sender != item.replyTo
+                Text(
+                    buildString {
+                        if (showSender) append(m.sender).append(": ")
+                        append(m.text)
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.onWallpaper,
+                    modifier = Modifier.padding(vertical = 2.dp),
+                )
+            }
+        } else if (item.text.isNotBlank()) {
+            Text(item.text, style = MaterialTheme.typography.bodyLarge, color = colors.onWallpaper)
+        }
+        if (item.actions.isNotEmpty() || (item.canReply && !selectedForReply)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .horizontalScroll(rememberScrollState())
+            ) {
+                item.actions.forEach { a -> Chip(a.title?.toString().orEmpty()) { onAction(a) } }
+                if (item.canReply) Chip(stringResource(R.string.notif_reply)) { onSelectReply() }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Avatar(item: NotificationItem) {
+    val colors = LocalOndaColors.current
+    val icon = item.largeIcon
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(colors.accentContainer)
+    ) {
+        if (icon != null) {
+            Image(icon, null, contentScale = ContentScale.Crop, modifier = Modifier.size(48.dp))
+        } else {
+            Text(
+                item.replyTo.trim().take(1).uppercase(),
+                color = colors.onAccentContainer,
+                style = MaterialTheme.typography.titleLarge,
+            )
+        }
+    }
+}
+
+@Composable
+private fun Chip(label: String, onClick: () -> Unit) {
+    val colors = LocalOndaColors.current
+    Text(
+        label,
+        style = MaterialTheme.typography.labelLarge,
+        color = colors.onWallpaper,
+        maxLines = 1,
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(colors.panel)
+            .clickable(onClick = onClick)
+            .heightIn(min = 40.dp)
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+    )
+}
+
+@Composable
+private fun RoundAction(icon: androidx.compose.ui.graphics.vector.ImageVector, description: String, onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .semantics { contentDescription = description }
+            .clickable(onClick = onClick)
+    ) {
+        Icon(icon, null, tint = LocalOndaColors.current.onWallpaperMuted)
     }
 }

@@ -26,7 +26,18 @@ data class MediaInfo(
     val art: ImageBitmap?,
     val playing: Boolean,
     val packageName: String,
-)
+    /** Posizione nota al momento [positionTime] (ms), durata della traccia (ms, 0 se ignota). */
+    val position: Long = 0,
+    val positionTime: Long = 0,
+    val duration: Long = 0,
+    val speed: Float = 1f,
+) {
+    /** Posizione stimata adesso, tenendo conto della velocità di riproduzione. */
+    fun positionAt(nowElapsed: Long): Long {
+        if (!playing || positionTime == 0L) return position
+        return (position + ((nowElapsed - positionTime) * speed).toLong()).coerceIn(0, if (duration > 0) duration else Long.MAX_VALUE)
+    }
+}
 
 /** Sessione multimediale attiva (Spotify, YouTube Music, podcast…), letta grazie all'accesso alle notifiche. */
 class MediaRepository(private val context: Context) {
@@ -101,6 +112,10 @@ class MediaRepository(private val context: Context) {
             art = if (previous?.title == title && previous.art != null) previous.art else art?.asImageBitmap(),
             playing = c.playbackState?.state == PlaybackState.STATE_PLAYING,
             packageName = c.packageName,
+            position = c.playbackState?.position ?: 0,
+            positionTime = c.playbackState?.lastPositionUpdateTime ?: 0,
+            duration = meta.getLong(MediaMetadata.METADATA_KEY_DURATION).coerceAtLeast(0),
+            speed = c.playbackState?.playbackSpeed?.takeIf { it > 0f } ?: 1f,
         )
     }
 
@@ -110,6 +125,7 @@ class MediaRepository(private val context: Context) {
     }
 
     fun next() = controller?.transportControls?.skipToNext()
+    fun seekTo(ms: Long) = controller?.transportControls?.seekTo(ms)
     fun previous() = controller?.transportControls?.skipToPrevious()
 
     fun open() {

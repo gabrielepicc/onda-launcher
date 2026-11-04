@@ -208,4 +208,10 @@
     <string name="preset_vulcano">Vulcano</string>
     <string name="preset_essenziale">Essenziale</string>
     <string name="clock_style_setting">Stile orologio</string>
+    <string name="notif_clear_all">Elimina tutte</string>
+    <string name="notif_sent_to">Inviato a %1$s</string>
+    <string name="notif_reply_to">Rispondi a %1$s</string>
+    <string name="notif_open_panel">Apri conversazione</string>
+    <string name="media_pause">Pausa</string>
+    <string name="media_seek">Avanzamento brano</string>
 </resources>

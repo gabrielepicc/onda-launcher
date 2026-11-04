@@ -25,6 +25,6 @@ class OndaNotificationListener : NotificationListenerService() {
 
     private fun refresh() {
         val active = runCatching { activeNotifications }.getOrNull() ?: return
-        NotificationStore.publish(active, packageName)
+        NotificationStore.publish(this, active, packageName)
     }
 }

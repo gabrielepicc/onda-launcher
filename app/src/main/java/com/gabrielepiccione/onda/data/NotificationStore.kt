@@ -10,6 +10,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.app.RemoteInput
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import android.os.Build
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
@@ -35,7 +37,7 @@ object NotificationStore {
         if (!value) _byPackage.value = emptyMap()
     }
 
-    internal fun publish(active: Array<StatusBarNotification>, ownPackage: String) {
+    internal fun publish(context: Context, active: Array<StatusBarNotification>, ownPackage: String) {
         _byPackage.value = active
             .asSequence()
             .filter { it.packageName != ownPackage }
@@ -44,12 +46,12 @@ object NotificationStore {
                 // Saltiamo i riassunti di gruppo e le notifiche "di servizio" senza contenuto
                 (n.flags and Notification.FLAG_GROUP_SUMMARY) == 0 || active.count { it.groupKey == sbn.groupKey } == 1
             }
-            .mapNotNull { it.toItem() }
+            .mapNotNull { it.toItem(context) }
             .groupBy { it.packageName }
             .mapValues { (_, list) -> list.sortedByDescending { it.postTime } }
     }
 
-    private fun StatusBarNotification.toItem(): NotificationItem? {
+    private fun StatusBarNotification.toItem(context: Context): NotificationItem? {
         val extras = notification.extras
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()
             ?: extras.getCharSequence(Notification.EXTRA_TITLE_BIG)?.toString()
@@ -65,10 +67,11 @@ object NotificationStore {
         val all = notification.actions.orEmpty()
         val reply = all.firstOrNull { a -> a.remoteInputs?.any { it.allowFreeFormInput } == true }
         val others = all.filter { it !== reply && it.remoteInputs.isNullOrEmpty() && it.actionIntent != null }.take(3)
+        val style = runCatching { NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification) }.getOrNull()
         val messages = runCatching {
-            NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification)
+            style
                 ?.messages
-                ?.takeLast(4)
+                ?.takeLast(8)
                 ?.mapNotNull { m ->
                     val body = m.text?.toString()?.trim().orEmpty()
                     if (body.isEmpty()) null else MessageLine(m.person?.name?.toString().orEmpty(), body)
@@ -87,8 +90,17 @@ object NotificationStore {
             messages = messages,
             replyAction = reply,
             actions = others,
+            largeIcon = largeIconOf(context),
+            conversationTitle = style?.conversationTitle?.toString()?.takeIf { it.isNotBlank() && it != title },
         )
     }
+
+    /** Icona grande (foto del contatto), ridotta a 128px. */
+    private fun StatusBarNotification.largeIconOf(context: Context): androidx.compose.ui.graphics.ImageBitmap? = runCatching {
+        val d = notification.getLargeIcon()?.loadDrawable(context) ?: return@runCatching null
+        val size = 128
+        d.toBitmap(size, size).asImageBitmap()
+    }.getOrNull()
 
     fun isPermissionGranted(context: Context): Boolean =
         NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)

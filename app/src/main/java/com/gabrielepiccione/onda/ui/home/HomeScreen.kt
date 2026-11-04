@@ -318,7 +318,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         onClick = { launchApp(app) },
                         onLongClick = { actionsFor = app },
                         onSwipe = { if (target != null) launchApp(target) else panelFor = app },
-                        onNotificationClick = { NotificationStore.open(context, it) },
+                        onNotificationClick = { panelFor = app },
                         onNotificationDismiss = { NotificationStore.dismiss(it) },
                         onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
                         onNotificationAction = { n, a -> NotificationStore.runAction(context, n, a) },
@@ -421,6 +421,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                     onPlayPause = { vm.media.playPause() },
                                     onPrev = { vm.media.previous() },
                                     onNext = { vm.media.next() },
+                                    onSeek = { vm.media.seekTo(it) },
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
                                 )
                             }

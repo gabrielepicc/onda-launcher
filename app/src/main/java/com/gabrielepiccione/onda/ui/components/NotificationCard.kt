@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -262,4 +263,96 @@ private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> U
             .heightIn(min = 36.dp)
             .padding(horizontal = 14.dp, vertical = 8.dp),
     )
+}
+
+/** Tempo trascorso breve e localizzato ("2 min", "1 h"…). */
+fun relativeTime(postTime: Long): String =
+    android.text.format.DateUtils.getRelativeTimeSpanString(
+        postTime, System.currentTimeMillis(), android.text.format.DateUtils.MINUTE_IN_MILLIS,
+        android.text.format.DateUtils.FORMAT_ABBREV_RELATIVE,
+    ).toString()
+
+/**
+ * Anteprima della notifica sotto l'app in home: mittente · tempo, testo su più righe e freccia.
+ * Il tocco apre il pannello dell'app (conversazione completa e risposta); lo swipe la elimina.
+ */
+@Composable
+fun NotificationPreview(
+    item: NotificationItem,
+    extraCount: Int,
+    onOpen: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalOndaColors.current
+    val state = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value != SwipeToDismissBoxValue.Settled && item.clearable) {
+                onDismiss(); true
+            } else false
+        }
+    )
+    val body = item.messages.lastOrNull()?.text ?: item.text
+    SwipeToDismissBox(
+        state = state,
+        enableDismissFromStartToEnd = item.clearable,
+        enableDismissFromEndToStart = item.clearable,
+        backgroundContent = {},
+        modifier = modifier,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .clickable(onClick = onOpen)
+                .padding(vertical = 6.dp, horizontal = 4.dp)
+        ) {
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        item.replyTo.ifBlank { item.title },
+                        color = colors.onWallpaper,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    Text(
+                        " · " + relativeTime(item.postTime),
+                        color = colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                    )
+                    if (extraCount > 0) {
+                        Text(
+                            "+$extraCount",
+                            color = colors.onAccentContainer,
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(colors.accentContainer)
+                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+                if (body.isNotBlank()) {
+                    Text(
+                        body,
+                        color = colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Icon(
+                Icons.Filled.KeyboardArrowRight,
+                contentDescription = stringResource(R.string.notif_open_panel),
+                tint = colors.onWallpaperMuted,
+                modifier = Modifier.padding(start = 8.dp).size(24.dp),
+            )
+        }
+    }
 }
