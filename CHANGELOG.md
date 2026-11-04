@@ -2,7 +2,7 @@
 
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
-## [Non rilasciato]
+## [0.9.0]
 
 ### Aggiunto
 - **Spazio privato** (Android 15+): contenitore separato in fondo all'elenco, con blocco, sblocco e opzione per nasconderlo. Da bloccato le sue app non sono visibili né cercabili. Richiede il permesso `ACCESS_HIDDEN_PROFILES` (di tipo "normal") e che Onda sia il launcher predefinito.
@@ -13,22 +13,20 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 - **Animazioni di apertura delle app**: di sistema, dissolvenza, zoom o dal basso.
 - **Riordina la home**: blocchi e preferiti si spostano trascinandoli (dal menu della home).
 - **Icone delle singole app**: immagine dalla galleria e forma diversa per ogni app, disponibili anche senza icon pack. L'icona scelta ha la precedenza su pack e stili generati.
-
-### Modificato
-- **Impostazioni a pagine** (Aspetto, Home, Gesti, Ricerca, App, Backup) con **anteprima dal vivo** di orologio e preferiti nella pagina Aspetto.
-- Dopo aver applicato un preset si può **annullare** per qualche secondo; rimuovere un widget chiede conferma.
-- **Popup dell'app all'altezza della riga** al posto dei fogli dal basso: pressione lunga e swipe a destra mostrano notifiche, scorciatoie, widget dell'app e azioni rapide. "Rispondi" apre il pannello con il campo sopra la tastiera, "Altre opzioni" l'elenco completo.
-- "Nascondi nomi" vale anche per le cartelle (il nome resta disponibile per TalkBack).
-- Selettore widget con ricerca e widget raggruppati per app.
-- Icone diverse per ogni voce dei menu.
-- Slider con il valore visibile e "Ripristina" per tornare al predefinito.
-
-### Aggiunto
 - **Riepilogo notifiche**: blocco opzionale della home con il totale delle notifiche e le app da cui arrivano; toccandolo si vedono tutte raggruppate per app e si possono eliminare insieme.
 - **Contatti nell'alfabeto**: opzione per mostrare i contatti sotto ogni lettera dell'elenco, dopo le app. L'accesso ai contatti viene chiesto solo quando la si attiva.
 - **Usage Breaker**: una pausa regolabile (3–60 secondi) prima di aprire le app scelte, con le aperture di oggi. Si attiva dalle opzioni dell'app; i conteggi restano sul dispositivo.
 - **Pile di widget**: più widget nello stesso blocco della home, da sfogliare in orizzontale. Si creano dal foglio di modifica di un widget (pressione lunga).
 - **Posizione della home**: si sceglie il punto dello schermo in cui inizia il primo blocco (orologio o widget); gli altri blocchi e i preferiti lo seguono. Si regola dal foglio di modifica di un blocco o dalle impostazioni; il predefinito resta ancorato in basso.
+
+### Modificato
+- **Popup dell'app all'altezza della riga** al posto dei fogli dal basso: pressione lunga e swipe a destra mostrano notifiche, scorciatoie, widget dell'app e azioni rapide. "Rispondi" apre il pannello con il campo sopra la tastiera, "Altre opzioni" l'elenco completo.
+- **Impostazioni a pagine** (Aspetto, Home, Gesti, Ricerca, App, Backup) con **anteprima dal vivo** di orologio e preferiti nella pagina Aspetto.
+- Dopo aver applicato un preset si può **annullare** per qualche secondo; rimuovere un widget chiede conferma.
+- "Nascondi nomi" vale anche per le cartelle (il nome resta disponibile per TalkBack).
+- Selettore widget con ricerca e widget raggruppati per app.
+- Icone diverse per ogni voce dei menu.
+- Slider con il valore visibile e "Ripristina" per tornare al predefinito.
 
 ## [0.8.0]
 

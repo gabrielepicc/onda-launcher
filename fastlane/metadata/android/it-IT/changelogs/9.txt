@@ -1,0 +1,1 @@
+Popup dell'app all'altezza della riga, impostazioni a pagine con anteprima, riordino trascinando, pile di widget, posizione della home, Usage Breaker, contatti nell'alfabeto, riepilogo notifiche, gesti e animazioni configurabili, Spazio privato, backup automatico.

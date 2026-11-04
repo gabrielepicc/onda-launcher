@@ -26,7 +26,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 4. 🟡 Fase 5 — ✅ prefissi di ricerca (= @ /), ✅ scorciatoie impostazioni di sistema, ✅ motore web selezionabile,
    ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste.
    ✅ Usage Breaker, ✅ contatti dall'alfabeto, ✅ riepilogo notifiche, ⬜ conversioni unità/valute
-5. ⬜ Blocco UX/UI (prima della Fase 6, così l'onboarding spiega gesti e menu definitivi):
+5. ✅ Blocco UX/UI (prima della Fase 6, così l'onboarding spiega gesti e menu definitivi):
    ✅ nascondere i nomi anche delle cartelle, ✅ ricerca e raggruppamento nel selettore widget, ✅ icone distinte nei menu,
    ✅ valori e ripristino sugli slider, ✅ popup all'altezza dell'icona al posto dei fogli dal basso (la risposta alle notifiche resta sopra la tastiera),
    ✅ anteprima dal vivo e pagine nelle impostazioni, ✅ riordino trascinando, ✅ modifica completa delle singole icone,

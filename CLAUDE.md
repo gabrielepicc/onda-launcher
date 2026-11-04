@@ -30,8 +30,9 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - `:app` — UI in `ui/{theme,components,home,drawer,search,settings,sheets}`, stato in `LauncherViewModel`,
   dati in `data/` (DataStore + `SettingsCodec`), servizi in `service/`.
 - `:core:icons` — parser `appfilter.xml`, `IconPacks`/`IconPackCache`, `IconRenderer` (forme, fallback, puntini), `IconMatcher`.
-- Gesti righe app: componente `SwipeActions` (destra = pannello app, sinistra = elimina notifiche).
-- Home a blocchi ordinabili (`HomeBlocks`: orologio, media, widget, app) modificabili con pressione lunga (`HomeEditSheet`).
+- Gesti righe app: componente `SwipeActions` (destra = popup dell'app `AppQuickPopup`, sinistra = elimina notifiche).
+- Home a blocchi ordinabili (`HomeBlocks`: orologio, media, widget, pile, agenda, riepilogo notifiche, app) modificabili con pressione lunga (`HomeEditSheet`) o trascinando (`HomeReorderSheet`).
+- Popup dell'app in `ui/sheets/AppQuickPopup`; `AppPanelSheet` resta per rispondere sopra la tastiera, `AppActionsSheet` per "Altre opzioni".
 
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.

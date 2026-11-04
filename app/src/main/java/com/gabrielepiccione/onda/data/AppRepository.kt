@@ -90,6 +90,7 @@ class AppRepository(
 
     /** Blocca (true) o sblocca (false) lo Spazio privato; lo sblocco chiede l'autenticazione di sistema. */
     fun setPrivateSpaceLocked(locked: Boolean) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) return
         val user = _privateSpace.value?.user ?: return
         runCatching { userManager.requestQuietModeEnabled(locked, user) }
     }
