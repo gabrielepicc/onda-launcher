@@ -202,7 +202,11 @@ fun SettingsScreen(
             ClickRow(stringResource(R.string.icon_pack), packLabel) { iconPackDialog = true }
             Label(stringResource(R.string.icon_style))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                listOf("ORIGINAL" to R.string.style_original, "DOTS" to R.string.style_dots).forEach { (id, res) ->
+                listOf(
+                    "ORIGINAL" to R.string.style_original, "MATERIAL" to R.string.style_material, "OUTLINE" to R.string.style_outline,
+                    "STICKER" to R.string.style_sticker, "WATERCOLOR" to R.string.style_watercolor, "MARBLE" to R.string.style_marble,
+                    "DOTS" to R.string.style_dots,
+                ).forEach { (id, res) ->
                     FilterChip(selected = settings.iconStyle == id, onClick = { onEdit { it.copy(iconStyle = id) } }, label = { Text(stringResource(res)) })
                 }
             }

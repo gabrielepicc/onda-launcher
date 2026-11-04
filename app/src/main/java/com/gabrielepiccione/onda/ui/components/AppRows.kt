@@ -90,7 +90,10 @@ import kotlin.math.roundToInt
 fun AppIcon(app: AppInfo, size: Dp, themed: Boolean, modifier: Modifier = Modifier) {
     val colors = LocalOndaColors.current
     val mono = app.mono
-    if (themed && mono != null) {
+    val style = LocalIconStyle.current
+    if (style in GENERATED_ICON_STYLES) {
+        GeneratedIcon(app, size, style, modifier)
+    } else if (themed && mono != null) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = modifier

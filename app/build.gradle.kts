@@ -77,6 +77,8 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core")
+    // Glifi per le icone generate (Material Icons, Apache 2.0); R8 rimuove quelli non usati
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
     implementation("androidx.datastore:datastore:1.1.1")

@@ -22,6 +22,9 @@ data class RawApp(
     /** Maschera monocromatica per le icone a tema (Android 13+), se l'app la fornisce. */
     val mono: ImageBitmap?,
     val isWorkProfile: Boolean,
+    val category: AppCategory = AppCategory.OTHER,
+    /** Colore dominante dell'icona originale (ARGB), per gli stili generati. */
+    val color: Int = 0xFF808080.toInt(),
 )
 
 /** App pronta per la UI, con nome personalizzato applicato. */
@@ -34,6 +37,8 @@ data class AppInfo(
     val icon: ImageBitmap,
     val mono: ImageBitmap?,
     val isWorkProfile: Boolean,
+    val category: AppCategory = AppCategory.OTHER,
+    val color: Int = 0xFF808080.toInt(),
     val isFavorite: Boolean,
     val isHidden: Boolean,
     /** Chiave dell'app aperta scorrendo la riga verso destra, se impostata. */

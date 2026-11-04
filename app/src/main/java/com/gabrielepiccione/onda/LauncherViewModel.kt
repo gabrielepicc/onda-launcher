@@ -86,6 +86,8 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 icon = r.icon,
                 mono = r.mono,
                 isWorkProfile = r.isWorkProfile,
+                category = r.category,
+                color = r.color,
                 isFavorite = r.key in settings.favorites,
                 isHidden = r.key in settings.hidden,
                 swipeTarget = settings.swipeActions[r.key],

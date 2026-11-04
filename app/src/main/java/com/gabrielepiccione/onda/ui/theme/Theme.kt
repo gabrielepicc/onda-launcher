@@ -60,6 +60,9 @@ data class OndaColors(
 val LocalOndaColors = staticCompositionLocalOf { colorsFrom(darkColorScheme(), true) }
 val LocalHapticsEnabled = staticCompositionLocalOf { true }
 
+/** Stile delle icone corrente (ORIGINAL, DOTS, MATERIAL, OUTLINE, STICKER, WATERCOLOR, MARBLE). */
+val LocalIconStyle = staticCompositionLocalOf { "ORIGINAL" }
+
 val AccentChoices = listOf(
     0xFF7FE3D1, // acqua
     0xFF8AB4F8, // cielo
@@ -115,6 +118,7 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalOndaColors provides colorsFrom(scheme, dark),
         LocalHapticsEnabled provides settings.haptics,
+        LocalIconStyle provides settings.iconStyle,
         LocalOndaTokens provides OndaTokens(),
         LocalDensity provides Density(base.density, base.fontScale * settings.textScale),
     ) {

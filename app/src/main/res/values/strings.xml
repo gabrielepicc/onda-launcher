@@ -239,4 +239,9 @@
     <string name="style_dots">Dots</string>
     <string name="icon_shape_hint">The shape applies to adaptive icons when no icon pack is set.</string>
     <string name="swipe_down_fixed">Swipe down: always opens the notification shade.</string>
+    <string name="style_material">Material</string>
+    <string name="style_outline">Outline</string>
+    <string name="style_sticker">Sticker</string>
+    <string name="style_watercolor">Watercolor</string>
+    <string name="style_marble">Marble</string>
 </resources>

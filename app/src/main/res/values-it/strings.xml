@@ -239,4 +239,9 @@
     <string name="style_dots">Puntini</string>
     <string name="icon_shape_hint">La forma si applica alle icone adattive senza icon pack.</string>
     <string name="swipe_down_fixed">Scorri verso il basso: apre sempre la tendina delle notifiche.</string>
+    <string name="style_material">Material</string>
+    <string name="style_outline">Contorno</string>
+    <string name="style_sticker">Sticker</string>
+    <string name="style_watercolor">Acquerello</string>
+    <string name="style_marble">Marmo</string>
 </resources>

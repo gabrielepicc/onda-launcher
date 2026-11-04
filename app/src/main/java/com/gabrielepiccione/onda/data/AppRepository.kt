@@ -69,6 +69,9 @@ class AppRepository(
     /** Pack caricati, condivisi con il selettore di icone. */
     val packs = IconPackCache(context)
 
+    private val knownCategories by lazy { AppClassifier.loadKnown(context) }
+    private val colorCache = HashMap<String, Int>()
+
     // Cache in memoria delle icone già elaborate: chiave = app + parametri di resa
     private val iconCache = android.util.LruCache<String, ImageBitmap>(600)
 
@@ -115,6 +118,11 @@ class AppRepository(
             finalBmp.asImageBitmap().also { iconCache.put(cacheKey, it) }
         }
         val usesOriginal = s.iconOverrides[key] == null && (pack == null || pack.iconFor(componentName, densityDpi) == null)
+        val appLabel = label?.toString()?.trim().orEmpty()
+        val category = AppClassifier.classify(componentName.packageName, appLabel, applicationInfo.category, knownCategories)
+        val color = synchronized(colorCache) {
+            colorCache.getOrPut(key) { IconRenderer.dominantColor(base.toBitmap(48, 48)) }
+        }
         return RawApp(
             key = key,
             component = componentName,
@@ -123,6 +131,8 @@ class AppRepository(
             icon = icon,
             mono = if (usesOriginal) monochromeOf(base) else null,
             isWorkProfile = work,
+            category = category,
+            color = color,
         )
     }
 
