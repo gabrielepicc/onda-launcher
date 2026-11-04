@@ -127,6 +127,7 @@ interface HomeCallbacks {
     fun requestDefaultLauncher()
     fun openNotificationAccess()
     fun openAccessibilitySettings()
+    fun openOwnAppInfo()
     fun pickWidget(provider: WidgetManager.Provider, target: WidgetTarget)
     fun exportBackup()
     fun importBackup()
@@ -184,6 +185,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         widgetFilter = filter
         widgetTarget = target
         widgetPicker = true
+    }
+
+    // Da Android 13 l'accesso alle notifiche/accessibilità per le app installate da APK è
+    // "con limitazioni": prima di aprire le impostazioni mostriamo come sbloccarlo.
+    var restrictedHelp by remember { mutableStateOf<(() -> Unit)?>(null) }
+    fun withRestrictedHelp(open: () -> Unit) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) restrictedHelp = open else open()
     }
 
     fun perform(action: GestureAction) {
@@ -382,6 +390,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             onSwipe = { if (target != null) launchApp(target) else panelFor = app },
                             onNotificationClick = { NotificationStore.open(context, it) },
                             onNotificationDismiss = { NotificationStore.dismiss(it) },
+                            onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
+                            onNotificationAction = { n, a -> NotificationStore.runAction(context, n, a) },
                             modifier = itemMod,
                         )
                     }
@@ -414,7 +424,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 item(key = "hints") {
                     Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (!status.notificationAccess) {
-                            HintChip(Icons.Filled.Notifications, stringResource(R.string.hint_notifications)) { callbacks.openNotificationAccess() }
+                            HintChip(Icons.Filled.Notifications, stringResource(R.string.hint_notifications)) { withRestrictedHelp(callbacks::openNotificationAccess) }
                         }
                         if (!status.isDefaultLauncher) {
                             HintChip(Icons.Filled.Settings, stringResource(R.string.hint_default)) { callbacks.requestDefaultLauncher() }
@@ -588,9 +598,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     actions = object : SettingsActions {
                         override fun edit(transform: (com.gabrielepiccione.onda.data.Settings) -> com.gabrielepiccione.onda.data.Settings) = vm.updateSettings(transform)
                         override fun requestDefault() = callbacks.requestDefaultLauncher()
-                        override fun notificationAccess() = callbacks.openNotificationAccess()
+                        override fun notificationAccess() = withRestrictedHelp(callbacks::openNotificationAccess)
                         override fun calendarPermission() = callbacks.requestCalendarPermission()
-                        override fun accessibility() = callbacks.openAccessibilitySettings()
+                        override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
@@ -619,6 +629,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onShortcut = vm::startShortcut,
             onNotification = { NotificationStore.open(context, it) },
             onDismissNotification = { NotificationStore.dismiss(it) },
+            onReplyNotification = { n, text -> NotificationStore.reply(context, n, text) },
+            onNotificationAction = { n, act -> NotificationStore.runAction(context, n, act) },
             onAddWidget = { openWidgetPicker(app.packageName, WidgetTarget.ForApp(app.key)) },
             onRemoveWidget = { vm.removeAppWidget(app) },
             onMoreOptions = { actionsFor = app },
@@ -713,6 +725,20 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 homeMenu = false
             }
         }
+    }
+
+    restrictedHelp?.let { open ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { restrictedHelp = null },
+            title = { Text(stringResource(R.string.restricted_title)) },
+            text = { Text(stringResource(R.string.restricted_body)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { restrictedHelp = null; open() }) { Text(stringResource(R.string.try_again)) }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { restrictedHelp = null; callbacks.openOwnAppInfo() }) { Text(stringResource(R.string.open_app_info)) }
+            },
+        )
     }
 
     if (widgetPicker) {

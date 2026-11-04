@@ -150,4 +150,12 @@
     <string name="cd_all_apps_letter">Scorri le app per iniziale</string>
     <string name="accessibility_label">Onda – blocco schermo</string>
     <string name="accessibility_description">Permette a Onda di bloccare lo schermo quando tocchi due volte uno spazio vuoto della home. Onda non legge né raccoglie il contenuto dello schermo.</string>
+    <string name="notif_reply">Rispondi</string>
+    <string name="notif_reply_hint">Scrivi una risposta…</string>
+    <string name="notif_send">Invia</string>
+    <string name="notif_snooze">Posticipa 1 ora</string>
+    <string name="restricted_title">Accesso bloccato da Android?</string>
+    <string name="restricted_body">Da Android 13 le app installate da file APK hanno le «impostazioni con limitazioni». Apri Info app → menu ⋮ in alto a destra → «Consenti impostazioni con limitazioni», poi torna qui e attiva l\'accesso. Su alcuni telefoni la voce compare solo dopo aver provato una volta.</string>
+    <string name="open_app_info">Apri Info app</string>
+    <string name="try_again">Riprova</string>
 </resources>

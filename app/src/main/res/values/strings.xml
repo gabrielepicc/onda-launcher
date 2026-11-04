@@ -150,4 +150,12 @@
     <string name="cd_all_apps_letter">Browse apps by initial</string>
     <string name="accessibility_label">Onda – screen lock</string>
     <string name="accessibility_description">Lets Onda lock the screen when you double-tap an empty spot on home. Onda does not read or collect screen content.</string>
+    <string name="notif_reply">Reply</string>
+    <string name="notif_reply_hint">Write a reply…</string>
+    <string name="notif_send">Send</string>
+    <string name="notif_snooze">Snooze 1 hour</string>
+    <string name="restricted_title">Blocked by Android?</string>
+    <string name="restricted_body">Since Android 13, apps installed from an APK file get “restricted settings”. Open App info → ⋮ menu (top right) → “Allow restricted settings”, then come back and grant access. On some phones the option appears only after a first attempt.</string>
+    <string name="open_app_info">Open App info</string>
+    <string name="try_again">Try again</string>
 </resources>

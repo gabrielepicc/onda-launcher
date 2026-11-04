@@ -70,6 +70,8 @@ fun AppPanelSheet(
     onShortcut: (ShortcutInfo) -> Unit,
     onNotification: (NotificationItem) -> Unit,
     onDismissNotification: (NotificationItem) -> Unit,
+    onReplyNotification: (NotificationItem, String) -> Boolean,
+    onNotificationAction: (NotificationItem, android.app.Notification.Action) -> Unit,
     onAddWidget: () -> Unit,
     onRemoveWidget: () -> Unit,
     onMoreOptions: () -> Unit,
@@ -139,20 +141,16 @@ fun AppPanelSheet(
             if (notifications.isNotEmpty()) {
                 Text(stringResource(R.string.notifications), color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
                 notifications.forEach { n ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(colors.panelHigh)
-                            .clickable { onNotification(n); onDismiss() }
-                            .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp)
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            if (n.title.isNotBlank()) Text(n.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            if (n.text.isNotBlank()) Text(n.text, style = MaterialTheme.typography.bodySmall, color = colors.onWallpaperMuted, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                        }
-                        if (n.clearable) TextButton(onClick = { onDismissNotification(n) }) { Text(stringResource(R.string.dismiss)) }
+                    androidx.compose.runtime.key(n.key) {
+                        NotificationCard(
+                            item = n,
+                            extraCount = 0,
+                            onClick = { onNotification(n); onDismiss() },
+                            onDismiss = { onDismissNotification(n) },
+                            onToggleExpand = {},
+                            onReply = { text -> onReplyNotification(n, text) },
+                            onAction = { a -> onNotificationAction(n, a) },
+                        )
                     }
                 }
             }

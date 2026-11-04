@@ -43,6 +43,9 @@ data class AppInfo(
     val section: Char get() = sectionOf(label)
 }
 
+/** Riga di una conversazione (WhatsApp, Telegram, SMS…). */
+data class MessageLine(val sender: String, val text: String)
+
 data class NotificationItem(
     val key: String,
     val packageName: String,
@@ -52,7 +55,15 @@ data class NotificationItem(
     val contentIntent: PendingIntent?,
     val autoCancel: Boolean,
     val clearable: Boolean,
-)
+    /** Ultimi messaggi se la notifica è una conversazione (MessagingStyle). */
+    val messages: List<MessageLine> = emptyList(),
+    /** Azione con campo di testo libero: risposta diretta dalla home. */
+    val replyAction: android.app.Notification.Action? = null,
+    /** Altre azioni senza input (es. "Segna come letto"), al massimo tre. */
+    val actions: List<android.app.Notification.Action> = emptyList(),
+) {
+    val canReply: Boolean get() = replyAction != null
+}
 
 data class ContactHit(
     val id: Long,

@@ -137,6 +137,8 @@ fun FavoriteRow(
     onNotificationClick: (NotificationItem) -> Unit,
     onNotificationDismiss: (NotificationItem) -> Unit,
     modifier: Modifier = Modifier,
+    onNotificationReply: (NotificationItem, String) -> Boolean = { _, _ -> false },
+    onNotificationAction: (NotificationItem, android.app.Notification.Action) -> Unit = { _, _ -> },
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
@@ -274,85 +276,11 @@ fun FavoriteRow(
                                 onClick = { onNotificationClick(n) },
                                 onDismiss = { onNotificationDismiss(n) },
                                 onToggleExpand = { expanded = !expanded },
+                                onReply = { text -> onNotificationReply(n, text) },
+                                onAction = { a -> onNotificationAction(n, a) },
                             )
                         }
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun NotificationCard(
-    item: NotificationItem,
-    extraCount: Int,
-    onClick: () -> Unit,
-    onDismiss: () -> Unit,
-    onToggleExpand: () -> Unit,
-) {
-    val colors = LocalOndaColors.current
-    val state = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value != SwipeToDismissBoxValue.Settled && item.clearable) {
-                onDismiss(); true
-            } else false
-        }
-    )
-    SwipeToDismissBox(
-        state = state,
-        enableDismissFromStartToEnd = item.clearable,
-        enableDismissFromEndToStart = item.clearable,
-        backgroundContent = {},
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(colors.panel.copy(alpha = 0.85f))
-                .clickable(onClick = onClick)
-                .padding(start = 14.dp, top = 10.dp, bottom = 10.dp, end = 4.dp)
-        ) {
-            Column(Modifier.weight(1f)) {
-                if (item.title.isNotBlank()) {
-                    Text(
-                        item.title,
-                        color = colors.onWallpaper,
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                if (item.text.isNotBlank()) {
-                    Text(
-                        item.text,
-                        color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-            if (extraCount > 0) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(colors.accentContainer)
-                        .clickable(onClick = onToggleExpand)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text("+$extraCount", color = colors.onAccentContainer, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            if (item.clearable) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(36.dp).clip(CircleShape).clickable(onClick = onDismiss)
-                ) {
-                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.cd_dismiss_notification), tint = colors.onWallpaperMuted, modifier = Modifier.size(16.dp))
                 }
             }
         }

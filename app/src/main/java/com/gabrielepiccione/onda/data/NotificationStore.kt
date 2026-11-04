@@ -6,6 +6,10 @@ import android.app.ActivityOptions
 import android.app.Notification
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.app.RemoteInput
+import androidx.core.app.NotificationCompat
 import android.os.Build
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
@@ -57,6 +61,20 @@ object NotificationStore {
         val ongoing = (notification.flags and Notification.FLAG_ONGOING_EVENT) != 0
         // Le notifiche persistenti senza testo (es. servizi in primo piano) le ignoriamo
         if (ongoing && text.isBlank()) return null
+
+        val all = notification.actions.orEmpty()
+        val reply = all.firstOrNull { a -> a.remoteInputs?.any { it.allowFreeFormInput } == true }
+        val others = all.filter { it !== reply && it.remoteInputs.isNullOrEmpty() && it.actionIntent != null }.take(3)
+        val messages = runCatching {
+            NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification)
+                ?.messages
+                ?.takeLast(4)
+                ?.mapNotNull { m ->
+                    val body = m.text?.toString()?.trim().orEmpty()
+                    if (body.isEmpty()) null else MessageLine(m.person?.name?.toString().orEmpty(), body)
+                }
+        }.getOrNull().orEmpty()
+
         return NotificationItem(
             key = key,
             packageName = packageName,
@@ -66,6 +84,9 @@ object NotificationStore {
             contentIntent = notification.contentIntent,
             autoCancel = (notification.flags and Notification.FLAG_AUTO_CANCEL) != 0,
             clearable = isClearable,
+            messages = messages,
+            replyAction = reply,
+            actions = others,
         )
     }
 
@@ -86,14 +107,46 @@ object NotificationStore {
     fun open(context: Context, item: NotificationItem) {
         val pi = item.contentIntent
         if (pi != null) {
-            val options = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                ActivityOptions.makeBasic()
-                    .setPendingIntentBackgroundActivityStartMode(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
-                    .toBundle()
-            } else null
-            runCatching { pi.send(context, 0, null, null, null, null, options) }
+            runCatching { pi.send(context, 0, null, null, null, null, sendOptions()) }
         }
         if (item.autoCancel) dismiss(item)
+    }
+
+    private fun sendOptions(): android.os.Bundle? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            ActivityOptions.makeBasic()
+                .setPendingIntentBackgroundActivityStartMode(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                .toBundle()
+        } else null
+
+    /**
+     * Risposta diretta: compila i campi RemoteInput dell'azione di risposta e la invia all'app
+     * (lo stesso meccanismo usato dalla tendina di sistema). Restituisce false se non riesce.
+     */
+    fun reply(context: Context, item: NotificationItem, text: String): Boolean {
+        val action = item.replyAction ?: return false
+        val inputs = action.remoteInputs ?: return false
+        if (text.isBlank()) return false
+        val intent = Intent().addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+        val results = Bundle().apply {
+            inputs.filter { it.allowFreeFormInput }.forEach { putCharSequence(it.resultKey, text.trim()) }
+        }
+        RemoteInput.addResultsToIntent(inputs, intent, results)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            RemoteInput.setResultsSource(intent, RemoteInput.SOURCE_FREE_FORM_INPUT)
+        }
+        return runCatching { action.actionIntent.send(context, 0, intent, null, null, null, sendOptions()) }.isSuccess
+    }
+
+    /** Esegue un'azione della notifica (es. "Segna come letto"). */
+    fun runAction(context: Context, item: NotificationItem, action: Notification.Action) {
+        runCatching { action.actionIntent.send(context, 0, null, null, null, null, sendOptions()) }
+        if (item.autoCancel) dismiss(item)
+    }
+
+    /** Posticipa la notifica (ricompare dopo [minutes]). */
+    fun snooze(item: NotificationItem, minutes: Long = 60) {
+        if (item.clearable) runCatching { listener?.snoozeNotification(item.key, minutes * 60_000L) }
     }
 
     fun dismiss(item: NotificationItem) {

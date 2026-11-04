@@ -150,6 +150,12 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
         runCatching { startActivity(NotificationStore.permissionIntent(this)) }
     }
 
+    override fun openOwnAppInfo() {
+        runCatching {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+        }
+    }
+
     override fun openAccessibilitySettings() {
         toast(getString(R.string.toast_enable_a11y))
         runCatching { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
