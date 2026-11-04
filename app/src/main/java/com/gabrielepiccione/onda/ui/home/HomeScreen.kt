@@ -374,17 +374,21 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         val bars = WindowInsets.systemBars.asPaddingValues()
         val letterSide = 48.dp
         val hiddenSide = 28.dp
+        // Posizione scelta dall'utente: il primo blocco parte da lì e il resto lo segue
+        val manualTop = settings.homeTopFraction >= 0f
+        val screenHeight = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp
+        val chosenTop = if (manualTop) screenHeight * settings.homeTopFraction else 0.dp
 
         // ---------------- HOME ----------------
         LazyColumn(
             state = homeList,
-            verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.Bottom),
+            verticalArrangement = Arrangement.spacedBy(2.dp, if (manualTop) Alignment.Top else Alignment.Bottom),
             // Orologio, widget e player: stesso margine a destra e a sinistra.
             // Solo le righe delle app si tengono lontane dalle lettere (vedi homeEntries).
             contentPadding = PaddingValues(
                 start = hiddenSide,
                 end = hiddenSide,
-                top = bars.calculateTopPadding() + 24.dp,
+                top = bars.calculateTopPadding() + 24.dp + chosenTop,
                 bottom = bars.calculateBottomPadding() + 28.dp,
             ),
             modifier = Modifier

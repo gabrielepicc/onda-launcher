@@ -317,4 +317,8 @@
     <string name="protect_hidden">Proteggi le app nascoste</string>
     <string name="protect_hidden_sub">Chiede impronta, volto o PIN per vedere l\'elenco</string>
     <string name="protect_show_hidden">Mostra app nascoste</string>
+    <string name="home_position">Posizione sullo schermo</string>
+    <string name="home_position_auto">Automatica (in basso)</string>
+    <string name="home_position_manual">Scegli</string>
+    <string name="home_position_hint">Il primo elemento della home parte da qui; tutto il resto, preferiti compresi, lo segue.</string>
 </resources>

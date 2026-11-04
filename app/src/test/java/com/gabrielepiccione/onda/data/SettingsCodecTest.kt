@@ -66,6 +66,13 @@ class SettingsCodecTest {
     }
 
     @Test
+    fun homePositionIsAutomaticByDefaultAndSurvivesRoundTrip() {
+        assertTrue(SettingsCodec.decode("""{"schemaVersion": 3}""").homeTopFraction < 0f)
+        val chosen = Settings(homeTopFraction = 0.4f)
+        assertEquals(0.4f, SettingsCodec.decode(SettingsCodec.encode(chosen)).homeTopFraction, 0.0001f)
+    }
+
+    @Test
     fun unknownEnumValueFallsBackToDefault() {
         val s = SettingsCodec.decode("""{"schemaVersion": 2, "themeMode": "PURPLE"}""")
         assertEquals(ThemeMode.SYSTEM, s.themeMode)

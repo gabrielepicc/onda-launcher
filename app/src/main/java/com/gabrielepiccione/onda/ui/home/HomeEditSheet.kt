@@ -170,6 +170,9 @@ fun HomeEditSheet(
                 }
             }
 
+            SectionTitle(R.string.home_position)
+            HomePositionControl(settings) { actions.edit(it) }
+
             if (block == HomeBlocks.CLOCK) {
                 SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_clock)) { actions.replaceClock() }
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_clock)) {
@@ -203,6 +206,42 @@ fun HomeEditSheet(
         }
     }
 }
+
+/**
+ * Sceglie dove inizia il primo blocco della home: ancorato in basso (automatico) oppure in un
+ * punto preciso dello schermo. I blocchi successivi, preferiti compresi, seguono il primo.
+ */
+@Composable
+fun HomePositionControl(settings: Settings, edit: ((Settings) -> Settings) -> Unit) {
+    val manual = settings.homeTopFraction >= 0f
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = !manual,
+            onClick = { edit { it.copy(homeTopFraction = -1f) } },
+            label = { Text(stringResource(R.string.home_position_auto)) },
+        )
+        FilterChip(
+            selected = manual,
+            onClick = { if (!manual) edit { it.copy(homeTopFraction = DEFAULT_HOME_TOP) } },
+            label = { Text(stringResource(R.string.home_position_manual)) },
+        )
+    }
+    if (manual) {
+        Slider(
+            value = settings.homeTopFraction,
+            onValueChange = { v -> edit { it.copy(homeTopFraction = v) } },
+            valueRange = 0f..MAX_HOME_TOP,
+        )
+        Text(
+            stringResource(R.string.home_position_hint),
+            color = LocalOndaColors.current.onWallpaperMuted,
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+private const val DEFAULT_HOME_TOP = 0.25f
+private const val MAX_HOME_TOP = 0.8f
 
 @Composable
 private fun pluralStringResourceCompat(days: Int): String = stringResource(R.string.agenda_days_value, days)

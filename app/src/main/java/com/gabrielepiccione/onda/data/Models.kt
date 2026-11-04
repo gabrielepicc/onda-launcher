@@ -195,6 +195,11 @@ data class Settings(
     val iconSize: Float = 1f,
     /** Ordine dei blocchi della home (vedi [HomeBlocks]). */
     val homeLayout: List<String> = emptyList(),
+    /**
+     * Punto dello schermo in cui inizia il primo blocco della home, come frazione dell'altezza
+     * (0 = in alto). Negativo = automatico: i blocchi restano ancorati in basso.
+     */
+    val homeTopFraction: Float = -1f,
     /** Altezza personalizzata dei widget in dp: id widget -> dp. */
     val widgetHeights: Map<Int, Int> = emptyMap(),
     val clockStyle: ClockStyle = ClockStyle.LARGE_THIN,

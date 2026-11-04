@@ -9,6 +9,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - ✅ Notifiche: anteprima accanto all'icona, pannello con foto contatto, conversazione, azioni, risposta diretta sopra la tastiera
 - ✅ Cartelle con app e widget, pannello app con scorciatoie e widget dell'app
 - ✅ Home a blocchi ordinabili; orologio (8 stili, dimensione, allineamento), widget (altezza), player (compatto/esteso, dimensione testo)
+- ✅ Posizione della home: il primo blocco parte dal punto scelto (o ancorato in basso, predefinito) e il resto lo segue
 - ✅ Material You, 12 preset di stile con sfondi procedurali
 - ✅ Fase 0: DataStore + kotlinx.serialization con migrazioni, `:core:icons`, stringhe IT/EN, test, CI, F-Droid metadata
 - 🟡 Fase 1 icone: ✅ forme adattive, fallback pack (iconback/mask/upon/scale), calendari dinamici, Cambia icona con suggerimenti,

@@ -280,6 +280,8 @@ fun SettingsScreen(
         }
 
         Group(stringResource(R.string.section_home)) {
+            Label(stringResource(R.string.home_position))
+            HomePositionControl(settings) { onEdit(it) }
             SwitchRow(stringResource(R.string.clock_date), null, settings.showClock) { v -> onEdit { it.copy(showClock = v) } }
             SwitchRow(stringResource(R.string.next_event), stringResource(R.string.next_event_sub), settings.showCalendar) { v -> onEdit { it.copy(showCalendar = v) } }
             SwitchRow(stringResource(R.string.music_player), stringResource(R.string.music_player_sub), settings.showMedia) { v -> onEdit { it.copy(showMedia = v) } }
