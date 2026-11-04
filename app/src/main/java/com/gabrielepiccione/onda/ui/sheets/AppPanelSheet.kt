@@ -281,7 +281,7 @@ fun AppPanelSheet(
 
 /** Una conversazione/notifica nel pannello: foto, mittente · tempo, messaggi, azioni. */
 @Composable
-private fun Conversation(
+internal fun Conversation(
     item: NotificationItem,
     selectedForReply: Boolean,
     onOpen: () -> Unit,

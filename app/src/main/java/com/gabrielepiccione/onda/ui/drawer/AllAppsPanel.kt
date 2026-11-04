@@ -97,6 +97,8 @@ fun AllAppsPanel(
     onOpenPanel: (AppInfo) -> Unit = {},
     onDismissNotifications: (AppInfo) -> Unit = {},
     onContact: (ContactHit) -> Unit = {},
+    /** Modifier della riga di un'app, ad esempio per conoscerne la posizione. */
+    rowModifier: (AppInfo) -> Modifier = { Modifier },
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
@@ -132,6 +134,7 @@ fun AllAppsPanel(
                         themedIcons = themedIcons,
                         onClick = { onClick(app) },
                         onLongClick = { onLongClick(app) },
+                        modifier = rowModifier(app),
                     )
                 }
             }

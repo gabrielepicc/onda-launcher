@@ -94,6 +94,8 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -174,6 +176,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var overlay by rememberSaveable { mutableStateOf(Overlay.NONE) }
     var actionsFor by remember { mutableStateOf<AppInfo?>(null) }
     var panelFor by remember { mutableStateOf<AppInfo?>(null) }
+    // Popup dell'app e riga da cui è stato aperto
+    var quickFor by remember { mutableStateOf<AppInfo?>(null) }
+    var quickAnchor by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    val rowBounds = remember { HashMap<String, androidx.compose.ui.geometry.Rect>() }
+    fun rowTracker(id: String): Modifier = Modifier.onGloballyPositioned { rowBounds[id] = it.boundsInRoot() }
+    fun openQuick(app: AppInfo, rowId: String? = null) {
+        quickAnchor = rowId?.let { rowBounds[it] }
+        quickFor = app
+    }
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
     var moveFor by remember { mutableStateOf<AppInfo?>(null) }
@@ -241,8 +252,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     LaunchedEffect(Unit) {
         vm.homePressed.collect {
-            if (overlay == Overlay.NONE && actionsFor == null && panelFor == null) homeList.animateScrollToItem(0)
+            if (overlay == Overlay.NONE && actionsFor == null && panelFor == null && quickFor == null) homeList.animateScrollToItem(0)
             closeAll()
+            quickFor = null
             actionsFor = null
             panelFor = null
             folderSheet = null
@@ -354,15 +366,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         hideName = settings.hideFavoriteNames,
                         iconScale = iconScale,
                         onClick = { launchApp(app) },
-                        onLongClick = { actionsFor = app },
-                        onSwipe = { panelFor = app },
-                        onOpenPanel = { panelFor = app },
+                        onLongClick = { openQuick(app, "h_" + app.key) },
+                        onSwipe = { openQuick(app, "h_" + app.key) },
+                        onOpenPanel = { openQuick(app, "h_" + app.key) },
                         onSwipeLeft = { NotificationStore.dismissAll(app.packageName) },
-                        onNotificationClick = { panelFor = app },
+                        onNotificationClick = { openQuick(app, "h_" + app.key) },
                         onNotificationDismiss = { NotificationStore.dismiss(it) },
                         onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
                         onNotificationAction = { n, a -> NotificationStore.runAction(context, n, a) },
-                        modifier = itemMod,
+                        modifier = itemMod.then(rowTracker("h_" + app.key)),
                     )
                 }
                 is HomeEntry.Group -> FolderRow(
@@ -374,10 +386,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     themedIcons = settings.themedIcons,
                     iconScale = iconScale,
                     onApp = { launchApp(it) },
-                    onAppLongClick = { actionsFor = it },
+                    onAppLongClick = { openQuick(it, "g_" + entry.folder.id) },
                     onLongClick = { folderSheet = entry.folder },
                     hideName = settings.hideFavoriteNames,
-                    modifier = itemMod,
+                    modifier = itemMod.then(rowTracker("g_" + entry.folder.id)),
                 )
             }
         }
@@ -563,12 +575,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                         hideName = false,
                                         iconScale = iconScale,
                                         onClick = { launchApp(plug) },
-                                        onLongClick = { actionsFor = plug },
-                                        onSwipe = { panelFor = plug },
-                                        onOpenPanel = { panelFor = plug },
+                                        onLongClick = { openQuick(plug, "plug") },
+                                        onSwipe = { openQuick(plug, "plug") },
+                                        onOpenPanel = { openQuick(plug, "plug") },
                                         onSwipeLeft = { NotificationStore.dismissAll(plug.packageName) },
-                                        onNotificationClick = { panelFor = plug },
+                                        onNotificationClick = { openQuick(plug, "plug") },
                                         onNotificationDismiss = { NotificationStore.dismiss(it) },
+                                        modifier = rowTracker("plug"),
                                     )
                                 }
                             }
@@ -660,8 +673,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             showIcons = settings.showIcons,
             themedIcons = settings.themedIcons,
             onClick = { launchApp(it) },
-            onLongClick = { actionsFor = it },
-            onOpenPanel = { panelFor = it },
+            onLongClick = { openQuick(it, "a_" + it.key) },
+            onOpenPanel = { openQuick(it, "a_" + it.key) },
+            rowModifier = { rowTracker("a_" + it.key) },
             onDismissNotifications = { NotificationStore.dismissAll(it.packageName) },
             onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
             contentPadding = PaddingValues(
@@ -744,7 +758,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     contactsPermission = status.contactsPermission,
                     onQueryChange = vm::updateSearch,
                     onApp = { launchApp(it) },
-                    onAppLongClick = { actionsFor = it },
+                    onAppLongClick = { openQuick(it) },
                     onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
                     onWebSearch = { SystemActions.webSearch(context, it, settings.searchEngine); scope.launch { delay(380); closeAll() } },
                     onSettingsShortcut = { sc ->
@@ -836,6 +850,36 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun export(theme: com.gabrielepiccione.onda.data.LookTheme) = callbacks.exportTheme(theme)
                 override fun import() = callbacks.importTheme()
             },
+        )
+    }
+
+    // ---------------- POPUP DELL'APP (copre tutto, all'altezza della riga) ----------------
+    quickFor?.let { requested ->
+        val app = state.app(requested.key) ?: requested
+        val shortcuts = remember(app.key) { vm.shortcuts(app) }
+        AppQuickPopup(
+            app = app,
+            anchor = quickAnchor,
+            shortcuts = shortcuts,
+            shortcutIcon = { vm.appsRepo.shortcutIcon(it) },
+            notifications = state.notifications[app.packageName].orEmpty(),
+            widgetId = settings.appWidgets[app.key],
+            widgets = vm.widgets,
+            themedIcons = settings.themedIcons,
+            onOpenApp = { launchApp(app) },
+            onShortcut = vm::startShortcut,
+            onNotification = { NotificationStore.open(context, it) },
+            onDismissNotification = { NotificationStore.dismiss(it) },
+            onNotificationAction = { n, act -> NotificationStore.runAction(context, n, act) },
+            onReply = { panelFor = app },
+            onToggleFavorite = {
+                val folder = settings.folders.values.firstOrNull { app.key in it.apps }
+                if (folder != null) vm.moveToFolder(app, null) else vm.toggleFavorite(app)
+            },
+            onInfo = { vm.appsRepo.openAppInfo(app) },
+            onUninstall = { SystemActions.uninstall(context, app) },
+            onMoreOptions = { actionsFor = app },
+            onDismiss = { quickFor = null },
         )
     }
 
