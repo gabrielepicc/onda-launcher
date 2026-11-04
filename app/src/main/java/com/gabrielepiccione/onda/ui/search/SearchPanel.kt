@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -70,6 +71,7 @@ fun SearchPanel(
     onAppLongClick: (AppInfo) -> Unit,
     onContact: (ContactHit) -> Unit,
     onWebSearch: (String) -> Unit,
+    onSettingsShortcut: (com.gabrielepiccione.onda.util.SettingsShortcut) -> Unit = {},
     onRequestContacts: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -114,10 +116,13 @@ fun SearchPanel(
                     cursorBrush = SolidColor(colors.accent),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
                     keyboardActions = KeyboardActions(onGo = {
+                        // Invio: apre il primo risultato della modalità corrente
                         val first = results.apps.firstOrNull()
                         when {
+                            results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS -> results.settingsHits.firstOrNull()?.let(onSettingsShortcut)
+                            results.mode == com.gabrielepiccione.onda.SearchMode.CONTACTS -> results.contacts.firstOrNull()?.let(onContact)
                             first != null -> onApp(first)
-                            results.query.isNotBlank() -> onWebSearch(results.query)
+                            results.mode == com.gabrielepiccione.onda.SearchMode.ALL && results.query.isNotBlank() -> onWebSearch(results.query)
                         }
                     }),
                     modifier = Modifier
@@ -176,7 +181,24 @@ fun SearchPanel(
                     onLongClick = { onAppLongClick(app) },
                 )
             }
-            if (results.query.isNotBlank()) {
+            if (results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS) {
+                item { SectionLabel(stringResource(R.string.settings)) }
+                items(results.settingsHits.size) { i ->
+                    val sc = results.settingsHits[i]
+                    SimpleRow(icon = { Icon(Icons.Filled.Settings, null, tint = colors.accent) }, label = stringResource(sc.labelRes)) { onSettingsShortcut(sc) }
+                }
+            }
+            if (results.query.isBlank()) {
+                item(key = "prefix_hint") {
+                    Text(
+                        stringResource(R.string.search_prefix_hint),
+                        color = colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 12.dp, top = 16.dp, end = 12.dp),
+                    )
+                }
+            }
+            if (results.query.isNotBlank() && results.mode != com.gabrielepiccione.onda.SearchMode.SETTINGS) {
                 if (results.contacts.isNotEmpty()) {
                     item { SectionLabel(stringResource(R.string.contacts)) }
                     items(results.contacts, key = { "c_${it.id}" }) { c ->
@@ -187,10 +209,12 @@ fun SearchPanel(
                         SimpleRow(icon = { Icon(Icons.Filled.Person, null, tint = colors.onWallpaperMuted) }, label = stringResource(R.string.search_contacts_too), muted = true, onClick = onRequestContacts)
                     }
                 }
-                item { SectionLabel(stringResource(R.string.web)) }
-                item {
-                    SimpleRow(icon = { Icon(Icons.Filled.Search, null, tint = colors.accent) }, label = stringResource(R.string.web_search_for, results.query)) {
-                        onWebSearch(results.query)
+                if (results.mode == com.gabrielepiccione.onda.SearchMode.ALL) {
+                    item { SectionLabel(stringResource(R.string.web)) }
+                    item {
+                        SimpleRow(icon = { Icon(Icons.Filled.Search, null, tint = colors.accent) }, label = stringResource(R.string.web_search_for, results.query)) {
+                            onWebSearch(results.query)
+                        }
                     }
                 }
             }

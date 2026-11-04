@@ -34,13 +34,28 @@ object SystemActions {
         runCatching { context.startActivity(intent) }
     }
 
-    fun webSearch(context: Context, query: String) {
+    /** Indirizzi dei motori di ricerca selezionabili (la query va in coda, già codificata). */
+    val SEARCH_ENGINES = linkedMapOf(
+        "DUCKDUCKGO" to "https://duckduckgo.com/?q=",
+        "STARTPAGE" to "https://www.startpage.com/do/search?q=",
+        "GOOGLE" to "https://www.google.com/search?q=",
+        "ECOSIA" to "https://www.ecosia.org/search?q=",
+        "BRAVE" to "https://search.brave.com/search?q=",
+    )
+
+    fun webSearch(context: Context, query: String, engine: String = "SYSTEM") {
+        SEARCH_ENGINES[engine]?.let { base ->
+            val ok = runCatching {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(base + Uri.encode(query))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.isSuccess
+            if (ok) return
+        }
         val search = Intent(Intent.ACTION_WEB_SEARCH)
             .putExtra(SearchManager.QUERY, query)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val ok = runCatching { context.startActivity(search) }.isSuccess
         if (!ok) {
-            val url = "https://www.google.com/search?q=" + Uri.encode(query)
+            val url = "https://duckduckgo.com/?q=" + Uri.encode(query)
             runCatching {
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             }

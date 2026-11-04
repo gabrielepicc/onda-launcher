@@ -284,4 +284,31 @@
     <string name="layout_lock">Lock layout</string>
     <string name="layout_unlock">Unlock layout</string>
     <string name="layout_lock_sub">Prevents accidental changes to clock, widgets and folders</string>
+    <string name="search_prefix_hint">Tip: “=” to calculate, “@” to search contacts only, “/” for settings. Enter opens the first result.</string>
+    <string name="set_onda">Onda settings</string>
+    <string name="set_wifi">Wi-Fi</string>
+    <string name="set_bluetooth">Bluetooth</string>
+    <string name="set_display">Display and brightness</string>
+    <string name="set_sound">Sound and vibration</string>
+    <string name="set_battery">Battery</string>
+    <string name="set_apps">Apps</string>
+    <string name="set_notifications">Notifications</string>
+    <string name="set_location">Location</string>
+    <string name="set_security">Security</string>
+    <string name="set_storage">Storage</string>
+    <string name="set_accessibility">Accessibility</string>
+    <string name="set_date">Date and time</string>
+    <string name="set_language">Languages</string>
+    <string name="set_mobile_data">Mobile network</string>
+    <string name="set_airplane">Airplane mode</string>
+    <string name="set_nfc">NFC and payments</string>
+    <string name="set_hotspot">Hotspot</string>
+    <string name="section_search">Search</string>
+    <string name="search_engine">Web search engine</string>
+    <string name="engine_system">Default</string>
+    <string name="section_plug_play">Plug &amp; Play</string>
+    <string name="plug_play_sub">When you connect headphones or speakers, the chosen app appears at the top of home</string>
+    <string name="plug_play_none">Off</string>
+    <string name="plug_play_choose">Choose app</string>
+    <string name="plug_play_connected">Headphones connected</string>
 </resources>

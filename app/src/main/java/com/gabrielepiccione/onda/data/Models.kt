@@ -223,6 +223,10 @@ data class Settings(
     val agendaDays: Int = 3,
     /** Blocca il layout: niente modifiche con la pressione lunga in home. */
     val lockLayout: Boolean = false,
+    /** Motore per la ricerca web: SYSTEM, DUCKDUCKGO, STARTPAGE, GOOGLE, ECOSIA, BRAVE. */
+    val searchEngine: String = "SYSTEM",
+    /** Plug & Play: app mostrata in cima quando si collegano cuffie o casse (chiave app, vuoto = off). */
+    val plugPlayApp: String = "",
     /** Temi salvati dall'utente nel Theme Studio. */
     val savedThemes: List<LookTheme> = emptyList(),
     /** Ultimo preset di stile applicato (solo informativo). */

@@ -154,6 +154,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val media by vm.media.media.collectAsStateWithLifecycle()
     val nextEvent by vm.nextEvent.collectAsStateWithLifecycle()
     val agenda by vm.agenda.collectAsStateWithLifecycle()
+    val headphones by vm.audio.headphonesConnected.collectAsStateWithLifecycle()
     val settings = state.settings
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -476,6 +477,36 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     }
                     block == HomeBlocks.APPS -> {
                         item(key = "spacer") { Spacer(Modifier.size(12.dp)) }
+                        // Plug & Play: con cuffie o casse collegate, l'app scelta compare in cima
+                        val plug = if (headphones) state.app(settings.plugPlayApp) else null
+                        if (plug != null) {
+                            item(key = "plugplay") {
+                                Column(Modifier.animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit())) {
+                                    Text(
+                                        stringResource(R.string.plug_play_connected),
+                                        color = colors.accent,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier.padding(start = 12.dp, top = 4.dp),
+                                    )
+                                    FavoriteRow(
+                                        app = plug,
+                                        swipeTarget = null,
+                                        notifications = state.notifications[plug.packageName].orEmpty(),
+                                        showIcon = settings.showIcons,
+                                        themedIcons = settings.themedIcons,
+                                        hideName = false,
+                                        iconScale = iconScale,
+                                        onClick = { launchApp(plug) },
+                                        onLongClick = { actionsFor = plug },
+                                        onSwipe = { panelFor = plug },
+                                        onOpenPanel = { panelFor = plug },
+                                        onSwipeLeft = { NotificationStore.dismissAll(plug.packageName) },
+                                        onNotificationClick = { panelFor = plug },
+                                        onNotificationDismiss = { NotificationStore.dismiss(it) },
+                                    )
+                                }
+                            }
+                        }
                         homeEntries()
                     }
                 }
@@ -648,7 +679,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     onApp = { launchApp(it) },
                     onAppLongClick = { actionsFor = it },
                     onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
-                    onWebSearch = { SystemActions.webSearch(context, it); scope.launch { delay(380); closeAll() } },
+                    onWebSearch = { SystemActions.webSearch(context, it, settings.searchEngine); scope.launch { delay(380); closeAll() } },
+                    onSettingsShortcut = { sc ->
+                        if (sc.action == com.gabrielepiccione.onda.util.SettingsShortcuts.ONDA) {
+                            vm.clearSearch(); overlay = Overlay.SETTINGS
+                        } else {
+                            com.gabrielepiccione.onda.util.SettingsShortcuts.open(context, sc)
+                            scope.launch { delay(380); closeAll() }
+                        }
+                    },
                     onRequestContacts = callbacks::requestContactsPermission,
                     onClose = { closeAll() },
                 )
@@ -669,6 +708,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 SettingsScreen(
                     settings = settings,
                     hiddenApps = state.hiddenApps,
+                    allApps = state.allApps,
                     status = SettingsStatus(
                         isDefaultLauncher = status.isDefaultLauncher,
                         notificationAccess = status.notificationAccess,

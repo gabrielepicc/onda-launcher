@@ -52,11 +52,16 @@ data class LauncherState(
     fun app(key: String?): AppInfo? = key?.let { byKey[it] }
 }
 
+/** Modalità di ricerca scelta con il prefisso: "=" calcolo, "@" contatti, "/" impostazioni. */
+enum class SearchMode { ALL, CALC, CONTACTS, SETTINGS }
+
 data class SearchResults(
     val query: String = "",
     val calc: String? = null,
     val apps: List<AppInfo> = emptyList(),
     val contacts: List<ContactHit> = emptyList(),
+    val mode: SearchMode = SearchMode.ALL,
+    val settingsHits: List<com.gabrielepiccione.onda.util.SettingsShortcut> = emptyList(),
 )
 
 class LauncherViewModel(app: Application) : AndroidViewModel(app) {
@@ -67,6 +72,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val widgets = ondaApp.widgets
     val media = ondaApp.media
     val calendar = ondaApp.calendar
+    val audio = ondaApp.audio
     val contacts = ContactsRepository(app)
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
@@ -147,10 +153,31 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     fun updateSearch(query: String) {
         searchJob?.cancel()
-        _search.value = _search.value.copy(query = query, apps = filterApps(query), calc = Calculator.evaluate(query))
-        searchJob = viewModelScope.launch {
-            delay(120)
-            _search.value = _search.value.copy(contacts = contacts.search(query))
+        val mode = when {
+            query.startsWith("=") -> SearchMode.CALC
+            query.startsWith("@") -> SearchMode.CONTACTS
+            query.startsWith("/") -> SearchMode.SETTINGS
+            else -> SearchMode.ALL
+        }
+        val term = if (mode == SearchMode.ALL) query else query.drop(1)
+        _search.value = SearchResults(
+            query = query,
+            mode = mode,
+            apps = if (mode == SearchMode.ALL) filterApps(term) else emptyList(),
+            calc = when (mode) {
+                SearchMode.ALL -> Calculator.evaluate(term)
+                // Con "=" anche un numero semplice è un risultato valido
+                SearchMode.CALC -> Calculator.evaluate(term) ?: term.trim().takeIf { it.isNotEmpty() && it.all { c -> c.isDigit() || c == ',' || c == '.' } }
+                else -> null
+            },
+            settingsHits = if (mode == SearchMode.SETTINGS) com.gabrielepiccione.onda.util.SettingsShortcuts.search(getApplication(), term) else emptyList(),
+            contacts = _search.value.contacts.takeIf { mode == SearchMode.ALL || mode == SearchMode.CONTACTS }.orEmpty(),
+        )
+        if (mode == SearchMode.ALL || mode == SearchMode.CONTACTS) {
+            searchJob = viewModelScope.launch {
+                delay(120)
+                _search.value = _search.value.copy(contacts = contacts.search(term, limit = if (mode == SearchMode.CONTACTS) 20 else 5))
+            }
         }
     }
 

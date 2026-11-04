@@ -21,6 +21,8 @@ class OndaApp : Application() {
         private set
     lateinit var calendar: CalendarRepository
         private set
+    lateinit var audio: com.gabrielepiccione.onda.data.AudioDevices
+        private set
 
     override fun onCreate() {
         super.onCreate()
@@ -29,5 +31,6 @@ class OndaApp : Application() {
         widgets = WidgetManager(this)
         media = MediaRepository(this)
         calendar = CalendarRepository(this)
+        audio = com.gabrielepiccione.onda.data.AudioDevices(this)
     }
 }

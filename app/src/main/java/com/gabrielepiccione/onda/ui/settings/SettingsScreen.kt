@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -97,6 +98,7 @@ interface SettingsActions {
 fun SettingsScreen(
     settings: Settings,
     hiddenApps: List<AppInfo>,
+    allApps: List<AppInfo> = emptyList(),
     status: SettingsStatus,
     widgets: WidgetManager,
     actions: SettingsActions,
@@ -105,6 +107,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val pm = context.packageManager
     var iconPackDialog by remember { mutableStateOf(false) }
+    var plugDialog by remember { mutableStateOf(false) }
     val onEdit = actions::edit
 
     Column(
@@ -310,6 +313,23 @@ fun SettingsScreen(
             )
         }
 
+        Group(stringResource(R.string.section_search)) {
+            Label(stringResource(R.string.search_engine))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                FilterChip(selected = settings.searchEngine == "SYSTEM", onClick = { onEdit { it.copy(searchEngine = "SYSTEM") } }, label = { Text(stringResource(R.string.engine_system)) })
+                listOf("DUCKDUCKGO" to "DuckDuckGo", "STARTPAGE" to "Startpage", "GOOGLE" to "Google", "ECOSIA" to "Ecosia", "BRAVE" to "Brave").forEach { (id, name) ->
+                    FilterChip(selected = settings.searchEngine == id, onClick = { onEdit { it.copy(searchEngine = id) } }, label = { Text(name) })
+                }
+            }
+            Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+        }
+
+        Group(stringResource(R.string.section_plug_play)) {
+            Text(stringResource(R.string.plug_play_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            val current = allApps.firstOrNull { it.key == settings.plugPlayApp }
+            ClickRow(stringResource(R.string.plug_play_choose), current?.label ?: stringResource(R.string.plug_play_none)) { plugDialog = true }
+        }
+
         Group(stringResource(R.string.section_widgets)) {
             if (settings.widgetIds.isEmpty()) {
                 Text(stringResource(R.string.no_home_widgets), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
@@ -355,6 +375,29 @@ fun SettingsScreen(
         )
     }
 
+    if (plugDialog) {
+        AlertDialog(
+            onDismissRequest = { plugDialog = false },
+            title = { Text(stringResource(R.string.plug_play_choose)) },
+            text = {
+                androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
+                    item {
+                        ChoiceRow(stringResource(R.string.plug_play_none), settings.plugPlayApp.isBlank()) {
+                            onEdit { it.copy(plugPlayApp = "") }; plugDialog = false
+                        }
+                    }
+                    items(allApps.size) { i ->
+                        val app = allApps[i]
+                        ChoiceRow(app.label, settings.plugPlayApp == app.key) {
+                            onEdit { it.copy(plugPlayApp = app.key) }; plugDialog = false
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { plugDialog = false }) { Text(stringResource(R.string.close)) } },
+        )
+    }
+
     if (iconPackDialog) {
         val packs = remember { IconPacks.installed(context) }
         AlertDialog(
@@ -392,6 +435,8 @@ private fun GestureChips(selected: com.gabrielepiccione.onda.data.GestureAction,
         }
     }
 }
+
+private fun Modifier.androidxHeightIn(): Modifier = this.then(Modifier.heightIn(max = 420.dp))
 
 @Composable
 private fun FontRow(title: String, path: String, onImport: () -> Unit, onClear: () -> Unit) {

@@ -284,4 +284,31 @@
     <string name="layout_lock">Blocca layout</string>
     <string name="layout_unlock">Sblocca layout</string>
     <string name="layout_lock_sub">Evita modifiche accidentali a orologio, widget e cartelle</string>
+    <string name="search_prefix_hint">Suggerimento: «=» per calcolare, «@» per cercare solo nei contatti, «/» per le impostazioni. Invio apre il primo risultato.</string>
+    <string name="set_onda">Impostazioni di Onda</string>
+    <string name="set_wifi">Wi-Fi</string>
+    <string name="set_bluetooth">Bluetooth</string>
+    <string name="set_display">Display e luminosità</string>
+    <string name="set_sound">Suoni e vibrazione</string>
+    <string name="set_battery">Batteria</string>
+    <string name="set_apps">App</string>
+    <string name="set_notifications">Notifiche</string>
+    <string name="set_location">Posizione</string>
+    <string name="set_security">Sicurezza</string>
+    <string name="set_storage">Memoria</string>
+    <string name="set_accessibility">Accessibilità</string>
+    <string name="set_date">Data e ora</string>
+    <string name="set_language">Lingue</string>
+    <string name="set_mobile_data">Rete mobile</string>
+    <string name="set_airplane">Modalità aereo</string>
+    <string name="set_nfc">NFC e pagamenti</string>
+    <string name="set_hotspot">Hotspot</string>
+    <string name="section_search">Ricerca</string>
+    <string name="search_engine">Motore di ricerca web</string>
+    <string name="engine_system">Predefinito</string>
+    <string name="section_plug_play">Plug &amp; Play</string>
+    <string name="plug_play_sub">Quando colleghi cuffie o casse, l\'app scelta compare in cima alla home</string>
+    <string name="plug_play_none">Disattivato</string>
+    <string name="plug_play_choose">Scegli l\'app</string>
+    <string name="plug_play_connected">Cuffie collegate</string>
 </resources>
