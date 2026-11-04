@@ -302,64 +302,75 @@ fun AppListRow(
     notification: NotificationItem? = null,
     notificationCount: Int = 0,
     onOpenPanel: () -> Unit = {},
+    /** Swipe come in home: destra = pannello, sinistra = elimina notifiche. */
+    swipeEnabled: Boolean = false,
+    onDismissNotifications: () -> Unit = {},
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
     val hapticsOn = LocalHapticsEnabled.current
     val interaction = remember { MutableInteractionSource() }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .pressScale(interaction)
-            .clip(RoundedCornerShape(24.dp))
-            .background(if (highlighted) colors.accentContainer.copy(alpha = 0.6f) else Color.Transparent)
-            .combinedClickable(
-                interactionSource = interaction,
-                indication = androidx.compose.material3.ripple(),
-                onClick = onClick,
-                onLongClick = {
-                    if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLongClick()
-                },
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+    SwipeActions(
+        canDismiss = notification?.clearable == true,
+        onRight = onOpenPanel,
+        onLeft = onDismissNotifications,
+        enabled = swipeEnabled,
+        modifier = modifier,
     ) {
-        if (showIcon) {
-            AppIcon(app, 36.dp, themedIcons)
-            Spacer(Modifier.width(16.dp))
-        }
-        Column(Modifier.weight(1f)) {
-            Text(
-                app.label,
-                color = colors.onWallpaper,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (notification != null) {
-                NotificationPreview(
-                    item = notification,
-                    extraCount = (notificationCount - 1).coerceAtLeast(0),
-                    onOpen = onOpenPanel,
-                    onDismiss = {},
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .pressScale(interaction)
+                .clip(RoundedCornerShape(24.dp))
+                .background(if (highlighted) colors.accentContainer.copy(alpha = 0.6f) else Color.Transparent)
+                .combinedClickable(
+                    interactionSource = interaction,
+                    indication = androidx.compose.material3.ripple(),
+                    onClick = onClick,
+                    onLongClick = {
+                        if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLongClick()
+                    },
+                )
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        ) {
+            if (showIcon) {
+                AppIcon(app, 36.dp, themedIcons)
+                Spacer(Modifier.width(16.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    app.label,
+                    color = colors.onWallpaper,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (notification != null) {
+                    NotificationPreview(
+                        item = notification,
+                        extraCount = (notificationCount - 1).coerceAtLeast(0),
+                        onOpen = onOpenPanel,
+                        onDismiss = {},
+                    )
+                }
+            }
+            if (app.isWorkProfile) {
+                Text(
+                    stringResource(R.string.work),
+                    color = colors.onAccentContainer,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier
+                        .padding(horizontal = 6.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(colors.accentContainer)
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
                 )
             }
-        }
-        if (app.isWorkProfile) {
-            Text(
-                stringResource(R.string.work),
-                color = colors.onAccentContainer,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .padding(horizontal = 6.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(colors.accentContainer)
-                    .padding(horizontal = 8.dp, vertical = 2.dp),
-            )
-        }
-        if (hasNotification && notification == null) {
-            Box(Modifier.size(8.dp).clip(CircleShape).background(colors.accent))
+            if (hasNotification && notification == null) {
+                Box(Modifier.size(8.dp).clip(CircleShape).background(colors.accent))
+            }
         }
     }
 }

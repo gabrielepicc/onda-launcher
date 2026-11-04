@@ -55,6 +55,7 @@ fun AllAppsPanel(
     onLongClick: (AppInfo) -> Unit,
     contentPadding: PaddingValues,
     onOpenPanel: (AppInfo) -> Unit = {},
+    onDismissNotifications: (AppInfo) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
@@ -84,6 +85,8 @@ fun AllAppsPanel(
                         notification = notifications[app.packageName]?.firstOrNull(),
                         notificationCount = notifications[app.packageName]?.size ?: 0,
                         onOpenPanel = { onOpenPanel(app) },
+                        swipeEnabled = true,
+                        onDismissNotifications = { onDismissNotifications(app) },
                         showIcon = showIcons,
                         themedIcons = themedIcons,
                         onClick = { onClick(app) },

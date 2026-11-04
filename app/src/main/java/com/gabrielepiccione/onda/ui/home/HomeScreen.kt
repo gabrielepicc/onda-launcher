@@ -549,6 +549,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onClick = { launchApp(it) },
             onLongClick = { actionsFor = it },
             onOpenPanel = { panelFor = it },
+            onDismissNotifications = { NotificationStore.dismissAll(it.packageName) },
             contentPadding = PaddingValues(
                 start = if (settings.leftHanded) letterSide else hiddenSide,
                 end = if (settings.leftHanded) hiddenSide else letterSide,
