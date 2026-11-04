@@ -200,6 +200,23 @@ fun SettingsScreen(
                 else runCatching { pm.getApplicationLabel(pm.getApplicationInfo(settings.iconPack, 0)).toString() }.getOrDefault(settings.iconPack)
             }
             ClickRow(stringResource(R.string.icon_pack), packLabel) { iconPackDialog = true }
+            Label(stringResource(R.string.icon_style))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                listOf("ORIGINAL" to R.string.style_original, "DOTS" to R.string.style_dots).forEach { (id, res) ->
+                    FilterChip(selected = settings.iconStyle == id, onClick = { onEdit { it.copy(iconStyle = id) } }, label = { Text(stringResource(res)) })
+                }
+            }
+            Label(stringResource(R.string.icon_shape))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                listOf(
+                    "SYSTEM" to R.string.shape_system, "CIRCLE" to R.string.shape_circle, "SQUIRCLE" to R.string.shape_squircle,
+                    "ROUNDED_SQUARE" to R.string.shape_rounded, "TEARDROP" to R.string.shape_teardrop,
+                    "CYLINDER" to R.string.shape_cylinder, "PETAL" to R.string.shape_petal,
+                ).forEach { (id, res) ->
+                    FilterChip(selected = settings.iconShape == id, onClick = { onEdit { it.copy(iconShape = id) } }, label = { Text(stringResource(res)) })
+                }
+            }
+            Text(stringResource(R.string.icon_shape_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
             Label(stringResource(R.string.icon_size))
             Slider(value = settings.iconSize, onValueChange = { v -> onEdit { it.copy(iconSize = v) } }, valueRange = 0.75f..1.4f)
         }

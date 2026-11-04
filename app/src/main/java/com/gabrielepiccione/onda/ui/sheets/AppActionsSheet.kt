@@ -33,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -72,6 +73,7 @@ data class AppActions(
     val themedIcons: Boolean,
     val onSetSwipe: (AppInfo?) -> Unit,
     val folderName: String?,
+    val onChangeIcon: () -> Unit,
     val onMoveToFolder: () -> Unit,
     val isMuted: Boolean,
     val favoriteIndex: Int,
@@ -159,6 +161,7 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
                 actions.onMoveToFolder(); onDismiss()
             }
             ActionRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
+            ActionRow(Icons.Filled.Face, stringResource(R.string.icon_change)) { actions.onChangeIcon(); onDismiss() }
             ActionRow(Icons.Filled.Lock, if (app.isHidden) stringResource(R.string.show_in_list) else stringResource(R.string.hide)) {
                 actions.onToggleHidden(); onDismiss()
             }

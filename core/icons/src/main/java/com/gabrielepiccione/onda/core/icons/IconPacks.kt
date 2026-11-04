@@ -51,6 +51,35 @@ object IconPacks {
             return runCatching { res.getDrawableForDensity(id, densityDpi, null) }.getOrNull()
         }
 
+        /** Tutti i nomi di drawable noti del pack (da appfilter e, se c'è, da drawable.xml). */
+        val allDrawables: List<String> by lazy {
+            val names = LinkedHashSet<String>()
+            names += filter.components.values
+            @SuppressLint("DiscouragedApi")
+            val id = res.getIdentifier("drawable", "xml", packageName)
+            if (id != 0) {
+                runCatching {
+                    val p = res.getXml(id)
+                    var e = p.eventType
+                    while (e != XmlPullParser.END_DOCUMENT) {
+                        if (e == XmlPullParser.START_TAG && p.name == "item") p.getAttributeValue(null, "drawable")?.let { names += it }
+                        e = p.next()
+                    }
+                }
+            }
+            names.sorted()
+        }
+
+        /** Elementi del fallback (sfondo scelto in modo stabile per pacchetto). */
+        fun fallbackParts(packageName: String, densityDpi: Int): Triple<Drawable?, Drawable?, Drawable?>? {
+            if (!filter.hasFallback) return null
+            return Triple(
+                drawable(filter.iconBackFor(packageName), densityDpi),
+                drawable(filter.iconMask, densityDpi),
+                drawable(filter.iconUpon, densityDpi),
+            )
+        }
+
         /** Icona dedicata del pack (calendario dinamico incluso), oppure null. */
         fun iconFor(component: ComponentName, densityDpi: Int): Drawable? {
             val day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
@@ -85,5 +114,21 @@ object IconPacks {
             }
             event = next()
         }
+    }
+}
+
+/** Cache dei pack caricati (il parsing di appfilter.xml è costoso). */
+class IconPackCache(private val context: Context) {
+    private val loaded = HashMap<String, IconPacks.Loaded?>()
+
+    @Synchronized
+    fun get(packageName: String): IconPacks.Loaded? {
+        if (packageName.isBlank()) return null
+        return loaded.getOrPut(packageName) { IconPacks.load(context, packageName) }
+    }
+
+    @Synchronized
+    fun invalidate(packageName: String? = null) {
+        if (packageName == null) loaded.clear() else loaded.remove(packageName)
     }
 }

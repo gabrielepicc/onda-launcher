@@ -222,4 +222,20 @@
     <string name="media_full">Esteso</string>
     <string name="edit_media">Player musicale</string>
     <string name="edit_hide_media">Nascondi player</string>
+    <string name="icon_change">Cambia icona</string>
+    <string name="icon_reset">Originale</string>
+    <string name="icon_suggested">Suggerite</string>
+    <string name="icon_search">Cerca nel pack…</string>
+    <string name="icon_shape">Forma</string>
+    <string name="icon_style">Stile icone</string>
+    <string name="shape_system">Sistema</string>
+    <string name="shape_circle">Cerchio</string>
+    <string name="shape_squircle">Squircle</string>
+    <string name="shape_rounded">Quadrato</string>
+    <string name="shape_teardrop">Goccia</string>
+    <string name="shape_cylinder">Cilindro</string>
+    <string name="shape_petal">Petalo</string>
+    <string name="style_original">Originali</string>
+    <string name="style_dots">Puntini</string>
+    <string name="icon_shape_hint">La forma si applica alle icone adattive senza icon pack.</string>
 </resources>

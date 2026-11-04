@@ -160,6 +160,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var overlay by rememberSaveable { mutableStateOf(Overlay.NONE) }
     var actionsFor by remember { mutableStateOf<AppInfo?>(null) }
     var panelFor by remember { mutableStateOf<AppInfo?>(null) }
+    var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
     var moveFor by remember { mutableStateOf<AppInfo?>(null) }
     var homeMenu by remember { mutableStateOf(false) }
@@ -730,6 +731,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 onSetSwipe = { vm.setSwipeAction(app, it) },
                 folderName = inFolder?.name,
                 onMoveToFolder = { moveFor = app },
+                onChangeIcon = { iconPickerFor = app },
                 isMuted = app.packageName in settings.mutedNotifications,
                 favoriteIndex = favIndex,
                 favoriteCount = settings.favorites.size,
@@ -746,6 +748,16 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 onUninstall = { SystemActions.uninstall(context, app) },
             ),
             onDismiss = { actionsFor = null },
+        )
+    }
+
+    iconPickerFor?.let { app ->
+        IconPickerSheet(
+            app = app,
+            packs = vm.appsRepo.packs,
+            onPick = { pkg, name -> vm.settingsRepo.setIconOverride(app.key, pkg, name) },
+            onReset = { vm.settingsRepo.setIconOverride(app.key, null, null) },
+            onDismiss = { iconPickerFor = null },
         )
     }
 

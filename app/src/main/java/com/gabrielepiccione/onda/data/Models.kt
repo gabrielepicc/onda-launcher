@@ -201,6 +201,12 @@ data class Settings(
     val accent: Long = 0xFF7FE3D1,
     val font: FontChoice = FontChoice.SYSTEM,
     val iconPack: String = "",
+    /** Forma delle icone adattive (nome di [com.gabrielepiccione.onda.core.icons.IconShape]). */
+    val iconShape: String = "SYSTEM",
+    /** Stile delle icone (nome di [com.gabrielepiccione.onda.core.icons.IconStyle]). */
+    val iconStyle: String = "ORIGINAL",
+    /** Icona scelta a mano per singola app: chiave app -> "pacchetto_pack|nome_drawable". */
+    val iconOverrides: Map<String, String> = emptyMap(),
     val themedIcons: Boolean = false,
     val showIcons: Boolean = true,
     val textScale: Float = 1f,

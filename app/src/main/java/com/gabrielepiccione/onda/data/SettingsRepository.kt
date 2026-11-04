@@ -236,6 +236,13 @@ class SettingsRepository(context: Context) {
         s.copy(appWidgets = if (widgetId == null) s.appWidgets - appKey else s.appWidgets + (appKey to widgetId))
     }
 
+    fun setIconOverride(appKey: String, packPackage: String?, drawable: String?) = edit { s ->
+        s.copy(
+            iconOverrides = if (packPackage == null || drawable == null) s.iconOverrides - appKey
+            else s.iconOverrides + (appKey to "$packPackage|$drawable"),
+        )
+    }
+
     fun recordLaunch(appKey: String) = edit { s ->
         s.copy(launchCounts = s.launchCounts + (appKey to (s.launchCounts[appKey] ?: 0) + 1))
     }

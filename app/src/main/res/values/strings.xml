@@ -222,4 +222,20 @@
     <string name="media_full">Expanded</string>
     <string name="edit_media">Music player</string>
     <string name="edit_hide_media">Hide player</string>
+    <string name="icon_change">Change icon</string>
+    <string name="icon_reset">Original</string>
+    <string name="icon_suggested">Suggested</string>
+    <string name="icon_search">Search the pack…</string>
+    <string name="icon_shape">Shape</string>
+    <string name="icon_style">Icon style</string>
+    <string name="shape_system">System</string>
+    <string name="shape_circle">Circle</string>
+    <string name="shape_squircle">Squircle</string>
+    <string name="shape_rounded">Square</string>
+    <string name="shape_teardrop">Teardrop</string>
+    <string name="shape_cylinder">Cylinder</string>
+    <string name="shape_petal">Petal</string>
+    <string name="style_original">Original</string>
+    <string name="style_dots">Dots</string>
+    <string name="icon_shape_hint">The shape applies to adaptive icons when no icon pack is set.</string>
 </resources>
