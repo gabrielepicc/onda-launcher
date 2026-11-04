@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <!-- Facoltativo, concesso dall'utente nelle impostazioni: minuti di utilizzo nella pausa consapevole -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <!-- Visibilità delle app installabili da launcher (Android 11+) -->
     <queries>

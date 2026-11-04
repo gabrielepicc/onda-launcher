@@ -328,4 +328,29 @@
     <string name="stack_remove_widget">Remove from the stack</string>
     <string name="stack_delete">Delete the stack</string>
     <string name="stack_position">Widget %1$d of %2$d</string>
+    <string name="break_breathe_in">Breathe in…</string>
+    <string name="break_breathe_out">Breathe out…</string>
+    <string name="break_limit_reached">You set a limit of %1$d opens per day: the pause is longer now</string>
+    <string name="break_not_now">Not now</string>
+    <string name="break_open_in">Open in %1$d s</string>
+    <string name="break_open">Open %1$s</string>
+    <string name="break_on">Pause before opening</string>
+    <string name="break_off">Remove the pause</string>
+    <string name="section_break">Mindful pause</string>
+    <string name="break_settings_sub">Before opening the chosen apps Onda shows a few seconds of breathing. Everything stays on the device.</string>
+    <string name="break_apps">Apps with a pause</string>
+    <string name="break_seconds">Pause length: %1$d s</string>
+    <string name="break_limit_none">Daily limit: none</string>
+    <string name="break_limit">Daily limit: %1$d opens, then the pause doubles</string>
+    <string name="usage_access">Usage access (optional)</string>
+    <string name="usage_access_ok">Shows today\'s minutes in the pause</string>
+    <string name="usage_access_ko">Allow it to also see today\'s minutes of use</string>
+    <plurals name="break_opens_today">
+        <item quantity="one">Opened %1$d time today</item>
+        <item quantity="other">Opened %1$d times today</item>
+    </plurals>
+    <plurals name="break_minutes_today">
+        <item quantity="one">%1$d minute of use today</item>
+        <item quantity="other">%1$d minutes of use today</item>
+    </plurals>
 </resources>

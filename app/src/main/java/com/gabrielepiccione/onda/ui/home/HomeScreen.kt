@@ -150,6 +150,7 @@ data class HomeStatus(
     val contactsPermission: Boolean,
     val calendarPermission: Boolean,
     val accessibilityEnabled: Boolean,
+    val usageAccess: Boolean = false,
 )
 
 @Composable
@@ -178,6 +179,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var widgetFilter by remember { mutableStateOf<String?>(null) }
     var widgetTarget by remember { mutableStateOf<WidgetTarget>(WidgetTarget.Home) }
     var backProgress by remember { mutableFloatStateOf(0f) }
+    var breakFor by remember { mutableStateOf<AppInfo?>(null) }
 
     val homeList = rememberLazyListState()
     val allAppsList = rememberLazyListState()
@@ -190,7 +192,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         vm.clearSearch()
     }
 
-    fun launchApp(app: AppInfo) {
+    fun launchApp(app: AppInfo, skipBreak: Boolean = false) {
+        // Pausa consapevole: prima qualche secondo di respiro
+        if (!skipBreak && app.key in vm.settingsRepo.current.breakApps) {
+            breakFor = app
+            return
+        }
         val go = {
             vm.launch(app)
             scope.launch { delay(380); closeAll() }
@@ -233,6 +240,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             folderSheet = null
             homeMenu = false
             widgetPicker = false
+            breakFor = null
         }
     }
 
@@ -748,6 +756,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         notificationAccess = status.notificationAccess,
                         calendarPermission = status.calendarPermission,
                         accessibilityEnabled = status.accessibilityEnabled,
+                        usageAccess = status.usageAccess,
                     ),
                     widgets = vm.widgets,
                     actions = object : SettingsActions {
@@ -756,6 +765,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun notificationAccess() = withRestrictedHelp(callbacks::openNotificationAccess)
                         override fun calendarPermission() = callbacks.requestCalendarPermission()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
+                        override fun usageAccess() = com.gabrielepiccione.onda.util.UsageAccess.openSettings(context)
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
@@ -804,6 +814,21 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         )
     }
 
+    // ---------------- PAUSA CONSAPEVOLE ----------------
+    breakFor?.let { app ->
+        val minutes = remember(app.key) { com.gabrielepiccione.onda.util.UsageAccess.todayMinutes(context, app.packageName) }
+        androidx.activity.compose.BackHandler { breakFor = null }
+        UsageBreakScreen(
+            app = app,
+            seconds = settings.breakSeconds,
+            opensToday = remember(app.key) { vm.settingsRepo.opensToday(app.key) },
+            dailyLimit = settings.breakDailyLimit,
+            minutesToday = minutes,
+            onOpen = { breakFor = null; launchApp(app, skipBreak = true) },
+            onCancel = { breakFor = null },
+        )
+    }
+
     // ---------------- FOGLI MODALI ----------------
     panelFor?.let { app ->
         val shortcuts = remember(app.key) { vm.shortcuts(app) }
@@ -844,6 +869,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 folderName = inFolder?.name,
                 onMoveToFolder = { moveFor = app },
                 onChangeIcon = { iconPickerFor = app },
+                hasBreak = app.key in settings.breakApps,
+                onToggleBreak = { vm.settingsRepo.toggleBreak(app.key) },
                 isProtected = app.key in settings.protectedApps,
                 onToggleProtected = {
                     // Togliere la protezione richiede comunque lo sblocco

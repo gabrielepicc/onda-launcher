@@ -328,4 +328,29 @@
     <string name="stack_remove_widget">Togli dalla pila</string>
     <string name="stack_delete">Elimina la pila</string>
     <string name="stack_position">Widget %1$d di %2$d</string>
+    <string name="break_breathe_in">Inspira…</string>
+    <string name="break_breathe_out">Espira…</string>
+    <string name="break_limit_reached">Hai scelto un limite di %1$d aperture al giorno: ora la pausa è più lunga</string>
+    <string name="break_not_now">Non ora</string>
+    <string name="break_open_in">Apri tra %1$d s</string>
+    <string name="break_open">Apri %1$s</string>
+    <string name="break_on">Pausa prima di aprire</string>
+    <string name="break_off">Togli la pausa</string>
+    <string name="section_break">Pausa consapevole</string>
+    <string name="break_settings_sub">Prima di aprire le app scelte Onda mostra qualche secondo di respiro. Tutto resta sul dispositivo.</string>
+    <string name="break_apps">App con la pausa</string>
+    <string name="break_seconds">Durata della pausa: %1$d s</string>
+    <string name="break_limit_none">Limite giornaliero: nessuno</string>
+    <string name="break_limit">Limite giornaliero: %1$d aperture, poi la pausa raddoppia</string>
+    <string name="usage_access">Accesso ai dati di utilizzo (facoltativo)</string>
+    <string name="usage_access_ok">Mostra i minuti di oggi nella pausa</string>
+    <string name="usage_access_ko">Consentilo per vedere anche i minuti di utilizzo di oggi</string>
+    <plurals name="break_opens_today">
+        <item quantity="one">Aperta %1$d volta oggi</item>
+        <item quantity="other">Aperta %1$d volte oggi</item>
+    </plurals>
+    <plurals name="break_minutes_today">
+        <item quantity="one">%1$d minuto di utilizzo oggi</item>
+        <item quantity="other">%1$d minuti di utilizzo oggi</item>
+    </plurals>
 </resources>

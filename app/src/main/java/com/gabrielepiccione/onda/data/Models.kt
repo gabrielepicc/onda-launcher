@@ -251,6 +251,16 @@ data class Settings(
     val plugPlayApp: String = "",
     /** App che richiedono lo sblocco (impronta, volto o PIN) prima di aprirsi. */
     val protectedApps: Set<String> = emptySet(),
+    /** Pausa consapevole: app che prima di aprirsi mostrano qualche secondo di respiro. */
+    val breakApps: Set<String> = emptySet(),
+    /** Durata della pausa in secondi. */
+    val breakSeconds: Int = 5,
+    /** Aperture giornaliere oltre le quali la pausa raddoppia (0 = nessun limite). */
+    val breakDailyLimit: Int = 0,
+    /** Aperture di oggi per app (chiave app -> volte), azzerate al cambio di giorno. */
+    val dailyOpens: Map<String, Int> = emptyMap(),
+    /** Giorno a cui si riferisce [dailyOpens] (epoch day locale). */
+    val dailyOpensDay: Long = 0,
     /** Richiede lo sblocco anche per vedere l'elenco delle app nascoste. */
     val protectHidden: Boolean = false,
     /** Temi salvati dall'utente nel Theme Studio. */

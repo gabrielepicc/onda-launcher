@@ -191,6 +191,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             contactsPermission = vm.contacts.hasPermission(),
             calendarPermission = vm.calendar.hasPermission(),
             accessibilityEnabled = OndaAccessibilityService.isEnabled,
+            usageAccess = com.gabrielepiccione.onda.util.UsageAccess.granted(this),
         )
     }
 

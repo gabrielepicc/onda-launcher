@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -74,6 +75,8 @@ data class AppActions(
     val onSetSwipe: (AppInfo?) -> Unit,
     val folderName: String?,
     val onChangeIcon: () -> Unit,
+    val hasBreak: Boolean = false,
+    val onToggleBreak: () -> Unit = {},
     val isProtected: Boolean = false,
     val onToggleProtected: () -> Unit = {},
     val onMoveToFolder: () -> Unit,
@@ -158,6 +161,9 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
             }
             ActionRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
             ActionRow(Icons.Filled.Face, stringResource(R.string.icon_change)) { actions.onChangeIcon(); onDismiss() }
+            ActionRow(Icons.Filled.Favorite, stringResource(if (actions.hasBreak) R.string.break_off else R.string.break_on)) {
+                actions.onToggleBreak(); onDismiss()
+            }
             ActionRow(Icons.Filled.Lock, stringResource(if (actions.isProtected) R.string.protect_off else R.string.protect_on)) {
                 actions.onToggleProtected(); onDismiss()
             }

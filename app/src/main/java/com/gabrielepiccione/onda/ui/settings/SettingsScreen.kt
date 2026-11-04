@@ -74,6 +74,7 @@ data class SettingsStatus(
     val notificationAccess: Boolean,
     val calendarPermission: Boolean,
     val accessibilityEnabled: Boolean,
+    val usageAccess: Boolean = false,
 )
 
 interface SettingsActions {
@@ -82,6 +83,7 @@ interface SettingsActions {
     fun notificationAccess()
     fun calendarPermission()
     fun accessibility()
+    fun usageAccess()
     fun addWidget()
     fun removeWidget(id: Int)
     fun unhide(app: AppInfo)
@@ -109,6 +111,7 @@ fun SettingsScreen(
     val pm = context.packageManager
     var iconPackDialog by remember { mutableStateOf(false) }
     var plugDialog by remember { mutableStateOf(false) }
+    var breakDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
     val onEdit = actions::edit
 
@@ -329,6 +332,36 @@ fun SettingsScreen(
             Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
         }
 
+        Group(stringResource(R.string.section_break)) {
+            Text(stringResource(R.string.break_settings_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            val breakApps = allApps.filter { it.key in settings.breakApps }
+            ClickRow(
+                stringResource(R.string.break_apps),
+                if (breakApps.isEmpty()) stringResource(R.string.plug_play_none) else breakApps.joinToString { it.label },
+            ) { breakDialog = true }
+            Label(stringResource(R.string.break_seconds, settings.breakSeconds))
+            Slider(
+                value = settings.breakSeconds.toFloat(),
+                onValueChange = { v -> onEdit { it.copy(breakSeconds = v.roundToInt().coerceIn(3, 30)) } },
+                valueRange = 3f..30f,
+            )
+            Label(
+                if (settings.breakDailyLimit == 0) stringResource(R.string.break_limit_none)
+                else stringResource(R.string.break_limit, settings.breakDailyLimit)
+            )
+            Slider(
+                value = settings.breakDailyLimit.toFloat(),
+                onValueChange = { v -> onEdit { it.copy(breakDailyLimit = v.roundToInt().coerceIn(0, 30)) } },
+                valueRange = 0f..30f,
+            )
+            StatusRow(
+                stringResource(R.string.usage_access),
+                status.usageAccess,
+                stringResource(R.string.usage_access_ok),
+                stringResource(R.string.usage_access_ko),
+            ) { actions.usageAccess() }
+        }
+
         Group(stringResource(R.string.section_plug_play)) {
             Text(stringResource(R.string.plug_play_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             val current = allApps.firstOrNull { it.key == settings.plugPlayApp }
@@ -384,6 +417,25 @@ fun SettingsScreen(
             color = colors.onWallpaperMuted,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp),
+        )
+    }
+
+    if (breakDialog) {
+        AlertDialog(
+            onDismissRequest = { breakDialog = false },
+            title = { Text(stringResource(R.string.break_apps)) },
+            text = {
+                androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
+                    items(allApps.size) { i ->
+                        val app = allApps[i]
+                        val on = app.key in settings.breakApps
+                        ChoiceRow(app.label, on) {
+                            onEdit { it.copy(breakApps = if (on) it.breakApps - app.key else it.breakApps + app.key) }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { breakDialog = false }) { Text(stringResource(R.string.close)) } },
         )
     }
 

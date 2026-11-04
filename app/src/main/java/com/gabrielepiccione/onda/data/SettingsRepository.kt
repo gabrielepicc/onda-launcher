@@ -322,7 +322,21 @@ class SettingsRepository(context: Context) {
     }
 
     fun recordLaunch(appKey: String) = edit { s ->
-        s.copy(launchCounts = s.launchCounts + (appKey to (s.launchCounts[appKey] ?: 0) + 1))
+        val today = java.time.LocalDate.now().toEpochDay()
+        val daily = if (s.dailyOpensDay == today) s.dailyOpens else emptyMap()
+        s.copy(
+            launchCounts = s.launchCounts + (appKey to (s.launchCounts[appKey] ?: 0) + 1),
+            dailyOpens = daily + (appKey to (daily[appKey] ?: 0) + 1),
+            dailyOpensDay = today,
+        )
+    }
+
+    /** Aperture di oggi di un'app (0 se il conteggio salvato è di un altro giorno). */
+    fun opensToday(appKey: String): Int =
+        current.takeIf { it.dailyOpensDay == java.time.LocalDate.now().toEpochDay() }?.dailyOpens?.get(appKey) ?: 0
+
+    fun toggleBreak(appKey: String) = edit { s ->
+        s.copy(breakApps = if (appKey in s.breakApps) s.breakApps - appKey else s.breakApps + appKey)
     }
     fun removeWidget(id: Int) = edit {
         it.copy(
