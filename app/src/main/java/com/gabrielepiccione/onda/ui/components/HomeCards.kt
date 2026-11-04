@@ -23,6 +23,10 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -261,8 +265,10 @@ private fun eventWhen(e: CalendarEvent, locale: Locale, today: String, tomorrowF
 }
 
 /**
- * Player della musica in riproduzione: copertina grande, titolo e artista che scorrono se
- * non entrano, barra di avanzamento trascinabile e comandi grandi.
+ * Player della musica in riproduzione.
+ * Compatto: una riga, copertina e comandi di dimensione fissa, il testo ha la priorità.
+ * Esteso: titolo in evidenza, barra di avanzamento sottile e comandi discreti.
+ * [scale] ingrandisce soprattutto il testo, non copertina e pulsanti.
  */
 @Composable
 fun MediaCard(
@@ -283,7 +289,6 @@ fun MediaCard(
         return
     }
     val colors = LocalOndaColors.current
-    // Posizione stimata aggiornata ogni mezzo secondo (solo mentre suona)
     var now by remember { androidx.compose.runtime.mutableLongStateOf(android.os.SystemClock.elapsedRealtime()) }
     androidx.compose.runtime.LaunchedEffect(media.playing, media.positionTime) {
         now = android.os.SystemClock.elapsedRealtime()
@@ -293,102 +298,73 @@ fun MediaCard(
         }
     }
     var dragging by remember { mutableStateOf<Float?>(null) }
+    val textScale = scale.coerceIn(0.75f, 1.25f)
 
     Column(
         modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(32.dp)) else Modifier)
-            .clip(RoundedCornerShape(32.dp))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
+            .clip(RoundedCornerShape(28.dp))
             .background(colors.panel.copy(alpha = 0.92f))
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
-            .padding(16.dp * scale)
+            .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier
-                    .size(76.dp * scale)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(colors.accentContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                val art = media.art
-                if (art != null) {
-                    Image(art, null, contentScale = ContentScale.Crop, modifier = Modifier.size(76.dp * scale))
-                } else {
-                    Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccentContainer, modifier = Modifier.size(32.dp))
-                }
-            }
-            Spacer(Modifier.width(16.dp))
+            MediaArt(media, 56.dp, 16.dp)
+            Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     media.title,
                     color = colors.onWallpaper,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.let { it.copy(fontSize = it.fontSize * textScale, fontWeight = FontWeight.SemiBold) },
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 1500),
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
                 )
                 if (media.artist.isNotBlank()) {
                     Text(
                         media.artist,
                         color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyLarge.let { it.copy(fontSize = it.fontSize * textScale) },
                         maxLines = 1,
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2500),
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                     )
                 }
             }
         }
 
         if (media.duration > 0) {
-            val pos = media.positionAt(now).toFloat()
-            val seekCd = stringResource(R.string.media_seek)
-            androidx.compose.material3.Slider(
-                value = dragging ?: (pos / media.duration).coerceIn(0f, 1f),
-                onValueChange = { dragging = it },
-                onValueChangeFinished = {
+            val fraction = dragging ?: (media.positionAt(now).toFloat() / media.duration).coerceIn(0f, 1f)
+            ThinSeekBar(
+                fraction = fraction,
+                onDrag = { dragging = it },
+                onDragEnd = {
                     dragging?.let { onSeek((it * media.duration).toLong()) }
                     dragging = null
                 },
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .semantics { contentDescription = seekCd },
+                modifier = Modifier.padding(top = 14.dp),
             )
-            Row(Modifier.fillMaxWidth()) {
-                Text(formatMs(((dragging ?: (pos / media.duration)) * media.duration).toLong()), color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelMedium)
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                Text(formatMs((fraction * media.duration).toLong()), color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelSmall)
                 Spacer(Modifier.weight(1f))
-                Text(formatMs(media.duration), color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelMedium)
+                Text(formatMs(media.duration), color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelSmall)
             }
-        } else {
-            Spacer(Modifier.size(12.dp))
         }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
         ) {
-            MediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper, modifier = Modifier.size(32.dp)) }
-            val playCd = stringResource(if (media.playing) R.string.media_pause else R.string.media_play)
-            val corner by androidx.compose.animation.core.animateDpAsState(if (media.playing) 20.dp else 32.dp, Motion.bouncy(), label = "playShape")
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(width = 84.dp, height = 64.dp)
-                    .clip(RoundedCornerShape(corner))
-                    .background(colors.accent)
-                    .semantics { contentDescription = playCd }
-                    .clickable(onClick = onPlayPause)
-            ) {
-                AnimatedContent(targetState = media.playing, label = "playpause") { playing ->
-                    if (playing) PauseGlyph(colors.onAccent) else Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccent, modifier = Modifier.size(32.dp))
-                }
-            }
-            MediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper, modifier = Modifier.size(32.dp)) }
+            MediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper) }
+            Spacer(Modifier.width(20.dp))
+            PlayButton(media.playing, onPlayPause, width = 64.dp, height = 44.dp)
+            Spacer(Modifier.width(20.dp))
+            MediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper) }
         }
     }
 }
 
-/** Versione su una riga: copertina, titolo/artista che scorrono, comandi. */
+/** Versione su una riga: copertina piccola, testo con la priorità, comandi compatti. */
 @Composable
 private fun CompactMediaCard(
     media: MediaInfo,
@@ -402,58 +378,123 @@ private fun CompactMediaCard(
     onLongPress: (() -> Unit)?,
 ) {
     val colors = LocalOndaColors.current
-    val art = 48.dp * scale
+    val textScale = scale.coerceIn(0.75f, 1.25f)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
-            .clip(RoundedCornerShape(28.dp))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(24.dp)) else Modifier)
+            .clip(RoundedCornerShape(24.dp))
             .background(colors.panel.copy(alpha = 0.9f))
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
-            .padding(8.dp * scale)
+            .padding(start = 8.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
     ) {
-        Box(Modifier.size(art).clip(RoundedCornerShape(14.dp * scale)).background(colors.accentContainer), contentAlignment = Alignment.Center) {
-            val bmp = media.art
-            if (bmp != null) Image(bmp, null, contentScale = ContentScale.Crop, modifier = Modifier.size(art))
-            else Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccentContainer)
-        }
+        MediaArt(media, 40.dp, 12.dp)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(
                 media.title,
                 color = colors.onWallpaper,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = MaterialTheme.typography.titleMedium.fontSize * scale),
+                style = MaterialTheme.typography.titleSmall.let { it.copy(fontSize = it.fontSize * textScale) },
                 maxLines = 1,
-                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 1500),
+                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
             )
             if (media.artist.isNotBlank()) {
                 Text(
                     media.artist,
                     color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = MaterialTheme.typography.bodyMedium.fontSize * scale),
+                    style = MaterialTheme.typography.bodySmall.let { it.copy(fontSize = it.fontSize * textScale) },
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2500),
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                 )
             }
         }
-        MediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper) }
-        val playCd = stringResource(if (media.playing) R.string.media_pause else R.string.media_play)
-        val corner by androidx.compose.animation.core.animateDpAsState(if (media.playing) 14.dp else 24.dp, Motion.bouncy(), label = "playShapeC")
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(48.dp * scale)
-                .clip(RoundedCornerShape(corner))
-                .background(colors.accent)
-                .semantics { contentDescription = playCd }
-                .clickable(onClick = onPlayPause)
-        ) {
-            AnimatedContent(targetState = media.playing, label = "playpauseC") { playing ->
-                if (playing) PauseGlyph(colors.onAccent) else Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccent)
-            }
+        SmallMediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
+        PlayButton(media.playing, onPlayPause, width = 40.dp, height = 40.dp)
+        SmallMediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
+    }
+}
+
+@Composable
+private fun MediaArt(media: MediaInfo, size: androidx.compose.ui.unit.Dp, corner: androidx.compose.ui.unit.Dp) {
+    val colors = LocalOndaColors.current
+    Box(
+        Modifier.size(size).clip(RoundedCornerShape(corner)).background(colors.accentContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        val bmp = media.art
+        if (bmp != null) Image(bmp, null, contentScale = ContentScale.Crop, modifier = Modifier.size(size))
+        else Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccentContainer)
+    }
+}
+
+/** Play/pausa: la forma passa da pillola a quadrato arrotondato quando suona. */
+@Composable
+private fun PlayButton(playing: Boolean, onClick: () -> Unit, width: androidx.compose.ui.unit.Dp, height: androidx.compose.ui.unit.Dp) {
+    val colors = LocalOndaColors.current
+    val cd = stringResource(if (playing) R.string.media_pause else R.string.media_play)
+    val corner by androidx.compose.animation.core.animateDpAsState(if (playing) 12.dp else height / 2, Motion.bouncy(), label = "playShape")
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(width = width, height = height)
+            .clip(RoundedCornerShape(corner))
+            .background(colors.accent)
+            .semantics { contentDescription = cd }
+            .clickable(onClick = onClick)
+    ) {
+        AnimatedContent(targetState = playing, label = "playpause") { p ->
+            if (p) PauseGlyph(colors.onAccent) else Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccent, modifier = Modifier.size(22.dp))
         }
-        MediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper) }
+    }
+}
+
+@Composable
+private fun SmallMediaButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(width = 36.dp, height = 48.dp).clip(CircleShape).clickable(onClick = onClick)
+    ) { content() }
+}
+
+/** Barra di avanzamento sottile (4dp) con pallino che compare durante il trascinamento. */
+@Composable
+private fun ThinSeekBar(
+    fraction: Float,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalOndaColors.current
+    var active by remember { mutableStateOf(false) }
+    val thumb by androidx.compose.animation.core.animateFloatAsState(if (active) 1f else 0f, Motion.bouncy(), label = "thumb")
+    val cd = stringResource(R.string.media_seek)
+    androidx.compose.foundation.Canvas(
+        modifier
+            .fillMaxWidth()
+            .height(20.dp)
+            .semantics { contentDescription = cd }
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragStart = { o -> active = true; onDrag((o.x / size.width).coerceIn(0f, 1f)) },
+                    onDragEnd = { active = false; onDragEnd() },
+                    onDragCancel = { active = false; onDragEnd() },
+                    onHorizontalDrag = { change, _ ->
+                        change.consume()
+                        onDrag((change.position.x / size.width).coerceIn(0f, 1f))
+                    },
+                )
+            }
+            .pointerInput(Unit) {
+                detectTapGestures { o -> onDrag((o.x / size.width).coerceIn(0f, 1f)); onDragEnd() }
+            }
+    ) {
+        val y = size.height / 2
+        val h = 4.dp.toPx() + 2.dp.toPx() * thumb
+        val x = size.width * fraction
+        drawRoundRect(colors.onWallpaperMuted.copy(alpha = 0.25f), topLeft = androidx.compose.ui.geometry.Offset(0f, y - h / 2), size = androidx.compose.ui.geometry.Size(size.width, h), cornerRadius = androidx.compose.ui.geometry.CornerRadius(h / 2))
+        drawRoundRect(colors.accent, topLeft = androidx.compose.ui.geometry.Offset(0f, y - h / 2), size = androidx.compose.ui.geometry.Size(x, h), cornerRadius = androidx.compose.ui.geometry.CornerRadius(h / 2))
+        drawCircle(colors.accent, radius = 4.dp.toPx() + 4.dp.toPx() * thumb, center = androidx.compose.ui.geometry.Offset(x, y))
     }
 }
 
@@ -477,7 +518,7 @@ private fun MediaButton(onClick: () -> Unit, content: @Composable () -> Unit) {
 @Composable
 private fun PauseGlyph(color: androidx.compose.ui.graphics.Color) {
     Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)) {
-        Box(Modifier.size(width = 5.dp, height = 18.dp).clip(RoundedCornerShape(3.dp)).background(color))
-        Box(Modifier.size(width = 5.dp, height = 18.dp).clip(RoundedCornerShape(3.dp)).background(color))
+        Box(Modifier.size(width = 4.dp, height = 14.dp).clip(RoundedCornerShape(2.dp)).background(color))
+        Box(Modifier.size(width = 4.dp, height = 14.dp).clip(RoundedCornerShape(2.dp)).background(color))
     }
 }
