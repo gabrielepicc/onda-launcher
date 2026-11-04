@@ -276,12 +276,13 @@ fun MediaCard(
 ) {
     val colors = LocalOndaColors.current
     // Posizione stimata aggiornata ogni mezzo secondo (solo mentre suona)
-    val now by produceState(android.os.SystemClock.elapsedRealtime(), media.playing, media.positionTime) {
+    var now by remember { androidx.compose.runtime.mutableLongStateOf(android.os.SystemClock.elapsedRealtime()) }
+    androidx.compose.runtime.LaunchedEffect(media.playing, media.positionTime) {
+        now = android.os.SystemClock.elapsedRealtime()
         while (media.playing) {
-            value = android.os.SystemClock.elapsedRealtime()
             delay(500)
+            now = android.os.SystemClock.elapsedRealtime()
         }
-        value = android.os.SystemClock.elapsedRealtime()
     }
     var dragging by remember { mutableStateOf<Float?>(null) }
 
