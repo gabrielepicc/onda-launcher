@@ -391,4 +391,25 @@
     <string name="private_space">Spazio privato</string>
     <string name="private_unlock">Sblocca</string>
     <string name="private_lock">Blocca</string>
+    <string name="intro_skip">Salta</string>
+    <string name="intro_next">Avanti</string>
+    <string name="intro_start">Inizia</string>
+    <string name="intro_allow">Consenti</string>
+    <string name="intro_granted">Concesso</string>
+    <string name="intro_again">Rivedi l\'introduzione</string>
+    <string name="intro_welcome_title">Benvenuto in Onda</string>
+    <string name="intro_welcome_body">Un elenco tranquillo delle tue app preferite, sempre alla portata del pollice.</string>
+    <string name="intro_gesture_right">Scorri un\'app verso destra: il suo pannello con scorciatoie, notifiche e widget</string>
+    <string name="intro_gesture_left">Scorri verso sinistra: elimina le sue notifiche</string>
+    <string name="intro_gesture_down">Scorri giù sulla home: tendina delle notifiche</string>
+    <string name="intro_gesture_alphabet">Scorri lungo l\'alfabeto sul bordo: tutte le app</string>
+    <string name="intro_gesture_long">Tieni premuto orologio, widget o uno spazio vuoto per modificare la home</string>
+    <string name="intro_permissions_title">Solo ciò che serve</string>
+    <string name="intro_permissions_body">Tutto è facoltativo e resta sul dispositivo. Puoi cambiarlo dopo nelle impostazioni.</string>
+    <string name="intro_default_why">Così il tasto Home ti porta qui</string>
+    <string name="intro_notifications_why">Per mostrare le notifiche accanto alle app e rispondere</string>
+    <string name="intro_contacts_why">Per trovare i contatti nella ricerca</string>
+    <string name="intro_calendar_why">Per il prossimo evento e l\'agenda</string>
+    <string name="intro_style_title">Rendila tua</string>
+    <string name="intro_style_body">Scegli uno stile pronto con sfondo, carattere, orologio e icone, oppure tieni l\'aspetto di sistema.</string>
 </resources>

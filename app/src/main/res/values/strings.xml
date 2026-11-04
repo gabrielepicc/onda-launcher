@@ -391,4 +391,25 @@
     <string name="private_space">Private space</string>
     <string name="private_unlock">Unlock</string>
     <string name="private_lock">Lock</string>
+    <string name="intro_skip">Skip</string>
+    <string name="intro_next">Next</string>
+    <string name="intro_start">Start</string>
+    <string name="intro_allow">Allow</string>
+    <string name="intro_granted">Granted</string>
+    <string name="intro_again">Show the introduction again</string>
+    <string name="intro_welcome_title">Welcome to Onda</string>
+    <string name="intro_welcome_body">A calm list of your favorite apps, always within reach of your thumb.</string>
+    <string name="intro_gesture_right">Swipe an app to the right: its panel with shortcuts, notifications and widget</string>
+    <string name="intro_gesture_left">Swipe to the left: clears its notifications</string>
+    <string name="intro_gesture_down">Swipe down on the home: notification shade</string>
+    <string name="intro_gesture_alphabet">Slide along the alphabet on the edge: all apps</string>
+    <string name="intro_gesture_long">Long-press clock, widgets or an empty spot to change the home</string>
+    <string name="intro_permissions_title">Only what you need</string>
+    <string name="intro_permissions_body">Everything is optional and stays on your device. You can change it later in the settings.</string>
+    <string name="intro_default_why">So the home button brings you here</string>
+    <string name="intro_notifications_why">To show notifications next to the apps and reply</string>
+    <string name="intro_contacts_why">To find contacts in the search</string>
+    <string name="intro_calendar_why">For the next event and the agenda</string>
+    <string name="intro_style_title">Make it yours</string>
+    <string name="intro_style_body">Pick a ready-made style with wallpaper, font, clock and icons, or keep the system look.</string>
 </resources>

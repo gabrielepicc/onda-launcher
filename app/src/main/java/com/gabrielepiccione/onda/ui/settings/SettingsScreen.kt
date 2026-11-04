@@ -97,6 +97,7 @@ interface SettingsActions {
     fun exportBackup()
     fun importBackup()
     fun close()
+    fun showIntro()
 }
 
 @Composable
@@ -482,6 +483,7 @@ fun SettingsScreen(
             }
         }
 
+        TextButton(onClick = { actions.showIntro() }, modifier = Modifier.padding(top = 12.dp)) { Text(stringResource(R.string.intro_again)) }
         Text(
             stringResource(R.string.version_line, com.gabrielepiccione.onda.BuildConfig.VERSION_NAME),
             color = colors.onWallpaperMuted,

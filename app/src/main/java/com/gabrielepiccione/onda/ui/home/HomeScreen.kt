@@ -186,6 +186,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var widgetTarget by remember { mutableStateOf<WidgetTarget>(WidgetTarget.Home) }
     var backProgress by remember { mutableFloatStateOf(0f) }
     var breakFor by remember { mutableStateOf<AppInfo?>(null) }
+    // Introduzione: al primo avvio (prima che vengano proposti i preferiti) o su richiesta
+    var showIntro by rememberSaveable { mutableStateOf(!vm.settingsRepo.current.onboardingDone) }
 
     val homeList = rememberLazyListState()
     val allAppsList = rememberLazyListState()
@@ -841,6 +843,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun exportBackup() = callbacks.exportBackup()
                         override fun importBackup() = callbacks.importBackup()
                         override fun close() = closeAll()
+                        override fun showIntro() { closeAll(); showIntro = true }
                     },
                 )
             }
@@ -1074,6 +1077,20 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun setStackHeight(stackId: String, dp: Int) = vm.settingsRepo.setStackHeight(stackId, dp)
                 override fun widgetLabel(id: Int): String? = vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() }
                 override fun done() { editing = null }
+            },
+        )
+    }
+
+    if (showIntro) {
+        OnboardingScreen(
+            status = status,
+            actions = object : OnboardingActions {
+                override fun defaultLauncher() = callbacks.requestDefaultLauncher()
+                override fun notificationAccess() = withRestrictedHelp(callbacks::openNotificationAccess)
+                override fun contacts() = callbacks.requestContactsPermission()
+                override fun calendar() = callbacks.requestCalendarPermission()
+                override fun openStyles() { showIntro = false; overlay = Overlay.STYLES }
+                override fun done() { showIntro = false }
             },
         )
     }
