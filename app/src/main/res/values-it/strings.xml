@@ -388,4 +388,7 @@
     <string name="orientation">Rotazione</string>
     <string name="orientation_auto">Segui il sistema</string>
     <string name="orientation_portrait">Sempre verticale</string>
+    <string name="private_space">Spazio privato</string>
+    <string name="private_unlock">Sblocca</string>
+    <string name="private_lock">Blocca</string>
 </resources>

@@ -388,4 +388,7 @@
     <string name="orientation">Rotation</string>
     <string name="orientation_auto">Follow the system</string>
     <string name="orientation_portrait">Always portrait</string>
+    <string name="private_space">Private space</string>
+    <string name="private_unlock">Unlock</string>
+    <string name="private_lock">Lock</string>
 </resources>

@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <!-- Android 15: lo Spazio privato è visibile solo al launcher predefinito che dichiara questo permesso -->
+    <uses-permission
+        android:name="android.permission.ACCESS_HIDDEN_PROFILES"
+        tools:ignore="ProtectedPermissions" />
     <!-- Facoltativo, concesso dall'utente nelle impostazioni: minuti di utilizzo nella pausa consapevole -->
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"

@@ -25,6 +25,8 @@ data class RawApp(
     val category: AppCategory = AppCategory.OTHER,
     /** Colore dominante dell'icona originale (ARGB), per gli stili generati. */
     val color: Int = 0xFF808080.toInt(),
+    /** App dello Spazio privato (Android 15+). */
+    val isPrivate: Boolean = false,
 )
 
 /** App pronta per la UI, con nome personalizzato applicato. */
@@ -43,10 +45,14 @@ data class AppInfo(
     val isHidden: Boolean,
     /** Chiave dell'app aperta scorrendo la riga verso destra, se impostata. */
     val swipeTarget: String?,
+    val isPrivate: Boolean = false,
 ) {
     val packageName: String get() = component.packageName
     val section: Char get() = sectionOf(label)
 }
+
+/** Stato dello Spazio privato di Android 15, se esiste e Onda può vederlo. */
+data class PrivateSpace(val user: UserHandle, val locked: Boolean)
 
 /** Riga di una conversazione (WhatsApp, Telegram, SMS…). */
 data class MessageLine(val sender: String, val text: String)

@@ -44,11 +44,13 @@ data class LauncherState(
     val home: List<HomeEntry> = emptyList(),      // app + cartelle, nell'ordine scelto
     val suggestions: List<AppInfo> = emptyList(), // app più usate
     val hiddenApps: List<AppInfo> = emptyList(),
+    /** App dello Spazio privato sbloccato (vuoto se bloccato). */
+    val privateApps: List<AppInfo> = emptyList(),
     val notifications: Map<String, List<NotificationItem>> = emptyMap(),
     val settings: Settings = Settings(),
     val loaded: Boolean = false,
 ) {
-    private val byKey: Map<String, AppInfo> by lazy { (allApps + hiddenApps).associateBy { it.key } }
+    private val byKey: Map<String, AppInfo> by lazy { (allApps + hiddenApps + privateApps).associateBy { it.key } }
     fun app(key: String?): AppInfo? = key?.let { byKey[it] }
 }
 
@@ -74,6 +76,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val calendar = ondaApp.calendar
     val audio = ondaApp.audio
     val contacts = ContactsRepository(app)
+    val privateSpace = appsRepo.privateSpace
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
 
@@ -97,6 +100,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 isFavorite = r.key in settings.favorites,
                 isHidden = r.key in settings.hidden,
                 swipeTarget = settings.swipeActions[r.key],
+                isPrivate = r.isPrivate,
             )
         }.sortedWith { a, b -> collator.compare(a.label, b.label) }
 
@@ -109,17 +113,18 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 byKey[entry]?.takeIf { !it.isHidden }?.let { HomeEntry.App(it) }
             }
         }
-        val visible = all.filterNot { it.isHidden }
+        val visible = all.filterNot { it.isHidden || it.isPrivate }
         LauncherState(
             allApps = visible,
+            privateApps = all.filter { it.isPrivate },
             favorites = home.filterIsInstance<HomeEntry.App>().map { it.app },
             home = home,
             suggestions = settings.launchCounts.entries
                 .sortedByDescending { it.value }
-                .mapNotNull { byKey[it.key]?.takeIf { a -> !a.isHidden } }
+                .mapNotNull { byKey[it.key]?.takeIf { a -> !a.isHidden && !a.isPrivate } }
                 .take(8)
                 .ifEmpty { visible.take(8) },
-            hiddenApps = all.filter { it.isHidden },
+            hiddenApps = all.filter { it.isHidden && !it.isPrivate },
             notifications = notifs.filterKeys { it !in settings.mutedNotifications },
             settings = settings,
             loaded = raw.isNotEmpty(),
@@ -201,7 +206,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         val q = query.normalizedForSearch().trim()
         if (q.isEmpty()) return emptyList()
         val s = state.value
-        return (s.allApps + s.hiddenApps).mapNotNull { app ->
+        return (s.allApps + s.hiddenApps + s.privateApps).mapNotNull { app ->
             val label = app.label.normalizedForSearch()
             val words = label.split(' ', '-', '.', '_', '(', ')').filter { it.isNotEmpty() }
             val initials = words.joinToString("") { it.take(1) }

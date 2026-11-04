@@ -118,6 +118,9 @@ fun AllAppsPanel(
     contacts: List<ContactHit> = emptyList(),
     onContact: (ContactHit) -> Unit = {},
     loadPhoto: suspend (ContactHit) -> android.graphics.Bitmap? = { null },
+    privateSpace: com.gabrielepiccione.onda.data.PrivateSpace? = null,
+    privateApps: List<AppInfo> = emptyList(),
+    onTogglePrivate: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
@@ -168,6 +171,44 @@ fun AllAppsPanel(
                         onClick = { onClick(app) },
                         onLongClick = { onLongClick(app) },
                     )
+                }
+            }
+        }
+        // Spazio privato (Android 15+): in fondo all'elenco, con blocco e sblocco
+        if (privateSpace != null) {
+            item(key = "h_private") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 28.dp, bottom = 4.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.private_space),
+                        color = colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    androidx.compose.material3.FilledTonalButton(onClick = onTogglePrivate, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Text(stringResource(if (privateSpace.locked) R.string.private_unlock else R.string.private_lock))
+                    }
+                }
+            }
+            if (!privateSpace.locked) {
+                privateApps.forEach { app ->
+                    item(key = "p_" + app.key) {
+                        AppListRow(
+                            app = app,
+                            hasNotification = notifications[app.packageName].orEmpty().isNotEmpty(),
+                            notification = notifications[app.packageName]?.firstOrNull(),
+                            notificationCount = notifications[app.packageName]?.size ?: 0,
+                            onOpenPanel = { onOpenPanel(app) },
+                            swipeEnabled = false,
+                            onDismissNotifications = { onDismissNotifications(app) },
+                            showIcon = showIcons,
+                            themedIcons = themedIcons,
+                            onClick = { onClick(app) },
+                            onLongClick = { onLongClick(app) },
+                        )
+                    }
                 }
             }
         }

@@ -53,6 +53,14 @@ class AppRepository(
     private val _apps = MutableStateFlow<List<RawApp>>(emptyList())
     val apps: StateFlow<List<RawApp>> = _apps.asStateFlow()
 
+    private val _privateSpace = MutableStateFlow<PrivateSpace?>(null)
+    val privateSpace: StateFlow<PrivateSpace?> = _privateSpace.asStateFlow()
+
+    /** Profilo bloccato/sbloccato (Spazio privato, profilo di lavoro in pausa): si ricarica. */
+    private val profileReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: Context?, intent: android.content.Intent?) = reload()
+    }
+
     private val densityDpi = context.resources.displayMetrics.densityDpi
     private val iconSizePx: Int = (56 * context.resources.displayMetrics.density).toInt().coerceAtLeast(56)
 
@@ -80,6 +88,19 @@ class AppRepository(
 
     init {
         launcherApps.registerCallback(callback, Handler(Looper.getMainLooper()))
+        val filter = android.content.IntentFilter().apply {
+            addAction(android.content.Intent.ACTION_MANAGED_PROFILE_AVAILABLE)
+            addAction(android.content.Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                addAction(android.content.Intent.ACTION_PROFILE_AVAILABLE)
+                addAction(android.content.Intent.ACTION_PROFILE_UNAVAILABLE)
+            }
+        }
+        runCatching {
+            androidx.core.content.ContextCompat.registerReceiver(
+                context, profileReceiver, filter, androidx.core.content.ContextCompat.RECEIVER_EXPORTED,
+            )
+        }
         reload()
         scope.launch {
             settings.map { it.iconParams() }.distinctUntilChanged().drop(1).collect { reload() }
@@ -92,13 +113,23 @@ class AppRepository(
             val pack = packs.get(settings.value.iconPack)
             val myUser = Process.myUserHandle()
             val result = mutableListOf<RawApp>()
+            var private: PrivateSpace? = null
             for (user in launcherApps.profiles) {
+                val isPrivate = isPrivateProfile(user)
+                if (isPrivate) {
+                    val locked = runCatching { userManager.isQuietModeEnabled(user) }.getOrDefault(true)
+                    private = PrivateSpace(user, locked)
+                    // Bloccato: le sue app non si mostrano né si cercano
+                    if (locked) continue
+                }
                 val activities = runCatching { launcherApps.getActivityList(null, user) }.getOrDefault(emptyList())
                 for (info in activities) {
                     if (info.componentName.packageName == context.packageName) continue
-                    result += runCatching { info.toRawApp(user, user != myUser, pack) }.getOrNull() ?: continue
+                    val app = runCatching { info.toRawApp(user, user != myUser && !isPrivate, pack) }.getOrNull() ?: continue
+                    result += if (isPrivate) app.copy(isPrivate = true) else app
                 }
             }
+            _privateSpace.value = private
             _apps.value = result
         }
     }
@@ -180,6 +211,21 @@ class AppRepository(
     }
 
     // --- Azioni ---
+
+    private fun isPrivateProfile(user: UserHandle): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) return false
+        return runCatching {
+            launcherApps.getLauncherUserInfo(user)?.userType == UserManager.USER_TYPE_PROFILE_PRIVATE
+        }.getOrDefault(false)
+    }
+
+    /** Blocca o sblocca lo Spazio privato (il sistema chiede le credenziali se servono). */
+    fun setPrivateLocked(locked: Boolean) {
+        val space = _privateSpace.value ?: return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
+        runCatching { userManager.requestQuietModeEnabled(locked, space.user) }
+        reload()
+    }
 
     fun launch(app: AppInfo, bounds: Rect? = null, options: android.os.Bundle? = null) {
         runCatching { launcherApps.startMainActivity(app.component, app.user, bounds, options) }

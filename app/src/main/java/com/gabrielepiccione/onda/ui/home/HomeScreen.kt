@@ -191,6 +191,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val allAppsList = rememberLazyListState()
     val sections = remember(state.allApps, settings.launchCounts) { buildSections(state.allApps, settings.launchCounts) }
     val starred by vm.starred.collectAsStateWithLifecycle()
+    val privateSpace by vm.privateSpace.collectAsStateWithLifecycle()
     val contactsInList = if (settings.alphabetContacts) starred else emptyList()
     // "@" in cima all'alfabeto porta ai contatti preferiti
     val letters = remember(sections, contactsInList.isNotEmpty()) {
@@ -693,6 +694,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             contacts = contactsInList,
             onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
             loadPhoto = { vm.contacts.photo(it) },
+            privateSpace = privateSpace,
+            privateApps = state.privateApps,
+            onTogglePrivate = { privateSpace?.let { ps -> vm.appsRepo.setPrivateLocked(!ps.locked) } },
             contentPadding = PaddingValues(
                 start = (if (settings.leftHanded) letterSide else hiddenSide) + extraSide,
                 end = (if (settings.leftHanded) hiddenSide else letterSide) + extraSide,
