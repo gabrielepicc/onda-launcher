@@ -53,6 +53,37 @@ class CalendarRepository(private val context: Context) {
         }.getOrNull()
     }
 
+    /** Eventi dei prossimi [days] giorni (da oggi), con il colore del calendario. */
+    suspend fun upcoming(days: Int, limit: Int = 12): List<CalendarEvent> = withContext(Dispatchers.IO) {
+        if (!hasPermission()) return@withContext emptyList()
+        val now = System.currentTimeMillis()
+        val startOfDay = java.time.LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().also {
+            ContentUris.appendId(it, startOfDay)
+            ContentUris.appendId(it, startOfDay + days.coerceIn(1, 14) * 24 * 60 * 60 * 1000L)
+        }.build()
+        val projection = arrayOf(
+            CalendarContract.Instances.TITLE,
+            CalendarContract.Instances.BEGIN,
+            CalendarContract.Instances.END,
+            CalendarContract.Instances.ALL_DAY,
+            CalendarContract.Instances.EVENT_ID,
+            CalendarContract.Instances.DISPLAY_COLOR,
+        )
+        val out = mutableListOf<CalendarEvent>()
+        runCatching {
+            context.contentResolver.query(uri, projection, null, null, "${CalendarContract.Instances.BEGIN} ASC")?.use { c ->
+                while (c.moveToNext() && out.size < limit) {
+                    val title = c.getString(0)?.takeIf { it.isNotBlank() } ?: continue
+                    val end = c.getLong(2)
+                    if (end < now) continue
+                    out += CalendarEvent(title, c.getLong(1), c.getInt(3) == 1, c.getLong(4), end, c.getInt(5))
+                }
+            }
+        }
+        out
+    }
+
     fun open(event: CalendarEvent) {
         val intent = Intent(Intent.ACTION_VIEW, ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.eventId))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

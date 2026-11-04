@@ -124,8 +124,15 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     private val _nextEvent = MutableStateFlow<CalendarEvent?>(null)
     val nextEvent: StateFlow<CalendarEvent?> = _nextEvent.asStateFlow()
 
+    private val _agenda = MutableStateFlow<List<CalendarEvent>>(emptyList())
+    val agenda: StateFlow<List<CalendarEvent>> = _agenda.asStateFlow()
+
     fun refreshCalendar() {
-        viewModelScope.launch { _nextEvent.value = calendar.nextEvent() }
+        viewModelScope.launch {
+            _nextEvent.value = calendar.nextEvent()
+            val s = settingsRepo.current
+            _agenda.value = if (s.showAgenda) calendar.upcoming(s.agendaDays) else emptyList()
+        }
     }
 
     // --- Tasto Home premuto: chiude pannelli e torna in cima ---

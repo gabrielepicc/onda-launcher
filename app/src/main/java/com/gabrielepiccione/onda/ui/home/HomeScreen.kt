@@ -153,6 +153,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val search by vm.search.collectAsStateWithLifecycle()
     val media by vm.media.media.collectAsStateWithLifecycle()
     val nextEvent by vm.nextEvent.collectAsStateWithLifecycle()
+    val agenda by vm.agenda.collectAsStateWithLifecycle()
     val settings = state.settings
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -211,6 +212,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     }
 
     LaunchedEffect(state.loaded) { if (state.loaded) vm.seedFavoritesIfNeeded() }
+    LaunchedEffect(settings.showAgenda, settings.agendaDays, status.calendarPermission) { vm.refreshCalendar() }
 
     LaunchedEffect(Unit) {
         vm.homePressed.collect {
@@ -415,11 +417,21 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 scale = settings.clockScale,
                                 align = settings.clockAlign,
                                 highlighted = editing == HomeBlocks.CLOCK,
-                                onLongPress = { editing = HomeBlocks.CLOCK },
+                                onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.CLOCK },
                                 showBattery = settings.showBattery,
                                 modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
                             )
                         }
+                    }
+                    block == HomeBlocks.AGENDA -> item(key = "agenda") {
+                        AgendaCard(
+                            events = agenda,
+                            onEvent = { vm.calendar.open(it) },
+                            highlighted = editing == HomeBlocks.AGENDA,
+                            onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.AGENDA },
+                            onEmptyClick = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
+                            modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(vertical = 8.dp),
+                        )
                     }
                     block == HomeBlocks.MEDIA -> item(key = "media") {
                         val m = media
@@ -440,7 +452,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                     compact = settings.mediaCompact,
                                     scale = settings.mediaScale,
                                     highlighted = editing == HomeBlocks.MEDIA,
-                                    onLongPress = { editing = HomeBlocks.MEDIA },
+                                    onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.MEDIA },
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
                                 )
                             }
@@ -456,7 +468,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                         widgets = vm.widgets,
                                         heightDp = settings.widgetHeights[id],
                                         highlighted = editing == block,
-                                        onLongPress = { editing = block },
+                                        onLongPress = { if (!settings.lockLayout) editing = block },
                                     )
                                 }
                             }
@@ -826,8 +838,21 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         ) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
                 SheetRow(Icons.Filled.Settings, stringResource(R.string.settings)) { homeMenu = false; overlay = Overlay.SETTINGS }
-                SheetRow(Icons.Filled.Add, stringResource(R.string.new_folder)) { newFolder = true }
-                SheetRow(Icons.Filled.Add, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
+                if (!settings.lockLayout) {
+                    SheetRow(Icons.Filled.Add, stringResource(R.string.new_folder)) { newFolder = true }
+                    SheetRow(Icons.Filled.Add, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
+                    if (!settings.showAgenda) {
+                        SheetRow(Icons.Filled.Add, stringResource(R.string.agenda_add)) {
+                            homeMenu = false
+                            vm.updateSettings { it.copy(showAgenda = true) }
+                            if (!status.calendarPermission) callbacks.requestCalendarPermission()
+                        }
+                    }
+                }
+                SheetRow(Icons.Filled.Settings, stringResource(if (settings.lockLayout) R.string.layout_unlock else R.string.layout_lock)) {
+                    homeMenu = false
+                    vm.updateSettings { it.copy(lockLayout = !it.lockLayout) }
+                }
                 SheetRow(Icons.Filled.Search, stringResource(R.string.search)) { homeMenu = false; overlay = Overlay.SEARCH }
                 if (!settings.showClock) {
                     SheetRow(Icons.Filled.Add, stringResource(R.string.show_clock_again)) {

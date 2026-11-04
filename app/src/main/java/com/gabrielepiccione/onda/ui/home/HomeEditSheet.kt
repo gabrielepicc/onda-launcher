@@ -85,6 +85,7 @@ fun HomeEditSheet(
                     when {
                         widgetId != null -> R.string.edit_widget
                         block == HomeBlocks.MEDIA -> R.string.edit_media
+                        block == HomeBlocks.AGENDA -> R.string.agenda_title
                         else -> R.string.edit_clock
                     }
                 ),
@@ -118,6 +119,21 @@ fun HomeEditSheet(
                         )
                     }
                 }
+            }
+
+            if (block == HomeBlocks.AGENDA) {
+                SectionTitle(R.string.agenda_days)
+                Slider(
+                    value = settings.agendaDays.toFloat(),
+                    onValueChange = { v -> actions.edit { it.copy(agendaDays = v.roundToInt().coerceIn(1, 7)) } },
+                    valueRange = 1f..7f,
+                    steps = 5,
+                )
+                Text(
+                    pluralStringResourceCompat(settings.agendaDays),
+                    color = LocalOndaColors.current.onWallpaperMuted,
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
 
             if (block == HomeBlocks.MEDIA) {
@@ -161,6 +177,12 @@ fun HomeEditSheet(
                     actions.done()
                 }
             }
+            if (block == HomeBlocks.AGENDA) {
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.agenda_hide)) {
+                    actions.edit { it.copy(showAgenda = false) }
+                    actions.done()
+                }
+            }
             if (block == HomeBlocks.MEDIA) {
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_media)) {
                     actions.edit { it.copy(showMedia = false) }
@@ -181,6 +203,9 @@ fun HomeEditSheet(
         }
     }
 }
+
+@Composable
+private fun pluralStringResourceCompat(days: Int): String = stringResource(R.string.agenda_days_value, days)
 
 @Composable
 private fun SectionTitle(res: Int) {

@@ -272,4 +272,16 @@
     <string name="studio_imported">Tema importato</string>
     <string name="studio_invalid">File di tema non valido</string>
     <string name="studio_exported">Tema esportato</string>
+    <string name="agenda_title">Agenda</string>
+    <string name="agenda_sub">Eventi dei prossimi giorni in home</string>
+    <string name="agenda_add">Aggiungi agenda</string>
+    <string name="agenda_hide">Nascondi agenda</string>
+    <string name="agenda_empty">Nessun evento in programma. Tocca per aprire il calendario.</string>
+    <string name="agenda_tomorrow">Domani</string>
+    <string name="agenda_all_day">Tutto il giorno</string>
+    <string name="agenda_days">Giorni mostrati</string>
+    <string name="agenda_days_value">%1$d giorni</string>
+    <string name="layout_lock">Blocca layout</string>
+    <string name="layout_unlock">Sblocca layout</string>
+    <string name="layout_lock_sub">Evita modifiche accidentali a orologio, widget e cartelle</string>
 </resources>

@@ -88,6 +88,9 @@ data class CalendarEvent(
     val begin: Long,
     val allDay: Boolean,
     val eventId: Long,
+    val end: Long = begin,
+    /** Colore del calendario di provenienza (ARGB), 0 se sconosciuto. */
+    val color: Int = 0,
 )
 
 @Serializable
@@ -136,6 +139,7 @@ object HomeBlocks {
     const val CLOCK = "clock"
     const val MEDIA = "media"
     const val APPS = "apps"
+    const val AGENDA = "agenda"
     const val WIDGET_PREFIX = "w:"
     fun widget(id: Int) = WIDGET_PREFIX + id
     fun widgetId(block: String): Int? = block.removePrefix(WIDGET_PREFIX).toIntOrNull()?.takeIf { block.startsWith(WIDGET_PREFIX) }
@@ -143,10 +147,11 @@ object HomeBlocks {
     /** Ordine effettivo: quello salvato, ripulito, più gli elementi mancanti in coda (prima delle app). */
     fun resolve(settings: Settings): List<String> {
         val widgets = settings.widgetIds.map(::widget)
-        val valid = setOf(CLOCK, MEDIA, APPS) + widgets
+        val optional = if (settings.showAgenda) listOf(AGENDA) else emptyList()
+        val valid = setOf(CLOCK, MEDIA, APPS) + optional + widgets
         val saved = settings.homeLayout.filter { it in valid }.distinct()
-        val missing = (listOf(CLOCK, MEDIA) + widgets + APPS).filter { it !in saved }
-        if (saved.isEmpty()) return listOf(CLOCK, MEDIA) + widgets + APPS
+        val missing = (listOf(CLOCK, MEDIA) + optional + widgets + APPS).filter { it !in saved }
+        if (saved.isEmpty()) return listOf(CLOCK, MEDIA) + optional + widgets + APPS
         val out = saved.toMutableList()
         missing.forEach { m ->
             val appsAt = out.indexOf(APPS)
@@ -213,6 +218,11 @@ data class Settings(
     /** Font importati (percorso nella memoria privata dell'app), per lista e orologio; vuoto = carattere scelto. */
     val customFontList: String = "",
     val customFontClock: String = "",
+    /** Agenda del calendario in home (blocco) e numero di giorni mostrati. */
+    val showAgenda: Boolean = false,
+    val agendaDays: Int = 3,
+    /** Blocca il layout: niente modifiche con la pressione lunga in home. */
+    val lockLayout: Boolean = false,
     /** Temi salvati dall'utente nel Theme Studio. */
     val savedThemes: List<LookTheme> = emptyList(),
     /** Ultimo preset di stile applicato (solo informativo). */

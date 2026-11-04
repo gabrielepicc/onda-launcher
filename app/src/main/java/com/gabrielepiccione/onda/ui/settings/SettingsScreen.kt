@@ -282,6 +282,11 @@ fun SettingsScreen(
             SwitchRow(stringResource(R.string.hide_alphabet), stringResource(R.string.hide_alphabet_sub), settings.hideAlphabet) { v -> onEdit { it.copy(hideAlphabet = v) } }
             SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
             SwitchRow(stringResource(R.string.hide_status_bar), null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
+            SwitchRow(stringResource(R.string.agenda_title), stringResource(R.string.agenda_sub), settings.showAgenda) { v ->
+                onEdit { it.copy(showAgenda = v) }
+                if (v && !status.calendarPermission) actions.calendarPermission()
+            }
+            SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
         }
 
         Group(stringResource(R.string.section_gestures)) {

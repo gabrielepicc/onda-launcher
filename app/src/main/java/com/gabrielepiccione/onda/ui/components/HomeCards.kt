@@ -567,3 +567,69 @@ private fun PauseGlyph(color: androidx.compose.ui.graphics.Color) {
         Box(Modifier.size(width = 4.dp, height = 14.dp).clip(RoundedCornerShape(2.dp)).background(color))
     }
 }
+
+/** Agenda: eventi dei prossimi giorni raggruppati per giorno, con il colore del calendario. */
+@Composable
+fun AgendaCard(
+    events: List<CalendarEvent>,
+    onEvent: (CalendarEvent) -> Unit,
+    modifier: Modifier = Modifier,
+    highlighted: Boolean = false,
+    onLongPress: (() -> Unit)? = null,
+    onEmptyClick: () -> Unit = {},
+) {
+    val colors = LocalOndaColors.current
+    val locale = Locale.getDefault()
+    val zone = ZoneId.systemDefault()
+    val today = LocalDate.now()
+    Column(
+        modifier
+            .fillMaxWidth()
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
+            .clip(RoundedCornerShape(28.dp))
+            .background(colors.panel.copy(alpha = 0.85f))
+            .combinedClickable(onClick = onEmptyClick, onLongClick = onLongPress)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        if (events.isEmpty()) {
+            Text(stringResource(R.string.agenda_empty), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            return@Column
+        }
+        events.groupBy { Instant.ofEpochMilli(it.begin).atZone(zone).toLocalDate() }.forEach { (day, list) ->
+            val dayLabel = when (day) {
+                today -> stringResource(R.string.today)
+                today.plusDays(1) -> stringResource(R.string.agenda_tomorrow)
+                else -> day.format(DateTimeFormatter.ofPattern("EEEE d MMMM", locale)).replaceFirstChar { it.titlecase(locale) }
+            }
+            Text(dayLabel, color = colors.accent, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp, bottom = 2.dp))
+            list.forEach { e ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onEvent(e) }
+                        .padding(vertical = 6.dp)
+                ) {
+                    Box(
+                        Modifier
+                            .size(width = 4.dp, height = 28.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(if (e.color != 0) androidx.compose.ui.graphics.Color(e.color) else colors.accent)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(e.title, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(
+                            if (e.allDay) stringResource(R.string.agenda_all_day)
+                            else Instant.ofEpochMilli(e.begin).atZone(zone).format(DateTimeFormatter.ofPattern("HH:mm", locale)) +
+                                " – " + Instant.ofEpochMilli(e.end).atZone(zone).format(DateTimeFormatter.ofPattern("HH:mm", locale)),
+                            color = colors.onWallpaperMuted,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

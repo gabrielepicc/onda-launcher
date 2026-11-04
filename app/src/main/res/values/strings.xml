@@ -272,4 +272,16 @@
     <string name="studio_imported">Theme imported</string>
     <string name="studio_invalid">Invalid theme file</string>
     <string name="studio_exported">Theme exported</string>
+    <string name="agenda_title">Agenda</string>
+    <string name="agenda_sub">Upcoming events on home</string>
+    <string name="agenda_add">Add agenda</string>
+    <string name="agenda_hide">Hide agenda</string>
+    <string name="agenda_empty">Nothing scheduled. Tap to open your calendar.</string>
+    <string name="agenda_tomorrow">Tomorrow</string>
+    <string name="agenda_all_day">All day</string>
+    <string name="agenda_days">Days shown</string>
+    <string name="agenda_days_value">%1$d days</string>
+    <string name="layout_lock">Lock layout</string>
+    <string name="layout_unlock">Unlock layout</string>
+    <string name="layout_lock_sub">Prevents accidental changes to clock, widgets and folders</string>
 </resources>
