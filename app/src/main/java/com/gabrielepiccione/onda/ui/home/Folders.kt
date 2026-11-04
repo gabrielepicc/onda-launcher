@@ -67,6 +67,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
@@ -88,7 +90,10 @@ fun FolderRow(
     onAppLongClick: (AppInfo) -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Nasconde il nome; senza icone resta visibile, altrimenti la riga sarebbe vuota. */
+    hideName: Boolean = false,
 ) {
+    val nameHidden = hideName && showIcons
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
     val hapticsOn = LocalHapticsEnabled.current
@@ -140,14 +145,19 @@ fun FolderRow(
                 }
                 Spacer(Modifier.width(18.dp))
             }
-            Text(
-                folder.name,
-                color = colors.onWallpaper,
-                style = MaterialTheme.typography.headlineSmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
+            if (nameHidden) {
+                // Il nome resta disponibile per TalkBack
+                Spacer(Modifier.weight(1f).semantics { contentDescription = folder.name })
+            } else {
+                Text(
+                    folder.name,
+                    color = colors.onWallpaper,
+                    style = MaterialTheme.typography.headlineSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+            }
             if (unread > 0 && !open) {
                 Text(
                     unread.toString(),

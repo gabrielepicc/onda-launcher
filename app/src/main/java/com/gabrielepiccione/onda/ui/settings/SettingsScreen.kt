@@ -193,10 +193,8 @@ fun SettingsScreen(
                 }
             }
             Spacer(Modifier.height(8.dp))
-            Label(stringResource(R.string.text_size))
-            Slider(value = settings.textScale, onValueChange = { v -> onEdit { it.copy(textScale = v) } }, valueRange = 0.8f..1.3f, steps = 4)
-            Label(stringResource(R.string.wallpaper_dim))
-            Slider(value = settings.wallpaperDim, onValueChange = { v -> onEdit { it.copy(wallpaperDim = v) } }, valueRange = 0f..0.8f)
+            ValueSlider(stringResource(R.string.text_size), percentText(settings.textScale), settings.textScale, Settings().textScale, 0.8f..1.3f, steps = 4) { v -> onEdit { it.copy(textScale = v) } }
+            ValueSlider(stringResource(R.string.wallpaper_dim), percentText(settings.wallpaperDim), settings.wallpaperDim, Settings().wallpaperDim, 0f..0.8f) { v -> onEdit { it.copy(wallpaperDim = v) } }
             TextButton(onClick = { actions.wallpaper() }) { Text(stringResource(R.string.change_wallpaper_ellipsis)) }
         }
 
@@ -225,19 +223,21 @@ fun SettingsScreen(
                     FilterChip(selected = settings.listAlign == a, onClick = { onEdit { it.copy(listAlign = a) } }, label = { Text(stringResource(a.labelRes)) })
                 }
             }
-            Label(stringResource(R.string.font_weight))
-            Slider(
-                value = settings.listFontWeight.toFloat(),
-                onValueChange = { v -> onEdit { it.copy(listFontWeight = (v / 100).roundToInt() * 100) } },
-                valueRange = 100f..900f,
+            ValueSlider(
+                stringResource(R.string.font_weight),
+                settings.listFontWeight.toString(),
+                settings.listFontWeight.toFloat(),
+                Settings().listFontWeight.toFloat(),
+                100f..900f,
                 steps = 7,
-            )
-            Label(stringResource(R.string.letter_spacing))
-            Slider(
-                value = settings.listLetterSpacing,
-                onValueChange = { v -> onEdit { it.copy(listLetterSpacing = v) } },
-                valueRange = -0.05f..0.2f,
-            )
+            ) { v -> onEdit { it.copy(listFontWeight = (v / 100).roundToInt() * 100) } }
+            ValueSlider(
+                stringResource(R.string.letter_spacing),
+                percentText(settings.listLetterSpacing),
+                settings.listLetterSpacing,
+                Settings().listLetterSpacing,
+                -0.05f..0.2f,
+            ) { v -> onEdit { it.copy(listLetterSpacing = v) } }
             SwitchRow(stringResource(R.string.text_shadow), stringResource(R.string.text_shadow_sub), settings.textShadow) { v -> onEdit { it.copy(textShadow = v) } }
             SwitchRow(stringResource(R.string.show_battery), null, settings.showBattery) { v -> onEdit { it.copy(showBattery = v) } }
             Label(stringResource(R.string.custom_fonts))
@@ -277,8 +277,7 @@ fun SettingsScreen(
                 }
             }
             Text(stringResource(R.string.icon_shape_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
-            Label(stringResource(R.string.icon_size))
-            Slider(value = settings.iconSize, onValueChange = { v -> onEdit { it.copy(iconSize = v) } }, valueRange = 0.75f..1.4f)
+            ValueSlider(stringResource(R.string.icon_size), percentText(settings.iconSize), settings.iconSize, Settings().iconSize, 0.75f..1.4f) { v -> onEdit { it.copy(iconSize = v) } }
         }
 
         Group(stringResource(R.string.section_home)) {

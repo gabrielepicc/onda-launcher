@@ -33,8 +33,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -155,24 +161,24 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
             if (app.isFavorite && actions.favoriteIndex in 0 until actions.favoriteCount - 1) {
                 ActionRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { actions.onMove(1) }
             }
-            ActionRow(Icons.Filled.Add, actions.folderName?.let { stringResource(R.string.in_folder_move, it) } ?: stringResource(R.string.move_to_folder_ellipsis)) {
+            ActionRow(Icons.Filled.Folder, actions.folderName?.let { stringResource(R.string.in_folder_move, it) } ?: stringResource(R.string.move_to_folder_ellipsis)) {
                 actions.onMoveToFolder(); onDismiss()
             }
             ActionRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
-            ActionRow(Icons.Filled.Face, stringResource(R.string.icon_change)) { actions.onChangeIcon(); onDismiss() }
+            ActionRow(Icons.Filled.Palette, stringResource(R.string.icon_change)) { actions.onChangeIcon(); onDismiss() }
             ActionRow(Icons.Filled.Lock, stringResource(if (actions.isProtected) R.string.protect_off else R.string.protect_on)) {
                 actions.onToggleProtected(); onDismiss()
             }
-            ActionRow(Icons.Filled.Lock, stringResource(if (actions.hasBreaker) R.string.breaker_off else R.string.breaker_on)) {
+            ActionRow(Icons.Filled.HourglassEmpty, stringResource(if (actions.hasBreaker) R.string.breaker_off else R.string.breaker_on)) {
                 actions.onToggleBreaker(); onDismiss()
             }
-            ActionRow(Icons.Filled.Lock, if (app.isHidden) stringResource(R.string.show_in_list) else stringResource(R.string.hide)) {
+            ActionRow(if (app.isHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, if (app.isHidden) stringResource(R.string.show_in_list) else stringResource(R.string.hide)) {
                 actions.onToggleHidden(); onDismiss()
             }
-            ActionRow(Icons.Filled.Notifications, if (actions.isMuted) stringResource(R.string.notif_show_home) else stringResource(R.string.notif_hide_home)) {
+            ActionRow(if (actions.isMuted) Icons.Filled.Notifications else Icons.Filled.NotificationsOff, if (actions.isMuted) stringResource(R.string.notif_show_home) else stringResource(R.string.notif_hide_home)) {
                 actions.onToggleMuted(); onDismiss()
             }
-            ActionRow(Icons.Filled.Add, stringResource(R.string.app_add_widget_this)) {
+            ActionRow(Icons.Filled.Widgets, stringResource(R.string.app_add_widget_this)) {
                 actions.onAddWidget(); onDismiss()
             }
             ActionRow(Icons.Filled.Info, stringResource(R.string.app_info)) { actions.onInfo(); onDismiss() }

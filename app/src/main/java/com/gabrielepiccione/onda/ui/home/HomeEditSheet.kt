@@ -39,6 +39,8 @@ import com.gabrielepiccione.onda.data.ClockStyle
 import com.gabrielepiccione.onda.data.HAlign
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Settings
+import com.gabrielepiccione.onda.ui.components.ValueSlider
+import com.gabrielepiccione.onda.ui.components.percentText
 import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
 import kotlin.math.roundToInt
 
@@ -112,12 +114,9 @@ fun HomeEditSheet(
                         )
                     }
                 }
-                SectionTitle(R.string.edit_size)
-                Slider(
-                    value = settings.clockScale,
-                    onValueChange = { v -> actions.edit { it.copy(clockScale = v) } },
-                    valueRange = 0.6f..1.6f,
-                )
+                ValueSlider(stringResource(R.string.edit_size), percentText(settings.clockScale), settings.clockScale, Settings().clockScale, 0.6f..1.6f, accentLabel = true) { v ->
+                    actions.edit { it.copy(clockScale = v) }
+                }
                 SectionTitle(R.string.edit_alignment)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     HAlign.entries.forEach { a ->
@@ -151,32 +150,34 @@ fun HomeEditSheet(
                     FilterChip(selected = settings.mediaCompact, onClick = { actions.edit { it.copy(mediaCompact = true) } }, label = { Text(stringResource(R.string.media_compact)) })
                     FilterChip(selected = !settings.mediaCompact, onClick = { actions.edit { it.copy(mediaCompact = false) } }, label = { Text(stringResource(R.string.media_full)) })
                 }
-                SectionTitle(R.string.edit_size)
-                Slider(
-                    value = settings.mediaScale,
-                    onValueChange = { v -> actions.edit { it.copy(mediaScale = v) } },
-                    valueRange = 0.75f..1.25f,
-                )
+                ValueSlider(stringResource(R.string.edit_size), percentText(settings.mediaScale), settings.mediaScale, Settings().mediaScale, 0.75f..1.25f, accentLabel = true) { v ->
+                    actions.edit { it.copy(mediaScale = v) }
+                }
             }
 
             if (widgetId != null) {
-                SectionTitle(R.string.edit_height)
                 val current = settings.widgetHeights[widgetId] ?: defaultWidgetHeight(widgetId)
-                Slider(
-                    value = current.toFloat(),
-                    onValueChange = { v -> actions.setWidgetHeight(widgetId, v.roundToInt()) },
-                    valueRange = 64f..520f,
-                )
+                ValueSlider(
+                    stringResource(R.string.edit_height),
+                    stringResource(R.string.value_dp, current),
+                    current.toFloat(),
+                    defaultWidgetHeight(widgetId).toFloat(),
+                    64f..520f,
+                    accentLabel = true,
+                ) { v -> actions.setWidgetHeight(widgetId, v.roundToInt()) }
             }
 
             if (stack != null) {
-                SectionTitle(R.string.edit_height)
-                val current = stack.heightDp ?: (stack.widgets.maxOfOrNull(defaultWidgetHeight) ?: 160)
-                Slider(
-                    value = current.toFloat(),
-                    onValueChange = { v -> actions.setStackHeight(stack.id, v.roundToInt()) },
-                    valueRange = 64f..520f,
-                )
+                val stackDefault = stack.widgets.maxOfOrNull { defaultWidgetHeight(it) } ?: 160
+                val current = stack.heightDp ?: stackDefault
+                ValueSlider(
+                    stringResource(R.string.edit_height),
+                    stringResource(R.string.value_dp, current),
+                    current.toFloat(),
+                    stackDefault.toFloat(),
+                    64f..520f,
+                    accentLabel = true,
+                ) { v -> actions.setStackHeight(stack.id, v.roundToInt()) }
                 SectionTitle(R.string.stack_widgets)
                 stack.widgets.forEach { id ->
                     val label = widgetLabel(id) ?: stringResource(R.string.widget_number, id)

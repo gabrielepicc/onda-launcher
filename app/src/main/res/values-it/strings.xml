@@ -81,7 +81,7 @@
     <string name="hide_alphabet">Nascondi alfabeto in home</string>
     <string name="hide_alphabet_sub">Resta attivo e visibile accanto all\'elenco delle app</string>
     <string name="hide_fav_names">Nascondi nomi dei preferiti</string>
-    <string name="hide_fav_names_sub">Solo icone, per mettere in risalto lo sfondo</string>
+    <string name="hide_fav_names_sub">Solo icone, cartelle comprese, per mettere in risalto lo sfondo</string>
     <string name="hide_status_bar">Nascondi barra di stato</string>
     <string name="section_gestures">Gesti e feedback</string>
     <string name="swipe_down">Scorri verso il basso</string>
@@ -326,6 +326,11 @@
     <string name="summary_count">Notifiche: %1$d · App: %2$d</string>
     <string name="summary_empty">Nessuna notifica.</string>
     <string name="summary_clear">Elimina tutte</string>
+    <string name="slider_reset">Ripristina</string>
+    <string name="value_percent">%1$d%%</string>
+    <string name="value_dp">%1$d dp</string>
+    <string name="widget_search">Cerca nei widget</string>
+    <string name="widget_no_results">Nessun widget trovato.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>

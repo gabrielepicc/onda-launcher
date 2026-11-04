@@ -81,7 +81,7 @@
     <string name="hide_alphabet">Hide alphabet on home</string>
     <string name="hide_alphabet_sub">Still active, and visible next to the app list</string>
     <string name="hide_fav_names">Hide favorite names</string>
-    <string name="hide_fav_names_sub">Icons only, to show off your wallpaper</string>
+    <string name="hide_fav_names_sub">Icons only, folders included, to show off your wallpaper</string>
     <string name="hide_status_bar">Hide status bar</string>
     <string name="section_gestures">Gestures and feedback</string>
     <string name="swipe_down">Swipe down</string>
@@ -326,6 +326,11 @@
     <string name="summary_count">Notifications: %1$d · Apps: %2$d</string>
     <string name="summary_empty">No notifications.</string>
     <string name="summary_clear">Clear all</string>
+    <string name="slider_reset">Reset</string>
+    <string name="value_percent">%1$d%%</string>
+    <string name="value_dp">%1$d dp</string>
+    <string name="widget_search">Search widgets</string>
+    <string name="widget_no_results">No widgets found.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>

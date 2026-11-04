@@ -4,6 +4,12 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 ## [Non rilasciato]
 
+### Modificato
+- "Nascondi nomi" vale anche per le cartelle (il nome resta disponibile per TalkBack).
+- Selettore widget con ricerca e widget raggruppati per app.
+- Icone diverse per ogni voce dei menu.
+- Slider con il valore visibile e "Ripristina" per tornare al predefinito.
+
 ### Aggiunto
 - **Riepilogo notifiche**: blocco opzionale della home con il totale delle notifiche e le app da cui arrivano; toccandolo si vedono tutte raggruppate per app e si possono eliminare insieme.
 - **Contatti nell'alfabeto**: opzione per mostrare i contatti sotto ogni lettera dell'elenco, dopo le app. L'accesso ai contatti viene chiesto solo quando la si attiva.

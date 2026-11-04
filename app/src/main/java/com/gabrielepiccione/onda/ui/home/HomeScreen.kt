@@ -53,8 +53,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Wallpaper
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -370,6 +376,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     onApp = { launchApp(it) },
                     onAppLongClick = { actionsFor = it },
                     onLongClick = { folderSheet = entry.folder },
+                    hideName = settings.hideFavoriteNames,
                     modifier = itemMod,
                 )
             }
@@ -950,34 +957,34 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
                 SheetRow(Icons.Filled.Settings, stringResource(R.string.settings)) { homeMenu = false; overlay = Overlay.SETTINGS }
                 if (!settings.lockLayout) {
-                    SheetRow(Icons.Filled.Add, stringResource(R.string.new_folder)) { newFolder = true }
-                    SheetRow(Icons.Filled.Add, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
+                    SheetRow(Icons.Filled.CreateNewFolder, stringResource(R.string.new_folder)) { newFolder = true }
+                    SheetRow(Icons.Filled.Widgets, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
                     if (!settings.showNotificationSummary) {
-                        SheetRow(Icons.Filled.Add, stringResource(R.string.summary_add)) {
+                        SheetRow(Icons.Filled.Notifications, stringResource(R.string.summary_add)) {
                             homeMenu = false
                             vm.updateSettings { it.copy(showNotificationSummary = true) }
                         }
                     }
                     if (!settings.showAgenda) {
-                        SheetRow(Icons.Filled.Add, stringResource(R.string.agenda_add)) {
+                        SheetRow(Icons.Filled.Event, stringResource(R.string.agenda_add)) {
                             homeMenu = false
                             vm.updateSettings { it.copy(showAgenda = true) }
                             if (!status.calendarPermission) callbacks.requestCalendarPermission()
                         }
                     }
                 }
-                SheetRow(Icons.Filled.Settings, stringResource(if (settings.lockLayout) R.string.layout_unlock else R.string.layout_lock)) {
+                SheetRow(if (settings.lockLayout) Icons.Filled.LockOpen else Icons.Filled.Lock, stringResource(if (settings.lockLayout) R.string.layout_unlock else R.string.layout_lock)) {
                     homeMenu = false
                     vm.updateSettings { it.copy(lockLayout = !it.lockLayout) }
                 }
                 SheetRow(Icons.Filled.Search, stringResource(R.string.search)) { homeMenu = false; overlay = Overlay.SEARCH }
                 if (!settings.showClock) {
-                    SheetRow(Icons.Filled.Add, stringResource(R.string.show_clock_again)) {
+                    SheetRow(Icons.Filled.Schedule, stringResource(R.string.show_clock_again)) {
                         homeMenu = false
                         vm.updateSettings { it.copy(showClock = true) }
                     }
                 }
-                SheetRow(Icons.Filled.Face, stringResource(R.string.change_wallpaper)) { homeMenu = false; SystemActions.openWallpaperPicker(context) }
+                SheetRow(Icons.Filled.Wallpaper, stringResource(R.string.change_wallpaper)) { homeMenu = false; SystemActions.openWallpaperPicker(context) }
             }
         }
         if (newFolder) {

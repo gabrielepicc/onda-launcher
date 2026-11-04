@@ -42,6 +42,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import com.gabrielepiccione.onda.data.normalizedForSearch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -187,6 +189,13 @@ fun WidgetPickerSheet(
     LaunchedEffect(packageFilter) {
         providers = withContext(Dispatchers.IO) { widgets.providers(packageFilter) }
     }
+    var query by remember(packageFilter) { mutableStateOf("") }
+    val grouped = remember(providers, query) {
+        val q = query.normalizedForSearch().trim()
+        providers
+            .filter { q.isEmpty() || it.label.normalizedForSearch().contains(q) || it.appLabel.normalizedForSearch().contains(q) }
+            .groupBy { it.appLabel }
+    }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -206,8 +215,33 @@ fun WidgetPickerSheet(
                 modifier = Modifier.padding(24.dp),
             )
         }
+        // Con un'app sola (filtro) la ricerca e le intestazioni non servono
+        if (packageFilter == null && providers.isNotEmpty()) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.widget_search)) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+            )
+            if (grouped.isEmpty()) {
+                Text(stringResource(R.string.widget_no_results), color = colors.onWallpaperMuted, modifier = Modifier.padding(24.dp))
+            }
+        }
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 560.dp)) {
-            items(providers, key = { it.info.provider.flattenToString() + it.info.profile.hashCode() }) { p ->
+            grouped.forEach { (appLabel, list) ->
+            if (packageFilter == null) {
+                item(key = "h_$appLabel") {
+                    Text(
+                        appLabel,
+                        color = colors.accent,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 2.dp),
+                    )
+                }
+            }
+            items(list, key = { it.info.provider.flattenToString() + it.info.profile.hashCode() }) { p ->
                 var preview by remember(p) { mutableStateOf<ImageBitmap?>(null) }
                 LaunchedEffect(p) {
                     preview = withContext(Dispatchers.IO) {
@@ -226,7 +260,6 @@ fun WidgetPickerSheet(
                         .clickable { onPick(p) }
                         .padding(horizontal = 24.dp, vertical = 12.dp)
                 ) {
-                    Text(p.appLabel, color = colors.onWallpaperMuted, fontSize = 12.sp)
                     Text(p.label, fontSize = 17.sp)
                     preview?.let {
                         Image(
@@ -241,6 +274,7 @@ fun WidgetPickerSheet(
                         )
                     }
                 }
+            }
             }
         }
     }
