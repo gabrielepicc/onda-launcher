@@ -19,6 +19,7 @@ import android.util.SizeF
 import android.view.View
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -64,38 +65,53 @@ fun WidgetsArea(widgetIds: List<Int>, widgets: WidgetManager, modifier: Modifier
 }
 
 @Composable
-fun HostedWidget(id: Int, widgets: WidgetManager) {
+fun HostedWidget(
+    id: Int,
+    widgets: WidgetManager,
+    heightDp: Int? = null,
+    highlighted: Boolean = false,
+    onLongPress: (() -> Unit)? = null,
+) {
     val info = remember(id) { widgets.infoFor(id) } ?: return
     val density = LocalDensity.current
-    val minHeightDp = with(density) { info.minHeight.toDp() }.coerceAtLeast(72.dp)
+    val colors = LocalOndaColors.current
+    val defaultHeight = with(density) { info.minHeight.toDp() }.coerceIn(72.dp, 320.dp)
+    val target = heightDp?.dp ?: defaultHeight
+    // L'altezza cambia con una molla quando la si regola dal foglio di modifica
+    val animated by androidx.compose.animation.core.animateDpAsState(target, Motion.bouncy(), label = "widgetHeight")
+    val currentLongPress by androidx.compose.runtime.rememberUpdatedState(onLongPress)
 
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
+            .then(
+                if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(24.dp)).padding(2.dp)
+                else Modifier
+            )
             .clip(RoundedCornerShape(22.dp))
     ) {
         val widthDp = maxWidth
-        val heightDp = minHeightDp.coerceAtMost(320.dp)
         AndroidView(
-            factory = { ctx -> widgets.createView(ctx, id) ?: View(ctx) },
+            factory = { ctx ->
+                (widgets.createView(ctx, id) ?: View(ctx)).also { v ->
+                    (v as? com.gabrielepiccione.onda.data.OndaWidgetHostView)?.onLongPress = { currentLongPress?.invoke() }
+                }
+            },
             update = { view ->
                 if (view is android.appwidget.AppWidgetHostView) {
+                    val h = target.value
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        view.updateAppWidgetSize(Bundle(), listOf(SizeF(widthDp.value, heightDp.value)))
+                        view.updateAppWidgetSize(Bundle(), listOf(SizeF(widthDp.value, h)))
                     } else {
                         @Suppress("DEPRECATION")
-                        view.updateAppWidgetSize(
-                            null,
-                            widthDp.value.toInt(), heightDp.value.toInt(),
-                            widthDp.value.toInt(), heightDp.value.toInt(),
-                        )
+                        view.updateAppWidgetSize(null, widthDp.value.toInt(), h.toInt(), widthDp.value.toInt(), h.toInt())
                     }
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(heightDp),
+                .height(animated),
         )
     }
 }

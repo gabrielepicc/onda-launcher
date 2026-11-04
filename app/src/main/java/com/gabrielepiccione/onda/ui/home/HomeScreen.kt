@@ -98,6 +98,7 @@ import com.gabrielepiccione.onda.HomeEntry
 import com.gabrielepiccione.onda.LauncherViewModel
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.FOLDER_PREFIX
+import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.data.NotificationStore
@@ -118,6 +119,8 @@ sealed interface WidgetTarget {
     data object Home : WidgetTarget
     data class InFolder(val folderId: String) : WidgetTarget
     data class ForApp(val appKey: String) : WidgetTarget
+    data class Replace(val oldId: Int) : WidgetTarget
+    data object ReplaceClock : WidgetTarget
 }
 
 /** Azioni che richiedono l'Activity (permessi, risultati di altre schermate). */
@@ -292,6 +295,56 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val panelScale = 1f - 0.1f * backProgress
     val panelCorner = (32 * backProgress).dp
 
+    // Voci della home (preferiti e cartelle), inserite nella posizione del blocco "app"
+    fun androidx.compose.foundation.lazy.LazyListScope.homeEntries() {
+        items(state.home, key = { it.key }) { entry ->
+            val itemMod = Modifier.animateItem(
+                fadeInSpec = Motion.enter(),
+                placementSpec = Motion.offsetEnter,
+                fadeOutSpec = Motion.exit(),
+            )
+            when (entry) {
+                is HomeEntry.App -> {
+                    val app = entry.app
+                    val target = state.app(app.swipeTarget)
+                    FavoriteRow(
+                        app = app,
+                        swipeTarget = target,
+                        notifications = state.notifications[app.packageName].orEmpty(),
+                        showIcon = settings.showIcons,
+                        themedIcons = settings.themedIcons,
+                        hideName = settings.hideFavoriteNames,
+                        iconScale = iconScale,
+                        onClick = { launchApp(app) },
+                        onLongClick = { actionsFor = app },
+                        onSwipe = { if (target != null) launchApp(target) else panelFor = app },
+                        onNotificationClick = { NotificationStore.open(context, it) },
+                        onNotificationDismiss = { NotificationStore.dismiss(it) },
+                        onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
+                        onNotificationAction = { n, a -> NotificationStore.runAction(context, n, a) },
+                        modifier = itemMod,
+                    )
+                }
+                is HomeEntry.Group -> FolderRow(
+                    folder = entry.folder,
+                    apps = entry.apps,
+                    widgets = vm.widgets,
+                    notifications = state.notifications,
+                    showIcons = settings.showIcons,
+                    themedIcons = settings.themedIcons,
+                    iconScale = iconScale,
+                    onApp = { launchApp(it) },
+                    onAppLongClick = { actionsFor = it },
+                    onLongClick = { folderSheet = entry.folder },
+                    modifier = itemMod,
+                )
+            }
+        }
+    }
+
+    val blocks = remember(settings) { HomeBlocks.resolve(settings) }
+    var editing by remember { mutableStateOf<String?>(null) }
+
     val dimColor = if (colors.dark) Color.Black else Color.White
     Box(
         Modifier
@@ -334,80 +387,65 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     )
                 }
         ) {
-            if (settings.showClock) {
-                item(key = "clock") {
-                    ClockHeader(
-                        event = if (settings.showCalendar) nextEvent else null,
-                        onTime = { SystemActions.openAlarms(context) },
-                        onDate = { SystemActions.openCalendar(context) },
-                        onEvent = { vm.calendar.open(it) },
-                    )
-                }
-            }
-            item(key = "media") {
-                val m = media
-                AnimatedVisibility(
-                    visible = settings.showMedia && m != null,
-                    enter = fadeIn(Motion.enter()) + expandVertically(Motion.enter()),
-                    exit = fadeOut(Motion.exit()) + shrinkVertically(Motion.exit()),
-                ) {
-                    if (m != null) {
-                        MediaCard(
-                            media = m,
-                            onOpen = { vm.media.open() },
-                            onPlayPause = { vm.media.playPause() },
-                            onPrev = { vm.media.previous() },
-                            onNext = { vm.media.next() },
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
-                        )
+            // Blocchi della home nell'ordine scelto dall'utente (orologio, musica, widget, app)
+            for (block in blocks) {
+                when {
+                    block == HomeBlocks.CLOCK -> if (settings.showClock) {
+                        item(key = "clock") {
+                            ClockHeader(
+                                event = if (settings.showCalendar) nextEvent else null,
+                                onTime = { SystemActions.openAlarms(context) },
+                                onDate = { SystemActions.openCalendar(context) },
+                                onEvent = { vm.calendar.open(it) },
+                                style = settings.clockStyle,
+                                scale = settings.clockScale,
+                                align = settings.clockAlign,
+                                highlighted = editing == HomeBlocks.CLOCK,
+                                onLongPress = { editing = HomeBlocks.CLOCK },
+                                modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
+                            )
+                        }
                     }
-                }
-            }
-            if (settings.widgetIds.isNotEmpty()) {
-                item(key = "widgets") { WidgetsArea(settings.widgetIds, vm.widgets, Modifier.padding(horizontal = 4.dp, vertical = 8.dp)) }
-            }
-            item(key = "spacer") { Spacer(Modifier.size(12.dp)) }
-            items(state.home, key = { it.key }) { entry ->
-                val itemMod = Modifier.animateItem(
-                    fadeInSpec = Motion.enter(),
-                    placementSpec = Motion.offsetEnter,
-                    fadeOutSpec = Motion.exit(),
-                )
-                when (entry) {
-                    is HomeEntry.App -> {
-                        val app = entry.app
-                        val target = state.app(app.swipeTarget)
-                        FavoriteRow(
-                            app = app,
-                            swipeTarget = target,
-                            notifications = state.notifications[app.packageName].orEmpty(),
-                            showIcon = settings.showIcons,
-                            themedIcons = settings.themedIcons,
-                            hideName = settings.hideFavoriteNames,
-                            iconScale = iconScale,
-                            onClick = { launchApp(app) },
-                            onLongClick = { actionsFor = app },
-                            onSwipe = { if (target != null) launchApp(target) else panelFor = app },
-                            onNotificationClick = { NotificationStore.open(context, it) },
-                            onNotificationDismiss = { NotificationStore.dismiss(it) },
-                            onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
-                            onNotificationAction = { n, a -> NotificationStore.runAction(context, n, a) },
-                            modifier = itemMod,
-                        )
+                    block == HomeBlocks.MEDIA -> item(key = "media") {
+                        val m = media
+                        AnimatedVisibility(
+                            visible = settings.showMedia && m != null,
+                            enter = fadeIn(Motion.enter()) + expandVertically(Motion.enter()),
+                            exit = fadeOut(Motion.exit()) + shrinkVertically(Motion.exit()),
+                            modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
+                        ) {
+                            if (m != null) {
+                                MediaCard(
+                                    media = m,
+                                    onOpen = { vm.media.open() },
+                                    onPlayPause = { vm.media.playPause() },
+                                    onPrev = { vm.media.previous() },
+                                    onNext = { vm.media.next() },
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
+                                )
+                            }
+                        }
                     }
-                    is HomeEntry.Group -> FolderRow(
-                        folder = entry.folder,
-                        apps = entry.apps,
-                        widgets = vm.widgets,
-                        notifications = state.notifications,
-                        showIcons = settings.showIcons,
-                        themedIcons = settings.themedIcons,
-                        iconScale = iconScale,
-                        onApp = { launchApp(it) },
-                        onAppLongClick = { actionsFor = it },
-                        onLongClick = { folderSheet = entry.folder },
-                        modifier = itemMod,
-                    )
+                    block.startsWith(HomeBlocks.WIDGET_PREFIX) -> {
+                        val id = HomeBlocks.widgetId(block)
+                        if (id != null) {
+                            item(key = block) {
+                                Box(Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(horizontal = 4.dp)) {
+                                    HostedWidget(
+                                        id = id,
+                                        widgets = vm.widgets,
+                                        heightDp = settings.widgetHeights[id],
+                                        highlighted = editing == block,
+                                        onLongPress = { editing = block },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    block == HomeBlocks.APPS -> {
+                        item(key = "spacer") { Spacer(Modifier.size(12.dp)) }
+                        homeEntries()
+                    }
                 }
             }
             if (state.loaded && state.home.isEmpty()) {
@@ -715,6 +753,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 SheetRow(Icons.Filled.Add, stringResource(R.string.new_folder)) { newFolder = true }
                 SheetRow(Icons.Filled.Add, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
                 SheetRow(Icons.Filled.Search, stringResource(R.string.search)) { homeMenu = false; overlay = Overlay.SEARCH }
+                if (!settings.showClock) {
+                    SheetRow(Icons.Filled.Add, stringResource(R.string.show_clock_again)) {
+                        homeMenu = false
+                        vm.updateSettings { it.copy(showClock = true) }
+                    }
+                }
                 SheetRow(Icons.Filled.Face, stringResource(R.string.change_wallpaper)) { homeMenu = false; SystemActions.openWallpaperPicker(context) }
             }
         }
@@ -725,6 +769,27 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 homeMenu = false
             }
         }
+    }
+
+    editing?.let { block ->
+        val density = LocalDensity.current
+        HomeEditSheet(
+            block = block,
+            settings = settings,
+            blocks = blocks,
+            defaultWidgetHeight = { id ->
+                vm.widgets.infoFor(id)?.let { with(density) { it.minHeight.toDp().value.toInt() } }?.coerceIn(72, 320) ?: 160
+            },
+            actions = object : HomeEditActions {
+                override fun edit(transform: (com.gabrielepiccione.onda.data.Settings) -> com.gabrielepiccione.onda.data.Settings) = vm.updateSettings(transform)
+                override fun move(block: String, delta: Int) = vm.settingsRepo.moveBlock(block, delta)
+                override fun setWidgetHeight(id: Int, dp: Int) = vm.settingsRepo.setWidgetHeight(id, dp)
+                override fun replaceWidget(id: Int) { editing = null; openWidgetPicker(null, WidgetTarget.Replace(id)) }
+                override fun replaceClock() { editing = null; openWidgetPicker(null, WidgetTarget.ReplaceClock) }
+                override fun deleteWidget(id: Int) = vm.removeWidget(id)
+                override fun done() { editing = null }
+            },
+        )
     }
 
     restrictedHelp?.let { open ->

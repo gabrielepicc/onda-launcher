@@ -104,6 +104,47 @@ data class Folder(
 /** Prefisso delle voci "cartella" nell'elenco dei preferiti. */
 const val FOLDER_PREFIX = "folder:"
 
+/** Stili dell'orologio in home (disegnati da Onda). */
+@Serializable
+enum class ClockStyle(@StringRes val labelRes: Int) {
+    LARGE_THIN(R.string.clock_large_thin),
+    STACKED(R.string.clock_stacked),
+    BOLD(R.string.clock_bold),
+    MONO(R.string.clock_mono),
+    OUTLINE(R.string.clock_outline),
+    GRADIENT(R.string.clock_gradient),
+    WORDS(R.string.clock_words),
+    ANALOG(R.string.clock_analog),
+}
+
+@Serializable
+enum class HAlign(@StringRes val labelRes: Int) { START(R.string.align_start), CENTER(R.string.align_center), END(R.string.align_end) }
+
+/** Blocchi della home, nell'ordine scelto. */
+object HomeBlocks {
+    const val CLOCK = "clock"
+    const val MEDIA = "media"
+    const val APPS = "apps"
+    const val WIDGET_PREFIX = "w:"
+    fun widget(id: Int) = WIDGET_PREFIX + id
+    fun widgetId(block: String): Int? = block.removePrefix(WIDGET_PREFIX).toIntOrNull()?.takeIf { block.startsWith(WIDGET_PREFIX) }
+
+    /** Ordine effettivo: quello salvato, ripulito, più gli elementi mancanti in coda (prima delle app). */
+    fun resolve(settings: Settings): List<String> {
+        val widgets = settings.widgetIds.map(::widget)
+        val valid = setOf(CLOCK, MEDIA, APPS) + widgets
+        val saved = settings.homeLayout.filter { it in valid }.distinct()
+        val missing = (listOf(CLOCK, MEDIA) + widgets + APPS).filter { it !in saved }
+        if (saved.isEmpty()) return listOf(CLOCK, MEDIA) + widgets + APPS
+        val out = saved.toMutableList()
+        missing.forEach { m ->
+            val appsAt = out.indexOf(APPS)
+            if (m == APPS || appsAt < 0) out.add(m) else out.add(appsAt, m)
+        }
+        return out
+    }
+}
+
 @Serializable
 enum class FontChoice(@StringRes val labelRes: Int) {
     SYSTEM(R.string.font_system),
@@ -136,6 +177,15 @@ data class Settings(
     val hideAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,
     val iconSize: Float = 1f,
+    /** Ordine dei blocchi della home (vedi [HomeBlocks]). */
+    val homeLayout: List<String> = emptyList(),
+    /** Altezza personalizzata dei widget in dp: id widget -> dp. */
+    val widgetHeights: Map<Int, Int> = emptyMap(),
+    val clockStyle: ClockStyle = ClockStyle.LARGE_THIN,
+    val clockScale: Float = 1f,
+    val clockAlign: HAlign = HAlign.START,
+    /** Ultimo preset di stile applicato (solo informativo). */
+    val stylePreset: String = "",
     val mutedNotifications: Set<String> = emptySet(),
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,

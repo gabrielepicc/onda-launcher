@@ -197,6 +197,11 @@ class MainActivity : ComponentActivity(), HomeCallbacks {
         when (val t = pendingTarget) {
             WidgetTarget.Home -> vm.settingsRepo.addWidget(id)
             is WidgetTarget.InFolder -> vm.settingsRepo.addWidgetToFolder(t.folderId, id)
+            is WidgetTarget.Replace -> {
+                widgets.deleteId(t.oldId)
+                vm.settingsRepo.replaceWidget(t.oldId, id)
+            }
+            WidgetTarget.ReplaceClock -> vm.settingsRepo.replaceClockWithWidget(id)
             is WidgetTarget.ForApp -> {
                 vm.settingsRepo.current.appWidgets[t.appKey]?.let { old -> widgets.deleteId(old) }
                 vm.settingsRepo.setAppWidget(t.appKey, id)

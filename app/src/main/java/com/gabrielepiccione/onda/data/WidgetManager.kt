@@ -15,7 +15,7 @@ import android.graphics.drawable.Drawable
 class WidgetManager(private val context: Context) {
 
     val manager: AppWidgetManager = AppWidgetManager.getInstance(context)
-    val host: AppWidgetHost = AppWidgetHost(context, HOST_ID)
+    val host: AppWidgetHost = OndaWidgetHost(context, HOST_ID)
     private val launcherApps = context.getSystemService(LauncherApps::class.java)
 
     data class Provider(

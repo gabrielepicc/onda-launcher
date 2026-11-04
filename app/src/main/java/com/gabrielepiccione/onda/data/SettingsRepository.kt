@@ -143,6 +143,38 @@ class SettingsRepository(context: Context) {
 
     fun addWidget(id: Int) = edit { it.copy(widgetIds = it.widgetIds + id) }
 
+    // --- Layout della home ---
+
+    /** Sposta un blocco della home (orologio, media, widget, app) di [delta] posizioni. */
+    fun moveBlock(block: String, delta: Int) = edit { s ->
+        val list = HomeBlocks.resolve(s).toMutableList()
+        val from = list.indexOf(block)
+        if (from < 0) return@edit s
+        val to = (from + delta).coerceIn(0, list.lastIndex)
+        list.removeAt(from)
+        list.add(to, block)
+        s.copy(homeLayout = list)
+    }
+
+    fun setWidgetHeight(id: Int, dp: Int) = edit { it.copy(widgetHeights = it.widgetHeights + (id to dp)) }
+
+    /** Sostituisce un widget della home con un altro nella stessa posizione e con la stessa altezza. */
+    fun replaceWidget(oldId: Int, newId: Int) = edit { s ->
+        val layout = HomeBlocks.resolve(s).map { if (it == HomeBlocks.widget(oldId)) HomeBlocks.widget(newId) else it }
+        val height = s.widgetHeights[oldId]
+        s.copy(
+            widgetIds = s.widgetIds.map { if (it == oldId) newId else it },
+            homeLayout = layout,
+            widgetHeights = (s.widgetHeights - oldId).let { m -> if (height != null) m + (newId to height) else m },
+        )
+    }
+
+    /** Mette un widget al posto dell'orologio (che viene nascosto). */
+    fun replaceClockWithWidget(newId: Int) = edit { s ->
+        val layout = HomeBlocks.resolve(s).map { if (it == HomeBlocks.CLOCK) HomeBlocks.widget(newId) else it } + HomeBlocks.CLOCK
+        s.copy(widgetIds = s.widgetIds + newId, homeLayout = layout, showClock = false)
+    }
+
     // --- Cartelle ---
 
     fun createFolder(name: String, firstApp: String?): String {
@@ -207,7 +239,13 @@ class SettingsRepository(context: Context) {
     fun recordLaunch(appKey: String) = edit { s ->
         s.copy(launchCounts = s.launchCounts + (appKey to (s.launchCounts[appKey] ?: 0) + 1))
     }
-    fun removeWidget(id: Int) = edit { it.copy(widgetIds = it.widgetIds - id) }
+    fun removeWidget(id: Int) = edit {
+        it.copy(
+            widgetIds = it.widgetIds - id,
+            homeLayout = it.homeLayout - HomeBlocks.widget(id),
+            widgetHeights = it.widgetHeights - id,
+        )
+    }
 
     // --- Backup ---
 
