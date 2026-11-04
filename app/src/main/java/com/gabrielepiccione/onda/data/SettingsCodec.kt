@@ -53,7 +53,8 @@ object SettingsCodec {
             ?: if ("version" in obj) 1 else Settings.CURRENT_SCHEMA
         if (version < 2) obj = fromSchema1(obj)
         if (version < 3) obj = fromSchema2(obj)
-        // Passi futuri: if (version < 4) obj = fromSchema3(obj) ...
+        if (version < 4) obj = fromSchema3(obj)
+        // Passi futuri: if (version < 5) obj = fromSchema4(obj) ...
         return obj
     }
 
@@ -77,6 +78,19 @@ object SettingsCodec {
             else put(key, value)
         }
         put("schemaVersion", JsonPrimitive(3))
+    }
+
+    /** Schema 3 -> 4: l'interruttore "doppio tocco per bloccare" diventa il gesto doppio tocco. */
+    private fun fromSchema3(old: JsonObject): JsonObject = buildJsonObject {
+        for ((key, value) in old) {
+            if (key == "doubleTapLock") {
+                val on = (value as? JsonPrimitive)?.content == "true"
+                if (on && "doubleTap" !in old) put("doubleTap", JsonPrimitive("LOCK_SCREEN"))
+            } else {
+                put(key, value)
+            }
+        }
+        put("schemaVersion", JsonPrimitive(4))
     }
 
     private fun foldersArrayToMap(value: JsonElement): JsonElement {

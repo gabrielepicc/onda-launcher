@@ -73,6 +73,17 @@ class SettingsCodecTest {
         assertEquals(ThemeMode.SYSTEM, s.themeMode)
     }
 
+    @Test
+    fun schema3DoubleTapLockBecomesGesture() {
+        val on = SettingsCodec.decode("""{"schemaVersion": 3, "doubleTapLock": true}""")
+        assertEquals(GestureAction.LOCK_SCREEN, on.doubleTap)
+        val off = SettingsCodec.decode("""{"schemaVersion": 3, "doubleTapLock": false}""")
+        assertEquals(GestureAction.NONE, off.doubleTap)
+        // Uno schema 4 non viene toccato
+        val v4 = SettingsCodec.decode("""{"schemaVersion": 4, "doubleTap": "RECENTS"}""")
+        assertEquals(GestureAction.RECENTS, v4.doubleTap)
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun invalidJsonThrows() {
         SettingsCodec.decode("non è json")

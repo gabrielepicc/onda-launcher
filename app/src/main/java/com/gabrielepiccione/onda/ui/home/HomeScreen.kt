@@ -56,7 +56,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -224,11 +227,19 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) restrictedHelp = open else open()
     }
 
-    fun perform(action: GestureAction) {
+    fun perform(action: GestureAction, appKey: String = "") {
+        val needsService = { ok: Boolean -> if (!ok) withRestrictedHelp(callbacks::openAccessibilitySettings) }
         when (action) {
             GestureAction.SEARCH -> overlay = Overlay.SEARCH
             GestureAction.NOTIFICATIONS -> SystemActions.expandNotifications(context)
             GestureAction.ALL_APPS -> overlay = Overlay.ALL_APPS
+            GestureAction.LOCK_SCREEN -> needsService(OndaAccessibilityService.lockScreen())
+            GestureAction.QUICK_SETTINGS ->
+                if (!OndaAccessibilityService.quickSettings()) SystemActions.expandQuickSettings(context)
+            GestureAction.RECENTS -> needsService(OndaAccessibilityService.recents())
+            GestureAction.SCREENSHOT -> needsService(OndaAccessibilityService.screenshot())
+            GestureAction.ONDA_SETTINGS -> overlay = Overlay.SETTINGS
+            GestureAction.OPEN_APP -> state.app(appKey)?.let { launchApp(it) }
             GestureAction.NONE -> Unit
         }
     }
@@ -301,7 +312,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 if (p == 0f) return Velocity.Zero
                 val fire = abs(p) >= threshold || (abs(p) > threshold / 3 && abs(available.y) > 2200f && sign(available.y) == sign(p))
                 armed = false
-                if (fire) perform(if (p > 0) GestureAction.NOTIFICATIONS else currentSettings.swipeUp)
+                if (fire) {
+                    if (p > 0) perform(GestureAction.NOTIFICATIONS) else perform(currentSettings.swipeUp, currentSettings.swipeUpApp)
+                }
                 scope.launch { pull.animateTo(0f, spring(dampingRatio = 0.8f, stiffness = 400f)) }
                 return available
             }
@@ -422,14 +435,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     translationY = rubber(pull.value)
                 }
                 .nestedScroll(gestureConnection)
-                .pointerInput(settings.doubleTapLock) {
+                .pointerInput(settings.doubleTap, settings.doubleTapApp) {
                     detectTapGestures(
                         onLongPress = {
                             if (settings.haptics) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                             homeMenu = true
                         },
-                        onDoubleTap = if (settings.doubleTapLock) {
-                            { _: Offset -> if (!OndaAccessibilityService.lockScreen()) callbacks.openAccessibilitySettings() }
+                        onDoubleTap = if (settings.doubleTap != GestureAction.NONE) {
+                            { _: Offset -> perform(settings.doubleTap, settings.doubleTapApp) }
                         } else null,
                     )
                 }
@@ -629,6 +642,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         GestureAction.SEARCH -> Icons.Filled.Search
                         GestureAction.NOTIFICATIONS -> Icons.Filled.Notifications
                         GestureAction.ALL_APPS -> Icons.Filled.List
+                        GestureAction.LOCK_SCREEN -> Icons.Filled.Lock
+                        GestureAction.QUICK_SETTINGS, GestureAction.ONDA_SETTINGS -> Icons.Filled.Settings
+                        GestureAction.RECENTS -> Icons.Filled.Menu
+                        GestureAction.SCREENSHOT -> Icons.Filled.Face
+                        GestureAction.OPEN_APP -> Icons.Filled.PlayArrow
                         GestureAction.NONE -> Icons.Filled.Close
                     },
                     null,
@@ -689,11 +707,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             top = bars.calculateTopPadding() + 72.dp,
             bottom = bars.calculateBottomPadding() + 40.dp,
         )
-        // Doppio tocco sull'alfabeto (visibile o invisibile): blocca lo schermo
-        val lockFromAlphabet: (() -> Unit)? = if (settings.doubleTapLock) {
+        // Doppio tocco sull'alfabeto (visibile o invisibile): stessa azione del doppio tocco in home
+        val lockFromAlphabet: (() -> Unit)? = if (settings.doubleTap != GestureAction.NONE) {
             {
                 closeAll()
-                if (!OndaAccessibilityService.lockScreen()) withRestrictedHelp(callbacks::openAccessibilitySettings)
+                perform(settings.doubleTap, settings.doubleTapApp)
             }
         } else null
         val contactOffset = contactsRows(contactsInList)

@@ -87,8 +87,8 @@
     <string name="swipe_down">Swipe down</string>
     <string name="swipe_up">Swipe up</string>
     <string name="double_tap_lock">Double-tap to lock</string>
-    <string name="double_tap_lock_on">Double-tap an empty spot on home</string>
-    <string name="double_tap_lock_off">Requires enabling Onda\'s accessibility service</string>
+    <string name="double_tap_lock_on">Lock, recents and screenshot use Onda\'s accessibility service (active)</string>
+    <string name="double_tap_lock_off">Lock, recents and screenshot require Onda\'s accessibility service</string>
     <string name="haptics">Vibration</string>
     <string name="haptics_sub">Haptic feedback on scroller and long-presses</string>
     <string name="gestures_help">Swipe right on an app: panel · left: dismiss its notifications · Long-press: options · Screen edges: alphabet (including the edge without letters) · Double-tap the alphabet: lock</string>
@@ -148,8 +148,8 @@
     <string name="cd_folder_close">Close folder</string>
     <string name="cd_gesture_indicator">Gesture action</string>
     <string name="cd_all_apps_letter">Browse apps by initial</string>
-    <string name="accessibility_label">Onda – screen lock</string>
-    <string name="accessibility_description">Lets Onda lock the screen when you double-tap an empty spot on home. Onda does not read or collect screen content.</string>
+    <string name="accessibility_label">Onda – gestures</string>
+    <string name="accessibility_description">Lets Onda lock the screen, open recent apps, quick settings or take a screenshot with the gestures you chose. Onda does not read or collect screen content.</string>
     <string name="notif_reply">Reply</string>
     <string name="notif_reply_hint">Write a reply…</string>
     <string name="notif_send">Send</string>
@@ -371,4 +371,12 @@
         <item quantity="one">%1$d notification</item>
         <item quantity="other">%1$d notifications</item>
     </plurals>
+    <string name="gesture_lock">Lock screen</string>
+    <string name="gesture_quick_settings">Quick settings</string>
+    <string name="gesture_recents">Recent apps</string>
+    <string name="gesture_screenshot">Screenshot</string>
+    <string name="gesture_onda_settings">Onda settings</string>
+    <string name="gesture_open_app">Open an app</string>
+    <string name="gesture_app">App for the gesture</string>
+    <string name="double_tap">Double tap</string>
 </resources>

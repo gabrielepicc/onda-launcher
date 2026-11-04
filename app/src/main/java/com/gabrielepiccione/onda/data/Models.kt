@@ -96,12 +96,18 @@ data class CalendarEvent(
 @Serializable
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-/** Azione associata a uno swipe verticale in home. */
+/** Azione associata a un gesto in home (swipe su, doppio tocco). */
 @Serializable
-enum class GestureAction(@StringRes val labelRes: Int) {
+enum class GestureAction(@StringRes val labelRes: Int, val needsAccessibility: Boolean = false) {
     SEARCH(R.string.gesture_search),
     NOTIFICATIONS(R.string.gesture_notifications),
     ALL_APPS(R.string.gesture_all_apps),
+    LOCK_SCREEN(R.string.gesture_lock, needsAccessibility = true),
+    QUICK_SETTINGS(R.string.gesture_quick_settings),
+    RECENTS(R.string.gesture_recents, needsAccessibility = true),
+    SCREENSHOT(R.string.gesture_screenshot, needsAccessibility = true),
+    ONDA_SETTINGS(R.string.gesture_onda_settings),
+    OPEN_APP(R.string.gesture_open_app),
     NONE(R.string.gesture_none),
 }
 
@@ -204,6 +210,11 @@ data class Settings(
     val launchCounts: Map<String, Int> = emptyMap(),
     val swipeDown: GestureAction = GestureAction.SEARCH,
     val swipeUp: GestureAction = GestureAction.SEARCH,
+    /** App aperta dallo swipe su quando l'azione è [GestureAction.OPEN_APP]. */
+    val swipeUpApp: String = "",
+    /** Doppio tocco su uno spazio vuoto della home o sull'alfabeto. */
+    val doubleTap: GestureAction = GestureAction.NONE,
+    val doubleTapApp: String = "",
     val hideStatusBar: Boolean = false,
     val hideAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,
@@ -296,7 +307,6 @@ data class Settings(
     val showMedia: Boolean = true,
     val wallpaperDim: Float = 0.2f,
     val leftHanded: Boolean = false,
-    val doubleTapLock: Boolean = false,
     val haptics: Boolean = true,
     val widgetIds: List<Int> = emptyList(),
     val onboardingDone: Boolean = false,
@@ -305,8 +315,9 @@ data class Settings(
         /**
          * 1 = formato JSON "libero" delle versioni 0.2/0.3; 2 = formato kotlinx.serialization (0.4+);
          * 3 = swipe giù sempre sulla tendina: lo swipe su, se era "notifiche", diventa "ricerca".
+         * 4 = il doppio tocco diventa un gesto configurabile: "doubleTapLock" -> "doubleTap" = LOCK_SCREEN.
          */
-        const val CURRENT_SCHEMA = 3
+        const val CURRENT_SCHEMA = 4
     }
 }
 

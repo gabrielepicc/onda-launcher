@@ -115,6 +115,7 @@ fun SettingsScreen(
     var plugDialog by remember { mutableStateOf(false) }
     var breakDialog by remember { mutableStateOf(false) }
     var digestDialog by remember { mutableStateOf(false) }
+    var gestureAppFor by remember { mutableStateOf<String?>(null) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
     val onEdit = actions::edit
 
@@ -310,15 +311,28 @@ fun SettingsScreen(
         Group(stringResource(R.string.section_gestures)) {
             Text(stringResource(R.string.swipe_down_fixed), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
             Label(stringResource(R.string.swipe_up))
-            GestureChips(settings.swipeUp) { g -> onEdit { it.copy(swipeUp = g) } }
-            SwitchRow(
-                stringResource(R.string.double_tap_lock),
-                if (status.accessibilityEnabled) stringResource(R.string.double_tap_lock_on) else stringResource(R.string.double_tap_lock_off),
-                settings.doubleTapLock,
-            ) { v ->
-                onEdit { it.copy(doubleTapLock = v) }
-                if (v && !status.accessibilityEnabled) actions.accessibility()
+            GestureChips(settings.swipeUp) { g ->
+                onEdit { it.copy(swipeUp = g) }
+                if (g.needsAccessibility && !status.accessibilityEnabled) actions.accessibility()
+                if (g == com.gabrielepiccione.onda.data.GestureAction.OPEN_APP) gestureAppFor = "up"
             }
+            if (settings.swipeUp == com.gabrielepiccione.onda.data.GestureAction.OPEN_APP) {
+                ClickRow(stringResource(R.string.gesture_app), allApps.firstOrNull { it.key == settings.swipeUpApp }?.label ?: stringResource(R.string.plug_play_none)) { gestureAppFor = "up" }
+            }
+            Label(stringResource(R.string.double_tap))
+            GestureChips(settings.doubleTap) { g ->
+                onEdit { it.copy(doubleTap = g) }
+                if (g.needsAccessibility && !status.accessibilityEnabled) actions.accessibility()
+                if (g == com.gabrielepiccione.onda.data.GestureAction.OPEN_APP) gestureAppFor = "double"
+            }
+            if (settings.doubleTap == com.gabrielepiccione.onda.data.GestureAction.OPEN_APP) {
+                ClickRow(stringResource(R.string.gesture_app), allApps.firstOrNull { it.key == settings.doubleTapApp }?.label ?: stringResource(R.string.plug_play_none)) { gestureAppFor = "double" }
+            }
+            Text(
+                if (status.accessibilityEnabled) stringResource(R.string.double_tap_lock_on) else stringResource(R.string.double_tap_lock_off),
+                color = colors.onWallpaperMuted,
+                style = MaterialTheme.typography.bodySmall,
+            )
             SwitchRow(stringResource(R.string.haptics), stringResource(R.string.haptics_sub), settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
             Text(
                 stringResource(R.string.gestures_help),
@@ -454,6 +468,26 @@ fun SettingsScreen(
             color = colors.onWallpaperMuted,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp),
+        )
+    }
+
+    gestureAppFor?.let { which ->
+        AlertDialog(
+            onDismissRequest = { gestureAppFor = null },
+            title = { Text(stringResource(R.string.gesture_app)) },
+            text = {
+                androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
+                    items(allApps.size) { i ->
+                        val app = allApps[i]
+                        val selected = app.key == (if (which == "up") settings.swipeUpApp else settings.doubleTapApp)
+                        ChoiceRow(app.label, selected) {
+                            onEdit { if (which == "up") it.copy(swipeUpApp = app.key) else it.copy(doubleTapApp = app.key) }
+                            gestureAppFor = null
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { gestureAppFor = null }) { Text(stringResource(R.string.close)) } },
         )
     }
 

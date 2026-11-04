@@ -87,8 +87,8 @@
     <string name="swipe_down">Scorri verso il basso</string>
     <string name="swipe_up">Scorri verso l\'alto</string>
     <string name="double_tap_lock">Doppio tocco per bloccare</string>
-    <string name="double_tap_lock_on">Tocca due volte uno spazio vuoto della home</string>
-    <string name="double_tap_lock_off">Richiede di attivare il servizio di accessibilità di Onda</string>
+    <string name="double_tap_lock_on">Blocco, app recenti e screenshot usano il servizio di accessibilità di Onda (attivo)</string>
+    <string name="double_tap_lock_off">Blocco, app recenti e screenshot richiedono il servizio di accessibilità di Onda</string>
     <string name="haptics">Vibrazione</string>
     <string name="haptics_sub">Feedback aptico su scroller e pressioni lunghe</string>
     <string name="gestures_help">Scorri a destra su un\'app: pannello · a sinistra: elimina le notifiche · Tieni premuto: opzioni · Bordi dello schermo: alfabeto (anche il lato senza lettere) · Doppio tocco sull\'alfabeto: blocca</string>
@@ -148,8 +148,8 @@
     <string name="cd_folder_close">Chiudi cartella</string>
     <string name="cd_gesture_indicator">Azione del gesto</string>
     <string name="cd_all_apps_letter">Scorri le app per iniziale</string>
-    <string name="accessibility_label">Onda – blocco schermo</string>
-    <string name="accessibility_description">Permette a Onda di bloccare lo schermo quando tocchi due volte uno spazio vuoto della home. Onda non legge né raccoglie il contenuto dello schermo.</string>
+    <string name="accessibility_label">Onda – gesti</string>
+    <string name="accessibility_description">Permette a Onda di bloccare lo schermo, aprire le app recenti, le impostazioni rapide o fare uno screenshot con i gesti che hai scelto. Onda non legge né raccoglie il contenuto dello schermo.</string>
     <string name="notif_reply">Rispondi</string>
     <string name="notif_reply_hint">Scrivi una risposta…</string>
     <string name="notif_send">Invia</string>
@@ -371,4 +371,12 @@
         <item quantity="one">%1$d notifica</item>
         <item quantity="other">%1$d notifiche</item>
     </plurals>
+    <string name="gesture_lock">Blocca schermo</string>
+    <string name="gesture_quick_settings">Impostazioni rapide</string>
+    <string name="gesture_recents">App recenti</string>
+    <string name="gesture_screenshot">Screenshot</string>
+    <string name="gesture_onda_settings">Impostazioni di Onda</string>
+    <string name="gesture_open_app">Apri un\'app</string>
+    <string name="gesture_app">App del gesto</string>
+    <string name="double_tap">Doppio tocco</string>
 </resources>

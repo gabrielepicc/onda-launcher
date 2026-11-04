@@ -27,6 +27,16 @@ object SystemActions {
         }
     }
 
+    /** Apre le impostazioni rapide (stessa API non pubblica della tendina). */
+    @SuppressLint("WrongConstant", "PrivateApi")
+    fun expandQuickSettings(context: Context) {
+        runCatching {
+            val service = context.getSystemService("statusbar")
+            val clazz = Class.forName("android.app.StatusBarManager")
+            clazz.getMethod("expandSettingsPanel").invoke(service)
+        }
+    }
+
     fun uninstall(context: Context, app: AppInfo) {
         val intent = Intent(Intent.ACTION_DELETE, Uri.parse("package:${app.packageName}"))
             .putExtra(Intent.EXTRA_USER, app.user)
