@@ -385,4 +385,7 @@
     <string name="anim_reveal">Si svela dal tocco</string>
     <string name="anim_slide">Scorre dal basso</string>
     <string name="anim_fade">Dissolvenza</string>
+    <string name="orientation">Rotazione</string>
+    <string name="orientation_auto">Segui il sistema</string>
+    <string name="orientation_portrait">Sempre verticale</string>
 </resources>

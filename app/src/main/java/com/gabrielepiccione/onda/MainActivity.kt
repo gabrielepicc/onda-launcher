@@ -157,6 +157,14 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             OndaTheme(state.settings) {
                 val dark = LocalOndaColors.current.dark
                 val hideBar = state.settings.hideStatusBar
+                val orientation = state.settings.orientation
+                SideEffect {
+                    requestedOrientation = if (orientation == "PORTRAIT") {
+                        android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    } else {
+                        android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    }
+                }
                 SideEffect {
                     WindowCompat.getInsetsController(window, window.decorView).apply {
                         isAppearanceLightStatusBars = !dark

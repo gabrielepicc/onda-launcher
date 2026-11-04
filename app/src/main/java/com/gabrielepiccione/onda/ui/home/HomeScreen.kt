@@ -117,6 +117,9 @@ import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.sqrt
 
+/** Larghezza massima delle liste su tablet e in orizzontale. */
+private val MAX_CONTENT_WIDTH = 560.dp
+
 enum class Overlay { NONE, ALL_APPS, SEARCH, SETTINGS, STYLES }
 
 /** Dove finisce un widget appena scelto. */
@@ -405,6 +408,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         val bars = WindowInsets.systemBars.asPaddingValues()
         val letterSide = 48.dp
         val hiddenSide = 28.dp
+        // Tablet e orizzontale: le liste restano di larghezza leggibile, centrate
+        val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+        val extraSide = ((screenWidth - MAX_CONTENT_WIDTH) / 2).coerceAtLeast(0.dp)
         val usableHeight = LocalConfiguration.current.screenHeightDp.dp - bars.calculateTopPadding() - bars.calculateBottomPadding()
         val anchorHeight by androidx.compose.animation.core.animateDpAsState(
             usableHeight * settings.homeOffset.coerceIn(0f, 0.75f),
@@ -420,8 +426,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             // Orologio, widget e player: stesso margine a destra e a sinistra.
             // Solo le righe delle app si tengono lontane dalle lettere (vedi homeEntries).
             contentPadding = PaddingValues(
-                start = hiddenSide,
-                end = hiddenSide,
+                start = hiddenSide + extraSide,
+                end = hiddenSide + extraSide,
                 top = bars.calculateTopPadding() + 24.dp,
                 bottom = bars.calculateBottomPadding() + 28.dp,
             ),
@@ -688,8 +694,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
             loadPhoto = { vm.contacts.photo(it) },
             contentPadding = PaddingValues(
-                start = if (settings.leftHanded) letterSide else hiddenSide,
-                end = if (settings.leftHanded) hiddenSide else letterSide,
+                start = (if (settings.leftHanded) letterSide else hiddenSide) + extraSide,
+                end = (if (settings.leftHanded) hiddenSide else letterSide) + extraSide,
                 top = bars.calculateTopPadding() + 16.dp,
                 bottom = bars.calculateBottomPadding() + 24.dp,
             ),

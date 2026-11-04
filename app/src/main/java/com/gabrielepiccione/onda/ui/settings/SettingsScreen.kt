@@ -303,6 +303,11 @@ fun SettingsScreen(
                 if (v && !status.calendarPermission) actions.calendarPermission()
             }
             SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
+            Label(stringResource(R.string.orientation))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(selected = settings.orientation != "PORTRAIT", onClick = { onEdit { it.copy(orientation = "AUTO") } }, label = { Text(stringResource(R.string.orientation_auto)) })
+                FilterChip(selected = settings.orientation == "PORTRAIT", onClick = { onEdit { it.copy(orientation = "PORTRAIT") } }, label = { Text(stringResource(R.string.orientation_portrait)) })
+            }
             Label(stringResource(R.string.home_offset))
             Text(stringResource(R.string.home_offset_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
             com.gabrielepiccione.onda.ui.home.HomeOffsetControl(settings.homeOffset) { v -> onEdit { it.copy(homeOffset = v) } }

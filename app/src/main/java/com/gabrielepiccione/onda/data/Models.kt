@@ -255,6 +255,8 @@ data class Settings(
      * Negativo = automatico: contenuto appoggiato in basso, vicino al pollice.
      */
     val homeOffset: Float = -1f,
+    /** Rotazione della home: AUTO (segue il sistema) o PORTRAIT (sempre verticale). */
+    val orientation: String = "AUTO",
     /** Animazione di apertura delle app (vedi [com.gabrielepiccione.onda.util.LaunchAnimation]). */
     val openAnimation: String = "SYSTEM",
     /** Blocca il layout: niente modifiche con la pressione lunga in home. */
