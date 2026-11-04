@@ -273,7 +273,15 @@ fun MediaCard(
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
     onSeek: (Long) -> Unit = {},
+    compact: Boolean = true,
+    scale: Float = 1f,
+    highlighted: Boolean = false,
+    onLongPress: (() -> Unit)? = null,
 ) {
+    if (compact) {
+        CompactMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, scale, highlighted, onLongPress)
+        return
+    }
     val colors = LocalOndaColors.current
     // Posizione stimata aggiornata ogni mezzo secondo (solo mentre suona)
     var now by remember { androidx.compose.runtime.mutableLongStateOf(android.os.SystemClock.elapsedRealtime()) }
@@ -289,22 +297,23 @@ fun MediaCard(
     Column(
         modifier
             .fillMaxWidth()
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(32.dp)) else Modifier)
             .clip(RoundedCornerShape(32.dp))
             .background(colors.panel.copy(alpha = 0.92f))
-            .clickable(onClick = onOpen)
-            .padding(16.dp)
+            .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
+            .padding(16.dp * scale)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier
-                    .size(76.dp)
+                    .size(76.dp * scale)
                     .clip(RoundedCornerShape(20.dp))
                     .background(colors.accentContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 val art = media.art
                 if (art != null) {
-                    Image(art, null, contentScale = ContentScale.Crop, modifier = Modifier.size(76.dp))
+                    Image(art, null, contentScale = ContentScale.Crop, modifier = Modifier.size(76.dp * scale))
                 } else {
                     Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccentContainer, modifier = Modifier.size(32.dp))
                 }
@@ -379,6 +388,75 @@ fun MediaCard(
     }
 }
 
+/** Versione su una riga: copertina, titolo/artista che scorrono, comandi. */
+@Composable
+private fun CompactMediaCard(
+    media: MediaInfo,
+    onOpen: () -> Unit,
+    onPlayPause: () -> Unit,
+    onPrev: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier,
+    scale: Float,
+    highlighted: Boolean,
+    onLongPress: (() -> Unit)?,
+) {
+    val colors = LocalOndaColors.current
+    val art = 48.dp * scale
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
+            .clip(RoundedCornerShape(28.dp))
+            .background(colors.panel.copy(alpha = 0.9f))
+            .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
+            .padding(8.dp * scale)
+    ) {
+        Box(Modifier.size(art).clip(RoundedCornerShape(14.dp * scale)).background(colors.accentContainer), contentAlignment = Alignment.Center) {
+            val bmp = media.art
+            if (bmp != null) Image(bmp, null, contentScale = ContentScale.Crop, modifier = Modifier.size(art))
+            else Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccentContainer)
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                media.title,
+                color = colors.onWallpaper,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = MaterialTheme.typography.titleMedium.fontSize * scale),
+                maxLines = 1,
+                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 1500),
+            )
+            if (media.artist.isNotBlank()) {
+                Text(
+                    media.artist,
+                    color = colors.onWallpaperMuted,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = MaterialTheme.typography.bodyMedium.fontSize * scale),
+                    maxLines = 1,
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2500),
+                )
+            }
+        }
+        MediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper) }
+        val playCd = stringResource(if (media.playing) R.string.media_pause else R.string.media_play)
+        val corner by androidx.compose.animation.core.animateDpAsState(if (media.playing) 14.dp else 24.dp, Motion.bouncy(), label = "playShapeC")
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(48.dp * scale)
+                .clip(RoundedCornerShape(corner))
+                .background(colors.accent)
+                .semantics { contentDescription = playCd }
+                .clickable(onClick = onPlayPause)
+        ) {
+            AnimatedContent(targetState = media.playing, label = "playpauseC") { playing ->
+                if (playing) PauseGlyph(colors.onAccent) else Icon(Icons.Filled.PlayArrow, null, tint = colors.onAccent)
+            }
+        }
+        MediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper) }
+    }
+}
+
 private fun formatMs(ms: Long): String {
     val total = (ms / 1000).coerceAtLeast(0)
     val h = total / 3600
@@ -391,7 +469,7 @@ private fun formatMs(ms: Long): String {
 private fun MediaButton(onClick: () -> Unit, content: @Composable () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(56.dp).clip(CircleShape).clickable(onClick = onClick)
+        modifier = Modifier.size(48.dp).clip(CircleShape).clickable(onClick = onClick)
     ) { content() }
 }
 
@@ -399,7 +477,7 @@ private fun MediaButton(onClick: () -> Unit, content: @Composable () -> Unit) {
 @Composable
 private fun PauseGlyph(color: androidx.compose.ui.graphics.Color) {
     Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)) {
-        Box(Modifier.size(width = 6.dp, height = 22.dp).clip(RoundedCornerShape(3.dp)).background(color))
-        Box(Modifier.size(width = 6.dp, height = 22.dp).clip(RoundedCornerShape(3.dp)).background(color))
+        Box(Modifier.size(width = 5.dp, height = 18.dp).clip(RoundedCornerShape(3.dp)).background(color))
+        Box(Modifier.size(width = 5.dp, height = 18.dp).clip(RoundedCornerShape(3.dp)).background(color))
     }
 }

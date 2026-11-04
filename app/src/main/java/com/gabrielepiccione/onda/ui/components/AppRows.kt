@@ -240,44 +240,36 @@ fun FavoriteRow(
                     }
                     Spacer(Modifier.width(18.dp))
                 }
-                if (hideName && showIcon) {
-                    Spacer(Modifier.weight(1f))
-                } else {
-                    Text(
-                        text = app.label,
-                        color = colors.onWallpaper,
-                        style = MaterialTheme.typography.headlineSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
+                // Nome dell'app e, accanto all'icona, l'anteprima dell'ultima notifica
+                Column(Modifier.weight(1f)) {
+                    if (!(hideName && showIcon)) {
+                        Text(
+                            text = app.label,
+                            color = colors.onWallpaper,
+                            style = if (latest != null) MaterialTheme.typography.titleMedium else MaterialTheme.typography.headlineSmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = latest != null,
+                        enter = fadeIn(Motion.enter()) + expandVertically(Motion.enter()),
+                        exit = fadeOut(Motion.exit()) + shrinkVertically(Motion.exit()),
+                    ) {
+                        notifications.firstOrNull()?.let { n ->
+                            key(n.key) {
+                                NotificationPreview(
+                                    item = n,
+                                    extraCount = notifications.size - 1,
+                                    onOpen = { onNotificationClick(n) },
+                                    onDismiss = { onNotificationDismiss(n) },
+                                )
+                            }
+                        }
+                    }
                 }
                 if (!showIcon && latest != null) {
                     Box(Modifier.size(8.dp).clip(CircleShape).background(colors.accent))
-                }
-            }
-
-            // Anteprima notifiche: l'ultima sempre, le altre quando la riga è espansa
-            AnimatedVisibility(
-                visible = latest != null,
-                enter = fadeIn(Motion.enter()) + expandVertically(Motion.enter()),
-                exit = fadeOut(Motion.exit()) + shrinkVertically(Motion.exit()),
-            ) {
-                val shown = if (expanded) notifications.take(6) else notifications.take(1)
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(start = if (showIcon) 44.dp * iconScale + 18.dp else 0.dp, top = 8.dp),
-                ) {
-                    notifications.firstOrNull()?.let { n ->
-                        key(n.key) {
-                            NotificationPreview(
-                                item = n,
-                                extraCount = notifications.size - 1,
-                                onOpen = { onNotificationClick(n) },
-                                onDismiss = { onNotificationDismiss(n) },
-                            )
-                        }
-                    }
                 }
             }
         }

@@ -190,6 +190,9 @@ data class Settings(
     val clockStyle: ClockStyle = ClockStyle.LARGE_THIN,
     val clockScale: Float = 1f,
     val clockAlign: HAlign = HAlign.START,
+    /** Player: compatto su una riga (true) o esteso con barra di avanzamento. */
+    val mediaCompact: Boolean = true,
+    val mediaScale: Float = 1f,
     /** Ultimo preset di stile applicato (solo informativo). */
     val stylePreset: String = "",
     val mutedNotifications: Set<String> = emptySet(),

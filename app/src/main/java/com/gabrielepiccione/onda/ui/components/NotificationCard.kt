@@ -266,11 +266,17 @@ private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> U
 }
 
 /** Tempo trascorso breve e localizzato ("2 min", "1 h"…). */
-fun relativeTime(postTime: Long): String =
-    android.text.format.DateUtils.getRelativeTimeSpanString(
-        postTime, System.currentTimeMillis(), android.text.format.DateUtils.MINUTE_IN_MILLIS,
-        android.text.format.DateUtils.FORMAT_ABBREV_RELATIVE,
-    ).toString()
+@Composable
+fun relativeTime(postTime: Long): String {
+    val minutes = ((System.currentTimeMillis() - postTime) / 60_000L).coerceAtLeast(0)
+    return when {
+        minutes < 1 -> stringResource(R.string.time_now)
+        minutes < 60 -> stringResource(R.string.time_minutes, minutes.toInt())
+        minutes < 24 * 60 -> stringResource(R.string.time_hours, (minutes / 60).toInt())
+        else -> android.text.format.DateFormat.getMediumDateFormat(androidx.compose.ui.platform.LocalContext.current)
+            .format(java.util.Date(postTime))
+    }
+}
 
 /**
  * Anteprima della notifica sotto l'app in home: mittente · tempo, testo su più righe e freccia.
@@ -304,9 +310,9 @@ fun NotificationPreview(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .clickable(onClick = onOpen)
-                .padding(vertical = 6.dp, horizontal = 4.dp)
+                .padding(vertical = 2.dp)
         ) {
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -319,21 +325,21 @@ fun NotificationPreview(
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     Text(
-                        " · " + relativeTime(item.postTime),
+                        "  " + relativeTime(item.postTime),
                         color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.labelMedium,
                         maxLines = 1,
                     )
                     if (extraCount > 0) {
                         Text(
                             "+$extraCount",
                             color = colors.onAccentContainer,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier
-                                .padding(start = 8.dp)
+                                .padding(start = 6.dp)
                                 .clip(RoundedCornerShape(50))
                                 .background(colors.accentContainer)
-                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                                .padding(horizontal = 6.dp, vertical = 1.dp),
                         )
                     }
                 }
@@ -341,8 +347,8 @@ fun NotificationPreview(
                     Text(
                         body,
                         color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.bodyLarge,
-                        maxLines = 3,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -351,7 +357,7 @@ fun NotificationPreview(
                 Icons.Filled.KeyboardArrowRight,
                 contentDescription = stringResource(R.string.notif_open_panel),
                 tint = colors.onWallpaperMuted,
-                modifier = Modifier.padding(start = 8.dp).size(24.dp),
+                modifier = Modifier.padding(start = 4.dp).size(20.dp),
             )
         }
     }

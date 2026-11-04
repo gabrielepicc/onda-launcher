@@ -214,4 +214,12 @@
     <string name="notif_open_panel">Apri conversazione</string>
     <string name="media_pause">Pausa</string>
     <string name="media_seek">Avanzamento brano</string>
+    <string name="time_now">ora</string>
+    <string name="time_minutes">%1$d min</string>
+    <string name="time_hours">%1$d h</string>
+    <string name="media_style">Stile</string>
+    <string name="media_compact">Compatto</string>
+    <string name="media_full">Esteso</string>
+    <string name="edit_media">Player musicale</string>
+    <string name="edit_hide_media">Nascondi player</string>
 </resources>

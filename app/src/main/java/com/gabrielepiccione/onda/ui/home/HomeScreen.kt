@@ -422,6 +422,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                     onPrev = { vm.media.previous() },
                                     onNext = { vm.media.next() },
                                     onSeek = { vm.media.seekTo(it) },
+                                    compact = settings.mediaCompact,
+                                    scale = settings.mediaScale,
+                                    highlighted = editing == HomeBlocks.MEDIA,
+                                    onLongPress = { editing = HomeBlocks.MEDIA },
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
                                 )
                             }

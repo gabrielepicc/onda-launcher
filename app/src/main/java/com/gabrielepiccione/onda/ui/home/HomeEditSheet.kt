@@ -81,7 +81,13 @@ fun HomeEditSheet(
         ) {
             val widgetId = HomeBlocks.widgetId(block)
             Text(
-                stringResource(if (widgetId != null) R.string.edit_widget else R.string.edit_clock),
+                stringResource(
+                    when {
+                        widgetId != null -> R.string.edit_widget
+                        block == HomeBlocks.MEDIA -> R.string.edit_media
+                        else -> R.string.edit_clock
+                    }
+                ),
                 style = MaterialTheme.typography.headlineSmall,
             )
 
@@ -114,6 +120,20 @@ fun HomeEditSheet(
                 }
             }
 
+            if (block == HomeBlocks.MEDIA) {
+                SectionTitle(R.string.media_style)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(selected = settings.mediaCompact, onClick = { actions.edit { it.copy(mediaCompact = true) } }, label = { Text(stringResource(R.string.media_compact)) })
+                    FilterChip(selected = !settings.mediaCompact, onClick = { actions.edit { it.copy(mediaCompact = false) } }, label = { Text(stringResource(R.string.media_full)) })
+                }
+                SectionTitle(R.string.edit_size)
+                Slider(
+                    value = settings.mediaScale,
+                    onValueChange = { v -> actions.edit { it.copy(mediaScale = v) } },
+                    valueRange = 0.75f..1.25f,
+                )
+            }
+
             if (widgetId != null) {
                 SectionTitle(R.string.edit_height)
                 val current = settings.widgetHeights[widgetId] ?: defaultWidgetHeight(widgetId)
@@ -138,6 +158,12 @@ fun HomeEditSheet(
                 SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_clock)) { actions.replaceClock() }
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_clock)) {
                     actions.edit { it.copy(showClock = false) }
+                    actions.done()
+                }
+            }
+            if (block == HomeBlocks.MEDIA) {
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_media)) {
+                    actions.edit { it.copy(showMedia = false) }
                     actions.done()
                 }
             }
