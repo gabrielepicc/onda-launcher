@@ -115,6 +115,16 @@ data class Folder(
     val widgets: List<Int> = emptyList(),
 )
 
+/** Pila di widget in home: un solo widget visibile alla volta, si cambia scorrendo di lato. */
+@Immutable
+@Serializable
+data class WidgetStack(
+    val id: String,
+    val widgets: List<Int> = emptyList(),
+    /** Altezza comune in dp; 0 = la maggiore tra le altezze minime dei widget. */
+    val heightDp: Int = 0,
+)
+
 /** Prefisso delle voci "cartella" nell'elenco dei preferiti. */
 const val FOLDER_PREFIX = "folder:"
 
@@ -141,12 +151,16 @@ object HomeBlocks {
     const val APPS = "apps"
     const val AGENDA = "agenda"
     const val WIDGET_PREFIX = "w:"
+    const val STACK_PREFIX = "s:"
     fun widget(id: Int) = WIDGET_PREFIX + id
     fun widgetId(block: String): Int? = block.removePrefix(WIDGET_PREFIX).toIntOrNull()?.takeIf { block.startsWith(WIDGET_PREFIX) }
+    fun stack(id: String) = STACK_PREFIX + id
+    fun stackId(block: String): String? = block.removePrefix(STACK_PREFIX).takeIf { block.startsWith(STACK_PREFIX) && it.isNotEmpty() }
 
     /** Ordine effettivo: quello salvato, ripulito, più gli elementi mancanti in coda (prima delle app). */
     fun resolve(settings: Settings): List<String> {
-        val widgets = settings.widgetIds.map(::widget)
+        val widgets = settings.widgetIds.map(::widget) +
+            settings.widgetStacks.values.filter { it.widgets.isNotEmpty() }.map { stack(it.id) }
         val optional = if (settings.showAgenda) listOf(AGENDA) else emptyList()
         val valid = setOf(CLOCK, MEDIA, APPS) + optional + widgets
         val saved = settings.homeLayout.filter { it in valid }.distinct()
@@ -195,6 +209,8 @@ data class Settings(
     val iconSize: Float = 1f,
     /** Ordine dei blocchi della home (vedi [HomeBlocks]). */
     val homeLayout: List<String> = emptyList(),
+    /** Pile di widget in home (blocchi "s:<id>"); i loro widget non sono in [widgetIds]. */
+    val widgetStacks: Map<String, WidgetStack> = emptyMap(),
     /** Altezza personalizzata dei widget in dp: id widget -> dp. */
     val widgetHeights: Map<Int, Int> = emptyMap(),
     val clockStyle: ClockStyle = ClockStyle.LARGE_THIN,

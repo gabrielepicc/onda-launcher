@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -21,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
@@ -48,6 +50,11 @@ interface HomeEditActions {
     fun replaceWidget(id: Int)
     fun replaceClock()
     fun deleteWidget(id: Int)
+    fun addToStack(block: String)
+    fun removeFromStack(stackId: String, id: Int)
+    fun deleteStack(stackId: String)
+    fun setStackHeight(stackId: String, dp: Int)
+    fun widgetLabel(id: Int): String?
     fun done()
 }
 
@@ -80,10 +87,13 @@ fun HomeEditSheet(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             val widgetId = HomeBlocks.widgetId(block)
+            val stackId = HomeBlocks.stackId(block)
+            val stack = stackId?.let { settings.widgetStacks[it] }
             Text(
                 stringResource(
                     when {
                         widgetId != null -> R.string.edit_widget
+                        stack != null -> R.string.stack_title
                         block == HomeBlocks.MEDIA -> R.string.edit_media
                         block == HomeBlocks.AGENDA -> R.string.agenda_title
                         else -> R.string.edit_clock
@@ -160,6 +170,29 @@ fun HomeEditSheet(
                 )
             }
 
+            if (stack != null) {
+                SectionTitle(R.string.edit_height)
+                val current = stack.heightDp.takeIf { it > 0 } ?: (stack.widgets.maxOfOrNull(defaultWidgetHeight) ?: 160)
+                Slider(
+                    value = current.toFloat(),
+                    onValueChange = { v -> actions.setStackHeight(stack.id, v.roundToInt()) },
+                    valueRange = 64f..520f,
+                )
+                SectionTitle(R.string.stack_widgets)
+                stack.widgets.forEachIndexed { i, id ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            actions.widgetLabel(id) ?: stringResource(R.string.widget_number, i + 1),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(onClick = { actions.removeFromStack(stack.id, id) }) {
+                            Icon(Icons.Filled.Delete, stringResource(R.string.stack_remove_widget))
+                        }
+                    }
+                }
+            }
+
             SectionTitle(R.string.edit_position)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 FilledTonalIconButton(onClick = { actions.move(block, -1) }, enabled = index > 0) {
@@ -190,6 +223,15 @@ fun HomeEditSheet(
             if (block == HomeBlocks.MEDIA) {
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_media)) {
                     actions.edit { it.copy(showMedia = false) }
+                    actions.done()
+                }
+            }
+            if (widgetId != null || stack != null) {
+                SheetRow(Icons.Filled.Add, stringResource(if (stack != null) R.string.stack_add else R.string.stack_create)) { actions.addToStack(block) }
+            }
+            if (stack != null) {
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.stack_delete)) {
+                    actions.deleteStack(stack.id)
                     actions.done()
                 }
             }

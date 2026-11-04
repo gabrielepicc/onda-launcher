@@ -239,6 +239,12 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     fun startShortcut(s: ShortcutInfo) = appsRepo.startShortcut(s)
     fun updateSettings(transform: (Settings) -> Settings) = settingsRepo.edit(transform)
 
+    fun removeFromStack(stackId: String, id: Int) {
+        widgets.deleteId(id)
+        settingsRepo.removeFromStack(stackId, id)
+    }
+    fun deleteStack(stackId: String) = settingsRepo.deleteStack(stackId).forEach { widgets.deleteId(it) }
+
     fun removeWidget(id: Int) {
         widgets.deleteId(id)
         settingsRepo.removeWidget(id)

@@ -123,6 +123,8 @@ sealed interface WidgetTarget {
     data class ForApp(val appKey: String) : WidgetTarget
     data class Replace(val oldId: Int) : WidgetTarget
     data object ReplaceClock : WidgetTarget
+    /** Aggiunta a una pila (o creazione della pila a partire da un widget singolo). */
+    data class Stack(val block: String) : WidgetTarget
 }
 
 /** Azioni che richiedono l'Activity (permessi, risultati di altre schermate). */
@@ -490,6 +492,20 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                         onLongPress = { if (!settings.lockLayout) editing = block },
                                     )
                                 }
+                            }
+                        }
+                    }
+                    block.startsWith(HomeBlocks.STACK_PREFIX) -> {
+                        val stack = HomeBlocks.stackId(block)?.let { settings.widgetStacks[it] }
+                        if (stack != null && stack.widgets.isNotEmpty()) {
+                            item(key = block) {
+                                WidgetStackView(
+                                    stack = stack,
+                                    widgets = vm.widgets,
+                                    highlighted = editing == block,
+                                    onLongPress = { if (!settings.lockLayout) editing = block },
+                                    modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(horizontal = 4.dp),
+                                )
                             }
                         }
                     }
@@ -953,6 +969,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun replaceWidget(id: Int) { editing = null; openWidgetPicker(null, WidgetTarget.Replace(id)) }
                 override fun replaceClock() { editing = null; openWidgetPicker(null, WidgetTarget.ReplaceClock) }
                 override fun deleteWidget(id: Int) = vm.removeWidget(id)
+                override fun addToStack(block: String) { editing = null; openWidgetPicker(null, WidgetTarget.Stack(block)) }
+                override fun removeFromStack(stackId: String, id: Int) = vm.removeFromStack(stackId, id)
+                override fun deleteStack(stackId: String) = vm.deleteStack(stackId)
+                override fun setStackHeight(stackId: String, dp: Int) = vm.settingsRepo.setStackHeight(stackId, dp)
+                override fun widgetLabel(id: Int): String? = vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() }
                 override fun done() { editing = null }
             },
         )

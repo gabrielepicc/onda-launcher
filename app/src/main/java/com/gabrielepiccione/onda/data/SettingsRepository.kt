@@ -175,6 +175,55 @@ class SettingsRepository(context: Context) {
         s.copy(widgetIds = s.widgetIds + newId, homeLayout = layout, showClock = false)
     }
 
+    // --- Pile di widget ---
+
+    /** Aggiunge un widget a una pila; se [block] è un widget singolo lo trasforma in pila, nella stessa posizione. */
+    fun addToStack(block: String, newId: Int) = edit { s ->
+        val sid = HomeBlocks.stackId(block)
+        if (sid != null) {
+            val st = s.widgetStacks[sid] ?: return@edit s
+            return@edit s.copy(widgetStacks = s.widgetStacks + (sid to st.copy(widgets = st.widgets + newId)))
+        }
+        val wid = HomeBlocks.widgetId(block) ?: return@edit s
+        val id = "s" + System.currentTimeMillis().toString(36)
+        s.copy(
+            homeLayout = HomeBlocks.resolve(s).map { if (it == block) HomeBlocks.stack(id) else it },
+            widgetIds = s.widgetIds - wid,
+            widgetHeights = s.widgetHeights - wid,
+            widgetStacks = s.widgetStacks + (id to WidgetStack(id, listOf(wid, newId), s.widgetHeights[wid] ?: 0)),
+        )
+    }
+
+    /** Toglie un widget dalla pila; con un solo widget rimasto la pila torna un widget normale. */
+    fun removeFromStack(stackId: String, widgetId: Int) = edit { s ->
+        val st = s.widgetStacks[stackId] ?: return@edit s
+        val rest = st.widgets - widgetId
+        val layout = HomeBlocks.resolve(s)
+        val block = HomeBlocks.stack(stackId)
+        when (rest.size) {
+            0 -> s.copy(widgetStacks = s.widgetStacks - stackId, homeLayout = layout - block)
+            1 -> s.copy(
+                widgetStacks = s.widgetStacks - stackId,
+                widgetIds = s.widgetIds + rest[0],
+                widgetHeights = if (st.heightDp > 0) s.widgetHeights + (rest[0] to st.heightDp) else s.widgetHeights,
+                homeLayout = layout.map { if (it == block) HomeBlocks.widget(rest[0]) else it },
+            )
+            else -> s.copy(widgetStacks = s.widgetStacks + (stackId to st.copy(widgets = rest)))
+        }
+    }
+
+    /** Elimina la pila; restituisce i widget da rilasciare. */
+    fun deleteStack(stackId: String): List<Int> {
+        val ids = current.widgetStacks[stackId]?.widgets.orEmpty()
+        edit { s -> s.copy(widgetStacks = s.widgetStacks - stackId, homeLayout = s.homeLayout - HomeBlocks.stack(stackId)) }
+        return ids
+    }
+
+    fun setStackHeight(stackId: String, dp: Int) = edit { s ->
+        val st = s.widgetStacks[stackId] ?: return@edit s
+        s.copy(widgetStacks = s.widgetStacks + (stackId to st.copy(heightDp = dp)))
+    }
+
     // --- Cartelle ---
 
     fun createFolder(name: String, firstApp: String?): String {
@@ -289,6 +338,7 @@ class SettingsRepository(context: Context) {
     fun exportJson(): String = SettingsCodec.encode(
         current.copy(
             widgetIds = emptyList(),
+            widgetStacks = emptyMap(),
             appWidgets = emptyMap(),
             folders = current.folders.mapValues { (_, f) -> f.copy(widgets = emptyList()) },
         ),
@@ -301,6 +351,7 @@ class SettingsRepository(context: Context) {
         edit { now ->
             parsed.copy(
                 widgetIds = now.widgetIds,
+                widgetStacks = now.widgetStacks,
                 appWidgets = now.appWidgets,
                 folders = parsed.folders.mapValues { (id, f) -> f.copy(widgets = now.folders[id]?.widgets.orEmpty()) },
                 onboardingDone = true,

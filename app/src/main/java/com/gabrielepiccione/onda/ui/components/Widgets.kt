@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +47,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -113,6 +116,55 @@ fun HostedWidget(
                 .fillMaxWidth()
                 .height(animated),
         )
+    }
+}
+
+/** Pila di widget: uno alla volta, si scorre di lato; i puntini indicano la posizione. */
+@Composable
+fun WidgetStackView(
+    stack: com.gabrielepiccione.onda.data.WidgetStack,
+    widgets: WidgetManager,
+    highlighted: Boolean,
+    onLongPress: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalOndaColors.current
+    val density = LocalDensity.current
+    val ids = stack.widgets
+    val pager = androidx.compose.foundation.pager.rememberPagerState { ids.size }
+    // Altezza comune: evita salti mentre si scorre tra widget di altezze diverse
+    val height = stack.heightDp.takeIf { it > 0 } ?: remember(ids) {
+        ids.maxOf { id -> widgets.infoFor(id)?.minHeight ?: 0 }
+            .let { with(density) { it.toDp().value.toInt() } }
+            .coerceIn(72, 320)
+    }
+    val position = stringResource(R.string.stack_position, pager.currentPage + 1, ids.size)
+    Column(modifier.semantics { stateDescription = position }) {
+        androidx.compose.foundation.pager.HorizontalPager(
+            state = pager,
+            pageSpacing = 12.dp,
+            key = { ids.getOrElse(it) { -it } },
+        ) { page ->
+            ids.getOrNull(page)?.let { id ->
+                HostedWidget(id = id, widgets = widgets, heightDp = height, highlighted = highlighted, onLongPress = onLongPress)
+            }
+        }
+        if (ids.size > 1) {
+            androidx.compose.foundation.layout.Row(
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp, androidx.compose.ui.Alignment.CenterHorizontally),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            ) {
+                repeat(ids.size) { i ->
+                    val active = i == pager.currentPage
+                    androidx.compose.foundation.layout.Box(
+                        Modifier
+                            .size(if (active) 7.dp else 5.dp)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(if (active) colors.onWallpaper else colors.onWallpaperMuted.copy(alpha = 0.5f))
+                    )
+                }
+            }
+        }
     }
 }
 

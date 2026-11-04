@@ -321,4 +321,11 @@
     <string name="home_offset_sub">Dove comincia il primo blocco (orologio o widget); i preferiti lo seguono</string>
     <string name="home_offset_auto">Automatico (in basso)</string>
     <string name="home_offset_custom">Personalizzato</string>
+    <string name="stack_title">Pila di widget</string>
+    <string name="stack_widgets">Widget nella pila</string>
+    <string name="stack_create">Impila un altro widget qui</string>
+    <string name="stack_add">Aggiungi un widget alla pila</string>
+    <string name="stack_remove_widget">Togli dalla pila</string>
+    <string name="stack_delete">Elimina la pila</string>
+    <string name="stack_position">Widget %1$d di %2$d</string>
 </resources>
