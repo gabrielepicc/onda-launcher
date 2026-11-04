@@ -74,6 +74,7 @@ data class SettingsStatus(
     val notificationAccess: Boolean,
     val calendarPermission: Boolean,
     val accessibilityEnabled: Boolean,
+    val contactsPermission: Boolean,
 )
 
 interface SettingsActions {
@@ -81,6 +82,7 @@ interface SettingsActions {
     fun requestDefault()
     fun notificationAccess()
     fun calendarPermission()
+    fun contactsPermission()
     fun accessibility()
     fun addWidget()
     fun removeWidget(id: Int)
@@ -287,6 +289,10 @@ fun SettingsScreen(
             SwitchRow(stringResource(R.string.music_player), stringResource(R.string.music_player_sub), settings.showMedia) { v -> onEdit { it.copy(showMedia = v) } }
             SwitchRow(stringResource(R.string.alphabet_left), stringResource(R.string.alphabet_left_sub), settings.leftHanded) { v -> onEdit { it.copy(leftHanded = v) } }
             SwitchRow(stringResource(R.string.hide_alphabet), stringResource(R.string.hide_alphabet_sub), settings.hideAlphabet) { v -> onEdit { it.copy(hideAlphabet = v) } }
+            SwitchRow(stringResource(R.string.contacts_in_alphabet), stringResource(R.string.contacts_in_alphabet_sub), settings.contactsInAlphabet) { v ->
+                onEdit { it.copy(contactsInAlphabet = v) }
+                if (v && !status.contactsPermission) actions.contactsPermission()
+            }
             SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
             SwitchRow(stringResource(R.string.hide_status_bar), null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
             SwitchRow(stringResource(R.string.agenda_title), stringResource(R.string.agenda_sub), settings.showAgenda) { v ->

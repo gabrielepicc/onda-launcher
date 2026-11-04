@@ -179,7 +179,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val homeList = rememberLazyListState()
     val allAppsList = rememberLazyListState()
-    val sections = remember(state.allApps, settings.launchCounts) { buildSections(state.allApps, settings.launchCounts) }
+    val alphabetContacts by vm.alphabetContacts.collectAsStateWithLifecycle()
+    val sections = remember(state.allApps, settings.launchCounts, alphabetContacts) {
+        buildSections(state.allApps, settings.launchCounts, alphabetContacts)
+    }
     val letters = remember(sections) { sections.map { it.letter } }
     val iconScale = settings.iconSize
 
@@ -228,6 +231,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     LaunchedEffect(state.loaded) { if (state.loaded) vm.seedFavoritesIfNeeded() }
     LaunchedEffect(settings.showAgenda, settings.agendaDays, status.calendarPermission) { vm.refreshCalendar() }
+    LaunchedEffect(settings.contactsInAlphabet, status.contactsPermission) { vm.refreshAlphabetContacts() }
 
     LaunchedEffect(Unit) {
         vm.homePressed.collect {
@@ -632,6 +636,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onLongClick = { actionsFor = it },
             onOpenPanel = { panelFor = it },
             onDismissNotifications = { NotificationStore.dismissAll(it.packageName) },
+            onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
             contentPadding = PaddingValues(
                 start = if (settings.leftHanded) letterSide else hiddenSide,
                 end = if (settings.leftHanded) hiddenSide else letterSide,
@@ -749,6 +754,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         notificationAccess = status.notificationAccess,
                         calendarPermission = status.calendarPermission,
                         accessibilityEnabled = status.accessibilityEnabled,
+                        contactsPermission = status.contactsPermission,
                     ),
                     widgets = vm.widgets,
                     actions = object : SettingsActions {
@@ -756,6 +762,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun requestDefault() = callbacks.requestDefaultLauncher()
                         override fun notificationAccess() = withRestrictedHelp(callbacks::openNotificationAccess)
                         override fun calendarPermission() = callbacks.requestCalendarPermission()
+                        override fun contactsPermission() = callbacks.requestContactsPermission()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)

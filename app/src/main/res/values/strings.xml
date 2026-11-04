@@ -317,6 +317,8 @@
     <string name="protect_hidden">Protect hidden apps</string>
     <string name="protect_hidden_sub">Asks for fingerprint, face or PIN to see the list</string>
     <string name="protect_show_hidden">Show hidden apps</string>
+    <string name="contacts_in_alphabet">Contacts in the alphabet</string>
+    <string name="contacts_in_alphabet_sub">Lists your contacts with the apps under each letter. Needs access to contacts.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>

@@ -182,6 +182,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         refreshStatus()
         if (status.notificationAccess) ondaApp.media.start()
         vm.refreshCalendar()
+        vm.refreshAlphabetContacts()
     }
 
     private fun refreshStatus() {

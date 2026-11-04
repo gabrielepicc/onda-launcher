@@ -44,6 +44,33 @@ class ContactsRepository(private val context: Context) {
         result
     }
 
+    /** Contatti visibili ordinati per nome, per l'elenco alfabetico. */
+    suspend fun all(limit: Int = 3000): List<ContactHit> = withContext(Dispatchers.IO) {
+        if (!hasPermission()) return@withContext emptyList()
+        val projection = arrayOf(
+            ContactsContract.Contacts._ID,
+            ContactsContract.Contacts.LOOKUP_KEY,
+            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
+            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+        )
+        val result = mutableListOf<ContactHit>()
+        runCatching {
+            context.contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                projection,
+                "${ContactsContract.Contacts.IN_VISIBLE_GROUP} = 1",
+                null,
+                "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} COLLATE LOCALIZED ASC",
+            )?.use { c ->
+                while (c.moveToNext() && result.size < limit) {
+                    val name = c.getString(2)?.takeIf { it.isNotBlank() } ?: continue
+                    result += ContactHit(c.getLong(0), c.getString(1) ?: "", name, c.getString(3))
+                }
+            }
+        }
+        result.distinctBy { it.id }
+    }
+
     fun open(hit: ContactHit) {
         val uri = ContactsContract.Contacts.getLookupUri(hit.id, hit.lookupKey)
         val intent = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

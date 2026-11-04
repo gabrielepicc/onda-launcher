@@ -317,6 +317,8 @@
     <string name="protect_hidden">Proteggi le app nascoste</string>
     <string name="protect_hidden_sub">Chiede impronta, volto o PIN per vedere l\'elenco</string>
     <string name="protect_show_hidden">Mostra app nascoste</string>
+    <string name="contacts_in_alphabet">Contatti nell\'alfabeto</string>
+    <string name="contacts_in_alphabet_sub">Mostra i contatti con le app sotto ogni lettera. Richiede l\'accesso ai contatti.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>

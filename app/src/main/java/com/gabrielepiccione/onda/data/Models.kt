@@ -250,6 +250,8 @@ data class Settings(
     val swipeUp: GestureAction = GestureAction.SEARCH,
     val hideStatusBar: Boolean = false,
     val hideAlphabet: Boolean = false,
+    /** Mostra i contatti nell'elenco alfabetico, insieme alle app. */
+    val contactsInAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,
     val iconSize: Float = 1f,
     /** Ordine dei blocchi della home (vedi [HomeBlocks]). */

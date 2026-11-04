@@ -141,6 +141,16 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // --- Contatti nell'elenco alfabetico (letti solo se l'opzione è attiva) ---
+    private val _alphabetContacts = MutableStateFlow<List<ContactHit>>(emptyList())
+    val alphabetContacts: StateFlow<List<ContactHit>> = _alphabetContacts.asStateFlow()
+
+    fun refreshAlphabetContacts() {
+        viewModelScope.launch {
+            _alphabetContacts.value = if (settingsRepo.current.contactsInAlphabet) contacts.all() else emptyList()
+        }
+    }
+
     // --- Tasto Home premuto: chiude pannelli e torna in cima ---
     private val _homePressed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val homePressed: SharedFlow<Unit> = _homePressed
