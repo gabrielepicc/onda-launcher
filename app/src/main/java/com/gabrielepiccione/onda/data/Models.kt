@@ -395,6 +395,12 @@ data class Settings(
     val profileOverride: ProfileOverride = ProfileOverride(),
     /** Regole proposte che l'utente ha scartato. */
     val dismissedSuggestions: Set<String> = emptySet(),
+    /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */
+    val musicBackdrop: MusicBackdropMode = MusicBackdropMode.MOTION,
+    val musicBackdropIntensity: Float = 0.7f,
+    val musicBackdropHome: Boolean = true,
+    val musicBackdropList: Boolean = false,
+    val musicBackdropSearch: Boolean = false,
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
     val breakerDay: String = "",
     /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */

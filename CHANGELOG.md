@@ -4,6 +4,13 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Sfondo con la musica** (Fase 8, Musica, passo 1). Mentre suona qualcosa, dietro la home si muovono onde morbide con 3–5 colori presi dalla copertina.
+  - Il movimento segue il "carattere" del brano, stimato dalla copertina: accesa e contrastata vuol dire più vivace, scura o tenua più lenta.
+  - Al cambio di brano i colori cambiano in 1,5 secondi; quando la musica si ferma, le onde rallentano e svaniscono.
+  - Consumi: al massimo 30 fps, si ferma con Onda non visibile, con il risparmio energetico e con "Rimuovi animazioni".
+  - Shader su Android 13+, sfumature sulle versioni precedenti.
+  - Resta sotto la velatura, con colori sempre leggibili sotto il testo.
+  - Impostazioni → Stile: modalità, intensità, dove mostrarlo, anteprima.
 - **Impostazioni secondo Material You**:
   - **Barra in alto**: grande, si riduce scorrendo.
   - **Voci**: tutte uguali, con titolo a 16sp, supporto a 14sp, 56/72 dp di altezza e l'interruttore che si attiva toccando tutta la riga.

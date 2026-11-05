@@ -709,4 +709,15 @@
     <string name="home_menu_layout">Layout</string>
     <string name="home_menu_folder_sub">Group apps under one name</string>
     <string name="home_menu_reorder_sub">Move clock, widgets and apps</string>
+    <string name="section_music_backdrop">Background with music</string>
+    <string name="music_backdrop_sub">While music plays, waves with the colours of the cover move behind the home, livelier with bright covers and calmer with dark ones. It stops when Onda isn\'t visible, in battery saver and with animations removed.</string>
+    <string name="music_backdrop_off">Off</string>
+    <string name="music_backdrop_colors">Colours only</string>
+    <string name="music_backdrop_motion">Colours and motion</string>
+    <string name="music_backdrop_preview">Preview</string>
+    <string name="music_backdrop_intensity">Intensity</string>
+    <string name="music_backdrop_home">On home</string>
+    <string name="music_backdrop_list">In the app list</string>
+    <string name="music_backdrop_search">In search</string>
+    <string name="kw_music">music background cover colours animated waves spotify player</string>
 </resources>

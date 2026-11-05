@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.MusicBackdropMode
+import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -325,6 +327,50 @@ fun SettingsScreen(
         if (page == SettingsPage.STYLE) Group(stringResource(R.string.section_styles)) {
             SettingsSupporting(stringResource(R.string.styles_subtitle))
             FilledTonalButton(onClick = { actions.openStyles() }, modifier = Modifier.padding(top = 10.dp)) { Text(stringResource(R.string.styles_open)) }
+        }
+
+        if (page == SettingsPage.STYLE) Group(stringResource(R.string.section_music_backdrop)) {
+            SettingsSupporting(stringResource(R.string.music_backdrop_sub))
+            TextChoices(
+                listOf(
+                    MusicBackdropMode.OFF to stringResource(R.string.music_backdrop_off),
+                    MusicBackdropMode.COLORS to stringResource(R.string.music_backdrop_colors),
+                    MusicBackdropMode.MOTION to stringResource(R.string.music_backdrop_motion),
+                ),
+                settings.musicBackdrop,
+                columns = 3,
+            ) { m -> onEdit { it.copy(musicBackdrop = m) } }
+            if (settings.musicBackdrop != MusicBackdropMode.OFF) {
+                // Anteprima dal vivo con i colori di esempio: com'è lo strato sotto la velatura
+                Box(
+                    Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth()
+                        .height(120.dp)
+                        .clip(RoundedCornerShape(20.dp)),
+                ) {
+                    MusicBackdrop(
+                        art = null,
+                        playing = true,
+                        mode = settings.musicBackdrop,
+                        intensity = settings.musicBackdropIntensity,
+                        dark = colors.dark,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                    Text(
+                        stringResource(R.string.music_backdrop_preview),
+                        color = colors.onWallpaper,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
+                ValueSlider(stringResource(R.string.music_backdrop_intensity), percentText(settings.musicBackdropIntensity), settings.musicBackdropIntensity, Settings().musicBackdropIntensity, 0.2f..1f) { v ->
+                    onEdit { it.copy(musicBackdropIntensity = v) }
+                }
+                SwitchRow(stringResource(R.string.music_backdrop_home), null, settings.musicBackdropHome) { v -> onEdit { it.copy(musicBackdropHome = v) } }
+                SwitchRow(stringResource(R.string.music_backdrop_list), null, settings.musicBackdropList) { v -> onEdit { it.copy(musicBackdropList = v) } }
+                SwitchRow(stringResource(R.string.music_backdrop_search), null, settings.musicBackdropSearch) { v -> onEdit { it.copy(musicBackdropSearch = v) } }
+            }
         }
 
         if (page == SettingsPage.STYLE) Group(stringResource(R.string.section_style)) {
@@ -957,6 +1003,7 @@ private class SettingEntry(@StringRes val titleRes: Int, val page: SettingsPage,
 
 private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.section_style, SettingsPage.STYLE, R.string.kw_style),
+    SettingEntry(R.string.section_music_backdrop, SettingsPage.STYLE, R.string.kw_music),
     SettingEntry(R.string.dynamic_color, SettingsPage.STYLE, R.string.kw_style),
     SettingEntry(R.string.accent_color, SettingsPage.STYLE, R.string.kw_style),
     SettingEntry(R.string.clock_date, SettingsPage.CLOCK, R.string.kw_clock),

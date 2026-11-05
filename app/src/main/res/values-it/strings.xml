@@ -709,4 +709,15 @@
     <string name="home_menu_layout">Disposizione</string>
     <string name="home_menu_folder_sub">Raggruppa più app sotto un nome</string>
     <string name="home_menu_reorder_sub">Sposta orologio, widget e app</string>
+    <string name="section_music_backdrop">Sfondo con la musica</string>
+    <string name="music_backdrop_sub">Mentre suona la musica, dietro la home si muovono onde con i colori della copertina, più vivaci con copertine accese e più calme con quelle scure. Si ferma quando Onda non è visibile, con il risparmio energetico e con le animazioni disattivate.</string>
+    <string name="music_backdrop_off">Spento</string>
+    <string name="music_backdrop_colors">Solo colori</string>
+    <string name="music_backdrop_motion">Colori e movimento</string>
+    <string name="music_backdrop_preview">Anteprima</string>
+    <string name="music_backdrop_intensity">Intensità</string>
+    <string name="music_backdrop_home">In home</string>
+    <string name="music_backdrop_list">Nell\'elenco delle app</string>
+    <string name="music_backdrop_search">Nella ricerca</string>
+    <string name="kw_music">musica sfondo copertina colori animato onde spotify player</string>
 </resources>
