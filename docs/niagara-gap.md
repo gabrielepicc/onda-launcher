@@ -99,6 +99,37 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 
 ---
 
+## 10. Altro emerso dall'APK 1.15.6 (testi e impostazioni dell'app)
+
+Ricavato dai testi dell'interfaccia e dalle impostazioni contenute nell'APK (nessun codice letto o copiato).
+
+| # | Comportamento di Niagara | Onda oggi | Priorità |
+|---|---|---|---|
+| 10.1 | **Alfabeto compatto e ancorato in basso**: la colonna è alta quanto le lettere (passo massimo ~19 sp) invece di occupare tutto lo schermo; ha un segno in cima (preferiti) e in fondo (cartelle / voci del launcher). | ✅ 0.10 colonna compatta in basso + segno finale · ⬜ stella in cima | P1 |
+| 10.2 | **La lettera scelta si allinea al dito**: l'inizio della sezione compare all'altezza del pollice, non in cima allo schermo. | ✅ 0.10 | P1 |
+| 10.3 | **Ricerca sopra lo sfondo**: nessun pannello opaco; c'è solo l'opzione "Velatura sfondo" per leggere meglio elenco e ricerca. | ✅ 0.10 | P1 |
+| 10.4 | **Ricerca a vuoto con suggerimenti intelligenti**: "Cercate spesso", "Ultimo risultato", "Installate di recente"; le app nascoste compaiono in un gruppo "Nascoste". | 🟡 ci sono solo le app più usate | P2 |
+| 10.5 | **Ricerca profonda con parole chiave**: iniziare con una parola chiave per cercare direttamente su un sito o un'app (YouTube, traduttore, Wolfram Alpha…), con l'elenco delle parole chiave nelle impostazioni. | ⬜ (è solo aprire un URL: niente INTERNET nell'app) | P2 |
+| 10.6 | **Riconoscimento nel testo cercato**: un URL → "Apri"; un numero → "Chiama" / "Messaggio"; un'email → "Scrivi email"; un contatto inesistente → "Aggiungi ai contatti". | ⬜ | P2 |
+| 10.7 | **Popup / cartelle create direttamente nell'elenco app** (alla creazione si sceglie: preferiti o elenco app) e **suggerimenti di app da aggiungere a una cartella**. | 🟡 le cartelle nascono solo dai preferiti | P2 |
+| 10.8 | **Scorciatoie delle app come voci a sé**: "Aggiungi alla home" e "Mostra nell'elenco app" per una singola scorciatoia (gruppo "Scorciatoie" nell'elenco). | ⬜ | P2 |
+| 10.9 | **"Smetti di suggerire" / "Suggerisci di nuovo"** sulle app suggerite sotto i preferiti; interruttore "Suggerisci app usate spesso". | ⬜ (vedi 1.1) | P1 |
+| 10.10 | **Ordinamento per uso disattivabile** ("Ordina l'elenco per utilizzo"). | 🟡 in Onda è sempre attivo: aggiungere l'interruttore | P3 |
+| 10.11 | **"Riordina l'elenco"**: propone di nascondere le app usate raramente (gruppi "Usate spesso" / "Usate raramente"). | ⬜ | P3 |
+| 10.12 | **Tempo di utilizzo per app** dal menu dell'app ("Tempo di utilizzo", "aperta N volte"), app più usate degli ultimi 7 giorni e riepilogo annuale. | ⬜ (richiede l'accesso ai dati di utilizzo, già previsto per 6.1) | P3 |
+| 10.13 | **Modalità mattino**: nei primi minuti dopo la sveglia chiede conferma prima di aprire le app "di svago" e ricorda da quanto si usa il telefono (consiglio: max 10 minuti a letto). | ⬜ | P3 |
+| 10.14 | **Categoria "app di svago"** scelta dall'utente, usata da Usage Breaker e modalità mattino. | ⬜ | P3 |
+| 10.15 | **Riepilogo notifiche**: "Escludi conversazioni" (i messaggi arrivano subito), chiamate e sveglie sempre immediate, "Chiudi riepilogo e pianifica il prossimo", orario del prossimo riepilogo. | ⬜ (vedi 5.1) | P2 |
+| 10.16 | **Pausa delle app di lavoro** dall'elenco ("Metti in pausa" / "Riattiva"). | ⬜ (vedi 2.4) | P2 |
+| 10.17 | **Widget**: "Riempi lo schermo", "Sposta e ridimensiona", "Widget a due colonne", "Sostituisci orologio con widget"; ripristino dei widget dal backup con avviso se l'app non lo supporta più. | 🟡 | P3 |
+| 10.18 | **Preferiti "da aperto"** sui pieghevoli: app in più che compaiono solo con lo schermo aperto. | ⬜ | P3 |
+| 10.19 | **Aspetto**: tema scuro "in base allo sfondo / al sistema / ibrido", **nero assoluto**, colore del testo automatico/chiaro/scuro, dimensione del testo 80–140 %, **font in modalità ibrida** (testi lunghi o piccoli col font di sistema), "rimodella le icone vecchie" (sfondo bianco per uniformare la forma), "sposta lo sfondo" per i wallpaper decentrati, rotazione della home attivabile. | 🟡 manca: nero assoluto, modalità ibrida, rimodella icone, rotazione disattivabile | P3 |
+| 10.20 | **Stili di icone regolabili**: palette (colori dell'app, del tema, varianti), spessore linea (elegante/marcato), tonalità (chiara/scura/vivace), contorno pieno o vuoto, puntini tondi o a rombo; **modifica icone in blocco** e avviso "icone mancanti" con correzione automatica. | 🟡 (vedi 8.x) | P3 |
+| 10.21 | **Meteo**: pioggia nei prossimi 30 minuti, temperatura percepita, località per città o coordinate. **Agenda**: pulsante "Nuovo evento", eventi "occupato" e "fino alle…". | ⬜ meteo bloccato · agenda 🟡 | P2 |
+| 10.22 | **Musica**: "Imposta come app musicale" dal menu dell'app; app musicali anche con apparecchi acustici. | 🟡 | P3 |
+| 10.23 | **Spazio privato nascosto raggiungibile cercando "spazio privato"**. | 🟡 verificare | P3 |
+| 10.24 | **Impostazioni del launcher**: "Riavvia launcher", "Cambia launcher predefinito", guida alla navigazione a gesti, integrazione con Tasker/Locale per cambiare profilo. | 🟡 | P3 |
+
 ## Non da copiare (scelte di Niagara o incompatibili con le regole di Onda)
 - Feed di Google Discover: richiede l'app Google, contrario alla regola "niente Google".
 - Integrazione con Sesame: app abbandonata, Niagara la sta togliendo.
