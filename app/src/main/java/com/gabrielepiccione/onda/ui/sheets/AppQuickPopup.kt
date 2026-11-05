@@ -34,6 +34,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material.icons.filled.Edit
+import com.gabrielepiccione.onda.data.WidgetStack
+import com.gabrielepiccione.onda.ui.components.WidgetStackCard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
@@ -120,7 +124,10 @@ fun AppQuickPopup(
     shortcuts: List<ShortcutInfo>,
     shortcutIcon: (ShortcutInfo) -> ImageBitmap?,
     notifications: List<NotificationItem>,
-    widgetId: Int?,
+    widgetIds: List<Int>,
+    relatedApps: List<AppInfo>,
+    onRelatedApp: (AppInfo) -> Unit,
+    onEdit: () -> Unit,
     widgets: WidgetManager,
     themedIcons: Boolean,
     onOpenApp: () -> Unit,
@@ -218,8 +225,45 @@ fun AppQuickPopup(
                 )
             }
 
-            if (widgetId != null) {
-                Box(Modifier.padding(horizontal = 8.dp)) { HostedWidget(widgetId, widgets) }
+            if (relatedApps.isNotEmpty()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 4.dp),
+                ) {
+                    relatedApps.forEach { other ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .width(68.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable { onRelatedApp(other); onDismiss() }
+                                .padding(vertical = 8.dp),
+                        ) {
+                            AppIcon(other, 40.dp, themedIcons)
+                            Text(
+                                other.label,
+                                color = colors.onWallpaper,
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Più widget si sfogliano in orizzontale, come le pile della home
+            when (widgetIds.size) {
+                0 -> Unit
+                1 -> Box(Modifier.padding(horizontal = 8.dp)) { HostedWidget(widgetIds.single(), widgets) }
+                else -> WidgetStackCard(
+                    stack = WidgetStack("popup_" + app.key, widgetIds),
+                    widgets = widgets,
+                    highlighted = false,
+                    onLongPress = null,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
             }
 
             shortcuts.forEach { sc ->
@@ -265,6 +309,7 @@ fun AppQuickPopup(
                 ) { onToggleFavorite(); onDismiss() }
                 QuickAction(Icons.Filled.Info, stringResource(R.string.app_info)) { onInfo(); onDismiss() }
                 QuickAction(Icons.Filled.Delete, stringResource(R.string.uninstall)) { onUninstall(); onDismiss() }
+                QuickAction(Icons.Filled.Edit, stringResource(R.string.popup_edit)) { onEdit(); onDismiss() }
                 QuickAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { onMoreOptions(); onDismiss() }
             }
         }

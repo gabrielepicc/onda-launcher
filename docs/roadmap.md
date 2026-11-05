@@ -45,7 +45,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    3. ✅ Alfabeto: zona di tocco a tutta altezza con colonna visibile compatta (12.3) e stella dei preferiti in cima (10.1).
    4. ✅ Alfabeto localizzato con `AlphabeticIndex` (2.1).
    5. ✅ App suggerite sotto i preferiti con "Smetti di suggerire" (1.1, 10.9).
-   6. Popup dell'app come cartella: app correlate, widget e pile, scorciatoie nascondibili (3.1, 3.2).
+   6. ✅ Popup dell'app come cartella: app correlate, widget e pile, scorciatoie nascondibili (3.1, 3.2).
    7. Usage Breaker a promemoria (6.1) e backup completo con WorkManager (9.1).
    8. Rilascio 0.10: versionCode 10, changelog fastlane 10.txt, roadmap.
 

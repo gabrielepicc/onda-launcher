@@ -398,6 +398,11 @@
     <string name="suggested_restore">Suggerisci di nuovo</string>
     <string name="suggested_setting">Suggerisci app usate spesso</string>
     <string name="suggested_setting_sub">Compaiono sotto i preferiti, al massimo 3. Il calcolo avviene solo sul telefono.</string>
+    <string name="popup_edit">Modifica il popup</string>
+    <string name="popup_edit_title">Popup di %1$s</string>
+    <string name="popup_related">App correlate</string>
+    <string name="popup_related_add">Aggiungi un\'app</string>
+    <string name="popup_shortcuts">Scorciatoie da mostrare</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>
