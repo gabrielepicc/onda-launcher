@@ -33,7 +33,12 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ annulla dopo un preset e conferma prima di eliminare un widget
 6. ✅ Fase 6 — ✅ gesture configurabili estese, ✅ animazioni di apertura app, ✅ landscape/tablet, ✅ Private Space, ✅ onboarding, ✅ backup automatico
 
-7. ⬜ Fase 7 — Parità con Niagara: elenco dettagliato e priorità in `docs/niagara-gap.md`.
+7. 🟡 Fase 7 — Parità con Niagara (0.10 in corso): ✅ fondo elenco con cartelle, installate di recente e impostazioni;
+   ✅ alfabeto compatto allineato al dito; ✅ ricerca sopra lo sfondo; ✅ feedback aptico a colpi distinti;
+   ✅ player solo in riproduzione; ✅ cartelle con icona, carosello di widget e altezza.
+   Prossime: alfabeto localizzato, suggerimenti sotto i preferiti, popup dell'app come cartella, Usage Breaker a promemoria,
+   backup completo, stella dei preferiti in cima all'alfabeto.
+   Fase 7 — Parità con Niagara: elenco dettagliato e priorità in `docs/niagara-gap.md`.
    Prima: alfabeto localizzato, suggerimenti nella home, popup dell'app come cartella, Usage Breaker a promemoria,
    backup completo (impostazioni + icone + font + temi, pianificato con WorkManager), taratura dei gesti.
 

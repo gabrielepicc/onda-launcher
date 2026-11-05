@@ -30,6 +30,12 @@ nomi, icone o grafica di Niagara.
 - Importare classi e funzioni: **niente nomi completi** nel codice (`com.gabrielepiccione.onda.data.X.f()`).
 - La logica pura (calcoli, regole, migrazioni) sta in funzioni testabili su JVM in `data/` o `util/`, con test.
 
+## Come riprendere il lavoro
+1. Controllare le PR aperte (`gh api repos/gabrielepicc/onda-launcher/pulls --jq '.[] | "\(.number) \(.head.ref) -> \(.base.ref)"'`)
+   e unire quelle con CI verde, nell'ordine in cui dipendono l'una dall'altra.
+2. Prendere la prossima voce da `docs/niagara-gap.md` ("Ordine proposto"): una voce = un branch = una PR.
+3. Le richieste dell'utente arrivano spesso con screenshot di Niagara: replicare il comportamento, mai la grafica.
+
 ## Decisioni da rispettare
 - Backup: il formato di riferimento è un unico file che contiene impostazioni **e** risorse dell'utente
   (immagini delle icone, font importati, temi salvati). Il backup automatico gira con WorkManager ogni 24 ore
@@ -61,6 +67,15 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - Gesti righe app: componente `SwipeActions` (destra = popup dell'app `AppQuickPopup`, sinistra = elimina notifiche).
 - Home a blocchi ordinabili (`HomeBlocks`: orologio, media, widget, pile, agenda, riepilogo notifiche, app) modificabili con pressione lunga (`HomeEditSheet`) o trascinando (`HomeReorderSheet`).
 - Popup dell'app in `ui/sheets/AppQuickPopup`; `AppPanelSheet` resta per rispondere sopra la tastiera, `AppActionsSheet` per "Altre opzioni".
+- Elenco app (`ui/drawer/AllAppsPanel`): lettere, poi Spazio privato, cartelle e voci di Onda ("Installate di recente",
+  "Impostazioni"); il segno `END_OF_LIST_MARK` dell'alfabeto porta lì (`endOfListIndex`).
+- Alfabeto (`ui/components/AlphabetWaveScroller`): colonna alta quanto le lettere (max 19dp ciascuna) ancorata in basso;
+  `onLetter(lettera, yDelDito)` e la home porta l'inizio della sezione all'altezza del dito.
+- Vibrazione: sempre `LocalOndaHaptics.current?.perform(HapticEvent.X)` (mai `LocalHapticFeedback` diretto).
+  `util/HapticPlan` sceglie primitive o costanti di sistema (testato), `util/OndaHaptics` le suona e segue il sistema.
+- Player: visibile solo con riproduzione attiva o pausa recente (`data/MediaRules`).
+- Cartelle: `Folder.icon` (vedi `data/FolderIcons`) e `Folder.widgetHeightDp`; più widget = carosello `WidgetStackCard`.
+- Ricerca: nessun pannello opaco, solo una velatura (`SEARCH_TINT` in `ui/search/SearchPanel`).
 
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.
