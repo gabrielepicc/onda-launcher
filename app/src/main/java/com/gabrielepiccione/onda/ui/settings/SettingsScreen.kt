@@ -310,22 +310,7 @@ fun SettingsScreen(
             }
             if (!settings.dynamicColor || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
                 Label(stringResource(R.string.accent_color))
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(bottom = 8.dp)) {
-                    AccentChoices.forEach { argb ->
-                        val selected = settings.accent == argb
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color(argb))
-                                .border(BorderStroke(if (selected) 3.dp else 0.dp, colors.onWallpaper), CircleShape)
-                                .clickable { onEdit { it.copy(accent = argb) } }
-                        ) {
-                            if (selected) Icon(Icons.Filled.Check, null, tint = Color.Black, modifier = Modifier.size(18.dp))
-                        }
-                    }
-                }
+                ColorSwatches(AccentChoices, settings.accent) { argb -> onEdit { it.copy(accent = argb) } }
             }
             ValueSlider(stringResource(R.string.wallpaper_dim), percentText(settings.wallpaperDim), settings.wallpaperDim, Settings().wallpaperDim, 0f..0.8f) { v -> onEdit { it.copy(wallpaperDim = v) } }
             TextButton(onClick = { actions.wallpaper() }) { Text(stringResource(R.string.change_wallpaper_ellipsis)) }
@@ -367,23 +352,8 @@ fun SettingsScreen(
             FontTiles(settings.font) { f -> onEdit { it.copy(font = f) } }
             ValueSlider(stringResource(R.string.text_size), percentText(settings.textScale), settings.textScale, Settings().textScale, 0.8f..1.3f, steps = 4) { v -> onEdit { it.copy(textScale = v) } }
             Label(stringResource(R.string.text_color))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.horizontalScroll(rememberScrollState()).padding(bottom = 6.dp)) {
-                FilterChip(selected = settings.textColor == 0L, onClick = { onEdit { it.copy(textColor = 0) } }, label = { Text(stringResource(R.string.text_color_auto)) })
-                listOf(0xFFFFFFFF, 0xFFF2EDE4, 0xFF1A1C1E, 0xFF7FE3D1, 0xFFC3A6FF, 0xFFFFD27F, 0xFFFFAB91).forEach { argb ->
-                    val sel = settings.textColor == argb
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color(argb))
-                            .border(BorderStroke(if (sel) 3.dp else 1.dp, if (sel) colors.accent else colors.panelBorder), CircleShape)
-                            .clickable { onEdit { it.copy(textColor = argb) } }
-                    ) {
-                        if (sel) Icon(Icons.Filled.Check, null, tint = if (Color(argb).luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(18.dp))
-                    }
-                }
-            }
+            FilterChip(selected = settings.textColor == 0L, onClick = { onEdit { it.copy(textColor = 0) } }, label = { Text(stringResource(R.string.text_color_auto)) })
+            ColorSwatches(TextColorChoices, settings.textColor) { argb -> onEdit { it.copy(textColor = argb) } }
             Label(stringResource(R.string.list_alignment))
             AlignTiles(settings.listAlign) { a -> onEdit { it.copy(listAlign = a) } }
             ValueSlider(

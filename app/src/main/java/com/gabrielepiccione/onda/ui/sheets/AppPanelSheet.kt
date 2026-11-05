@@ -352,8 +352,8 @@ internal fun Conversation(
                     .padding(top = 12.dp)
                     .horizontalScroll(rememberScrollState())
             ) {
-                item.actions.forEach { a -> Chip(a.title?.toString().orEmpty()) { onAction(a) } }
-                if (item.canReply) Chip(stringResource(R.string.notif_reply)) { onSelectReply() }
+                item.actions.forEach { a -> ActionChip(a.title?.toString().orEmpty()) { onAction(a) } }
+                if (item.canReply) ActionChip(stringResource(R.string.notif_reply)) { onSelectReply() }
             }
         }
     }
@@ -464,23 +464,6 @@ private fun Avatar(item: NotificationItem, size: Dp = 48.dp, compact: Boolean = 
             )
         }
     }
-}
-
-@Composable
-private fun Chip(label: String, onClick: () -> Unit) {
-    val colors = LocalOndaColors.current
-    Text(
-        label,
-        style = MaterialTheme.typography.labelLarge,
-        color = colors.onWallpaper,
-        maxLines = 1,
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(colors.panel)
-            .clickable(onClick = onClick)
-            .heightIn(min = 40.dp)
-            .padding(horizontal = 18.dp, vertical = 10.dp),
-    )
 }
 
 @Composable

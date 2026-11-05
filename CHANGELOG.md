@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Material 3, tocco e leggibilità**: bersagli di almeno 48 dp, campioni di colore che vanno a capo e si leggono con TalkBack, accento più
+  leggibile nel tema chiaro, ondina al tocco sul pulsante di ricerca. Il controllo completo è in `docs/material-audit.md`.
 - **Material 3, forme e testi**: raggi solo dalla scala ufficiale (4, 8, 12, 16, 20, 28), testi dai ruoli della scala tipografica invece di
   misure scritte a mano, titolo delle barre in alto come quello di Material.
 - **Bolla vera per il popup**: si apre come un cerchio con pellicola iridescente che nasce dall'icona e diventa il popup. Chiudendolo si

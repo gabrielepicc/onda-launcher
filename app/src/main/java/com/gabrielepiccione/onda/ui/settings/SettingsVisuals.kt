@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.gabrielepiccione.onda.data.SearchButton
@@ -111,6 +115,44 @@ internal fun ChoiceTile(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+    }
+}
+
+/** Colori che si possono dare al testo. */
+internal val TextColorChoices = listOf(0xFFFFFFFF, 0xFFF2EDE4, 0xFF1A1C1E, 0xFF7FE3D1, 0xFFC3A6FF, 0xFFFFD27F, 0xFFFFAB91)
+
+/**
+ * Campioni di colore: bersaglio da 48dp con il cerchio da 36dp al centro, e vanno a capo invece di
+ * uscire dal riquadro sugli schermi stretti.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun ColorSwatches(choices: List<Long>, selected: Long, onPick: (Long) -> Unit) {
+    val colors = LocalOndaColors.current
+    FlowRow(Modifier.padding(bottom = 4.dp)) {
+        choices.forEachIndexed { index, argb ->
+            val isSelected = selected == argb
+            val description = stringResource(R.string.color_option, index + 1, choices.size)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .semantics { contentDescription = description }
+                    .selectable(selected = isSelected, role = Role.RadioButton) { onPick(argb) },
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(Color(argb))
+                        .border(if (isSelected) 3.dp else 1.dp, if (isSelected) colors.accent else colors.panelBorder, CircleShape),
+                ) {
+                    if (isSelected) Icon(Icons.Filled.Check, null, tint = if (Color(argb).luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
     }
 }
 

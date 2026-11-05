@@ -173,7 +173,7 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
 }
 
 /** Schema statico costruito a partire dal colore d'accento (per Android < 12 o colori dinamici spenti). */
-private fun staticScheme(accent: Color, dark: Boolean): ColorScheme {
+internal fun staticScheme(accent: Color, dark: Boolean): ColorScheme {
     fun mix(a: Color, b: Color, t: Float) = Color(
         a.red + (b.red - a.red) * t, a.green + (b.green - a.green) * t, a.blue + (b.blue - a.blue) * t, 1f
     )
@@ -193,7 +193,8 @@ private fun staticScheme(accent: Color, dark: Boolean): ColorScheme {
             onSurfaceVariant = Color(0xFFB9C0C4),
         )
     } else {
-        val primary = mix(accent, Color.Black, 0.45f)
+        // Abbastanza scuro da leggersi come testo sui pannelli con ogni accento (vedi SchemeContrastTest)
+        val primary = mix(accent, Color.Black, 0.52f)
         val surface = mix(Color(0xFFF8FAFB), accent, 0.04f)
         lightColorScheme(
             primary = primary,

@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -166,7 +167,8 @@ fun ClockHeader(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(top = 10.dp)
+                    .padding(top = 4.dp)
+                    .minimumInteractiveComponentSize()
                     .clip(RoundedCornerShape(50))
                     .background(colors.accentContainer)
                     .clickable { onEvent(event) }
@@ -527,7 +529,7 @@ private fun PlayButton(playing: Boolean, onClick: () -> Unit, width: androidx.co
 private fun SmallMediaButton(onClick: () -> Unit, content: @Composable () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(width = 36.dp, height = 48.dp).clip(CircleShape).clickable(onClick = onClick)
+        modifier = Modifier.size(48.dp).clip(CircleShape).clickable(onClick = onClick)
     ) { content() }
 }
 

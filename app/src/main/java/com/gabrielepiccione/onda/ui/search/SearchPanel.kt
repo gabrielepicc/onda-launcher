@@ -132,7 +132,7 @@ fun SearchPanel(
             }
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(44.dp).clip(CircleShape).clickable(onClick = onClose)
+                modifier = Modifier.size(48.dp).clip(CircleShape).clickable(onClick = onClose)
             ) {
                 Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close), tint = colors.onWallpaperMuted)
             }
