@@ -71,7 +71,8 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - Elenco app (`ui/drawer/AllAppsPanel`): lettere, poi Spazio privato, cartelle e voci di Onda ("Installate di recente",
   "Impostazioni"); il segno `END_OF_LIST_MARK` dell'alfabeto porta lì (`endOfListIndex`).
 - Alfabeto (`ui/components/AlphabetWaveScroller`, geometria in `util/AlphabetLayout`): zona di tocco a tutta altezza,
-  colonna visibile alta quanto le lettere (max 19dp ciascuna) ancorata in basso; in cima `FAVORITES_MARK` riporta ai preferiti.
+  colonna visibile alta quanto le lettere (max 19dp ciascuna) che riposa in basso e, toccando più in alto, sale sotto il dito
+  (`AlphabetLayout.anchoredTop`); in cima `FAVORITES_MARK` riporta ai preferiti.
   `onLetter(lettera, yDelDito)` e la home porta l'inizio della sezione all'altezza del dito.
 - Vibrazione: sempre `LocalOndaHaptics.current?.perform(HapticEvent.X)` (mai `LocalHapticFeedback` diretto).
   `util/HapticPlan` sceglie primitive o costanti di sistema (testato), `util/OndaHaptics` le suona e segue il sistema.

@@ -3,6 +3,10 @@
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
 
+## [Non rilasciato]
+- **Alfabeto**: toccando il bordo sopra le lettere, la colonna sale incontro al dito e lo scorrimento parte da lì, invece di
+  selezionare la stella. Alzando il dito torna al suo posto. La zona di tocco arriva quasi in cima allo schermo.
+
 ## [0.10.0]
 - **Usage Breaker a promemoria**: per le app scelte, una notifica dopo 5–240 minuti di uso continuo chiede se vuoi
   continuare, senza bloccare nulla. Si aggiunge alla pausa prima di aprire l'app. Richiede l'accesso ai dati di

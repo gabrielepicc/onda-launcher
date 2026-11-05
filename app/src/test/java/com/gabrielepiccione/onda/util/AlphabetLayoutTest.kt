@@ -34,6 +34,32 @@ class AlphabetLayoutTest {
     }
 
     @Test
+    fun touchingTheLettersDoesNotMoveTheColumn() {
+        assertEquals(1500f, AlphabetLayout.anchoredTop(1500f, 2000f, 10, 50f), 0.01f)
+        assertEquals(1500f, AlphabetLayout.anchoredTop(1800f, 2000f, 10, 50f), 0.01f)
+    }
+
+    @Test
+    fun touchingAboveBringsTheColumnUnderTheFinger() {
+        val top = AlphabetLayout.anchoredTop(600f, 2000f, 10, 50f)
+        assertEquals(575f, top, 0.01f)
+        assertEquals(0, AlphabetLayout.indexAt(600f, 2000f, 10, 50f, top))
+        assertEquals(4, AlphabetLayout.indexAt(800f, 2000f, 10, 50f, top))
+    }
+
+    @Test
+    fun theAnchorSkipsTheFavoritesMark() {
+        val top = AlphabetLayout.anchoredTop(600f, 2000f, 10, 50f, anchorIndex = 1)
+        assertEquals(1, AlphabetLayout.indexAt(600f, 2000f, 10, 50f, top))
+    }
+
+    @Test
+    fun theColumnNeverLeavesTheZone() {
+        assertEquals(0f, AlphabetLayout.anchoredTop(5f, 2000f, 10, 50f, anchorIndex = 1), 0.01f)
+        assertEquals(0f, AlphabetLayout.anchoredTop(100f, 600f, 30, 50f), 0.01f)
+    }
+
+    @Test
     fun emptyAlphabetSelectsNothing() {
         assertEquals(-1, AlphabetLayout.indexAt(10f, 2000f, 0, 50f))
     }

@@ -827,7 +827,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         val lettersVisible = overlay == Overlay.ALL_APPS || !settings.hideAlphabet
         val scrollerAlpha by animateFloatAsState(if (scrollerActive) 1f else 0f, Motion.enter(250), label = "scroller")
         val scrollerPadding = Modifier.padding(
-            top = bars.calculateTopPadding() + 72.dp,
+            top = bars.calculateTopPadding() + 16.dp,
             bottom = bars.calculateBottomPadding() + 40.dp,
         )
         // Doppio tocco sull'alfabeto (visibile o invisibile): stessa azione del doppio tocco in home
