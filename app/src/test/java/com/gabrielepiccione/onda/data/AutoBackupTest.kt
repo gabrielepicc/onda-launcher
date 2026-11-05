@@ -26,6 +26,12 @@ class AutoBackupTest {
     }
 
     @Test
+    fun oldJsonCopiesCountTowardsTheOnesToKeep() {
+        val names = listOf("onda-auto-2026-10-01.json") + (1..7).map { AutoBackup.fileName("2026-11-0$it") }
+        assertEquals(listOf("onda-auto-2026-10-01.json"), AutoBackup.toDelete(names))
+    }
+
+    @Test
     fun deviceSpecificBackupFolderIsNotInTheDefaults() {
         assertEquals("", Settings().autoBackupUri)
     }

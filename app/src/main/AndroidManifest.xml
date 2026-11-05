@@ -90,6 +90,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Solo per "Condividi il backup": espone il file creato al momento nella cache -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.backup"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/backup_paths" />
+        </provider>
+
         <service
             android:name=".service.OndaNotificationListener"
             android:exported="true"

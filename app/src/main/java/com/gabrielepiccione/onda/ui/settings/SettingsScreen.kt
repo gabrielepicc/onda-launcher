@@ -122,6 +122,7 @@ interface SettingsActions {
     fun importBackup()
     fun chooseBackupFolder()
     fun disableAutoBackup()
+    fun shareBackup()
     fun close()
 }
 
@@ -546,6 +547,7 @@ fun SettingsScreen(
                 FilledTonalButton(onClick = { actions.exportBackup() }) { Text(stringResource(R.string.export)) }
                 OutlinedButton(onClick = { actions.importBackup() }) { Text(stringResource(R.string.restore)) }
             }
+            TextButton(onClick = { actions.shareBackup() }) { Text(stringResource(R.string.backup_share)) }
             Label(stringResource(R.string.auto_backup))
             Text(stringResource(R.string.auto_backup_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
             if (settings.autoBackupUri.isNotBlank()) {

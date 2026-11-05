@@ -99,7 +99,8 @@
     <string name="no_hidden_apps">Nessuna app nascosta. Tieni premuta un\'app per nasconderla.</string>
     <string name="show">Mostra</string>
     <string name="section_backup">Backup</string>
-    <string name="backup_desc">Salva preferiti, nomi, nascoste e aspetto in un file, e ripristinali su un altro telefono.</string>
+    <string name="backup_desc">Salva preferiti, cartelle, nomi, nascoste, aspetto, immagini delle icone e font in un unico file, e ripristinali su un altro telefono. I widget vanno aggiunti di nuovo.</string>
+    <string name="backup_share">Condividi il backup</string>
     <string name="export">Esporta</string>
     <string name="no_icon_packs">Nessun icon pack installato. Scaricane uno dal Play Store (compatibile con Nova/ADW).</string>
     <string name="more_options">Altre opzioni</string>

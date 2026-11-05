@@ -99,7 +99,8 @@
     <string name="no_hidden_apps">No hidden apps. Long-press an app to hide it.</string>
     <string name="show">Show</string>
     <string name="section_backup">Backup</string>
-    <string name="backup_desc">Save favorites, names, hidden apps and look to a file, and restore them on another phone.</string>
+    <string name="backup_desc">Save favorites, folders, names, hidden apps, look, icon images and fonts to one file, and restore them on another phone. Widgets have to be added again.</string>
+    <string name="backup_share">Share backup</string>
     <string name="export">Export</string>
     <string name="no_icon_packs">No icon packs installed. Get one compatible with Nova/ADW.</string>
     <string name="more_options">More options</string>

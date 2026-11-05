@@ -166,6 +166,7 @@ interface HomeCallbacks {
     fun importBackup()
     fun chooseBackupFolder()
     fun disableAutoBackup()
+    fun shareBackup()
     fun importFont(forClock: Boolean)
     fun pickIconImage(appKey: String)
     fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme)
@@ -968,6 +969,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun importBackup() = callbacks.importBackup()
                         override fun chooseBackupFolder() = callbacks.chooseBackupFolder()
                         override fun disableAutoBackup() = callbacks.disableAutoBackup()
+                        override fun shareBackup() = callbacks.shareBackup()
                         override fun close() = closeAll()
                     },
                 )
