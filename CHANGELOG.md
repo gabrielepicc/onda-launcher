@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Alfabeto, fondo dell'elenco**: il segno • in fondo all'alfabeto mostra per intero cartelle, installate di recente e impostazioni,
+  senza dover scorrere. Mentre il dito è sull'alfabeto il pulsante di ricerca si fa da parte, così l'onda delle lettere non ci passa sopra.
 - **Material 3, tocco e leggibilità**: bersagli di almeno 48 dp, campioni di colore che vanno a capo e si leggono con TalkBack, accento più
   leggibile nel tema chiaro, ondina al tocco sul pulsante di ricerca. Il controllo completo è in `docs/material-audit.md`.
 - **Material 3, forme e testi**: raggi solo dalla scala ufficiale (4, 8, 12, 16, 20, 28), testi dai ruoli della scala tipografica invece di

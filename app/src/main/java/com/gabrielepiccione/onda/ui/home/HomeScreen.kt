@@ -877,7 +877,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             } else {
                 sections.firstOrNull { it.letter == letter }?.firstIndex
             }
-            if (target != null) {
+            if (target != null && letter == END_OF_LIST_MARK) {
+                // Il fondo dell'elenco (cartelle, installate di recente, impostazioni) si mostra intero:
+                // la sezione va in cima e, se è più corta dello schermo, l'elenco si ferma in fondo da solo
+                scope.launch { allAppsList.scrollToItem(target) }
+            } else if (target != null) {
                 val center = allAppsList.layoutInfo.viewportSize.height / 2f
                 val lift = (center - listTopPx - firstRowCenterPx).coerceAtLeast(0f)
                 scope.launch {
@@ -886,6 +890,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 }
             }
         }
+        // Mentre il dito scorre sull'alfabeto, l'onda delle lettere passerebbe sopra il pulsante: si fa da parte
+        var alphabetTouched by remember { mutableStateOf(false) }
+        val searchButtonAlpha by animateFloatAsState(if (alphabetTouched) 0f else 1f, Motion.enter(150), label = "searchButtonAway")
         if (scrollerAlpha > 0.01f) {
             AlphabetWaveScroller(
                 letters = letters,
@@ -900,8 +907,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     .graphicsLayer { alpha = scrollerAlpha }
                     .then(scrollerPadding)
                     .padding(horizontal = 6.dp),
-                onTouchStart = { overlay = Overlay.ALL_APPS },
+                onTouchStart = { overlay = Overlay.ALL_APPS; alphabetTouched = true },
                 onLetter = onLetter,
+                onTouchEnd = { alphabetTouched = false },
                 onDoubleTap = lockFromAlphabet,
             )
             AlphabetWaveScroller(
@@ -926,7 +934,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     modifier = Modifier
                         .align(if (settings.leftHanded) Alignment.BottomStart else Alignment.BottomEnd)
                         .zIndex(3f)
-                        .graphicsLayer { alpha = scrollerAlpha }
+                        .graphicsLayer { alpha = scrollerAlpha * searchButtonAlpha }
                         .padding(
                             start = if (settings.leftHanded) letterSide + 4.dp else 0.dp,
                             end = if (settings.leftHanded) 0.dp else letterSide + 4.dp,
