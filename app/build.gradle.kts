@@ -87,6 +87,8 @@ dependencies {
     // biometric porta una Fragment vecchia: serve >= 1.3 per i risultati delle Activity
     implementation("androidx.fragment:fragment-ktx:1.8.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // Backup automatico ogni 24 ore anche a launcher chiuso (Apache 2.0)
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation(project(":core:icons"))
 
     testImplementation("junit:junit:4.13.2")

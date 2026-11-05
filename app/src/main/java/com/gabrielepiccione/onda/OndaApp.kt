@@ -4,6 +4,7 @@ package com.gabrielepiccione.onda
 
 import android.app.Application
 import com.gabrielepiccione.onda.data.AppRepository
+import com.gabrielepiccione.onda.data.Backups
 import com.gabrielepiccione.onda.data.CalendarRepository
 import com.gabrielepiccione.onda.data.MediaRepository
 import com.gabrielepiccione.onda.data.SettingsRepository
@@ -32,5 +33,7 @@ class OndaApp : Application() {
         media = MediaRepository(this)
         calendar = CalendarRepository(this)
         audio = com.gabrielepiccione.onda.data.AudioDevices(this)
+        // Solo chi ha attivato il backup automatico ha un controllo periodico
+        if (settings.current.autoBackupUri.isNotBlank()) Backups.syncSchedule(this, enabled = true)
     }
 }

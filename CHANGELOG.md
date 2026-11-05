@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Backup completo in un unico file**: oltre alle impostazioni contiene le immagini delle icone e i font importati.
+  Si può anche condividere. Il backup automatico gira ogni 24 ore pure a launcher chiuso (con WorkManager).
+  I vecchi backup `.json` restano ripristinabili. I widget vanno ancora aggiunti di nuovo.
 - **Popup dell'app personalizzabile**: con "Modifica il popup" si aggiungono app correlate e fino a 4 widget, da sfogliare
   in orizzontale, e si scelgono le scorciatoie da mostrare.
 - **App suggerite in home**: opzione per mostrare sotto i preferiti le app usate spesso. Con la pressione lunga,

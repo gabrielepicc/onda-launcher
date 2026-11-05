@@ -93,7 +93,7 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 
 | # | Comportamento di Niagara | Onda oggi | Priorità |
 |---|---|---|---|
-| 9.1 | **Backup completo** in un unico file: preferiti, icone scelte, cartelle, nomi rinominati, impostazioni, temi e **widget** (ricollegati al ripristino; la loro configurazione interna va rifatta). Pulsante "Condividi backup". | 🟡 Onda salva solo il JSON delle impostazioni: mancano immagini delle icone, font, ricollegamento dei widget, condivisione | P1 |
+| 9.1 | **Backup completo** in un unico file: preferiti, icone scelte, cartelle, nomi rinominati, impostazioni, temi e **widget** (ricollegati al ripristino; la loro configurazione interna va rifatta). Pulsante "Condividi backup". | 🟡 0.10 file unico con impostazioni, immagini delle icone e font, più condivisione; manca il ricollegamento dei widget | P1 |
 | 9.2 | **Integrazione con KLWP/KWGT**: il launcher pubblica variabili (schermata attuale, evento visibile, player visibile, colori della palette) per sfocare lo sfondo o mostrare elementi solo nella home; un link `onda://agenda` apre il foglio agenda. | ⬜ | P3 |
 | 9.3 | **Avviso "imposta come launcher predefinito"** quando non lo è, disattivabile. | 🟡 verificare | P3 |
 

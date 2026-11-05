@@ -2,7 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import androidx.core.content.FileProvider
 import com.gabrielepiccione.onda.data.AppPopups
+import com.gabrielepiccione.onda.data.AutoBackup
+import com.gabrielepiccione.onda.data.Backups
 import com.gabrielepiccione.onda.data.FolderIcons
 import android.Manifest
 import android.app.Activity
@@ -69,19 +72,28 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         if (granted) vm.refreshCalendar()
     }
 
-    private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
+    private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri: Uri? ->
         uri ?: return@registerForActivityResult
-        val ok = runCatching {
-            contentResolver.openOutputStream(uri)?.use { it.write(vm.settingsRepo.exportJson().toByteArray()) }
-        }.isSuccess
-        toast(getString(if (ok) R.string.toast_backup_saved else R.string.toast_backup_failed))
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching {
+                    checkNotNull(contentResolver.openOutputStream(uri)).use { Backups.write(this@MainActivity, vm.settingsRepo, it) }
+                }.isSuccess
+            }
+            toast(getString(if (ok) R.string.toast_backup_saved else R.string.toast_backup_failed))
+        }
     }
 
     private val importLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         uri ?: return@registerForActivityResult
-        val text = runCatching { contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } }.getOrNull()
-        val ok = text != null && vm.settingsRepo.importJson(text)
-        toast(getString(if (ok) R.string.toast_restored else R.string.toast_restore_failed))
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching {
+                    checkNotNull(contentResolver.openInputStream(uri)).use { Backups.restore(this@MainActivity, vm.settingsRepo, it) }
+                }.getOrDefault(false)
+            }
+            toast(getString(if (ok) R.string.toast_restored else R.string.toast_restore_failed))
+        }
     }
 
     private var fontForClock = false
@@ -123,6 +135,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         }
         releaseBackupFolder()
         vm.updateSettings { it.copy(autoBackupUri = uri.toString(), autoBackupLastDay = "") }
+        Backups.syncSchedule(this, enabled = true)
     }
 
     private fun releaseBackupFolder() {
@@ -138,16 +151,32 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     /** Backup automatico al massimo una volta al giorno, quando si esce dal launcher. */
     private fun runAutoBackupIfDue() {
-        val today = LocalDate.now().toString()
-        val settings = vm.settingsRepo.current
-        if (!com.gabrielepiccione.onda.data.AutoBackup.isDue(settings, today)) return
-        val json = vm.settingsRepo.exportJson()
+        if (!AutoBackup.isDue(vm.settingsRepo.current, LocalDate.now().toString())) return
         val appContext = applicationContext
+        lifecycleScope.launch(Dispatchers.IO) { Backups.runAutoIfDue(appContext, vm.settingsRepo) }
+    }
+
+    /** Crea il backup nella cache e lo passa all'app scelta dall'utente. */
+    override fun shareBackup() {
         lifecycleScope.launch {
-            val ok = withContext(Dispatchers.IO) {
-                com.gabrielepiccione.onda.data.AutoBackup.write(appContext, Uri.parse(settings.autoBackupUri), today, json)
+            val file = withContext(Dispatchers.IO) {
+                runCatching {
+                    val dir = java.io.File(cacheDir, "share").apply { mkdirs() }
+                    java.io.File(dir, "onda-backup-${LocalDate.now()}.zip").also { target ->
+                        target.outputStream().use { Backups.write(this@MainActivity, vm.settingsRepo, it) }
+                    }
+                }.getOrNull()
             }
-            if (ok) vm.updateSettings { it.copy(autoBackupLastDay = today) }
+            if (file == null) {
+                toast(getString(R.string.toast_backup_failed))
+                return@launch
+            }
+            val uri = FileProvider.getUriForFile(this@MainActivity, "$packageName.backup", file)
+            val send = Intent(Intent.ACTION_SEND)
+                .setType("application/zip")
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            runCatching { startActivity(Intent.createChooser(send, getString(R.string.backup_share))) }
         }
     }
 
@@ -363,15 +392,16 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         )
     }
 
-    override fun exportBackup() = exportLauncher.launch("onda-backup-${LocalDate.now()}.json")
+    override fun exportBackup() = exportLauncher.launch("onda-backup-${LocalDate.now()}.zip")
 
-    override fun importBackup() = importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
+    override fun importBackup() = importLauncher.launch(arrayOf("application/zip", "application/json", "text/plain", "*/*"))
 
     override fun chooseBackupFolder() = backupFolderLauncher.launch(null)
 
     override fun disableAutoBackup() {
         releaseBackupFolder()
         vm.updateSettings { it.copy(autoBackupUri = "", autoBackupLastDay = "") }
+        Backups.syncSchedule(this, enabled = false)
     }
 
     @Suppress("DEPRECATION")
