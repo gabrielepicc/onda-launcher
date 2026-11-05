@@ -283,8 +283,6 @@ private fun PresetCard(preset: StylePreset, selected: Boolean, onClick: () -> Un
                                     stringResource(res),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = fg,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
                                 )
                             }
                         }

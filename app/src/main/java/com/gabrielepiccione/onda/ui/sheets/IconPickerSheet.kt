@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -188,7 +189,7 @@ fun PackIconBrowser(
             Modifier
                 .padding(vertical = 8.dp)
                 .fillMaxWidth()
-                .height(48.dp)
+                .heightIn(min = 48.dp)
                 .clip(RoundedCornerShape(28.dp))
                 .background(colors.panelHigh)
                 .padding(horizontal = 18.dp),

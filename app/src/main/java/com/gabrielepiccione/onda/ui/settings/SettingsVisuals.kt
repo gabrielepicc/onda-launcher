@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.RadioButton
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.filled.Check
@@ -112,8 +115,6 @@ internal fun ChoiceTile(
             color = if (selected) colors.accent else colors.onWallpaper,
             style = MaterialTheme.typography.labelMedium,
             textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -171,11 +172,49 @@ internal fun <T> TileGrid(items: List<T>, columns: Int, tile: @Composable (T, Mo
 
 /** Griglia di scelte con il solo nome (animazioni, motori di ricerca…). */
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun <T> TextChoices(items: List<Pair<T, String>>, selected: T, columns: Int = 3, onPick: (T) -> Unit) {
-    TileGrid(items, columns) { (value, label), modifier ->
-        ChoiceTile(selected == value, label, { onPick(value) }, modifier)
+    // Le etichette non si troncano mai: poche e corte vanno in chip che tornano a capo,
+    // altrimenti diventano un elenco con i pulsanti radio (regola in CLAUDE.md, "Proporzioni")
+    if (items.size <= MAX_CHIPS && items.all { it.second.length <= MAX_CHIP_LABEL }) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 4.dp)) {
+            items.forEach { (value, label) ->
+                FilterChip(
+                    selected = selected == value,
+                    onClick = { onPick(value) },
+                    label = { Text(label, softWrap = false) },
+                    leadingIcon = if (selected == value) ({ Icon(Icons.Filled.Check, null, Modifier.size(18.dp)) }) else null,
+                )
+            }
+        }
+    } else {
+        Column(Modifier.selectableGroup()) {
+            items.forEach { (value, label) -> RadioItem(label, selected == value) { onPick(value) } }
+        }
     }
 }
+
+/** Voce con pulsante radio: si tocca tutta la riga, che per TalkBack è un'unica scelta. */
+@Composable
+internal fun RadioItem(label: String, selected: Boolean, onClick: () -> Unit) {
+    val colors = LocalOndaColors.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(vertical = 8.dp),
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(16.dp))
+        Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+private const val MAX_CHIPS = 3
+private const val MAX_CHIP_LABEL = 16
 
 /** Stili dell'orologio. [compact] li mette in una riga scorrevole, per i fogli che lasciano vedere la home. */
 @Composable

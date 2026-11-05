@@ -5,6 +5,9 @@ package com.gabrielepiccione.onda.ui.settings
 import androidx.compose.material.icons.filled.GraphicEq
 import com.gabrielepiccione.onda.data.PrefixKind
 import com.gabrielepiccione.onda.data.SearchPrefixes
+import com.gabrielepiccione.onda.ui.components.OndaChip
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.layout.imePadding
 import com.gabrielepiccione.onda.data.MusicBackdropMode
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -168,7 +171,7 @@ interface SettingsActions {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
+internal fun SettingsScreen(
     settings: Settings,
     hiddenApps: List<AppInfo>,
     allApps: List<AppInfo> = emptyList(),
@@ -181,6 +184,8 @@ fun SettingsScreen(
     connectedHeadphones: Set<String> = emptySet(),
     activeProfile: ContextProfile? = null,
     contextEnvironment: ContextEnvironment? = null,
+    /** Pagina da cui partire (per i test di screenshot); null = indice. */
+    initialPage: SettingsPage? = null,
 ) {
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -188,13 +193,14 @@ fun SettingsScreen(
     var iconPackDialog by remember { mutableStateOf(false) }
     var plugDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
-    var page by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
+    var page by rememberSaveable { mutableStateOf(initialPage) }
     // Conferma del Wi-Fi di casa: null = chiusa, vuoto = Android non dice il nome
     var wifiConfirm by remember { mutableStateOf<String?>(null) }
     var restartConfirm by remember { mutableStateOf(false) }
     var musicAppPick by remember { mutableStateOf<List<String>?>(null) }
     var deviceDialog by remember { mutableStateOf(false) }
     var beatExplain by remember { mutableStateOf(false) }
+    var appPick by remember { mutableStateOf<AppPickTarget?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     // Dove salvare l'app scelta per un gesto; null = scelta chiusa
@@ -204,9 +210,14 @@ fun SettingsScreen(
     BackHandler(enabled = page != null) { page = null }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    // Ogni pagina parte con la barra grande e il contenuto subito sotto, mai nascosto dietro la barra
+    LaunchedEffect(page) {
+        scrollBehavior.state.heightOffset = 0f
+        scrollBehavior.state.contentOffset = 0f
+    }
     Column(Modifier.fillMaxSize().blockTouches().nestedScroll(scrollBehavior.nestedScrollConnection)) {
         LargeTopAppBar(
-            title = { Text(stringResource(page?.titleRes ?: R.string.settings), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            title = { Text(stringResource(page?.titleRes ?: R.string.settings)) },
             navigationIcon = {
                 IconButton(onClick = { if (page != null) page = null else actions.close() }) {
                     @Suppress("DEPRECATION")
@@ -222,8 +233,11 @@ fun SettingsScreen(
             scrollBehavior = scrollBehavior,
         )
 
-        // Anteprima dal vivo sopra lo sfondo vero: resta ferma mentre sotto si scorre e si modifica
-        if (LocalConfiguration.current.screenHeightDp >= MIN_HEIGHT_FOR_PREVIEW) {
+        // Anteprima dal vivo sopra lo sfondo vero: resta ferma mentre sotto si scorre e si modifica, ma solo se
+        // lo schermo è abbastanza alto e il testo non è ingrandito; altrimenti scorre con la pagina e non copre nulla
+        val config = LocalConfiguration.current
+        val fixedPreview = config.screenHeightDp >= MIN_HEIGHT_FOR_PREVIEW && config.fontScale <= MAX_FONT_FOR_FIXED_PREVIEW
+        val preview: @Composable () -> Unit = {
             when (page) {
                 SettingsPage.STYLE -> StylePreview(settings, allApps)
                 SettingsPage.CLOCK -> ClockPreview(settings)
@@ -245,6 +259,7 @@ fun SettingsScreen(
                 else -> Unit
             }
         }
+        if (fixedPreview) preview()
 
         key(page) {
         Column(
@@ -253,12 +268,14 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .background(colors.scrim)
                 .navigationBarsPadding()
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(
                     horizontal = 16.dp + com.gabrielepiccione.onda.data.ScreenLayout.sideInsetDp(LocalConfiguration.current.screenWidthDp).dp,
                     vertical = 8.dp,
                 )
         ) {
+        if (!fixedPreview) preview()
         if (page == null) {
             // Solo ciò che manca: quando è tutto pronto, l'indice parte dalle personalizzazioni
             val calendarUsed = settings.showCalendar || settings.showAgenda
@@ -518,15 +535,20 @@ fun SettingsScreen(
             FilledTonalButton(onClick = { actions.addWidget() }, modifier = Modifier.padding(top = 6.dp)) { Text(stringResource(R.string.add_widget)) }
         }
 
-        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_favorites)) {
-            SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_notifications)) {
+            SwitchRow(stringResource(R.string.hide_shortcuts_with_notifications), stringResource(R.string.hide_shortcuts_with_notifications_sub), settings.hideShortcutsWithNotifications) { v ->
+                onEdit { it.copy(hideShortcutsWithNotifications = v) }
+            }
             Label(stringResource(R.string.notif_images))
             TextChoices(
                 com.gabrielepiccione.onda.data.NotificationImages.entries.map { it to stringResource(it.labelRes) },
                 settings.notificationImages,
-                columns = 3,
             ) { v -> onEdit { it.copy(notificationImages = v) } }
             SettingsSupporting(stringResource(R.string.notif_images_sub))
+        }
+
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_favorites)) {
+            SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
             SwitchRow(stringResource(R.string.suggested_setting), stringResource(R.string.suggested_setting_sub), settings.suggestInHome) { v -> onEdit { it.copy(suggestInHome = v) } }
             allApps.filter { it.key in settings.suggestionsDismissed }.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -819,6 +841,7 @@ fun SettingsScreen(
             if (breakerApps.isEmpty()) {
                 SettingsSupporting(stringResource(R.string.breaker_none))
             }
+            OndaChip(stringResource(R.string.choose_apps), { appPick = AppPickTarget.BREAKER }, icon = Icons.Filled.Add)
             breakerApps.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
@@ -830,19 +853,15 @@ fun SettingsScreen(
         if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_reminders)) {
             SettingsSupporting(stringResource(R.string.reminder_sub))
             Label(stringResource(R.string.reminder_start))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                UsageReminders.START_CHOICES.forEach { m ->
-                    FilterChip(
-                        selected = settings.reminderStartMinutes == m,
-                        onClick = { onEdit { it.copy(reminderStartMinutes = m) } },
-                        label = { Text(stringResource(R.string.reminder_minutes, m)) },
-                    )
-                }
-            }
+            TextChoices(
+                UsageReminders.START_CHOICES.map { m -> m to stringResource(R.string.reminder_minutes, m) },
+                settings.reminderStartMinutes,
+            ) { m -> onEdit { it.copy(reminderStartMinutes = m) } }
             val reminderApps = allApps.filter { it.key in settings.reminderApps }
             if (reminderApps.isEmpty()) {
                 SettingsSupporting(stringResource(R.string.breaker_none))
             }
+            OndaChip(stringResource(R.string.choose_apps), { appPick = AppPickTarget.REMINDERS }, icon = Icons.Filled.Add)
             reminderApps.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
@@ -1054,6 +1073,20 @@ fun SettingsScreen(
         )
     }
 
+    appPick?.let { target ->
+        val chosen = if (target == AppPickTarget.BREAKER) settings.breakerApps else settings.reminderApps
+        AppPicker(
+            allApps.filterNot { it.key in chosen },
+            onPick = { app ->
+                onEdit {
+                    if (target == AppPickTarget.BREAKER) com.gabrielepiccione.onda.data.UsageBreaker.toggle(it, app.key) else UsageReminders.toggle(it, app.key)
+                }
+                appPick = null
+            },
+            onDismiss = { appPick = null },
+        )
+    }
+
     if (restartConfirm) {
         AlertDialog(
             onDismissRequest = { restartConfirm = false },
@@ -1094,7 +1127,7 @@ fun SettingsScreen(
 }
 
 /** Pagine delle impostazioni, nell'ordine mostrato nell'indice. */
-private enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val subRes: Int, val icon: ImageVector) {
+internal enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val subRes: Int, val icon: ImageVector) {
     STYLE(R.string.section_style, R.string.page_style_sub, Icons.Filled.Palette),
     CLOCK(R.string.edit_clock, R.string.page_clock_sub, Icons.Filled.Schedule),
     TEXT(R.string.section_text, R.string.page_text_sub, Icons.Filled.TextFields),
@@ -1108,7 +1141,8 @@ private enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val sub
     BACKUP(R.string.section_backup, R.string.page_backup_sub, Icons.Filled.Backup),
 }
 
-private const val MIN_HEIGHT_FOR_PREVIEW = 600
+private const val MIN_HEIGHT_FOR_PREVIEW = 720
+private const val MAX_FONT_FOR_FIXED_PREVIEW = 1.15f
 
 /** Una voce cercabile: il titolo, la pagina che la contiene e parole in più per trovarla. */
 private class SettingEntry(@StringRes val titleRes: Int, val page: SettingsPage, @StringRes val keywordsRes: Int)
@@ -1139,6 +1173,7 @@ private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.section_widgets, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.hide_fav_names, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.notif_images, SettingsPage.HOME, R.string.kw_notif),
+    SettingEntry(R.string.hide_shortcuts_with_notifications, SettingsPage.HOME, R.string.kw_notif),
     SettingEntry(R.string.suggested_setting, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.layout_lock, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.hide_status_bar, SettingsPage.HOME, R.string.kw_home),
@@ -1237,20 +1272,7 @@ private fun SwitchRow(text: String, sub: String?, checked: Boolean, onChange: (B
 private fun ClickRow(text: String, value: String, onClick: () -> Unit) = SettingsItem(text, value, onClick = onClick)
 
 @Composable
-private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 10.dp)
-    ) {
-        androidx.compose.material3.RadioButton(selected = selected, onClick = onClick)
-        Spacer(Modifier.width(8.dp))
-        Text(label, style = MaterialTheme.typography.bodyLarge)
-    }
-}
+private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) = RadioItem(label, selected, onClick)
 
 @Composable
 private fun StatusRow(title: String, ok: Boolean, okText: String, koText: String, onClick: () -> Unit) {
@@ -1375,3 +1397,5 @@ private fun mediaApps(): List<String> {
         }.getOrDefault(emptyList())
     }
 }
+/** A quale elenco di Benessere digitale si aggiunge l'app scelta. */
+private enum class AppPickTarget { BREAKER, REMINDERS }

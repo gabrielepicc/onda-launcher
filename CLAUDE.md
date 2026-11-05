@@ -87,6 +87,22 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - Backup: `data/BackupArchive` (ZIP, accetta solo `icons` e `fonts`), `data/Backups` (file e WorkManager), `data/AutoBackup` (cartella scelta).
 - Promemoria di Usage Breaker: regole in `data/UsageReminders`, controllo in `service/UsageReminderEngine`, avviato dal servizio notifiche.
 
+## Proporzioni (regole del layout, controllate da `UiRulesTest`)
+- **Spazi**: su griglia da 8dp; 4dp solo per i dettagli fini.
+- **Testi**: scala tipografica di Material 3. Nelle impostazioni: titoli `bodyLarge`, descrizioni `bodyMedium`,
+  intestazioni di sezione `titleSmall`.
+- **Tocco**: area minima 48dp. Margini laterali uguali a sinistra e a destra.
+- **Altezze**: niente altezze fisse su contenitori con testo, si usa `heightIn(min = …)`; i contenitori crescono con il carattere.
+- **Componenti comuni, sempre**:
+  - pagine e voci delle impostazioni: `SettingsSection`, `SettingsItem`, `SettingsSwitch`, `SettingsSupporting`, `SettingsLabel` in `ui/settings/SettingsKit`;
+  - scelte: `TextChoices`, che fa chip in un FlowRow (fino a 3 e corte) o un elenco con radio (`RadioItem`);
+  - chip e pulsanti a pillola: `OndaChip`;
+  - editor a schermo intero: `TopAppBar` e contenuto con `imePadding`, dentro inset `safeDrawing`.
+- **Mai "…"** nelle impostazioni, nei chip e nei pulsanti. Il troncamento è ammesso solo dove è voluto (righe delle app,
+  titoli dei brani) e va segnato con il commento `troncamento voluto`; un'altezza fissa voluta con `altezza fissa voluta`.
+- **Niente test di screenshot in CI** (decisione del proprietario): gli errori si evitano con i componenti comuni e il controllo statico.
+- **Ogni PR che tocca il layout** dice cosa controllare sul telefono, anche con testo grande e in italiano.
+
 ## Material 3
 Raggi solo dalla scala (4, 8, 12, 16, 20, 28, 32, 48, pieno), testi dai ruoli di `MaterialTheme.typography` (mai `fontSize` a mano, tranne orologio e alfabeto),
 bersagli di tocco di almeno 48dp, durate dai token. Regole e differenze volute in `docs/material-audit.md`.

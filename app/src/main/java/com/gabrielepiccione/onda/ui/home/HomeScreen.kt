@@ -9,6 +9,7 @@ import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcuts
 import androidx.compose.material.icons.filled.Edit
 import com.gabrielepiccione.onda.data.SpotifyLinks
+import com.gabrielepiccione.onda.ui.components.OndaChip
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.Switch
 import androidx.compose.ui.text.style.TextOverflow
@@ -1331,6 +1332,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         val shortcuts = remember(app.key) { vm.shortcuts(app) }
         val popup = AppPopups.of(settings, app.key)
         AppQuickPopup(
+            collapseExtras = settings.hideShortcutsWithNotifications,
             app = app,
             anchor = quickAnchor,
             shortcuts = shortcuts.filterNot { it.id in popup.hiddenShortcuts },
@@ -1811,21 +1813,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 }
 
 @Composable
-private fun HintChip(icon: ImageVector, text: String, onClick: () -> Unit) {
-    val colors = LocalOndaColors.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(colors.accentContainer)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp)
-    ) {
-        Icon(icon, null, tint = colors.onAccentContainer, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(8.dp))
-        Text(text, color = colors.onAccentContainer, style = MaterialTheme.typography.labelLarge)
-    }
-}
+private fun HintChip(icon: ImageVector, text: String, onClick: () -> Unit) = OndaChip(text, onClick, primary = true, icon = icon)
 
 /** Dall'inizio della sezione al centro della sua prima app: lettera più metà riga. */
 private val FIRST_ROW_CENTER = 72.dp

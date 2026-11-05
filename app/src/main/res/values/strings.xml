@@ -761,4 +761,8 @@
     <string name="music_beat_title">Background to the beat</string>
     <string name="music_beat_body">To pulse on the bass, Onda reads the strength of the sound frequencies coming out of the phone, moment by moment, with Android\'s audio analyser. Android calls this \"microphone\" permission, but nothing is recorded from the microphone, nothing is saved and nothing leaves the phone. It only works while music plays and Onda is on screen. You can turn it off at any time.</string>
     <string name="music_beat_allow">Continue</string>
+    <string name="choose_apps">Choose apps</string>
+    <string name="section_notifications">Notifications</string>
+    <string name="hide_shortcuts_with_notifications">Hide shortcuts when there are notifications</string>
+    <string name="hide_shortcuts_with_notifications_sub">In an app\'s popup the notifications come first; shortcuts and the widget fold into a row at the bottom</string>
 </resources>

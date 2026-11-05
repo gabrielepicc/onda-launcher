@@ -395,6 +395,8 @@ data class Settings(
     val profileOverride: ProfileOverride = ProfileOverride(),
     /** Regole proposte che l'utente ha scartato. */
     val dismissedSuggestions: Set<String> = emptySet(),
+    /** Nel popup di un'app con notifiche, scorciatoie e widget restano piegati in fondo. */
+    val hideShortcutsWithNotifications: Boolean = true,
     /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */
     val musicBackdrop: MusicBackdropMode = MusicBackdropMode.MOTION,
     val musicBackdropIntensity: Float = 0.7f,
