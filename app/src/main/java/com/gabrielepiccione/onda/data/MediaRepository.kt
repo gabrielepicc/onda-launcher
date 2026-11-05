@@ -185,6 +185,12 @@ class MediaRepository(private val context: Context) {
         return runCatching { context.startActivity(intent) }.isSuccess
     }
 
+    /** Fa partire [uri] nella sessione già attiva di [pkg]; false se non c'è o se l'app non lo accetta. */
+    fun playFromUri(pkg: String, uri: String): Boolean {
+        val c = controller?.takeIf { it.packageName == pkg } ?: return false
+        return runCatching { c.transportControls.playFromUri(android.net.Uri.parse(uri), Bundle()) }.isSuccess
+    }
+
     /** App installate che sanno far partire un brano da una ricerca. */
     fun playFromSearchApps(): List<String> = runCatching {
         context.packageManager.queryIntentActivities(Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH), 0)

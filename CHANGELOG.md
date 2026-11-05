@@ -4,6 +4,10 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Playlist e brani come voci** (Musica, passo 4).
+  - Incollando nella ricerca un link di Spotify (playlist, album, artista, brano, episodio, podcast) si aggiunge una voce ai preferiti.
+  - Toccandola, il contenuto parte subito se Spotify ha già una sessione, altrimenti si apre la sua pagina.
+  - Tenendola premuta si sposta, si rinomina o si toglie.
 - **Musica dalla ricerca** (Musica, passo 3).
   - "p testo" fa partire brano, artista o playlist sull'app musicale scelta (o sull'ultima che ha suonato), con il "riproduci da ricerca" di Android.
   - "sp testo" apre la ricerca dentro Spotify.

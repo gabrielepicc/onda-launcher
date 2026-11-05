@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.search
 
+import com.gabrielepiccione.onda.data.MediaShortcuts
+import com.gabrielepiccione.onda.data.SpotifyItem
+import com.gabrielepiccione.onda.data.SpotifyType
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
 import com.gabrielepiccione.onda.ui.theme.*
@@ -78,6 +82,8 @@ fun SearchPanel(
     spotifyInstalled: Boolean = false,
     onPlay: (String) -> Unit = {},
     onSpotifySearch: (String) -> Unit = {},
+    /** Un link di Spotify incollato: aggiungilo ai preferiti con questo nome. */
+    onAddMedia: (SpotifyItem, String) -> Unit = { _, _ -> },
     onRequestContacts: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -207,6 +213,22 @@ fun SearchPanel(
                     )
                 }
             }
+            // Link di Spotify incollato: si può tenere come voce dei preferiti
+            val link = MediaShortcuts.parse(results.query)
+            if (link != null) {
+                item { SectionLabel(stringResource(R.string.music)) }
+                item {
+                    val name = stringResource(R.string.media_default_name, stringResource(spotifyTypeLabel(link.type)))
+                    SimpleRow(
+                        icon = { Icon(Icons.Filled.Add, null, tint = colors.accent) },
+                        label = stringResource(R.string.media_add, name),
+                    ) { onAddMedia(link, name) }
+                }
+            } else if (MediaShortcuts.isShortLink(results.query)) {
+                item {
+                    SimpleRow(icon = { Icon(Icons.Filled.MusicNote, null, tint = colors.onWallpaperMuted) }, label = stringResource(R.string.media_short_link), muted = true) {}
+                }
+            }
             // Musica: "p testo" fa partire il brano, "sp testo" apre la ricerca di Spotify
             if (results.mode == com.gabrielepiccione.onda.SearchMode.PLAY) {
                 item { SectionLabel(stringResource(R.string.music)) }
@@ -286,3 +308,12 @@ private fun SimpleRow(icon: @Composable () -> Unit, label: String, muted: Boolea
 
 /** Velatura sopra lo sfondo durante la ricerca (si somma a quella generale della home). */
 private const val SEARCH_TINT = 0.28f
+
+private fun spotifyTypeLabel(type: SpotifyType): Int = when (type) {
+    SpotifyType.PLAYLIST -> R.string.media_playlist
+    SpotifyType.ALBUM -> R.string.media_album
+    SpotifyType.ARTIST -> R.string.media_artist
+    SpotifyType.TRACK -> R.string.media_track
+    SpotifyType.EPISODE -> R.string.media_episode
+    SpotifyType.SHOW -> R.string.media_show
+}
