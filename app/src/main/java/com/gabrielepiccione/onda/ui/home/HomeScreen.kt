@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.Switch
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.heightIn
@@ -554,11 +555,26 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     LaunchedEffect(blocks, editing) { if (editing != null && editing !in blocks) editing = null }
 
     val dimColor = if (colors.dark) Color.Black else Color.White
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(dimColor.copy(alpha = settings.wallpaperDim))
-    ) {
+    Box(Modifier.fillMaxSize()) {
+        // Sfondo con la musica: sotto la velatura, così testo e icone restano leggibili
+        val backdropHere = when (overlay) {
+            Overlay.NONE -> settings.musicBackdropHome
+            Overlay.ALL_APPS -> settings.musicBackdropList
+            Overlay.SEARCH -> settings.musicBackdropSearch
+            else -> false
+        }
+        if (backdropHere && media != null) {
+            MusicBackdrop(
+                art = media?.art,
+                playing = media?.playing == true,
+                mode = settings.musicBackdrop,
+                intensity = settings.musicBackdropIntensity,
+                dark = colors.dark,
+                modifier = Modifier.matchParentSize(),
+            )
+        }
+        Box(Modifier.matchParentSize().background(dimColor.copy(alpha = settings.wallpaperDim)))
+
         val bars = WindowInsets.systemBars.asPaddingValues()
         // Su tablet e in orizzontale il contenuto resta centrato, con la stessa larghezza leggibile
         val wideInset = com.gabrielepiccione.onda.data.ScreenLayout.sideInsetDp(androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp).dp
