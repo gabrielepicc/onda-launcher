@@ -30,6 +30,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
@@ -814,7 +815,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 start = if (settings.leftHanded) letterSide else hiddenSide,
                 end = if (settings.leftHanded) hiddenSide else letterSide,
                 top = bars.calculateTopPadding() + 16.dp,
-                bottom = bars.calculateBottomPadding() + 24.dp,
+                bottom = bars.calculateBottomPadding() + if (settings.showSearchButton) 88.dp else 24.dp,
             ),
             modifier = Modifier
                 .zIndex(if (overlay == Overlay.ALL_APPS) 1f else -1f)
@@ -876,8 +877,6 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     .zIndex(2f)
                     .graphicsLayer { alpha = scrollerAlpha }
                     .then(scrollerPadding)
-                    // Con il pulsante di ricerca, le lettere si fermano sopra di esso
-                    .padding(bottom = if (settings.showSearchButton) SEARCH_BUTTON_CLEARANCE else 0.dp)
                     .padding(horizontal = 6.dp),
                 onTouchStart = { overlay = Overlay.ALL_APPS },
                 onLetter = onLetter,
@@ -899,17 +898,23 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             if (settings.showSearchButton) {
                 Box(
                     contentAlignment = Alignment.Center,
+                    // Fluttua accanto alla colonna dell'alfabeto, staccato dai bordi e velato sullo sfondo
                     modifier = Modifier
                         .align(if (settings.leftHanded) Alignment.BottomStart else Alignment.BottomEnd)
                         .zIndex(3f)
                         .graphicsLayer { alpha = scrollerAlpha }
-                        .padding(bottom = bars.calculateBottomPadding() + 8.dp)
-                        .size(48.dp)
+                        .padding(
+                            start = if (settings.leftHanded) letterSide + 4.dp else 0.dp,
+                            end = if (settings.leftHanded) 0.dp else letterSide + 4.dp,
+                            bottom = bars.calculateBottomPadding() + 16.dp,
+                        )
+                        .size(56.dp)
                         .clip(CircleShape)
-                        .background(colors.panel)
+                        .background(colors.accentContainer.copy(alpha = 0.6f))
+                        .border(1.dp, colors.onWallpaper.copy(alpha = 0.15f), CircleShape)
                         .clickable { overlay = Overlay.SEARCH },
                 ) {
-                    Icon(Icons.Filled.Search, stringResource(R.string.search), tint = colors.onWallpaper)
+                    Icon(Icons.Filled.Search, stringResource(R.string.search), tint = colors.onAccentContainer)
                 }
             }
         }
@@ -1523,6 +1528,3 @@ private fun RoundIcon(icon: ImageVector, onClick: () -> Unit) {
         Icon(icon, null, tint = colors.onWallpaper)
     }
 }
-
-/** Spazio in più sotto l'alfabeto per il pulsante di ricerca, che sta sotto le lettere. */
-private val SEARCH_BUTTON_CLEARANCE = 16.dp
