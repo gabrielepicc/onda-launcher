@@ -22,7 +22,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 2. 🟡 Fase 3 — Temi: ✅ `LookTheme` serializzabile, Theme Studio (salva/applica/rinomina/duplica/elimina), file `.onda-theme`
    con font incorporati, palette dallo sfondo anche su Android 8.1–11. ⬜ QR/deep link, sfondo automatico per orario
 3. 🟡 Fase 4 — ✅ agenda del calendario come blocco della home, ✅ blocca layout.
-   ✅ widget stack, ⬜ meteo: si farà leggendo Breezy Weather installato, senza permesso INTERNET (Fase 7, passo 2)
+   ✅ widget stack, ✅ meteo letto da Breezy Weather installato, senza permesso INTERNET (Fase 7, passo 2)
 4. 🟡 Fase 5 — ✅ prefissi di ricerca (= @ /), ✅ scorciatoie impostazioni di sistema, ✅ motore web selezionabile,
    ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste.
    ✅ Usage Breaker, ✅ contatti dall'alfabeto, ✅ riepilogo notifiche, ⬜ conversioni unità/valute
@@ -41,7 +41,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 
    **Prossimi passi, in ordine** (una voce = un branch = una PR):
    1. ✅ Aggiungi alla home dalle altre app: richieste di pin di scorciatoie e widget (gap 12.2).
-   2. Meteo senza internet da Breezy Weather (gap 12.1, 7.1): orologio + foglio agenda toccando la data (1.5).
+   2. ✅ Meteo senza internet da Breezy Weather (gap 12.1, 7.1): orologio + foglio agenda toccando la data (1.5).
    3. Alfabeto: zona di tocco a tutta altezza con colonna visibile compatta (12.3) e stella dei preferiti in cima (10.1).
    4. Alfabeto localizzato con `AlphabeticIndex` (2.1).
    5. App suggerite sotto i preferiti con "Smetti di suggerire" (1.1, 10.9).

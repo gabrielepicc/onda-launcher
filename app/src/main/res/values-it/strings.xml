@@ -384,6 +384,15 @@
     <string name="pin_added">Aggiunto alla home</string>
     <string name="pin_failed">Non è stato possibile aggiungerlo alla home</string>
     <string name="pin_remove">Togli dalla home</string>
+    <string name="weather_title">Meteo</string>
+    <string name="weather_sub">Letto dall\'app Breezy Weather. Onda non si collega a internet.</string>
+    <string name="weather_needs_app">Installa Breezy Weather (gratuita, su F-Droid e GitHub) e aggiungi una località.</string>
+    <string name="weather_needs_permission">Consenti a Onda di leggere i dati di Breezy Weather: spegni e riaccendi questa opzione, oppure usa i permessi dell\'app nelle impostazioni di sistema.</string>
+    <string name="weather_no_data">Ancora nessuna previsione: apri Breezy Weather e aggiungi una località.</string>
+    <string name="weather_degrees">%1$d°</string>
+    <string name="weather_feels">Percepita %1$s</string>
+    <string name="weather_updated">Aggiornato alle %1$s</string>
+    <string name="agenda_open_calendar">Apri il calendario</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>

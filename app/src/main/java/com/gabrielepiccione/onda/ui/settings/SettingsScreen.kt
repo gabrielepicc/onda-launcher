@@ -97,6 +97,8 @@ data class SettingsStatus(
     val calendarPermission: Boolean,
     val accessibilityEnabled: Boolean,
     val contactsPermission: Boolean,
+    val weatherInstalled: Boolean = false,
+    val weatherPermission: Boolean = false,
 )
 
 interface SettingsActions {
@@ -105,6 +107,7 @@ interface SettingsActions {
     fun notificationAccess()
     fun calendarPermission()
     fun contactsPermission()
+    fun weatherPermission()
     fun accessibility()
     fun addWidget()
     fun removeWidget(id: Int)
@@ -355,6 +358,18 @@ fun SettingsScreen(
             HomePositionControl(settings) { onEdit(it) }
             SwitchRow(stringResource(R.string.clock_date), null, settings.showClock) { v -> onEdit { it.copy(showClock = v) } }
             SwitchRow(stringResource(R.string.next_event), stringResource(R.string.next_event_sub), settings.showCalendar) { v -> onEdit { it.copy(showCalendar = v) } }
+            SwitchRow(
+                stringResource(R.string.weather_title),
+                when {
+                    settings.showWeather && !status.weatherInstalled -> stringResource(R.string.weather_needs_app)
+                    settings.showWeather && !status.weatherPermission -> stringResource(R.string.weather_needs_permission)
+                    else -> stringResource(R.string.weather_sub)
+                },
+                settings.showWeather,
+            ) { v ->
+                onEdit { it.copy(showWeather = v) }
+                if (v && status.weatherInstalled && !status.weatherPermission) actions.weatherPermission()
+            }
             SwitchRow(stringResource(R.string.music_player), stringResource(R.string.music_player_sub), settings.showMedia) { v -> onEdit { it.copy(showMedia = v) } }
             SwitchRow(stringResource(R.string.alphabet_left), stringResource(R.string.alphabet_left_sub), settings.leftHanded) { v -> onEdit { it.copy(leftHanded = v) } }
             SwitchRow(stringResource(R.string.hide_alphabet), stringResource(R.string.hide_alphabet_sub), settings.hideAlphabet) { v -> onEdit { it.copy(hideAlphabet = v) } }

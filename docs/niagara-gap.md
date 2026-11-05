@@ -19,7 +19,7 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 | 1.2 | **Animazione quando cambiano i preferiti** (aggiunta, rimozione, spostamento: le righe scorrono al loro posto). | 🟡 da verificare `animateItem` su tutte le liste della home | P2 |
 | 1.3 | **Pulsante flottante in basso a destra** (equivalente del "Niagara Button"): tocco = apre un'app o una cartella popup; swipe su = seconda azione. Pressione lunga = "modifica azione del tocco" / "crea cartella popup". | ⬜ | P2 |
 | 1.4 | **Spazio vuoto sopra i preferiti pensato per il pollice**: il player compare sotto lo spazio vuoto e spinge giù i preferiti, così i comandi restano a portata. | 🟡 c'è la posizione della home; controllare che il player non sposti i preferiti fuori dalla zona del pollice | P2 |
-| 1.5 | **Tocco sull'ora = app Sveglia, tocco sulla data = foglio agenda** (eventi + meteo), non l'app Calendario. | 🟡 la data apre il calendario di sistema; manca il **foglio agenda** | P2 |
+| 1.5 | **Tocco sull'ora = app Sveglia, tocco sulla data = foglio agenda** (eventi + meteo), non l'app Calendario. | ✅ 0.10 | P2 |
 | 1.6 | **Prossimo evento sotto la data** nell'orologio (anteprima del calendario, disattivabile), con priorità agli eventi non "tutto il giorno". | 🟡 c'è il blocco agenda; manca l'anteprima integrata nell'orologio e la priorità sugli eventi a orario | P2 |
 | 1.7 | **Sostituire l'orologio con un widget** ("Sostituisci orologio con widget") mantenendo lo stesso posto e la stessa posizione regolabile. | 🟡 si ottiene togliendo l'orologio e aggiungendo un widget; manca la voce diretta | P3 |
 
@@ -73,7 +73,7 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 
 | # | Comportamento di Niagara | Onda oggi | Priorità |
 |---|---|---|---|
-| 7.1 | **Meteo**: condizioni attuali nell'orologio, previsioni orarie (24 h) e a 7 giorni nel foglio agenda; posizione attuale o fissa; °C/°F; aggiornamento ogni ~30 minuti. | ⬜ **bloccato**: serve la decisione sul permesso INTERNET (Open-Meteo, disattivabile) | P1 |
+| 7.1 | **Meteo**: condizioni attuali nell'orologio, previsioni orarie (24 h) e a 7 giorni nel foglio agenda; posizione attuale o fissa; °C/°F; aggiornamento ogni ~30 minuti. | ✅ 0.10 da Breezy Weather: temperatura nell'orologio, 24 ore e 7 giorni nel foglio agenda; località e unità si scelgono in Breezy Weather | P1 |
 | 7.2 | **Pile di widget**: massimo 4 widget, riordino dal menu della pila; su schermi larghi **due widget affiancati** (opzione "widget a due colonne"). | 🟡 manca la modalità a due colonne; verificare il limite | P3 |
 | 7.3 | **Filtro dei calendari** (scegliere quali calendari mostrare) e compleanni dei contatti. | ⬜ | P2 |
 | 7.4 | **Player**: copertina presa da quella della schermata di blocco; il player sparisce quando sparisce dalla tendina; tocco sul player = apre il brano in riproduzione; animazione al cambio brano. | 🟡 verificare l'animazione al cambio brano | P3 |
@@ -150,7 +150,7 @@ cambierebbe la licenza di Onda.
 
 | # | Idea | Onda oggi | Priorità |
 |---|---|---|---|
-| 12.1 | **Meteo senza internet**: legge le previsioni dall'app **Breezy Weather** installata (provider pubblico, permesso `org.breezyweather.READ_PROVIDER`) o dal formato meteo di Gadgetbridge. Onda resterebbe senza permesso INTERNET. | ⬜ **sblocca 7.1** | P1 |
+| 12.1 | **Meteo senza internet**: legge le previsioni dall'app **Breezy Weather** installata (provider pubblico, permesso `org.breezyweather.READ_PROVIDER`) o dal formato meteo di Gadgetbridge. Onda resterebbe senza permesso INTERNET. | ✅ 0.10 provider di Breezy Weather (formato ancora in evoluzione: si legge solo la versione maggiore 0); Gadgetbridge no | P1 |
 | 12.2 | **"Aggiungi alla schermata Home" dalle altre app**: richieste di aggiungere scorciatoie e widget (`ACTION_CONFIRM_PIN_SHORTCUT` / `ACTION_CONFIRM_PIN_APPWIDGET`), come fanno Chrome, Maps, WhatsApp. | ✅ 0.10 conferma e aggiunta alla home; le scorciatoie stanno tra i preferiti | P1 |
 | 12.3 | **Alfabeto con zona di tocco a tutta altezza** e colonna visibile compatta: si può iniziare a scorrere ovunque sul bordo, le lettere restano raccolte in basso. Impostazioni dell'alfabeto con anteprima (posizione, spaziatura, dimensione). | 🟡 da 0.10 la zona di tocco coincide con la colonna compatta | P1 |
 | 12.4 | **Animazione di apertura dall'icona e ritorno nell'icona** quando si torna alla home (si integra con l'animazione di sistema). | 🟡 Onda ha solo animazioni di finestra | P2 |

@@ -11,6 +11,8 @@ import com.gabrielepiccione.onda.data.AppRepository
 import com.gabrielepiccione.onda.data.PinnedShortcut
 import com.gabrielepiccione.onda.data.PinnedShortcuts
 import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
+import com.gabrielepiccione.onda.data.WeatherRepository
+import com.gabrielepiccione.onda.data.WeatherSnapshot
 import com.gabrielepiccione.onda.data.CalendarEvent
 import com.gabrielepiccione.onda.data.ContactHit
 import com.gabrielepiccione.onda.data.ContactsRepository
@@ -34,7 +36,9 @@ import com.gabrielepiccione.onda.data.RecentInstalls
 import java.text.Collator
 import java.util.Locale
 
-/** Voce della home: un'app preferita oppure una cartella. */
+private const val WEATHER_MIN_INTERVAL_MS = 15 * 60_000L
+
+/** Voce della home: un'app preferita, una cartella oppure una scorciatoia. */
 sealed interface HomeEntry {
     val key: String
     data class App(val app: AppInfo) : HomeEntry { override val key get() = "f_" + app.key }
@@ -85,6 +89,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val calendar = ondaApp.calendar
     val audio = ondaApp.audio
     val contacts = ContactsRepository(app)
+    val weatherRepo = WeatherRepository(app)
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
 
@@ -152,6 +157,25 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
             loaded = raw.isNotEmpty(),
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, LauncherState())
+
+    // --- Meteo (da Breezy Weather) ---
+    private val _weather = MutableStateFlow<WeatherSnapshot?>(null)
+    val weather: StateFlow<WeatherSnapshot?> = _weather.asStateFlow()
+    private var weatherLoadedAt = 0L
+
+    /** Rilegge il meteo; senza [force] al massimo ogni 15 minuti, perché il launcher riprende spesso. */
+    fun refreshWeather(force: Boolean = false) {
+        if (!settingsRepo.current.showWeather) {
+            _weather.value = null
+            return
+        }
+        val now = System.currentTimeMillis()
+        if (!force && _weather.value != null && now - weatherLoadedAt < WEATHER_MIN_INTERVAL_MS) return
+        viewModelScope.launch {
+            _weather.value = weatherRepo.load()
+            weatherLoadedAt = now
+        }
+    }
 
     // --- Calendario ---
     private val _nextEvent = MutableStateFlow<CalendarEvent?>(null)

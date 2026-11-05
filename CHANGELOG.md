@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Meteo senza internet**: la temperatura accanto alla data e le previsioni (24 ore e 7 giorni) arrivano dall'app
+  Breezy Weather, se installata. Si attiva nelle impostazioni della home; il permesso viene chiesto solo allora.
+- **Foglio agenda**: toccando la data si aprono meteo ed eventi dei prossimi 7 giorni, invece del calendario di sistema.
 - **Aggiungi alla home dalle altre app**: quando Chrome, Maps, WhatsApp e altre app chiedono di aggiungere una
   scorciatoia o un widget, Onda chiede conferma e lo mette in home. Le scorciatoie stanno tra i preferiti:
   si riordinano e, con la pressione lunga, si tolgono.
