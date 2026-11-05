@@ -30,7 +30,7 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 | 2.1 | **Alfabeto localizzato**: lettere extra secondo le lingue del telefono (Å Ä Ö dopo la Z per svedese/finlandese, Æ Ø Å per danese/norvegese, Ñ per spagnolo); nomi in altri alfabeti (giapponese, cinese, cirillico, greco) **traslitterati** e messi sotto la lettera giusta, non sotto "#". Conta l'ordine delle lingue di sistema. | ⬜ tutto ciò che non è A–Z finisce in "#". Soluzione: `android.icu.text.AlphabeticIndex` (API 24+) con le lingue di sistema | P1 |
 | 2.2 | **Velatura dietro l'elenco app** per leggere meglio sullo sfondo (niente sfocatura: Android non la permette sullo sfondo del launcher). | 🟡 c'è `wallpaperDim`; verificare che si applichi in modo diverso a home ed elenco | P3 |
 | 2.3 | **Fondo dell'elenco**: dopo la Z le **cartelle**, poi le voci del launcher **"Installate di recente"** e **"Impostazioni"**; un segno in fondo all'alfabeto ci porta direttamente. | ✅ 0.10 (tutte le cartelle, senza interruttore per singola cartella) | P1 |
-| 2.3b | **Stella in cima all'alfabeto** che riporta ai preferiti. | ⬜ | P2 |
+| 2.3b | **Stella in cima all'alfabeto** che riporta ai preferiti. | ✅ 0.10 | P2 |
 | 2.4 | **Profilo di lavoro**: badge a valigetta (✅ c'è) e, quando il profilo è in pausa, app **in grigio** e non avviabili; interruttore per riattivarlo. | 🟡 manca lo stato "in pausa" in grigio | P2 |
 | 2.5 | Voce **"App nascoste"** in fondo all'elenco e opzione per **toglierle anche dalla ricerca**. | 🟡 verificare l'opzione "escludi dalla ricerca" | P2 |
 | 2.6 | **Due colonne nell'elenco app** su tablet e pieghevoli; alfabeto e lista più lontani dai bordi; icone scalate sull'altezza dello schermo. Interruttore "Layout a due colonne". | 🟡 c'è solo il contenuto centrato | P3 |
@@ -105,7 +105,7 @@ Ricavato dai testi dell'interfaccia e dalle impostazioni contenute nell'APK (nes
 
 | # | Comportamento di Niagara | Onda oggi | Priorità |
 |---|---|---|---|
-| 10.1 | **Alfabeto compatto e ancorato in basso**: la colonna è alta quanto le lettere (passo massimo ~19 sp) invece di occupare tutto lo schermo; ha un segno in cima (preferiti) e in fondo (cartelle / voci del launcher). | ✅ 0.10 colonna compatta in basso + segno finale · ⬜ stella in cima | P1 |
+| 10.1 | **Alfabeto compatto e ancorato in basso**: la colonna è alta quanto le lettere (passo massimo ~19 sp) invece di occupare tutto lo schermo; ha un segno in cima (preferiti) e in fondo (cartelle / voci del launcher). | ✅ 0.10 colonna compatta in basso, segno finale e stella in cima | P1 |
 | 10.2 | **La lettera scelta si allinea al dito**: l'inizio della sezione compare all'altezza del pollice, non in cima allo schermo. | ✅ 0.10 | P1 |
 | 10.3 | **Ricerca sopra lo sfondo**: nessun pannello opaco; c'è solo l'opzione "Velatura sfondo" per leggere meglio elenco e ricerca. | ✅ 0.10 | P1 |
 | 10.4 | **Ricerca a vuoto con suggerimenti intelligenti**: "Cercate spesso", "Ultimo risultato", "Installate di recente"; le app nascoste compaiono in un gruppo "Nascoste". | 🟡 ci sono solo le app più usate | P2 |
@@ -152,7 +152,7 @@ cambierebbe la licenza di Onda.
 |---|---|---|---|
 | 12.1 | **Meteo senza internet**: legge le previsioni dall'app **Breezy Weather** installata (provider pubblico, permesso `org.breezyweather.READ_PROVIDER`) o dal formato meteo di Gadgetbridge. Onda resterebbe senza permesso INTERNET. | ✅ 0.10 provider di Breezy Weather (formato ancora in evoluzione: si legge solo la versione maggiore 0); Gadgetbridge no | P1 |
 | 12.2 | **"Aggiungi alla schermata Home" dalle altre app**: richieste di aggiungere scorciatoie e widget (`ACTION_CONFIRM_PIN_SHORTCUT` / `ACTION_CONFIRM_PIN_APPWIDGET`), come fanno Chrome, Maps, WhatsApp. | ✅ 0.10 conferma e aggiunta alla home; le scorciatoie stanno tra i preferiti | P1 |
-| 12.3 | **Alfabeto con zona di tocco a tutta altezza** e colonna visibile compatta: si può iniziare a scorrere ovunque sul bordo, le lettere restano raccolte in basso. Impostazioni dell'alfabeto con anteprima (posizione, spaziatura, dimensione). | 🟡 da 0.10 la zona di tocco coincide con la colonna compatta | P1 |
+| 12.3 | **Alfabeto con zona di tocco a tutta altezza** e colonna visibile compatta: si può iniziare a scorrere ovunque sul bordo, le lettere restano raccolte in basso. Impostazioni dell'alfabeto con anteprima (posizione, spaziatura, dimensione). | ✅ 0.10 zona a tutta altezza; mancano le impostazioni con anteprima (posizione, spaziatura, dimensione) | P1 |
 | 12.4 | **Animazione di apertura dall'icona e ritorno nell'icona** quando si torna alla home (si integra con l'animazione di sistema). | 🟡 Onda ha solo animazioni di finestra | P2 |
 | 12.5 | **Categorie dinamiche**: gruppi riempiti da regole (con notifiche, installate di recente, aperte spesso), mostrabili in home o nell'elenco, attivi sempre / con le cuffie / in certe ore. | 🟡 parziale (Plug & Play, installate di recente) | P2 |
 | 12.6 | **Più icon pack insieme con priorità** (se il primo non ha l'icona, si usa il secondo). | ⬜ | P2 |

@@ -73,6 +73,9 @@ data class AppSection(
 /** Segno dell'alfabeto che porta in fondo all'elenco (cartelle e voci di Onda). */
 const val END_OF_LIST_MARK = '•'
 
+/** Segno in cima all'alfabeto che riporta ai preferiti. */
+const val FAVORITES_MARK = '★'
+
 /**
  * Posizione nell'elenco della prima voce dopo le lettere: tutte le sezioni (intestazione + righe)
  * più il contenitore dello Spazio privato, se visibile ([privateRows] = intestazione + app).
