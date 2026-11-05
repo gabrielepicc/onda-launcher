@@ -720,4 +720,5 @@
     <string name="music_backdrop_list">Nell\'elenco delle app</string>
     <string name="music_backdrop_search">Nella ricerca</string>
     <string name="kw_music">musica sfondo copertina colori animato onde spotify player</string>
+    <string name="media_up_next">Dopo: %1$s</string>
 </resources>
