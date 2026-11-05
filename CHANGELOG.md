@@ -4,21 +4,16 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
-- **Sfondo "a ritmo di musica"** (Musica, passo 6, approvato).
-  - Con l'analizzatore audio di Android lo sfondo pulsa sui bassi (20–150 Hz) dell'audio in riproduzione.
-  - Spento di default; il permesso microfono si chiede solo scegliendolo, dopo una spiegazione.
-  - Legge solo l'intensità delle frequenze, mentre suona e Onda si vede: niente viene registrato o salvato.
-- **Cuffie** (Musica, passo 5).
-  - Plug & Play può valere per cuffie precise, scelte per nome; Android lo dà senza permessi.
-  - Nuova opzione "Riprendi la musica", spenta di default: collegando le cuffie riparte l'app scelta, mai durante una chiamata o se qualcosa suona già.
-- **Playlist e brani come voci** (Musica, passo 4).
-  - Incollando nella ricerca un link di Spotify (playlist, album, artista, brano, episodio, podcast) si aggiunge una voce ai preferiti.
-  - Toccandola, il contenuto parte subito se Spotify ha già una sessione, altrimenti si apre la sua pagina.
-  - Tenendola premuta si sposta, si rinomina o si toglie.
-- **Musica dalla ricerca** (Musica, passo 3).
-  - "p testo" fa partire brano, artista o playlist sull'app musicale scelta (o sull'ultima che ha suonato), con il "riproduci da ricerca" di Android.
-  - "sp testo" apre la ricerca dentro Spotify.
-  - Tutti i prefissi della ricerca (=, @, /, p, sp) si possono cambiare in Impostazioni → Alfabeto e ricerca.
+- **Revisione dell'interfaccia, parte 1**:
+  - **Scelte**: non si troncano più. Fino a 3 opzioni corte sono chip che vanno a capo interi, altrimenti un elenco con pulsanti radio (es. "Immagini nelle notifiche", "Primo promemoria dopo").
+  - **Etichette e titoli**: le etichette dei riquadri vanno su più righe; il titolo delle pagine non ha più "…".
+  - **Anteprima fissa**: solo su schermi alti e con testo normale, altrimenti scorre con la pagina e non copre la sezione sotto.
+  - **Pagine e editor**: ogni pagina riparte con la barra grande; tastiera e barre di sistema non coprono il contenuto; l'editor dei profili ha la barra di Material e non finisce sotto la barra di stato.
+  - **Chip comuni** con margini 16/8 dp e altezza minima 40 dp: azioni delle notifiche, suggerimenti in home.
+  - **Benessere digitale**: "Scegli app" per Usage Breaker e promemoria.
+  - **TalkBack**: interruttori, caselle e colori ora hanno un nome.
+  - **Popup dell'app con notifiche**: prima le notifiche, scorciatoie e widget piegati in una riga "Scorciatoie" in fondo, che si apre sul posto. Si spegne in Impostazioni → Home → Notifiche.
+  - **Controllo statico** (`UiRulesTest`): fallisce se nelle impostazioni, nei chip o nei pulsanti un testo si tronca, o se un contenitore con testo ha un'altezza fissa.
 - **Player: azioni dell'app e prossimo brano** (Musica, passo 2).
   - Se l'app mette azioni in più nella sessione (es. il cuore "Mi piace" di Spotify), compaiono accanto ai comandi, con la sua icona: una nel player compatto, fino a tre in quello esteso.
   - Se l'app espone la coda, sotto l'artista compare "Dopo: titolo — artista".

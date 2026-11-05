@@ -2,13 +2,6 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
-import com.gabrielepiccione.onda.data.PlugPlay
-import com.gabrielepiccione.onda.data.MEDIA_PREFIX
-import com.gabrielepiccione.onda.data.MediaShortcut
-import com.gabrielepiccione.onda.data.MediaShortcuts
-import com.gabrielepiccione.onda.data.SpotifyItem
-import com.gabrielepiccione.onda.data.PrefixKind
-import com.gabrielepiccione.onda.data.SearchPrefixes
 import com.gabrielepiccione.onda.data.ContextProfile
 import com.gabrielepiccione.onda.data.ContextProfiles
 import com.gabrielepiccione.onda.data.ContextReader
@@ -63,10 +56,6 @@ sealed interface HomeEntry {
     data class Shortcut(val pinned: PinnedShortcut, val info: AppRepository.PinnedInfo) : HomeEntry {
         override val key get() = "s_" + pinned.key
     }
-    /** Playlist, album, artista o brano: si apre nell'app musicale; l'icona è quella dell'app. */
-    data class Media(val shortcut: MediaShortcut, val app: AppInfo?) : HomeEntry {
-        override val key get() = "m_" + shortcut.id
-    }
 }
 
 data class LauncherState(
@@ -90,7 +79,7 @@ data class LauncherState(
 }
 
 /** Modalità di ricerca scelta con il prefisso: "=" calcolo, "@" contatti, "/" impostazioni. */
-enum class SearchMode { ALL, CALC, CONTACTS, SETTINGS, PLAY, SPOTIFY }
+enum class SearchMode { ALL, CALC, CONTACTS, SETTINGS }
 
 data class SearchResults(
     val query: String = "",
@@ -99,8 +88,6 @@ data class SearchResults(
     val contacts: List<ContactHit> = emptyList(),
     val mode: SearchMode = SearchMode.ALL,
     val settingsHits: List<com.gabrielepiccione.onda.util.SettingsShortcut> = emptyList(),
-    /** Il testo cercato senza il prefisso. */
-    val term: String = "",
 )
 
 class LauncherViewModel(app: Application) : AndroidViewModel(app) {
@@ -117,54 +104,6 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val usageStats = UsageStatsRepository(app)
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
-
-    /** Aggiunge ai preferiti un contenuto di Spotify riconosciuto da un link. */
-    fun addMediaShortcut(item: SpotifyItem, name: String) {
-        settingsRepo.edit { MediaShortcuts.add(it, MediaShortcut(java.util.UUID.randomUUID().toString(), item.uri, name, item.type.name.lowercase())) }
-    }
-
-    /**
-     * Apre la voce nell'app: se Spotify ha già una sessione, le si chiede di far partire subito il
-     * contenuto; altrimenti si apre la sua pagina.
-     */
-    fun openMediaShortcut(m: MediaShortcut) {
-        if (media.playFromUri(m.packageName, m.uri)) return
-        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(m.uri))
-            .setPackage(m.packageName)
-            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-        runCatching { getApplication<android.app.Application>().startActivity(intent) }
-    }
-
-    /** L'app musicale per "p": quella scelta, oppure l'ultima che ha suonato. */
-    fun musicApp(): String = settingsRepo.current.let { it.musicApp.ifBlank { it.lastMusicApp } }
-
-    init {
-        // Plug & Play: collegando le cuffie, se richiesto, riprende la musica dell'app scelta
-        viewModelScope.launch {
-            var before = audio.headphonesConnected.value
-            audio.headphonesConnected.collect { now ->
-                val justConnected = now && !before
-                before = now
-                if (!justConnected) return@collect
-                // Il nome del dispositivo può arrivare un istante dopo il collegamento
-                delay(1_500)
-                val s = settingsRepo.current
-                if (PlugPlay.shouldResume(true, s.plugPlayResume, s.plugPlayDevice, audio.connectedNames.value, inCall = false, somethingPlaying = audio.busy())) {
-                    val pkg = appsRepo.apps.value.firstOrNull { it.key == s.plugPlayApp }?.component?.packageName ?: musicApp()
-                    if (pkg.isNotBlank()) media.resume(pkg)
-                }
-            }
-        }
-    }
-
-    init {
-        // Ricorda l'ultima app che ha avuto una sessione multimediale, per la riproduzione dalla ricerca
-        viewModelScope.launch {
-            media.media.collect { m ->
-                if (m != null && m.packageName != settingsRepo.current.lastMusicApp) settingsRepo.edit { it.copy(lastMusicApp = m.packageName) }
-            }
-        }
-    }
 
     // --- Preferiti contestuali ---
     private val activeProfileFlow = MutableStateFlow<ContextProfile?>(null)
@@ -229,11 +168,6 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
             if (entry.startsWith(com.gabrielepiccione.onda.data.FOLDER_PREFIX)) {
                 val f = settings.folders[entry.removePrefix(com.gabrielepiccione.onda.data.FOLDER_PREFIX)] ?: return@mapNotNull null
                 HomeEntry.Group(f, f.apps.mapNotNull { byKey[it] })
-            } else if (entry.startsWith(MEDIA_PREFIX)) {
-                val id = entry.removePrefix(MEDIA_PREFIX)
-                settings.mediaShortcuts.firstOrNull { it.id == id }?.let { m ->
-                    HomeEntry.Media(m, all.firstOrNull { it.packageName == m.packageName })
-                }
             } else if (entry.startsWith(SHORTCUT_PREFIX)) {
                 val key = entry.removePrefix(SHORTCUT_PREFIX)
                 val shortcut = settings.pinnedShortcuts.firstOrNull { it.key == key } ?: return@mapNotNull null
@@ -330,19 +264,15 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     fun updateSearch(query: String) {
         searchJob?.cancel()
-        // Prefissi scelti dall'utente: simboli subito, parole ("p ", "sp ") solo con lo spazio dopo
-        val (kind, term) = SearchPrefixes.parse(query, settingsRepo.current.searchPrefixes)
-        val mode = when (kind) {
-            PrefixKind.CALC -> SearchMode.CALC
-            PrefixKind.CONTACTS -> SearchMode.CONTACTS
-            PrefixKind.SETTINGS -> SearchMode.SETTINGS
-            PrefixKind.PLAY -> SearchMode.PLAY
-            PrefixKind.SPOTIFY -> SearchMode.SPOTIFY
-            null -> SearchMode.ALL
+        val mode = when {
+            query.startsWith("=") -> SearchMode.CALC
+            query.startsWith("@") -> SearchMode.CONTACTS
+            query.startsWith("/") -> SearchMode.SETTINGS
+            else -> SearchMode.ALL
         }
+        val term = if (mode == SearchMode.ALL) query else query.drop(1)
         _search.value = SearchResults(
             query = query,
-            term = term,
             mode = mode,
             apps = if (mode == SearchMode.ALL) filterApps(term) else emptyList(),
             calc = when (mode) {

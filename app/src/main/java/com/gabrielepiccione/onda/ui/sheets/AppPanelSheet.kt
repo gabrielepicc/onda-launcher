@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.ui.components.OndaChip
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.AssistChip
@@ -433,15 +434,7 @@ private const val COMPACT_MESSAGES = 3
 
 /** Azione di una notifica: il chip di Material, con il suo bersaglio di tocco da 48dp. */
 @Composable
-private fun ActionChip(label: String, onClick: () -> Unit) {
-    val colors = LocalOndaColors.current
-    AssistChip(
-        onClick = onClick,
-        label = { Text(label, color = colors.onWallpaper, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        border = null,
-        colors = AssistChipDefaults.assistChipColors(containerColor = colors.panel),
-    )
-}
+private fun ActionChip(label: String, onClick: () -> Unit) = OndaChip(label, onClick)
 
 @Composable
 private fun Avatar(item: NotificationItem, size: Dp = 48.dp, compact: Boolean = false) {

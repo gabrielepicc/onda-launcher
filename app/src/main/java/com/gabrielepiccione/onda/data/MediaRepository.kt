@@ -2,10 +2,6 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.data
 
-import android.app.SearchManager
-import android.content.Intent
-import android.os.Bundle
-import android.provider.MediaStore
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import android.app.ActivityOptions
@@ -169,47 +165,6 @@ class MediaRepository(private val context: Context) {
             ResourcesCompat.getDrawable(resources, res, null)?.toBitmap(ICON_PX, ICON_PX)?.asImageBitmap()
         }.getOrNull()
     }
-
-    /**
-     * "Riproduci da ricerca" di Android sull'app [pkg]: se ha già una sessione attiva le si chiede di
-     * suonare il risultato, altrimenti la si apre con l'intent standard. Restituisce false se l'app non lo supporta.
-     */
-    fun playFromSearch(pkg: String, query: String): Boolean {
-        val c = controller
-        if (c != null && c.packageName == pkg && runCatching { c.transportControls.playFromSearch(query, Bundle()) }.isSuccess) return true
-        val intent = Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH)
-            .setPackage(pkg)
-            .putExtra(SearchManager.QUERY, query)
-            .putExtra(MediaStore.EXTRA_MEDIA_FOCUS, "vnd.android.cursor.item/*")
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        return runCatching { context.startActivity(intent) }.isSuccess
-    }
-
-    /** Fa partire [uri] nella sessione già attiva di [pkg]; false se non c'è o se l'app non lo accetta. */
-    fun playFromUri(pkg: String, uri: String): Boolean {
-        val c = controller?.takeIf { it.packageName == pkg } ?: return false
-        return runCatching { c.transportControls.playFromUri(android.net.Uri.parse(uri), Bundle()) }.isSuccess
-    }
-
-    /**
-     * Riprende l'ultima sessione dell'app [pkg]: con la sua sessione, se c'è ancora, oppure con un tasto
-     * multimediale virtuale, che Android consegna all'ultima app che ha suonato.
-     */
-    fun resume(pkg: String) {
-        val session = currentSessions().firstOrNull { it.packageName == pkg }
-        if (session != null && runCatching { session.transportControls.play() }.isSuccess) return
-        val audio = context.getSystemService(android.media.AudioManager::class.java) ?: return
-        listOf(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.ACTION_UP).forEach { action ->
-            runCatching { audio.dispatchMediaKeyEvent(android.view.KeyEvent(action, android.view.KeyEvent.KEYCODE_MEDIA_PLAY)) }
-        }
-    }
-
-    /** App installate che sanno far partire un brano da una ricerca. */
-    fun playFromSearchApps(): List<String> = runCatching {
-        context.packageManager.queryIntentActivities(Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH), 0)
-            .map { it.activityInfo.packageName }
-            .distinct()
-    }.getOrDefault(emptyList())
 
     /** Manda all'app l'azione scelta, come farebbe il suo pulsante nella notifica. */
     fun customAction(action: MediaAction) = controller?.transportControls?.sendCustomAction(action.id, null)

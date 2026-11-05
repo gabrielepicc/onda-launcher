@@ -2,6 +2,14 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.sheets
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.rememberCoroutineScope
 import com.gabrielepiccione.onda.ui.theme.Motion
@@ -162,6 +170,8 @@ fun AppQuickPopup(
     onDismiss: () -> Unit,
     /** Solo per le app suggerite in home: non proporla più. */
     onStopSuggesting: (() -> Unit)? = null,
+    /** Con notifiche, scorciatoie e widget si piegano in una riga in fondo. */
+    collapseExtras: Boolean = true,
 ) {
     val colors = LocalOndaColors.current
     val ondaHaptics = LocalOndaHaptics.current
@@ -347,6 +357,10 @@ fun AppQuickPopup(
                 }
             }
 
+            // Con notifiche (e l'opzione attiva) le scorciatoie e il widget restano piegati in fondo
+            val folded = collapseExtras && notifications.isNotEmpty() && (shortcuts.isNotEmpty() || widgetIds.isNotEmpty())
+            var extrasOpen by remember(app.key) { mutableStateOf(false) }
+            val shortcutsBlock: @Composable () -> Unit = {
             if (shortcuts.isNotEmpty()) Column(Modifier.cascade(content, 2)) {
                 SectionLabel(R.string.popup_section_shortcuts)
                 Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.panelHigh.copy(alpha = 0.5f))) {
@@ -371,6 +385,8 @@ fun AppQuickPopup(
                     }
                 }
             }
+            }
+            if (!folded) shortcutsBlock()
 
             if (relatedApps.isNotEmpty()) Column(Modifier.cascade(content, 3)) {
                 SectionLabel(R.string.popup_section_related)
@@ -402,6 +418,7 @@ fun AppQuickPopup(
             }
 
             // Più widget si sfogliano in orizzontale, come le pile della home
+            val widgetsBlock: @Composable () -> Unit = {
             if (widgetIds.isNotEmpty()) Column(Modifier.cascade(content, 4)) {
                 SectionLabel(R.string.popup_section_widgets)
                 when (widgetIds.size) {
@@ -413,6 +430,22 @@ fun AppQuickPopup(
                         onLongPress = null,
                         modifier = Modifier.padding(horizontal = 8.dp),
                     )
+                }
+            }
+            }
+            if (!folded) {
+                widgetsBlock()
+            } else {
+                FoldedExtras(open = extrasOpen, onToggle = { extrasOpen = !extrasOpen })
+                AnimatedVisibility(
+                    visible = extrasOpen,
+                    enter = expandVertically(Motion.enter()) + fadeIn(Motion.enter()),
+                    exit = shrinkVertically(Motion.exit()) + fadeOut(Motion.exit()),
+                ) {
+                    Column {
+                        shortcutsBlock()
+                        widgetsBlock()
+                    }
                 }
             }
         }
@@ -428,6 +461,28 @@ private fun Modifier.cascade(progress: Animatable<Float, *>, index: Int): Modifi
     val p = ((progress.value - index * CASCADE_STEP) / (1f - CASCADE_STEP * CASCADE_SECTIONS)).coerceIn(0f, 1f)
     alpha = p
     translationY = (1f - p) * 12.dp.toPx()
+}
+
+/** Riga "Scorciatoie" che apre e chiude sul posto scorciatoie e widget, senza chiudere il popup. */
+@Composable
+private fun FoldedExtras(open: Boolean, onToggle: () -> Unit) {
+    val colors = LocalOndaColors.current
+    val turn by animateFloatAsState(if (open) 180f else 0f, Motion.bouncy(), label = "foldedExtras")
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(onClick = onToggle)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Icon(Icons.Filled.Bolt, null, tint = colors.accent, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(stringResource(R.string.popup_section_shortcuts), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Icon(Icons.Filled.KeyboardArrowDown, null, tint = colors.onWallpaperMuted, modifier = Modifier.graphicsLayer { rotationZ = turn })
+    }
 }
 
 /** Titolo di una sezione del popup, così si distingue cosa è l'app, cosa sono le notifiche e cosa le scorciatoie. */

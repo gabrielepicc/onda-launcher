@@ -19,10 +19,6 @@
     <!-- Preferiti contestuali: nome dei dispositivi Bluetooth collegati (auto, cuffie). Chiesto solo per una condizione Bluetooth. -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- Sfondo "a ritmo di musica": l'analizzatore audio di Android richiede il microfono, anche se legge solo
-         le ampiezze dell'audio in riproduzione. Approvato dal proprietario, spento di default e chiesto solo attivandolo. -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
@@ -40,11 +36,6 @@
         <intent>
             <action android:name="android.intent.action.WEB_SEARCH" />
         </intent>
-        <!-- Musica: app che sanno far partire un brano da una ricerca, e Spotify per i suoi link -->
-        <intent>
-            <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
-        </intent>
-        <package android:name="com.spotify.music" />
         <intent>
             <action android:name="org.adw.launcher.THEMES" />
         </intent>

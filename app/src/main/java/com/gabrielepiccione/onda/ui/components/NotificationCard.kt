@@ -258,22 +258,7 @@ fun NotificationCard(
 }
 
 @Composable
-private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> Unit) {
-    val colors = LocalOndaColors.current
-    Text(
-        label,
-        color = if (primary) colors.onAccentContainer else colors.accent,
-        style = MaterialTheme.typography.labelLarge,
-        maxLines = 1,
-        modifier = Modifier
-            .minimumInteractiveComponentSize()
-            .clip(RoundedCornerShape(50))
-            .background(if (primary) colors.accentContainer else colors.panelHigh)
-            .clickable(onClick = onClick)
-            .heightIn(min = 36.dp)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-    )
-}
+private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> Unit) = OndaChip(label, onClick, primary = primary)
 
 /** Immagine, GIF o sticker della notifica, intera e senza tagli; nulla se non c'è o se è spenta. */
 @Composable

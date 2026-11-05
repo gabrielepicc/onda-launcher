@@ -2,9 +2,6 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
-import com.gabrielepiccione.onda.data.MusicBackdropMode
-import androidx.core.content.ContextCompat
-import android.content.pm.PackageManager
 import android.content.ComponentName
 import com.gabrielepiccione.onda.data.BluetoothWatcher
 import com.gabrielepiccione.onda.data.HomePresence
@@ -80,12 +77,6 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     private val locationLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         refreshStatus()
-    }
-
-    private val microphoneLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        refreshStatus()
-        // Rifiutato: si torna a "colori e movimento", che non chiede nulla
-        if (!granted) vm.updateSettings { if (it.musicBackdrop == MusicBackdropMode.BEAT) it.copy(musicBackdrop = MusicBackdropMode.MOTION) else it }
     }
 
     private val bluetoothLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -337,7 +328,6 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             weatherInstalled = vm.weatherRepo.isInstalled(),
             weatherPermission = vm.weatherRepo.hasPermission(),
             locationPermission = HomePresence.hasPermission(this),
-            microphonePermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED,
             usageAccess = UsageReminderEngine.hasUsageAccess(this),
             postNotifications = UsageReminderEngine.canNotify(this),
         )
@@ -372,8 +362,6 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         startActivity(restart)
         Runtime.getRuntime().exit(0)
     }
-
-    override fun requestMicrophonePermission() = microphoneLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
 
     override fun requestBluetoothPermission() {
         BluetoothWatcher.PERMISSION?.let { bluetoothLauncher.launch(it) }

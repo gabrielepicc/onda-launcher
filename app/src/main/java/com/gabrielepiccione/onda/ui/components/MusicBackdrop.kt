@@ -2,9 +2,6 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
-import android.media.audiofx.Visualizer
-import androidx.compose.runtime.DisposableEffect
-import com.gabrielepiccione.onda.data.BeatTracker
 import android.graphics.RuntimeShader
 import android.os.Build
 import android.os.PowerManager
@@ -73,8 +70,6 @@ fun MusicBackdrop(
     intensity: Float,
     dark: Boolean,
     modifier: Modifier = Modifier,
-    /** Permesso per l'analizzatore audio: senza, "a ritmo" si comporta come "colori e movimento". */
-    beatAllowed: Boolean = false,
 ) {
     if (mode == MusicBackdropMode.OFF) return
     val context = LocalContext.current
@@ -124,21 +119,10 @@ fun MusicBackdrop(
         }
     }
 
-    // A ritmo di musica: pulsazione sui bassi, letta solo mentre suona e si vede
-    var beat by remember { mutableFloatStateOf(0f) }
-    val listening = mode == MusicBackdropMode.BEAT && beatAllowed && playing && visible && moving
-    DisposableEffect(listening) {
-        val visualizer = if (listening) startBeat { beat = it } else null
-        onDispose {
-            runCatching { visualizer?.enabled = false; visualizer?.release() }
-            beat = 0f
-        }
-    }
-
     val shader = remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) runCatching { waveShader() }.getOrNull() else null }
     Canvas(modifier) {
         if (shader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            updateShader(shader, size.width, size.height, time, mood.copy(pulse = mood.pulse + beat * BEAT_PULSE), listOf(c0, c1, c2, c3), beat)
+            updateShader(shader, size.width, size.height, time, mood, listOf(c0, c1, c2, c3))
             drawRect(ShaderBrush(shader), alpha = alpha)
         } else {
             // Versione semplice: tre macchie di colore che girano lente su un fondo sfumato
@@ -146,38 +130,13 @@ fun MusicBackdrop(
             listOf(c1, c2, c3).forEachIndexed { i, c ->
                 val a = time * (0.6f + 0.25f * i) + i * 2.1f
                 val center = Offset(size.width * (0.5f + 0.35f * cos(a)), size.height * (0.5f + 0.3f * sin(a * 0.8f)))
-                val r = size.maxDimension * (0.55f + 0.08f * beat)
-                drawCircle(Brush.radialGradient(listOf(c, Color.Transparent), center, r), r, center, alpha = alpha * 0.8f)
+                drawCircle(Brush.radialGradient(listOf(c, Color.Transparent), center, size.maxDimension * 0.55f), size.maxDimension * 0.55f, center, alpha = alpha * 0.8f)
             }
         }
     }
 }
 
 private const val FRAME_NANOS = 33_333_333L
-private const val BEAT_PULSE = 0.25f
-
-/**
- * Analizzatore audio sull'uscita generale (sessione 0): solo lo spettro, circa 20 volte al secondo.
- * Restituisce null se Android non lo concede (permesso mancante o telefono che non lo supporta).
- */
-private fun startBeat(onBeat: (Float) -> Unit): Visualizer? = runCatching {
-    val tracker = BeatTracker()
-    Visualizer(0).apply {
-        captureSize = Visualizer.getCaptureSizeRange()[1].coerceAtMost(1024)
-        setDataCaptureListener(
-            object : Visualizer.OnDataCaptureListener {
-                override fun onWaveFormDataCapture(v: Visualizer?, waveform: ByteArray?, samplingRate: Int) = Unit
-                override fun onFftDataCapture(v: Visualizer?, fft: ByteArray?, samplingRate: Int) {
-                    if (fft != null) onBeat(tracker.update(BeatTracker.bassEnergy(fft, samplingRate)))
-                }
-            },
-            (Visualizer.getMaxCaptureRate() / 2).coerceAtMost(20_000),
-            false,
-            true,
-        )
-        enabled = true
-    }
-}.getOrNull()
 
 /** Onde di colore che si piegano e si fondono: tre funzioni seno intrecciate, mosse dal tempo. */
 private const val WAVES_AGSL = """
@@ -185,7 +144,6 @@ uniform float2 size;
 uniform float time;
 uniform float turbulence;
 uniform float pulse;
-uniform float beat;
 layout(color) uniform half4 c0;
 layout(color) uniform half4 c1;
 layout(color) uniform half4 c2;
@@ -201,7 +159,7 @@ half4 main(float2 p) {
     half4 a = mix(c0, c1, smoothstep(0.1, 0.9, w1));
     half4 b = mix(c2, c3, smoothstep(0.1, 0.9, w2));
     half4 c = mix(a, b, smoothstep(0.2, 0.8, w3));
-    float glow = 1.0 + pulse * sin(t * 6.2831) + beat * 0.18;
+    float glow = 1.0 + pulse * sin(t * 6.2831);
     return half4(c.rgb * glow, 1.0);
 }
 """
@@ -210,11 +168,10 @@ half4 main(float2 p) {
 private fun waveShader(): RuntimeShader = RuntimeShader(WAVES_AGSL)
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-private fun updateShader(shader: RuntimeShader, w: Float, h: Float, time: Float, mood: MoodParams, colors: List<Color>, beat: Float) {
+private fun updateShader(shader: RuntimeShader, w: Float, h: Float, time: Float, mood: MoodParams, colors: List<Color>) {
     shader.setFloatUniform("size", w, h)
     shader.setFloatUniform("time", time)
     shader.setFloatUniform("turbulence", mood.turbulence)
     shader.setFloatUniform("pulse", mood.pulse)
-    shader.setFloatUniform("beat", beat)
     colors.forEachIndexed { i, c -> shader.setColorUniform("c$i", c.toArgb()) }
 }
