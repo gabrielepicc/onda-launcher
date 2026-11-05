@@ -106,6 +106,7 @@ data class SettingsStatus(
     val contactsPermission: Boolean,
     val weatherInstalled: Boolean = false,
     val weatherPermission: Boolean = false,
+    val locationPermission: Boolean = false,
     val usageAccess: Boolean = false,
     val postNotifications: Boolean = false,
 )
@@ -117,6 +118,10 @@ interface SettingsActions {
     fun calendarPermission()
     fun contactsPermission()
     fun weatherPermission()
+    fun locationPermission()
+    /** Salva il Wi-Fi attuale e la posizione approssimativa come "casa". */
+    fun setHomeHere()
+    fun pickLightsWidget()
     fun postNotifications()
     fun usageAccess()
     fun accessibility()
@@ -450,6 +455,31 @@ fun SettingsScreen(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(app.label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                     TextButton(onClick = { onEdit { HomeSuggestions.restore(it, app.key) } }) { Text(stringResource(R.string.suggested_restore)) }
+                }
+            }
+        }
+
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_lights)) {
+            Text(stringResource(R.string.lights_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SwitchRow(stringResource(R.string.lights_enable), null, settings.homeLights) { v ->
+                onEdit { it.copy(homeLights = v) }
+                if (v && !status.locationPermission) actions.locationPermission()
+            }
+            if (settings.homeLights) {
+                if (!status.locationPermission) {
+                    StatusRow(stringResource(R.string.lights_permission), false, "", stringResource(R.string.lights_permission_ko)) { actions.locationPermission() }
+                }
+                ClickRow(
+                    stringResource(R.string.lights_wifi),
+                    settings.homeWifi.ifBlank { stringResource(R.string.lights_wifi_none) },
+                ) { actions.setHomeHere() }
+                Text(stringResource(R.string.lights_wifi_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                ClickRow(
+                    stringResource(R.string.lights_widget),
+                    stringResource(if (settings.homeLightsWidget > 0) R.string.lights_widget_set else R.string.lights_widget_none),
+                ) { actions.pickLightsWidget() }
+                if (settings.homeLatitude == 0.0 && settings.homeLongitude == 0.0) {
+                    Text(stringResource(R.string.lights_no_location), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -903,6 +933,7 @@ private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.suggested_setting, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.layout_lock, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.hide_status_bar, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.section_lights, SettingsPage.HOME, R.string.kw_lights),
     SettingEntry(R.string.alphabet_left, SettingsPage.ALPHABET, R.string.kw_alphabet),
     SettingEntry(R.string.hide_alphabet, SettingsPage.ALPHABET, R.string.kw_alphabet),
     SettingEntry(R.string.contacts_in_alphabet, SettingsPage.ALPHABET, R.string.kw_alphabet),

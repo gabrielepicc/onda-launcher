@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.HomePresence
 import androidx.core.content.FileProvider
 import com.gabrielepiccione.onda.data.AppPopups
 import com.gabrielepiccione.onda.data.AutoBackup
@@ -70,6 +71,10 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     private val weatherLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         refreshStatus()
         if (granted) vm.refreshWeather(force = true)
+    }
+
+    private val locationLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        refreshStatus()
     }
 
     private val calendarLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -313,6 +318,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             accessibilityEnabled = OndaAccessibilityService.isEnabled,
             weatherInstalled = vm.weatherRepo.isInstalled(),
             weatherPermission = vm.weatherRepo.hasPermission(),
+            locationPermission = HomePresence.hasPermission(this),
             usageAccess = UsageReminderEngine.hasUsageAccess(this),
             postNotifications = UsageReminderEngine.canNotify(this),
         )
@@ -340,6 +346,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun requestCalendarPermission() = calendarLauncher.launch(Manifest.permission.READ_CALENDAR)
 
     override fun requestWeatherPermission() = weatherLauncher.launch(WeatherRepository.PERMISSION)
+    override fun requestLocationPermission() = locationLauncher.launch(HomePresence.PERMISSIONS)
 
     override fun requestPostNotifications() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -462,6 +469,10 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             WidgetTarget.ReplaceClock -> vm.settingsRepo.replaceClockWithWidget(id)
             is WidgetTarget.ToStack -> vm.settingsRepo.addToStack(t.block, id)
             is WidgetTarget.ToPopup -> vm.settingsRepo.edit { AppPopups.addWidget(it, t.appKey, id) }
+            WidgetTarget.HomeLights -> {
+                vm.settingsRepo.current.homeLightsWidget.takeIf { it > 0 }?.let { old -> widgets.deleteId(old) }
+                vm.settingsRepo.edit { it.copy(homeLightsWidget = id) }
+            }
             is WidgetTarget.ForApp -> {
                 vm.settingsRepo.current.appWidgets[t.appKey]?.let { old -> widgets.deleteId(old) }
                 vm.settingsRepo.setAppWidget(t.appKey, id)

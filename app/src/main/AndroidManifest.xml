@@ -13,6 +13,9 @@
 
     <!-- Promemoria di Usage Breaker: chiesti solo scegliendo un'app, i dati restano sul telefono -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Luci di casa: Android chiede la posizione anche solo per leggere il nome del Wi-Fi. Chiesto solo attivando la funzione. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
