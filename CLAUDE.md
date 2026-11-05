@@ -43,10 +43,12 @@ Non c'è SDK Android in locale: la verifica è la CI di GitHub Actions (`.github
 ```bash
 # stato dell'ultima run di un branch
 gh api "repos/gabrielepicc/onda-launcher/actions/runs?branch=<branch>&per_page=1" --jq '.workflow_runs[0] | "\(.id) \(.status) \(.conclusion)"'
-# controlli di una PR
-gh pr checks <numero>
-# unione con CI verde
-gh pr merge <numero> --squash --delete-branch
+# (in queste sessioni GraphQL non è disponibile: niente `gh pr ...`, usare l'API REST)
+# aprire la PR
+gh api repos/gabrielepicc/onda-launcher/pulls -f base=main -f head=<branch> -f title="..." -f body="..." --jq .number
+# unione con CI verde, poi eliminazione del branch
+gh api -X PUT repos/gabrielepicc/onda-launcher/pulls/<numero>/merge -f merge_method=squash
+gh api -X DELETE repos/gabrielepicc/onda-launcher/git/refs/heads/<branch>
 # errori: gh api repos/gabrielepicc/onda-launcher/actions/jobs/<job_id>/logs | grep -E " e: file|FAILED|Error:"
 ```
 Lint: evitare `produceState` (falso positivo `ProduceStateDoesNotAssignValue`), usare `LaunchedEffect` + stato.
