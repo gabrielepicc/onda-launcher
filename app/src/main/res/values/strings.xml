@@ -505,4 +505,20 @@
     <string name="search_button_long">Long press on the button</string>
     <string name="search_button_swipe">Swipe up on the button</string>
     <string name="search_button_gesture_sub">Tap to change</string>
+    <string name="settings_search_hint">Search settings</string>
+    <string name="settings_search_clear">Clear search</string>
+    <string name="settings_search_results">Results</string>
+    <string name="settings_search_none">Nothing found. Try another word.</string>
+    <string name="kw_style">theme dark light color wallpaper material you</string>
+    <string name="kw_clock">clock date time battery calendar</string>
+    <string name="kw_text">text font color shadow alignment</string>
+    <string name="kw_icons">icons shape pack themed monochrome</string>
+    <string name="kw_home">home blocks widgets favorites suggestions lock layout status bar</string>
+    <string name="kw_notif">notification image gif sticker photo</string>
+    <string name="kw_alphabet">alphabet letters left right hand</string>
+    <string name="kw_search">search button engine web</string>
+    <string name="kw_gestures">gestures swipe double tap animation</string>
+    <string name="kw_haptics">vibration haptic feedback</string>
+    <string name="kw_apps">apps hidden private space plug usage breaker limit reminder</string>
+    <string name="kw_backup">backup restore export import</string>
 </resources>

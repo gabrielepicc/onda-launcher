@@ -56,7 +56,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ impostazioni rifatte: pagine per argomento, anteprima dal vivo su ogni pagina di aspetto, scelte visive, telefono in miniatura;
    ✅ prima app della lettera al centro; ✅ sfumatura in cima all'elenco; ✅ player scalato per intero; ✅ chiusura animata del popup;
    ✅ cartelle senza freccetta, con più simboli e icone dagli icon pack; ✅ ricerca delle icone stabile; ✅ immagini nelle notifiche (GIF ferme);
-   ⬜ cerca nelle impostazioni, ⬜ posizione dell'alfabeto, ⬜ stessi selettori visivi nei fogli di modifica della home.
+   ✅ cerca nelle impostazioni, ⬜ posizione dell'alfabeto, ⬜ stessi selettori visivi nei fogli di modifica della home.
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
