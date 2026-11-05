@@ -13,6 +13,7 @@ import android.media.session.PlaybackState
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.gabrielepiccione.onda.service.OndaNotificationListener
@@ -52,6 +53,10 @@ class MediaRepository(private val context: Context) {
     private var controller: MediaController? = null
     private var started = false
 
+    /** Inizio della pausa in corso (orologio monotono), 0 se non è in pausa. */
+    private var pausedAt = 0L
+    private val recheck = Runnable { publish() }
+
     private val controllerCallback = object : MediaController.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackState?) = publish()
         override fun onMetadataChanged(metadata: MediaMetadata?) = publish()
@@ -75,9 +80,10 @@ class MediaRepository(private val context: Context) {
         runCatching { msm.getActiveSessions(component) }.getOrNull().orEmpty()
 
     private fun pick(list: List<MediaController>) {
-        val best = list.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING }
+        val best = list.firstOrNull { MediaRules.isActive(it.playbackState?.state) }
             ?: list.firstOrNull { it.metadata != null }
         if (best?.sessionToken != controller?.sessionToken) {
+            pausedAt = 0L
             controller?.unregisterCallback(controllerCallback)
             controller = best
             best?.registerCallback(controllerCallback, handler)
@@ -89,6 +95,21 @@ class MediaRepository(private val context: Context) {
         val c = controller
         val meta = c?.metadata
         if (c == null || meta == null) {
+            _media.value = null
+            return
+        }
+        // Il player compare solo se qualcosa suona; dopo una pausa resta per poco, poi sparisce
+        val state = c.playbackState?.state
+        val now = SystemClock.elapsedRealtime()
+        handler.removeCallbacks(recheck)
+        if (state == PlaybackState.STATE_PAUSED) {
+            if (pausedAt == 0L) pausedAt = now
+            val left = MediaRules.PAUSE_GRACE_MS - (now - pausedAt)
+            if (left > 0) handler.postDelayed(recheck, left + 50)
+        } else {
+            pausedAt = 0L
+        }
+        if (!MediaRules.visible(state, pausedAt, now)) {
             _media.value = null
             return
         }
