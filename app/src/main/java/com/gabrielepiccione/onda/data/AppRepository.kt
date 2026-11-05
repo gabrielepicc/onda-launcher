@@ -175,6 +175,7 @@ class AppRepository(
             isWorkProfile = work,
             category = category,
             color = color,
+            installedAt = firstInstallTime,
         )
     }
 

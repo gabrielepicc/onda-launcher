@@ -2,6 +2,11 @@
 
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
+
+## [Non rilasciato]
+- In fondo all'elenco delle app: le cartelle, poi "Installate di recente" e "Impostazioni di Onda";
+  il segno • in fondo all'alfabeto porta lì.
+
 ## [0.9.0]
 
 ### Aggiunto

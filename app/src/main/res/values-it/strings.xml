@@ -400,4 +400,8 @@
     <string name="home_position_auto">Automatica (in basso)</string>
     <string name="home_position_manual">Scegli</string>
     <string name="home_position_hint">Il primo elemento della home parte da qui; tutto il resto, preferiti compresi, lo segue.</string>
+    <string name="list_folders">Cartelle</string>
+    <string name="recently_installed">Installate di recente</string>
+    <string name="recently_installed_empty">Nessuna app installata di recente</string>
+    <string name="onda_settings">Impostazioni di Onda</string>
 </resources>

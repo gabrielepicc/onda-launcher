@@ -208,7 +208,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val sections = remember(state.allApps, settings.launchCounts, alphabetContacts) {
         buildSections(state.allApps, settings.launchCounts, alphabetContacts)
     }
-    val letters = remember(sections) { sections.map { it.letter } }
+    // Il segno finale porta a cartelle e voci di Onda in fondo all'elenco
+    val letters = remember(sections) { sections.map { it.letter } + END_OF_LIST_MARK }
+    var recentSheet by remember { mutableStateOf(false) }
     val iconScale = settings.iconSize
 
     fun closeAll() {
@@ -703,6 +705,27 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onTogglePrivateLock = { privateSpace?.let { vm.appsRepo.setPrivateSpaceLocked(!it.locked) } },
             onDismissNotifications = { NotificationStore.dismissAll(it.packageName) },
             onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
+            folders = state.folders.map { it.folder },
+            folderRow = { folder ->
+                val group = state.folders.firstOrNull { it.folder.id == folder.id }
+                if (group != null) {
+                    FolderRow(
+                        folder = group.folder,
+                        apps = group.apps,
+                        widgets = vm.widgets,
+                        notifications = state.notifications,
+                        showIcons = settings.showIcons,
+                        themedIcons = settings.themedIcons,
+                        iconScale = 1f,
+                        onApp = { launchApp(it) },
+                        onAppLongClick = { openQuick(it, "fa_" + folder.id) },
+                        onLongClick = { folderSheet = group.folder },
+                        modifier = rowTracker("fa_" + folder.id),
+                    )
+                }
+            },
+            onRecentlyInstalled = { recentSheet = true },
+            onLauncherSettings = { overlay = Overlay.SETTINGS },
             contentPadding = PaddingValues(
                 start = if (settings.leftHanded) letterSide else hiddenSide,
                 end = if (settings.leftHanded) hiddenSide else letterSide,
@@ -731,8 +754,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             }
         } else null
         val onLetter: (Char) -> Unit = { letter ->
-            sections.firstOrNull { it.letter == letter }?.let { s ->
-                scope.launch { allAppsList.scrollToItem(s.firstIndex) }
+            if (letter == END_OF_LIST_MARK) {
+                val privateShown = privateSpace?.takeUnless { settings.hidePrivateSpace } != null
+                val privateRows = if (privateShown) 1 + state.privateApps.size else 0
+                scope.launch { allAppsList.scrollToItem(endOfListIndex(sections, privateRows)) }
+            } else {
+                sections.firstOrNull { it.letter == letter }?.let { s ->
+                    scope.launch { allAppsList.scrollToItem(s.firstIndex) }
+                }
             }
         }
         if (scrollerAlpha > 0.01f) {
@@ -1077,6 +1106,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 moveFor = null
             },
             onDismiss = { moveFor = null },
+        )
+    }
+
+    if (recentSheet) {
+        RecentAppsSheet(
+            apps = state.recentlyInstalled,
+            themedIcons = settings.themedIcons,
+            onApp = { recentSheet = false; launchApp(it) },
+            onDismiss = { recentSheet = false },
         )
     }
 
