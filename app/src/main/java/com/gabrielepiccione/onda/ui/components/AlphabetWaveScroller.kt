@@ -21,8 +21,6 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
-import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,8 +66,7 @@ fun AlphabetWaveScroller(
     /** Distanza massima tra due lettere: oltre, la colonna smette di allungarsi. */
     maxLetterStep: Dp = 19.dp,
     onTouchStart: () -> Unit = {},
-    /** Lettera scelta e altezza del dito nella finestra (px), per allineare l'elenco al dito. */
-    onLetter: (String, Float) -> Unit,
+    onLetter: (String) -> Unit,
     onTouchEnd: () -> Unit = {},
     /** Doppio tocco sulla colonna (es. blocco schermo); null = disattivato. */
     onDoubleTap: (() -> Unit)? = null,
@@ -92,8 +89,6 @@ fun AlphabetWaveScroller(
     val currentOnEnd by rememberUpdatedState(onTouchEnd)
     val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
     val lastTapUp = remember { longArrayOf(0L) }
-    // Bordo superiore della colonna nella finestra: serve per passare l'altezza del dito
-    val originY = remember { floatArrayOf(0f) }
 
     val letterStyle = TextStyle(fontSize = 13.sp * letterScale, fontWeight = FontWeight.Medium, color = colors.onWallpaperMuted)
     val bubbleStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold, color = colors.onAccentContainer)
@@ -111,7 +106,6 @@ fun AlphabetWaveScroller(
         modifier
             .fillMaxHeight()
             .width(if (showLetters) 36.dp else 28.dp)
-            .onGloballyPositioned { originY[0] = it.positionInRoot().y }
             .pointerInput(letters.size, maxLetterStep) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
@@ -134,7 +128,7 @@ fun AlphabetWaveScroller(
                         if (idx != selected.intValue) {
                             selected.intValue = idx
                             ondaHaptics?.perform(if (idx == 0 || idx == currentLetters.lastIndex) HapticEvent.EDGE else HapticEvent.LETTER)
-                            currentOnLetter(currentLetters[idx], originY[0] + touchY.floatValue)
+                            currentOnLetter(currentLetters[idx])
                         }
                     }
                     update(down.position.y)
