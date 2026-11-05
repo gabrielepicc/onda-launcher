@@ -16,8 +16,8 @@ android {
         applicationId = "com.gabrielepiccione.onda"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "0.9.0"
+        versionCode = 10
+        versionName = "0.10.0"
     }
 
     // Chiave di firma fissa per le build di sviluppo/CI, così gli aggiornamenti si installano sopra.

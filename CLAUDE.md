@@ -78,6 +78,12 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - Player: visibile solo con riproduzione attiva o pausa recente (`data/MediaRules`).
 - Cartelle: `Folder.icon` (vedi `data/FolderIcons`) e `Folder.widgetHeightDp`; più widget = carosello `WidgetStackCard`.
 - Ricerca: nessun pannello opaco, solo una velatura (`SEARCH_TINT` in `ui/search/SearchPanel`).
+- "Aggiungi alla home" dalle altre app: `PinRequestActivity`; le scorciatoie stanno in `favorites` con `SHORTCUT_PREFIX` (`data/PinnedShortcuts`).
+- Meteo: `data/WeatherRepository` legge il provider di Breezy Weather, `data/WeatherData` lo interpreta (solo versione maggiore 0).
+- Alfabeto localizzato: `util/IcuSectionIndex` (ICU, non testabile su JVM), ripiego `PlainSectionIndex`; le sezioni sono `String`.
+- Popup dell'app personalizzabile: `data/AppPopups`, `ui/sheets/AppPopupEditSheet`. Suggerimenti in home: `data/HomeSuggestions`.
+- Backup: `data/BackupArchive` (ZIP, accetta solo `icons` e `fonts`), `data/Backups` (file e WorkManager), `data/AutoBackup` (cartella scelta).
+- Promemoria di Usage Breaker: regole in `data/UsageReminders`, controllo in `service/UsageReminderEngine`, avviato dal servizio notifiche.
 
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.
