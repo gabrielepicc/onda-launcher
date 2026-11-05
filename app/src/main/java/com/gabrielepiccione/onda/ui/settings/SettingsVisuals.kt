@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -133,13 +135,41 @@ internal fun <T> TextChoices(items: List<Pair<T, String>>, selected: T, columns:
     }
 }
 
+/** Stili dell'orologio. [compact] li mette in una riga scorrevole, per i fogli che lasciano vedere la home. */
 @Composable
-internal fun ClockStyleTiles(selected: ClockStyle, onPick: (ClockStyle) -> Unit) {
+internal fun ClockStyleTiles(selected: ClockStyle, compact: Boolean = false, onPick: (ClockStyle) -> Unit) {
     val now = remember { LocalDateTime.now() }
-    TileGrid(ClockStyle.entries, 2) { style, modifier ->
+    val tile: @Composable (ClockStyle, Modifier) -> Unit = { style, modifier ->
         ChoiceTile(selected == style, stringResource(style.labelRes), { onPick(style) }, modifier) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth().height(76.dp).clipToBounds()) {
                 ClockFace(now, style, TILE_CLOCK_SCALE, TextAlign.Center)
+            }
+        }
+    }
+    if (compact) {
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ClockStyle.entries.forEach { tile(it, Modifier.width(128.dp)) }
+        }
+    } else {
+        TileGrid(ClockStyle.entries, 2, tile)
+    }
+}
+
+/** Player compatto o esteso, mostrato con il disegno della scheda. */
+@Composable
+internal fun MediaStyleTiles(compactSelected: Boolean, onPick: (Boolean) -> Unit) {
+    val colors = LocalOndaColors.current
+    TileGrid(listOf(true to R.string.media_compact, false to R.string.media_full), 2) { (compact, label), modifier ->
+        ChoiceTile(compactSelected == compact, stringResource(label), { onPick(compact) }, modifier) {
+            Canvas(Modifier.size(64.dp, 40.dp)) {
+                val card = if (compact) 0.45f else 1f
+                val top = size.height * (1f - card) / 2f
+                drawRoundRect(colors.accent.copy(alpha = 0.25f), Offset(0f, top), Size(size.width, size.height * card), CornerRadius(8.dp.toPx()))
+                val art = size.height * card * 0.7f
+                drawRoundRect(colors.accent, Offset(5.dp.toPx(), top + (size.height * card - art) / 2f), Size(art, art), CornerRadius(4.dp.toPx()))
+                val lineX = 5.dp.toPx() + art + 5.dp.toPx()
+                drawRoundRect(colors.accent, Offset(lineX, top + size.height * card * 0.3f), Size(size.width - lineX - 6.dp.toPx(), 3.dp.toPx()), CornerRadius(1.5f.dp.toPx()))
+                drawRoundRect(colors.accent.copy(alpha = 0.6f), Offset(lineX, top + size.height * card * 0.55f), Size((size.width - lineX) * 0.5f, 3.dp.toPx()), CornerRadius(1.5f.dp.toPx()))
             }
         }
     }
