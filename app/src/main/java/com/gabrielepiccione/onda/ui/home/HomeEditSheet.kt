@@ -4,7 +4,6 @@
 
 package com.gabrielepiccione.onda.ui.home
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +20,10 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.FilterChip
+import com.gabrielepiccione.onda.ui.settings.AlignTiles
+import com.gabrielepiccione.onda.ui.settings.ClockStyleTiles
+import com.gabrielepiccione.onda.ui.settings.MediaStyleTiles
+import com.gabrielepiccione.onda.ui.settings.TextChoices
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -40,8 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
-import com.gabrielepiccione.onda.data.ClockStyle
-import com.gabrielepiccione.onda.data.HAlign
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Settings
 import com.gabrielepiccione.onda.ui.components.ValueSlider
@@ -122,28 +122,12 @@ fun HomeEditSheet(
 
             if (block == HomeBlocks.CLOCK) {
                 SectionTitle(R.string.edit_style)
-                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ClockStyle.entries.forEach { st ->
-                        FilterChip(
-                            selected = settings.clockStyle == st,
-                            onClick = { actions.edit { it.copy(clockStyle = st) } },
-                            label = { Text(stringResource(st.labelRes)) },
-                        )
-                    }
-                }
+                ClockStyleTiles(settings.clockStyle, compact = true) { st -> actions.edit { it.copy(clockStyle = st) } }
                 ValueSlider(stringResource(R.string.edit_size), percentText(settings.clockScale), settings.clockScale, Settings().clockScale, 0.6f..1.6f, accentLabel = true) { v ->
                     actions.edit { it.copy(clockScale = v) }
                 }
                 SectionTitle(R.string.edit_alignment)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HAlign.entries.forEach { a ->
-                        FilterChip(
-                            selected = settings.clockAlign == a,
-                            onClick = { actions.edit { it.copy(clockAlign = a) } },
-                            label = { Text(stringResource(a.labelRes)) },
-                        )
-                    }
-                }
+                AlignTiles(settings.clockAlign) { a -> actions.edit { it.copy(clockAlign = a) } }
             }
 
             if (block == HomeBlocks.AGENDA) {
@@ -163,10 +147,7 @@ fun HomeEditSheet(
 
             if (block == HomeBlocks.MEDIA) {
                 SectionTitle(R.string.media_style)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(selected = settings.mediaCompact, onClick = { actions.edit { it.copy(mediaCompact = true) } }, label = { Text(stringResource(R.string.media_compact)) })
-                    FilterChip(selected = !settings.mediaCompact, onClick = { actions.edit { it.copy(mediaCompact = false) } }, label = { Text(stringResource(R.string.media_full)) })
-                }
+                MediaStyleTiles(settings.mediaCompact) { compact -> actions.edit { it.copy(mediaCompact = compact) } }
                 ValueSlider(stringResource(R.string.edit_size), percentText(settings.mediaScale), settings.mediaScale, Settings().mediaScale, 0.75f..1.25f, accentLabel = true) { v ->
                     actions.edit { it.copy(mediaScale = v) }
                 }
@@ -261,17 +242,12 @@ fun HomeEditSheet(
 @Composable
 fun HomePositionControl(settings: Settings, edit: ((Settings) -> Settings) -> Unit) {
     val manual = settings.homeTopFraction >= 0f
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(
-            selected = !manual,
-            onClick = { edit { it.copy(homeTopFraction = -1f) } },
-            label = { Text(stringResource(R.string.home_position_auto)) },
-        )
-        FilterChip(
-            selected = manual,
-            onClick = { if (!manual) edit { it.copy(homeTopFraction = DEFAULT_HOME_TOP) } },
-            label = { Text(stringResource(R.string.home_position_manual)) },
-        )
+    TextChoices(
+        listOf(false to stringResource(R.string.home_position_auto), true to stringResource(R.string.home_position_manual)),
+        manual,
+        columns = 2,
+    ) { wantManual ->
+        if (wantManual) { if (!manual) edit { it.copy(homeTopFraction = DEFAULT_HOME_TOP) } } else edit { it.copy(homeTopFraction = -1f) }
     }
     if (manual) {
         Slider(

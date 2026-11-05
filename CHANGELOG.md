@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Modifica dalla home**: stile e allineamento dell'orologio, stile del player e posizione della home usano gli stessi riquadri
+  con il disegno delle Impostazioni, al posto dei semplici pulsanti con il nome.
 - **Popup dell'app**: tirandolo oltre il bordo del contenuto (in cima, in fondo, o quando c'è tutto in vista) segue il dito con
   resistenza; lasciandolo abbastanza lontano, o con un colpo deciso, esce con un'animazione fluida nella stessa direzione.
   Altrimenti torna al suo posto con un rimbalzo.
