@@ -20,6 +20,15 @@ class AudioDevices(context: Context) {
     private val _connected = MutableStateFlow(false)
     val headphonesConnected: StateFlow<Boolean> = _connected.asStateFlow()
 
+    /** Nomi delle cuffie collegate, come li dà Android (nessun permesso necessario). */
+    private val _names = MutableStateFlow<Set<String>>(emptySet())
+    val connectedNames: StateFlow<Set<String>> = _names.asStateFlow()
+
+    /** C'è una chiamata in corso, o un'app sta già suonando? Allora non si riprende la musica. */
+    fun busy(): Boolean = runCatching {
+        audio.isMusicActive || audio.mode == AudioManager.MODE_IN_CALL || audio.mode == AudioManager.MODE_IN_COMMUNICATION
+    }.getOrDefault(true)
+
     private val outputTypes = buildSet {
         add(AudioDeviceInfo.TYPE_WIRED_HEADSET)
         add(AudioDeviceInfo.TYPE_WIRED_HEADPHONES)
@@ -33,9 +42,9 @@ class AudioDevices(context: Context) {
     }
 
     private fun refresh() {
-        _connected.value = runCatching {
-            audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any { it.type in outputTypes }
-        }.getOrDefault(false)
+        val outputs = runCatching { audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).filter { it.type in outputTypes } }.getOrDefault(emptyList())
+        _names.value = outputs.mapNotNull { it.productName?.toString()?.trim()?.takeIf { n -> n.isNotEmpty() } }.toSet()
+        _connected.value = outputs.isNotEmpty()
     }
 
     init {

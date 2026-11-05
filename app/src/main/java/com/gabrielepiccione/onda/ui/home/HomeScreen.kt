@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.PlugPlay
 import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcuts
 import androidx.compose.material.icons.filled.Edit
@@ -221,6 +222,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val state by vm.state.collectAsStateWithLifecycle()
     val search by vm.search.collectAsStateWithLifecycle()
     val media by vm.media.media.collectAsStateWithLifecycle()
+    val headphoneNames by vm.audio.connectedNames.collectAsStateWithLifecycle()
     val nextEvent by vm.nextEvent.collectAsStateWithLifecycle()
     val agenda by vm.agenda.collectAsStateWithLifecycle()
     val headphones by vm.audio.headphonesConnected.collectAsStateWithLifecycle()
@@ -784,7 +786,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     block == HomeBlocks.APPS -> {
                         item(key = "spacer") { Spacer(Modifier.size(12.dp)) }
                         // Plug & Play: con cuffie o casse collegate, l'app scelta compare in cima
-                        val plug = if (headphones) state.app(settings.plugPlayApp) else null
+                        val plug = if (headphones && PlugPlay.matches(settings.plugPlayDevice, headphoneNames)) state.app(settings.plugPlayApp) else null
                         if (plug != null) {
                             item(key = "plugplay") {
                                 Column(Modifier.animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit())) {
@@ -1184,6 +1186,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     ),
                     widgets = vm.widgets,
                     usageStats = vm.usageStats,
+                    connectedHeadphones = headphoneNames,
                     activeProfile = state.activeProfile,
                     contextEnvironment = object : ContextEnvironment {
                         override fun currentWifi() = HomePresence.currentSsid(context)

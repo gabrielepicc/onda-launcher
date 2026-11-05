@@ -752,4 +752,9 @@
     <string name="media_track">Song</string>
     <string name="media_episode">Episode</string>
     <string name="media_show">Podcast</string>
+    <string name="plug_play_device">Headphones</string>
+    <string name="plug_play_device_any">Any headphones</string>
+    <string name="plug_play_device_hint">Connected now are listed above. Or type the name exactly as the phone shows it.</string>
+    <string name="plug_play_resume">Resume music</string>
+    <string name="plug_play_resume_sub">When you connect these headphones, the chosen app (or the last one that played) starts again. Never during a call or if something is already playing.</string>
 </resources>

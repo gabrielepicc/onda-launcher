@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.PlugPlay
 import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcut
 import com.gabrielepiccione.onda.data.MediaShortcuts
@@ -136,6 +137,25 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     /** L'app musicale per "p": quella scelta, oppure l'ultima che ha suonato. */
     fun musicApp(): String = settingsRepo.current.let { it.musicApp.ifBlank { it.lastMusicApp } }
+
+    init {
+        // Plug & Play: collegando le cuffie, se richiesto, riprende la musica dell'app scelta
+        viewModelScope.launch {
+            var before = audio.headphonesConnected.value
+            audio.headphonesConnected.collect { now ->
+                val justConnected = now && !before
+                before = now
+                if (!justConnected) return@collect
+                // Il nome del dispositivo può arrivare un istante dopo il collegamento
+                delay(1_500)
+                val s = settingsRepo.current
+                if (PlugPlay.shouldResume(true, s.plugPlayResume, s.plugPlayDevice, audio.connectedNames.value, inCall = false, somethingPlaying = audio.busy())) {
+                    val pkg = appsRepo.apps.value.firstOrNull { it.key == s.plugPlayApp }?.component?.packageName ?: musicApp()
+                    if (pkg.isNotBlank()) media.resume(pkg)
+                }
+            }
+        }
+    }
 
     init {
         // Ricorda l'ultima app che ha avuto una sessione multimediale, per la riproduzione dalla ricerca
