@@ -142,6 +142,27 @@ uso di composizioni di primitive e di effetti predefiniti, colpi distinti come t
 | 11.3 | Verifica del supporto alle vibrazioni leggere nelle impostazioni | ✅ 0.10 ("Prova la vibrazione") | P3 |
 | 11.4 | Vibrazione legata al progresso delle animazioni (es. un colpo quando il popup "atterra", al cambio di brano) | ⬜ | P3 |
 
+## 12. Spunti da GraceLauncher (github.com/Galaxy-rio/GraceLauncher)
+
+Altro launcher open source (GPL-3.0, Kotlin + Compose, Material You) ispirato a Niagara. Da qui si prendono **idee e
+comportamenti**, non codice: la sua licenza è GPL-3.0 "solo", la nostra "o successive", quindi copiare file
+cambierebbe la licenza di Onda.
+
+| # | Idea | Onda oggi | Priorità |
+|---|---|---|---|
+| 12.1 | **Meteo senza internet**: legge le previsioni dall'app **Breezy Weather** installata (provider pubblico, permesso `org.breezyweather.READ_PROVIDER`) o dal formato meteo di Gadgetbridge. Onda resterebbe senza permesso INTERNET. | ⬜ **sblocca 7.1** | P1 |
+| 12.2 | **"Aggiungi alla schermata Home" dalle altre app**: richieste di aggiungere scorciatoie e widget (`ACTION_CONFIRM_PIN_SHORTCUT` / `ACTION_CONFIRM_PIN_APPWIDGET`), come fanno Chrome, Maps, WhatsApp. | ⬜ oggi queste richieste non arrivano a Onda | P1 |
+| 12.3 | **Alfabeto con zona di tocco a tutta altezza** e colonna visibile compatta: si può iniziare a scorrere ovunque sul bordo, le lettere restano raccolte in basso. Impostazioni dell'alfabeto con anteprima (posizione, spaziatura, dimensione). | 🟡 da 0.10 la zona di tocco coincide con la colonna compatta | P1 |
+| 12.4 | **Animazione di apertura dall'icona e ritorno nell'icona** quando si torna alla home (si integra con l'animazione di sistema). | 🟡 Onda ha solo animazioni di finestra | P2 |
+| 12.5 | **Categorie dinamiche**: gruppi riempiti da regole (con notifiche, installate di recente, aperte spesso), mostrabili in home o nell'elenco, attivi sempre / con le cuffie / in certe ore. | 🟡 parziale (Plug & Play, installate di recente) | P2 |
+| 12.6 | **Più icon pack insieme con priorità** (se il primo non ha l'icona, si usa il secondo). | ⬜ | P2 |
+| 12.7 | **Designer delle icone**: per singola app forma, colori, dimensione e posizione dell'icona. | 🟡 forma e immagine sì; colori, scala e spostamento no | P3 |
+| 12.8 | **Orologio componibile**: campi (ora, data, meteo, eventi) in ordine scelto, preset di stile, cifre separate. | 🟡 8 stili fissi | P3 |
+| 12.9 | **Pulsante flottante** con posizione regolabile e feedback mentre lo si trascina. | ⬜ (vedi 1.3) | P2 |
+| 12.10 | **Impostazioni "Laboratorio"**: soglie di gesti, popup e swipe regolabili per chi vuole tarare la sensibilità. | ⬜ | P3 |
+| 12.11 | **Profili riconosciuti meglio**: lavoro, privato, app clonate dei produttori (Xiaomi, Samsung…) con badge e chiavi stabili. | 🟡 lavoro e Spazio privato sì, cloni no | P2 |
+| 12.12 | **Distribuzione**: release su GitHub e F-Droid, traduzioni su Weblate, schermata delle licenze open source. | 🟡 manca la schermata licenze e Weblate | P3 |
+
 ## Non da copiare (scelte di Niagara o incompatibili con le regole di Onda)
 - Feed di Google Discover: richiede l'app Google, contrario alla regola "niente Google".
 - Integrazione con Sesame: app abbandonata, Niagara la sta togliendo.
@@ -151,9 +172,9 @@ uso di composizioni di primitive e di effetti predefiniti, colpi distinti come t
   stili di icone generati, contatti nell'alfabeto, Plug & Play nei preferiti, Spazio privato.
 
 ## Ordine proposto
-1. **P1 senza internet**: 2.1 alfabeto localizzato · 1.1 suggerimenti nella home · 3.1 popup come cartella ·
+1. **P1 senza internet**: 12.2 aggiungi alla home dalle altre app · 12.1 meteo da Breezy Weather · 12.3 zona di tocco a tutta altezza · 2.1 alfabeto localizzato · 1.1 suggerimenti nella home · 3.1 popup come cartella ·
    6.1 Usage Breaker a promemoria · 9.1 backup completo · 4.2 taratura dei gesti.
 2. **P2**: 1.3 pulsante flottante · 1.5–1.6 foglio agenda e prossimo evento · 2.3–2.5 · 3.2–3.3 · 4.1 · 4.3–4.4 (motori) ·
    5.1 · 7.3 · 8.1 · 8.4.
-3. **Bloccato**: 7.1 meteo e 4.4 suggerimenti web, finché non si decide sul permesso INTERNET.
+3. **Meteo**: 7.1 si sblocca senza INTERNET con 12.1 (Breezy Weather). Restano bloccati solo i suggerimenti web (4.4).
 4. **P3**: il resto.
