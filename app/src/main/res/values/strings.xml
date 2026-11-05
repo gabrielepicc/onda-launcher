@@ -492,4 +492,11 @@
     <string name="gesture_help_edges">Slide along the screen edges: alphabet, also on the side without letters.</string>
     <string name="gesture_help_alphabet">Double tap the alphabet: runs the double tap action.</string>
     <string name="notif_image">Image in the notification</string>
+    <string name="notif_summary_chats">%1$d messages from %2$d chats</string>
+    <string name="notif_summary_chat">%1$d messages from %2$s</string>
+    <string name="notif_images">Images in notifications</string>
+    <string name="notif_images_sub">Photos, GIFs and stickers, when the app attaches them to the notification</string>
+    <string name="notif_images_thumbnail">Small preview</string>
+    <string name="notif_images_popup">Only in the popup</string>
+    <string name="notif_images_off">Never</string>
 </resources>

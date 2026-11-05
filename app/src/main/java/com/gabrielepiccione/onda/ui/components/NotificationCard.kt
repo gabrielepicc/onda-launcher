@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.data.ConversationSummary
+import com.gabrielepiccione.onda.data.NotificationImages
+import com.gabrielepiccione.onda.ui.theme.LocalNotificationImages
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
@@ -271,9 +274,10 @@ private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> U
     )
 }
 
-/** Immagine, GIF o sticker della notifica, intera e senza tagli; nulla se non c'è. */
+/** Immagine, GIF o sticker della notifica, intera e senza tagli; nulla se non c'è o se è spenta. */
 @Composable
 fun NotificationImage(item: NotificationItem, maxHeight: Dp, modifier: Modifier = Modifier) {
+    if (LocalNotificationImages.current == NotificationImages.OFF) return
     val image = item.image ?: return
     Image(
         image,
@@ -298,6 +302,8 @@ fun relativeTime(postTime: Long): String {
 
 /**
  * Anteprima della notifica sotto l'app in home: mittente · tempo, testo su più righe e freccia.
+ * Con più messaggi diventa un riepilogo ("5 messaggi da 2 chat") con l'ultimo messaggio sotto.
+ * Un'immagine allegata compare come miniatura a destra, senza allungare la riga.
  * Il tocco apre il pannello dell'app (conversazione completa e risposta); lo swipe la elimina.
  */
 @Composable
@@ -307,9 +313,16 @@ fun NotificationPreview(
     onOpen: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    summary: ConversationSummary? = null,
 ) {
     val colors = LocalOndaColors.current
-    val body = item.messages.lastOrNull()?.text ?: item.text
+    val shown = summary?.latest ?: item
+    val title = when {
+        summary == null -> item.replyTo.ifBlank { item.title }
+        summary.chats > 1 -> stringResource(R.string.notif_summary_chats, summary.messages, summary.chats)
+        else -> stringResource(R.string.notif_summary_chat, summary.messages, summary.chatName)
+    }
+    val body = summary?.lastLine ?: (item.messages.lastOrNull()?.text ?: item.text)
     Box(modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -322,7 +335,7 @@ fun NotificationPreview(
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        item.replyTo.ifBlank { item.title },
+                        title,
                         color = colors.onWallpaper,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
@@ -330,12 +343,12 @@ fun NotificationPreview(
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     Text(
-                        "  " + relativeTime(item.postTime),
+                        "  " + relativeTime(shown.postTime),
                         color = colors.onWallpaperMuted,
                         style = MaterialTheme.typography.labelMedium,
                         maxLines = 1,
                     )
-                    if (extraCount > 0) {
+                    if (summary == null && extraCount > 0) {
                         Text(
                             "+$extraCount",
                             color = colors.onAccentContainer,
@@ -353,11 +366,19 @@ fun NotificationPreview(
                         body,
                         color = colors.onWallpaperMuted,
                         style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2,
+                        maxLines = if (summary != null) 1 else 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                NotificationImage(item, 160.dp)
+            }
+            val thumbnail = shown.image
+            if (thumbnail != null && LocalNotificationImages.current == NotificationImages.THUMBNAIL) {
+                Image(
+                    thumbnail,
+                    contentDescription = stringResource(R.string.notif_image),
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.padding(start = 8.dp).size(THUMBNAIL_SIZE),
+                )
             }
             Icon(
                 Icons.Filled.KeyboardArrowRight,
@@ -368,3 +389,6 @@ fun NotificationPreview(
         }
     }
 }
+
+/** Lato della miniatura accanto al testo: sta nell'altezza di titolo e due righe, così la riga non cresce. */
+private val THUMBNAIL_SIZE = 48.dp

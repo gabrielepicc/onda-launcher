@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.data.ConversationSummary
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
@@ -297,6 +298,7 @@ fun FavoriteRow(
                                 NotificationPreview(
                                     item = n,
                                     extraCount = notifications.size - 1,
+                                    summary = ConversationSummary.of(notifications),
                                     onOpen = { onNotificationClick(n) },
                                     onDismiss = { onNotificationDismiss(n) },
                                 )
@@ -385,6 +387,8 @@ fun AppListRow(
     /** Ultima notifica dell'app, mostrata sotto il nome (tocco = pannello dell'app). */
     notification: NotificationItem? = null,
     notificationCount: Int = 0,
+    /** Riepilogo "N messaggi da M chat" quando ci sono più messaggi. */
+    summary: ConversationSummary? = null,
     onOpenPanel: () -> Unit = {},
     /** Swipe come in home: destra = pannello, sinistra = elimina notifiche. */
     swipeEnabled: Boolean = false,
@@ -436,6 +440,7 @@ fun AppListRow(
                     NotificationPreview(
                         item = notification,
                         extraCount = (notificationCount - 1).coerceAtLeast(0),
+                        summary = summary,
                         onOpen = onOpenPanel,
                         onDismiss = {},
                     )
