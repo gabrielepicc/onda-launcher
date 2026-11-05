@@ -62,7 +62,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    (dettagli e differenze volute in `docs/material-audit.md`). ⬜ Da giudicare sul telefono.
 
 10. ✅ Benessere digitale: dashboard statistica (`data/UsageStatsMath`, `data/UsageStatsRepository`), limiti giornalieri, Usage Breaker su notifiche e scorciatoie.
-    ⬜ Pausa anche per le aperture fuori dal launcher (notifiche di sistema, app recenti): serve una decisione sul permesso, vedi sotto.
+    ✅ Pausa anche per le aperture fuori dal launcher, tramite il servizio di accessibilità (solo nome del pacchetto, `data/BreakerGate`).
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
@@ -73,4 +73,6 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - App suggerite in home spente di default, per non cambiare da sole la home di chi aggiorna; si attivano nelle impostazioni.
 - Promemoria di Usage Breaker con `PACKAGE_USAGE_STATS` e `POST_NOTIFICATIONS`, approvati dal proprietario: il controllo gira nel servizio notifiche già presente, una volta al minuto a schermo acceso e solo con app scelte.
 - Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
+- Pausa fuori dal launcher con il servizio di accessibilità già presente, approvata dal proprietario: legge solo il pacchetto in primo piano, mai il contenuto.
+- Luci di casa: widget di Google Home accanto all'orologio quando si è sul Wi-Fi di casa e fa buio. Permesso di posizione approvato dal proprietario, chiesto solo attivando la funzione; nessun dato lascia il telefono.
 - App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).

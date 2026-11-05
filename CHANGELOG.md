@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Pausa anche fuori dal launcher**: con l'accessibilità di Onda attiva, Usage Breaker e i limiti giornalieri mostrano la pausa anche
+  aprendo l'app dalla tendina di sistema, dalle app recenti o da un link. Onda vede solo quale app è aperta, mai il contenuto.
 - **Più fluida**: profilo di base per compilare Onda in anticipo all'installazione, righe che non si ricompongono a ogni pixel
   mentre si scorrono di lato, elenco con tipi di elemento per riciclare meglio le righe.
 - **Benessere digitale**, nuova pagina delle impostazioni:

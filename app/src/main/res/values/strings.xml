@@ -148,8 +148,8 @@
     <string name="cd_folder_close">Close folder</string>
     <string name="cd_gesture_indicator">Gesture action</string>
     <string name="cd_all_apps_letter">Browse apps by initial</string>
-    <string name="accessibility_label">Onda – screen lock</string>
-    <string name="accessibility_description">Lets Onda lock the screen when you double-tap an empty spot on home. Onda does not read or collect screen content.</string>
+    <string name="accessibility_label">Onda – screen lock and pause</string>
+    <string name="accessibility_description">Lets Onda lock the screen when you double-tap an empty spot on home, and show the Usage Breaker pause also when you open an app from notifications or recent apps. Onda only sees which app is open, never the screen content, and saves nothing.</string>
     <string name="notif_reply">Reply</string>
     <string name="notif_reply_hint">Write a reply…</string>
     <string name="notif_send">Send</string>
@@ -583,4 +583,7 @@
     <string name="limit_reached_title">Today\'s limit reached</string>
     <string name="limit_reached_text">You\'ve reached your %1$d-minute limit for today.</string>
     <string name="breaker_used_today">Used today: %1$s</string>
+    <string name="breaker_everywhere">Pause outside the launcher</string>
+    <string name="breaker_everywhere_ok">On</string>
+    <string name="breaker_everywhere_ko">Turn on Onda\'s accessibility to pause apps opened from notifications or recent apps</string>
 </resources>

@@ -663,6 +663,9 @@ fun SettingsScreen(
 
         if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_breaker)) {
             Text(stringResource(R.string.breaker_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            if ((settings.breakerApps.isNotEmpty() || settings.appLimits.isNotEmpty()) && !status.accessibilityEnabled) {
+                StatusRow(stringResource(R.string.breaker_everywhere), false, stringResource(R.string.breaker_everywhere_ok), stringResource(R.string.breaker_everywhere_ko)) { actions.accessibility() }
+            }
             Label(stringResource(R.string.breaker_seconds, settings.breakerSeconds))
             Slider(
                 value = settings.breakerSeconds.toFloat(),
