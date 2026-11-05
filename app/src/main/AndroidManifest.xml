@@ -11,6 +11,12 @@
     <!-- Permesso "normal": mostra lo Spazio privato di Android 15+ quando Onda è il launcher predefinito -->
     <uses-permission android:name="android.permission.ACCESS_HIDDEN_PROFILES" />
 
+    <!-- Promemoria di Usage Breaker: chiesti solo scegliendo un'app, i dati restano sul telefono -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <!-- Meteo letto dall'app Breezy Weather, se installata: chiesto solo attivando il meteo -->
     <uses-permission android:name="org.breezyweather.READ_PROVIDER" />
 

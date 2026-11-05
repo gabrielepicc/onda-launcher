@@ -87,6 +87,7 @@ import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.FontChoice
 import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.data.HomeSuggestions
+import com.gabrielepiccione.onda.data.UsageReminders
 import com.gabrielepiccione.onda.core.icons.IconPacks
 import com.gabrielepiccione.onda.data.Settings
 import com.gabrielepiccione.onda.data.ThemeMode
@@ -100,6 +101,8 @@ data class SettingsStatus(
     val contactsPermission: Boolean,
     val weatherInstalled: Boolean = false,
     val weatherPermission: Boolean = false,
+    val usageAccess: Boolean = false,
+    val postNotifications: Boolean = false,
 )
 
 interface SettingsActions {
@@ -109,6 +112,8 @@ interface SettingsActions {
     fun calendarPermission()
     fun contactsPermission()
     fun weatherPermission()
+    fun postNotifications()
+    fun usageAccess()
     fun accessibility()
     fun addWidget()
     fun removeWidget(id: Int)
@@ -192,6 +197,11 @@ fun SettingsScreen(
                 StatusRow(stringResource(R.string.default_launcher), status.isDefaultLauncher, stringResource(R.string.default_launcher_ok), stringResource(R.string.default_launcher_ko)) { actions.requestDefault() }
                 StatusRow(stringResource(R.string.notif_access), status.notificationAccess, stringResource(R.string.notif_access_ok), stringResource(R.string.notif_access_ko)) { actions.notificationAccess() }
                 StatusRow(stringResource(R.string.calendar), status.calendarPermission, stringResource(R.string.calendar_ok), stringResource(R.string.calendar_ko)) { actions.calendarPermission() }
+                // Solo per chi usa i promemoria di Usage Breaker
+                if (settings.reminderApps.isNotEmpty()) {
+                    StatusRow(stringResource(R.string.usage_access), status.usageAccess, stringResource(R.string.usage_access_ok), stringResource(R.string.usage_access_ko)) { actions.usageAccess() }
+                    StatusRow(stringResource(R.string.post_notifications), status.postNotifications, stringResource(R.string.post_notifications_ok), stringResource(R.string.post_notifications_ko)) { actions.postNotifications() }
+                }
             }
             Group(stringResource(R.string.page_customize)) {
                 SettingsPage.entries.forEach { p ->
@@ -496,6 +506,30 @@ fun SettingsScreen(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                     TextButton(onClick = { onEdit { com.gabrielepiccione.onda.data.UsageBreaker.toggle(it, app.key) } }) { Text(stringResource(R.string.remove)) }
+                }
+            }
+        }
+
+        if (page == SettingsPage.APPS) Group(stringResource(R.string.section_reminders)) {
+            Text(stringResource(R.string.reminder_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            Label(stringResource(R.string.reminder_start))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                UsageReminders.START_CHOICES.forEach { m ->
+                    FilterChip(
+                        selected = settings.reminderStartMinutes == m,
+                        onClick = { onEdit { it.copy(reminderStartMinutes = m) } },
+                        label = { Text(stringResource(R.string.reminder_minutes, m)) },
+                    )
+                }
+            }
+            val reminderApps = allApps.filter { it.key in settings.reminderApps }
+            if (reminderApps.isEmpty()) {
+                Text(stringResource(R.string.breaker_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            }
+            reminderApps.forEach { app ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { onEdit { UsageReminders.toggle(it, app.key) } }) { Text(stringResource(R.string.remove)) }
                 }
             }
         }

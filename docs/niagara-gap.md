@@ -67,7 +67,7 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 
 | # | Comportamento di Niagara | Onda oggi | Priorità |
 |---|---|---|---|
-| 6.1 | **Usage Breaker a promemoria**: mentre usi un'app scelta, una notifica ti chiede se vuoi continuare dopo 5, 10, 20, 30, 45, 60, 90, 120, 180 e 240 minuti di uso continuo. Le interruzioni brevi (un messaggio, una ricerca) non azzerano il tempo. **Non blocca mai** l'app. Richiede l'accesso ai dati di utilizzo (da concedere a mano, con guida). | 🟡 Onda fa una pausa *prima* di aprire l'app: tenerla e **aggiungere** i promemoria come seconda modalità | P1 |
+| 6.1 | **Usage Breaker a promemoria**: mentre usi un'app scelta, una notifica ti chiede se vuoi continuare dopo 5, 10, 20, 30, 45, 60, 90, 120, 180 e 240 minuti di uso continuo. Le interruzioni brevi (un messaggio, una ricerca) non azzerano il tempo. **Non blocca mai** l'app. Richiede l'accesso ai dati di utilizzo (da concedere a mano, con guida). | ✅ 0.10 promemoria aggiunti alla pausa prima di aprire l'app; primo avviso a scelta tra 5, 10, 20 e 30 minuti | P1 |
 
 ## 7. Widget, meteo e calendario
 
