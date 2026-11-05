@@ -213,6 +213,11 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val homePressed: SharedFlow<Unit> = _homePressed
     fun onHomePressed() { _homePressed.tryEmit(Unit) }
 
+    private val _pauseRequests = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    /** Pacchetti aperti fuori dal launcher per cui mostrare la pausa di Usage Breaker. */
+    val pauseRequests: SharedFlow<String> = _pauseRequests
+    fun requestPause(packageName: String) { _pauseRequests.tryEmit(packageName) }
+
     // --- Ricerca ---
     private val _search = MutableStateFlow(SearchResults())
     val search: StateFlow<SearchResults> = _search.asStateFlow()

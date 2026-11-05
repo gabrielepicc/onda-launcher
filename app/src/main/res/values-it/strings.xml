@@ -148,8 +148,8 @@
     <string name="cd_folder_close">Chiudi cartella</string>
     <string name="cd_gesture_indicator">Azione del gesto</string>
     <string name="cd_all_apps_letter">Scorri le app per iniziale</string>
-    <string name="accessibility_label">Onda – blocco schermo</string>
-    <string name="accessibility_description">Permette a Onda di bloccare lo schermo quando tocchi due volte uno spazio vuoto della home. Onda non legge né raccoglie il contenuto dello schermo.</string>
+    <string name="accessibility_label">Onda – blocco schermo e pausa</string>
+    <string name="accessibility_description">Permette a Onda di bloccare lo schermo quando tocchi due volte uno spazio vuoto della home, e di mostrare la pausa di Usage Breaker anche quando apri un\'app dalle notifiche o dalle app recenti. Onda vede solo quale app è aperta, mai il contenuto dello schermo, e non salva nulla.</string>
     <string name="notif_reply">Rispondi</string>
     <string name="notif_reply_hint">Scrivi una risposta…</string>
     <string name="notif_send">Invia</string>
@@ -583,4 +583,7 @@
     <string name="limit_reached_title">Limite di oggi raggiunto</string>
     <string name="limit_reached_text">Hai raggiunto il limite di %1$d minuti per oggi.</string>
     <string name="breaker_used_today">Usata oggi: %1$s</string>
+    <string name="breaker_everywhere">Pausa anche fuori dal launcher</string>
+    <string name="breaker_everywhere_ok">Attiva</string>
+    <string name="breaker_everywhere_ko">Attiva l\'accessibilità di Onda per la pausa sulle app aperte da notifiche o app recenti</string>
 </resources>

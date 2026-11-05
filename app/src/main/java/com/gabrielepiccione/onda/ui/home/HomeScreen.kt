@@ -332,6 +332,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     LaunchedEffect(settings.contactsInAlphabet, status.contactsPermission) { vm.refreshAlphabetContacts() }
     LaunchedEffect(settings.showWeather, status.weatherPermission, status.weatherInstalled) { vm.refreshWeather(force = true) }
 
+    // Pausa chiesta dal servizio di accessibilità: l'app si stava aprendo da fuori (tendina, recenti)
+    LaunchedEffect(Unit) {
+        vm.pauseRequests.collect { pkg ->
+            val app = state.allApps.firstOrNull { it.packageName == pkg } ?: return@collect
+            breakerFor = BreakerRequest(app) { startApp(app) }
+        }
+    }
+
     LaunchedEffect(Unit) {
         vm.homePressed.collect {
             if (overlay == Overlay.NONE && actionsFor == null && panelFor == null && quickFor == null) homeList.animateScrollToItem(0)
@@ -1536,6 +1544,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onOpen = {
                 breakerFor = null
                 vm.updateSettings { com.gabrielepiccione.onda.data.UsageBreaker.recordOpen(it, app.key, today) }
+                // L'app sta per aprirsi dopo la pausa: il servizio non deve chiederla di nuovo
+                OndaAccessibilityService.allow(app.packageName)
                 request.go()
             },
             onDismiss = { breakerFor = null },

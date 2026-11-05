@@ -322,6 +322,8 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         super.onNewIntent(intent)
         // Tasto Home premuto mentre il launcher è già in primo piano
         if (intent.action == Intent.ACTION_MAIN) vm.onHomePressed()
+        // App aperta fuori dal launcher che ha bisogno della pausa di Usage Breaker
+        intent.getStringExtra(EXTRA_PAUSE_PACKAGE)?.let { vm.requestPause(it) }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -488,7 +490,10 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         }
     }
 
-    private companion object {
+    companion object {
+        /** Pacchetto per cui mostrare la pausa (dal servizio di accessibilità). */
+        const val EXTRA_PAUSE_PACKAGE = "onda.pause_package"
+
         const val REQ_BIND = 4101
         const val REQ_CONFIGURE = 4102
         const val KEY_PENDING = "pending_widget"
