@@ -163,6 +163,14 @@ cambierebbe la licenza di Onda.
 | 12.11 | **Profili riconosciuti meglio**: lavoro, privato, app clonate dei produttori (Xiaomi, Samsung…) con badge e chiavi stabili. | 🟡 lavoro e Spazio privato sì, cloni no | P2 |
 | 12.12 | **Distribuzione**: release su GitHub e F-Droid, traduzioni su Weblate, schermata delle licenze open source. | 🟡 manca la schermata licenze e Weblate | P3 |
 
+## 13. Musica (Fase 8, area 5 — oltre Niagara)
+Specifiche in `docs/fase8.md`. Niagara ha già il player con la copertina; Onda aggiunge:
+- ⬜ azioni dell'app nel player e prossimo brano;
+- ⬜ riproduzione dalla ricerca;
+- ⬜ playlist come voci;
+- ⬜ ripresa con le cuffie;
+- ⬜ sfondo che si muove con la musica.
+
 ## Non da copiare (scelte di Niagara o incompatibili con le regole di Onda)
 - Feed di Google Discover: richiede l'app Google, contrario alla regola "niente Google".
 - Integrazione con Sesame: app abbandonata, Niagara la sta togliendo.
