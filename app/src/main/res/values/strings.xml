@@ -499,4 +499,10 @@
     <string name="notif_images_thumbnail">Small preview</string>
     <string name="notif_images_popup">Only in the popup</string>
     <string name="notif_images_off">Never</string>
+    <string name="search_button_color">Button color</string>
+    <string name="search_button_icon">Button icon</string>
+    <string name="search_button_tap">Tap on the button</string>
+    <string name="search_button_long">Long press on the button</string>
+    <string name="search_button_swipe">Swipe up on the button</string>
+    <string name="search_button_gesture_sub">Tap to change</string>
 </resources>

@@ -6,8 +6,10 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 ## [Non rilasciato]
 - **Alfabeto**: toccando il bordo sopra le lettere, la colonna sale incontro al dito e lo scorrimento parte da lì, invece di
   selezionare la stella. Alzando il dito torna al suo posto. La zona di tocco arriva quasi in cima allo schermo.
-- **Pulsante di ricerca**: fluttua in basso accanto all'alfabeto, velato sullo sfondo, a destra o a sinistra secondo la mano. Si può togliere
-  dalle impostazioni della ricerca.
+- **Pulsante di ricerca**: fluttua in basso accanto all'alfabeto, velato sullo sfondo, a destra o a sinistra secondo la mano.
+  Sta poco sopra la barra dei gesti, come nel riferimento. Si personalizza in Alfabeto e ricerca: colore (del tema o a scelta),
+  icona tra dodici e azione di tocco, pressione lunga e scorrimento in su (ricerca, tutte le app, notifiche, blocca lo schermo,
+  impostazioni, apri un'app o niente). Si può togliere del tutto.
 - **Impostazioni rifatte**: l'indice spiega cosa c'è in ogni pagina e mostra la configurazione solo se manca qualcosa.
   Orologio, testo, icone, home, alfabeto e ricerca hanno ora pagine separate, con un'anteprima in alto che cambia mentre modifichi.
   Le scelte si vedono invece di essere solo nomi: stili dell'orologio, caratteri, stili e forme delle icone, tema, allineamento.
