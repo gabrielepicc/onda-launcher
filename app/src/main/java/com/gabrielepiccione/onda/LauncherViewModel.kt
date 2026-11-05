@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.PrefixKind
+import com.gabrielepiccione.onda.data.SearchPrefixes
 import com.gabrielepiccione.onda.data.ContextProfile
 import com.gabrielepiccione.onda.data.ContextProfiles
 import com.gabrielepiccione.onda.data.ContextReader
@@ -79,7 +81,7 @@ data class LauncherState(
 }
 
 /** Modalità di ricerca scelta con il prefisso: "=" calcolo, "@" contatti, "/" impostazioni. */
-enum class SearchMode { ALL, CALC, CONTACTS, SETTINGS }
+enum class SearchMode { ALL, CALC, CONTACTS, SETTINGS, PLAY, SPOTIFY }
 
 data class SearchResults(
     val query: String = "",
@@ -88,6 +90,8 @@ data class SearchResults(
     val contacts: List<ContactHit> = emptyList(),
     val mode: SearchMode = SearchMode.ALL,
     val settingsHits: List<com.gabrielepiccione.onda.util.SettingsShortcut> = emptyList(),
+    /** Il testo cercato senza il prefisso. */
+    val term: String = "",
 )
 
 class LauncherViewModel(app: Application) : AndroidViewModel(app) {
@@ -104,6 +108,18 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val usageStats = UsageStatsRepository(app)
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
+
+    /** L'app musicale per "p": quella scelta, oppure l'ultima che ha suonato. */
+    fun musicApp(): String = settingsRepo.current.let { it.musicApp.ifBlank { it.lastMusicApp } }
+
+    init {
+        // Ricorda l'ultima app che ha avuto una sessione multimediale, per la riproduzione dalla ricerca
+        viewModelScope.launch {
+            media.media.collect { m ->
+                if (m != null && m.packageName != settingsRepo.current.lastMusicApp) settingsRepo.edit { it.copy(lastMusicApp = m.packageName) }
+            }
+        }
+    }
 
     // --- Preferiti contestuali ---
     private val activeProfileFlow = MutableStateFlow<ContextProfile?>(null)
@@ -264,15 +280,19 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     fun updateSearch(query: String) {
         searchJob?.cancel()
-        val mode = when {
-            query.startsWith("=") -> SearchMode.CALC
-            query.startsWith("@") -> SearchMode.CONTACTS
-            query.startsWith("/") -> SearchMode.SETTINGS
-            else -> SearchMode.ALL
+        // Prefissi scelti dall'utente: simboli subito, parole ("p ", "sp ") solo con lo spazio dopo
+        val (kind, term) = SearchPrefixes.parse(query, settingsRepo.current.searchPrefixes)
+        val mode = when (kind) {
+            PrefixKind.CALC -> SearchMode.CALC
+            PrefixKind.CONTACTS -> SearchMode.CONTACTS
+            PrefixKind.SETTINGS -> SearchMode.SETTINGS
+            PrefixKind.PLAY -> SearchMode.PLAY
+            PrefixKind.SPOTIFY -> SearchMode.SPOTIFY
+            null -> SearchMode.ALL
         }
-        val term = if (mode == SearchMode.ALL) query else query.drop(1)
         _search.value = SearchResults(
             query = query,
+            term = term,
             mode = mode,
             apps = if (mode == SearchMode.ALL) filterApps(term) else emptyList(),
             calc = when (mode) {

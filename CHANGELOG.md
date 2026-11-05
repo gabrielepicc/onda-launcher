@@ -4,6 +4,10 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Musica dalla ricerca** (Musica, passo 3).
+  - "p testo" fa partire brano, artista o playlist sull'app musicale scelta (o sull'ultima che ha suonato), con il "riproduci da ricerca" di Android.
+  - "sp testo" apre la ricerca dentro Spotify.
+  - Tutti i prefissi della ricerca (=, @, /, p, sp) si possono cambiare in Impostazioni → Alfabeto e ricerca.
 - **Player: azioni dell'app e prossimo brano** (Musica, passo 2).
   - Se l'app mette azioni in più nella sessione (es. il cuore "Mi piace" di Spotify), compaiono accanto ai comandi, con la sua icona: una nel player compatto, fino a tre in quello esteso.
   - Se l'app espone la coda, sotto l'artista compare "Dopo: titolo — artista".

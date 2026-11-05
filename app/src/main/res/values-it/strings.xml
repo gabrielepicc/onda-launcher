@@ -721,4 +721,25 @@
     <string name="music_backdrop_search">Nella ricerca</string>
     <string name="kw_music">musica sfondo copertina colori animato onde spotify player</string>
     <string name="media_up_next">Dopo: %1$s</string>
+    <string name="music">Musica</string>
+    <string name="music_no_app">Ancora nessuna app musicale: fai suonare qualcosa una volta, o sceglila in Impostazioni → Alfabeto e ricerca</string>
+    <string name="music_play_on">Riproduci «%1$s» su %2$s</string>
+    <string name="music_spotify_search">Cerca «%1$s» in Spotify</string>
+    <string name="music_no_spotify">Spotify non è installato</string>
+    <string name="music_play_unsupported">Questa app non può far partire un brano da una ricerca</string>
+    <string name="section_prefixes">Prefissi della ricerca</string>
+    <string name="prefixes_sub">Scrivi un prefisso all\'inizio della ricerca. I simboli valgono subito, le lettere vogliono uno spazio dopo.</string>
+    <string name="prefix_calc">Calcolatrice</string>
+    <string name="prefix_contacts">Contatti</string>
+    <string name="prefix_settings">Impostazioni di sistema</string>
+    <string name="prefix_play">Riproduci musica</string>
+    <string name="prefix_spotify">Cerca in Spotify</string>
+    <string name="prefix_calc_example">es. =12*4</string>
+    <string name="prefix_contacts_example">es. @anna</string>
+    <string name="prefix_settings_example">es. /wifi</string>
+    <string name="prefix_play_example">es. p bohemian rhapsody</string>
+    <string name="prefix_spotify_example">es. sp daft punk</string>
+    <string name="prefix_invalid">Non valido: vuoto, con spazi, più lungo di 4 caratteri o già usato</string>
+    <string name="music_app">App musicale per \"riproduci\"</string>
+    <string name="music_app_last">L\'ultima che ha suonato</string>
 </resources>
