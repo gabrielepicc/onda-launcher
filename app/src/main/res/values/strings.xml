@@ -742,4 +742,14 @@
     <string name="prefix_invalid">Not valid: empty, with spaces, longer than 4 characters or already used</string>
     <string name="music_app">Music app for \"play\"</string>
     <string name="music_app_last">The last one that played</string>
+    <string name="media_default_name">Spotify · %1$s</string>
+    <string name="media_add">Add «%1$s» to favorites</string>
+    <string name="media_added">Added to favorites: long-press it to rename</string>
+    <string name="media_short_link">Short Spotify links need the internet: paste the full open.spotify.com link</string>
+    <string name="media_playlist">Playlist</string>
+    <string name="media_album">Album</string>
+    <string name="media_artist">Artist</string>
+    <string name="media_track">Song</string>
+    <string name="media_episode">Episode</string>
+    <string name="media_show">Podcast</string>
 </resources>

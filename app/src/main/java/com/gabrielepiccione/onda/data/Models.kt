@@ -406,6 +406,8 @@ data class Settings(
     /** App musicale per "riproduci da ricerca"; vuoto = l'ultima che ha suonato ([lastMusicApp]). */
     val musicApp: String = "",
     val lastMusicApp: String = "",
+    /** Playlist, album, artisti e brani messi tra i preferiti come voci del launcher. */
+    val mediaShortcuts: List<MediaShortcut> = emptyList(),
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
     val breakerDay: String = "",
     /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */

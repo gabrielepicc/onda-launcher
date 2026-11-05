@@ -167,7 +167,7 @@ cambierebbe la licenza di Onda.
 Specifiche in `docs/fase8.md`. Niagara ha già il player con la copertina; Onda aggiunge:
 - ✅ azioni dell'app nel player e prossimo brano;
 - ✅ riproduzione dalla ricerca;
-- ⬜ playlist come voci;
+- ✅ playlist come voci;
 - ⬜ ripresa con le cuffie;
 - ✅ sfondo che si muove con la musica.
 

@@ -742,4 +742,14 @@
     <string name="prefix_invalid">Non valido: vuoto, con spazi, più lungo di 4 caratteri o già usato</string>
     <string name="music_app">App musicale per \"riproduci\"</string>
     <string name="music_app_last">L\'ultima che ha suonato</string>
+    <string name="media_default_name">Spotify · %1$s</string>
+    <string name="media_add">Aggiungi «%1$s» ai preferiti</string>
+    <string name="media_added">Aggiunto ai preferiti: tienilo premuto per rinominarlo</string>
+    <string name="media_short_link">I link corti di Spotify richiedono internet: incolla il link completo open.spotify.com</string>
+    <string name="media_playlist">Playlist</string>
+    <string name="media_album">Album</string>
+    <string name="media_artist">Artista</string>
+    <string name="media_track">Brano</string>
+    <string name="media_episode">Episodio</string>
+    <string name="media_show">Podcast</string>
 </resources>
