@@ -71,6 +71,21 @@
             </intent-filter>
         </activity>
 
+        <!-- "Aggiungi alla schermata Home" dalle altre app: il sistema la invoca solo per il launcher predefinito -->
+        <activity
+            android:name=".PinRequestActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Onda.Pin">
+            <intent-filter>
+                <action android:name="android.content.pm.action.CONFIRM_PIN_SHORTCUT" />
+                <action android:name="android.content.pm.action.CONFIRM_PIN_APPWIDGET" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".service.OndaNotificationListener"
             android:exported="true"

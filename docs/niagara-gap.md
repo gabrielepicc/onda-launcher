@@ -151,7 +151,7 @@ cambierebbe la licenza di Onda.
 | # | Idea | Onda oggi | Priorità |
 |---|---|---|---|
 | 12.1 | **Meteo senza internet**: legge le previsioni dall'app **Breezy Weather** installata (provider pubblico, permesso `org.breezyweather.READ_PROVIDER`) o dal formato meteo di Gadgetbridge. Onda resterebbe senza permesso INTERNET. | ⬜ **sblocca 7.1** | P1 |
-| 12.2 | **"Aggiungi alla schermata Home" dalle altre app**: richieste di aggiungere scorciatoie e widget (`ACTION_CONFIRM_PIN_SHORTCUT` / `ACTION_CONFIRM_PIN_APPWIDGET`), come fanno Chrome, Maps, WhatsApp. | ⬜ oggi queste richieste non arrivano a Onda | P1 |
+| 12.2 | **"Aggiungi alla schermata Home" dalle altre app**: richieste di aggiungere scorciatoie e widget (`ACTION_CONFIRM_PIN_SHORTCUT` / `ACTION_CONFIRM_PIN_APPWIDGET`), come fanno Chrome, Maps, WhatsApp. | ✅ 0.10 conferma e aggiunta alla home; le scorciatoie stanno tra i preferiti | P1 |
 | 12.3 | **Alfabeto con zona di tocco a tutta altezza** e colonna visibile compatta: si può iniziare a scorrere ovunque sul bordo, le lettere restano raccolte in basso. Impostazioni dell'alfabeto con anteprima (posizione, spaziatura, dimensione). | 🟡 da 0.10 la zona di tocco coincide con la colonna compatta | P1 |
 | 12.4 | **Animazione di apertura dall'icona e ritorno nell'icona** quando si torna alla home (si integra con l'animazione di sistema). | 🟡 Onda ha solo animazioni di finestra | P2 |
 | 12.5 | **Categorie dinamiche**: gruppi riempiti da regole (con notifiche, installate di recente, aperte spesso), mostrabili in home o nell'elenco, attivi sempre / con le cuffie / in certe ore. | 🟡 parziale (Plug & Play, installate di recente) | P2 |

@@ -64,6 +64,40 @@ class AppRepository(
         override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reload()
         override fun onPackagesSuspended(packageNames: Array<out String>, user: UserHandle) = reload()
         override fun onPackagesUnsuspended(packageNames: Array<out String>, user: UserHandle) = reload()
+        override fun onShortcutsChanged(packageName: String, shortcuts: MutableList<ShortcutInfo>, user: UserHandle) = refreshPinned()
+    }
+
+    /** Scorciatoia fissata in home, così com'è adesso nel sistema. */
+    data class PinnedInfo(val shortcut: ShortcutInfo, val label: String, val icon: ImageBitmap?)
+
+    private val _pinned = MutableStateFlow<Map<String, PinnedInfo>>(emptyMap())
+    val pinned: StateFlow<Map<String, PinnedInfo>> = _pinned.asStateFlow()
+
+    /** Rilegge dal sistema le scorciatoie della home; quelle non più valide spariscono da sole. */
+    fun refreshPinned() {
+        scope.launch {
+            val result = HashMap<String, PinnedInfo>()
+            settings.value.pinnedShortcuts.groupBy { it.packageName to it.userSerial }.forEach { (owner, entries) ->
+                val user = runCatching { userManager.getUserForSerialNumber(owner.second) }.getOrNull() ?: return@forEach
+                val query = LauncherApps.ShortcutQuery().setPackage(owner.first).setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
+                val live = runCatching { launcherApps.getShortcuts(query, user) }.getOrNull().orEmpty().associateBy { it.id }
+                entries.forEach { entry ->
+                    val info = live[entry.shortcutId] ?: return@forEach
+                    result[entry.key] = PinnedInfo(
+                        shortcut = info,
+                        label = (info.shortLabel ?: info.longLabel)?.toString() ?: entry.label,
+                        icon = shortcutIcon(info, iconSizePx),
+                    )
+                }
+            }
+            _pinned.value = result
+        }
+    }
+
+    /** Toglie la scorciatoia dal sistema: [remainingIds] sono quelle da tenere per quell'app. */
+    fun unpinShortcut(packageName: String, userSerial: Long, remainingIds: List<String>) {
+        val user = runCatching { userManager.getUserForSerialNumber(userSerial) }.getOrNull() ?: return
+        runCatching { launcherApps.pinShortcuts(packageName, remainingIds, user) }
     }
 
     /** Pack caricati, condivisi con il selettore di icone. */
@@ -115,6 +149,9 @@ class AppRepository(
         reload()
         scope.launch {
             settings.map { it.iconParams() }.distinctUntilChanged().drop(1).collect { reload() }
+        }
+        scope.launch {
+            settings.map { it.pinnedShortcuts }.distinctUntilChanged().collect { refreshPinned() }
         }
     }
 
@@ -286,6 +323,10 @@ class AppRepository(
 
     fun shortcutIcon(shortcut: ShortcutInfo): ImageBitmap? = runCatching {
         launcherApps.getShortcutIconDrawable(shortcut, densityDpi)?.toBitmap(iconSizePx / 2, iconSizePx / 2)?.asImageBitmap()
+    }.getOrNull()
+
+    private fun shortcutIcon(shortcut: ShortcutInfo, sizePx: Int): ImageBitmap? = runCatching {
+        launcherApps.getShortcutIconDrawable(shortcut, densityDpi)?.toBitmap(sizePx, sizePx)?.asImageBitmap()
     }.getOrNull()
 
     fun startShortcut(shortcut: ShortcutInfo) {

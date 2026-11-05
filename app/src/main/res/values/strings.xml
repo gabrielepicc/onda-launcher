@@ -379,6 +379,11 @@
     <string name="auto_backup_disable">Turn off</string>
     <string name="auto_backup_pending">On. The first copy is saved when you leave home.</string>
     <string name="auto_backup_last">Last backup: %1$s</string>
+    <string name="pin_title">Add to home?</string>
+    <string name="pin_add">Add</string>
+    <string name="pin_added">Added to home</string>
+    <string name="pin_failed">Couldn\'t add it to home</string>
+    <string name="pin_remove">Remove from home</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>

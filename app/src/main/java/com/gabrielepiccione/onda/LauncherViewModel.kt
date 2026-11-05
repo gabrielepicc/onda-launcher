@@ -7,6 +7,10 @@ import android.content.pm.ShortcutInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.data.AppRepository
+import com.gabrielepiccione.onda.data.PinnedShortcut
+import com.gabrielepiccione.onda.data.PinnedShortcuts
+import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.CalendarEvent
 import com.gabrielepiccione.onda.data.ContactHit
 import com.gabrielepiccione.onda.data.ContactsRepository
@@ -36,6 +40,9 @@ sealed interface HomeEntry {
     data class App(val app: AppInfo) : HomeEntry { override val key get() = "f_" + app.key }
     data class Group(val folder: com.gabrielepiccione.onda.data.Folder, val apps: List<AppInfo>) : HomeEntry {
         override val key get() = "g_" + folder.id
+    }
+    data class Shortcut(val pinned: PinnedShortcut, val info: AppRepository.PinnedInfo) : HomeEntry {
+        override val key get() = "s_" + pinned.key
     }
 }
 
@@ -85,7 +92,8 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         appsRepo.apps,
         settingsRepo.settings,
         NotificationStore.byPackage,
-    ) { raw, settings, notifs ->
+        appsRepo.pinned,
+    ) { raw, settings, notifs, pinned ->
         val all = raw.map { r ->
             AppInfo(
                 key = r.key,
@@ -112,6 +120,11 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
             if (entry.startsWith(com.gabrielepiccione.onda.data.FOLDER_PREFIX)) {
                 val f = settings.folders[entry.removePrefix(com.gabrielepiccione.onda.data.FOLDER_PREFIX)] ?: return@mapNotNull null
                 HomeEntry.Group(f, f.apps.mapNotNull { byKey[it] })
+            } else if (entry.startsWith(SHORTCUT_PREFIX)) {
+                val key = entry.removePrefix(SHORTCUT_PREFIX)
+                val shortcut = settings.pinnedShortcuts.firstOrNull { it.key == key } ?: return@mapNotNull null
+                // Non più nel sistema (app disinstallata, Onda non predefinito): la voce non si mostra
+                pinned[key]?.let { HomeEntry.Shortcut(shortcut, it) }
             } else {
                 byKey[entry]?.takeIf { !it.isHidden }?.let { HomeEntry.App(it) }
             }
@@ -261,6 +274,12 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     fun toggleMuted(app: AppInfo) = settingsRepo.toggleMuted(app.packageName)
     fun shortcuts(app: AppInfo): List<ShortcutInfo> = appsRepo.shortcutsFor(app)
     fun startShortcut(s: ShortcutInfo) = appsRepo.startShortcut(s)
+
+    /** Toglie la scorciatoia dalla home e dal sistema. */
+    fun removePinnedShortcut(pinned: PinnedShortcut) {
+        settingsRepo.edit { PinnedShortcuts.remove(it, pinned.key) }
+        appsRepo.unpinShortcut(pinned.packageName, pinned.userSerial, PinnedShortcuts.idsFor(settingsRepo.current, pinned.packageName, pinned.userSerial))
+    }
     fun updateSettings(transform: (Settings) -> Settings) = settingsRepo.edit(transform)
 
     fun removeWidget(id: Int) {

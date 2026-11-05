@@ -372,6 +372,8 @@ data class Settings(
     val openAnimation: OpenAnimation = OpenAnimation.SYSTEM,
     val haptics: Boolean = true,
     val widgetIds: List<Int> = emptyList(),
+    /** Scorciatoie aggiunte alla home dalle altre app; il loro posto è in [favorites]. */
+    val pinnedShortcuts: List<PinnedShortcut> = emptyList(),
     /** Pile di widget in home; i loro widget non compaiono in [widgetIds]. */
     val widgetStacks: List<WidgetStack> = emptyList(),
     /** Nasconde il contenitore dello Spazio privato dall'elenco delle app. */

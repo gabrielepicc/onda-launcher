@@ -40,7 +40,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ cartelle con icona personalizzabile, widget in carosello e altezza regolabile; ✅ titolo delle notifiche leggibile nel popup.
 
    **Prossimi passi, in ordine** (una voce = un branch = una PR):
-   1. Aggiungi alla home dalle altre app: richieste di pin di scorciatoie e widget (gap 12.2).
+   1. ✅ Aggiungi alla home dalle altre app: richieste di pin di scorciatoie e widget (gap 12.2).
    2. Meteo senza internet da Breezy Weather (gap 12.1, 7.1): orologio + foglio agenda toccando la data (1.5).
    3. Alfabeto: zona di tocco a tutta altezza con colonna visibile compatta (12.3) e stella dei preferiti in cima (10.1).
    4. Alfabeto localizzato con `AlphabeticIndex` (2.1).

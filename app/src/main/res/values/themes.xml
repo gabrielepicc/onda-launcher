@@ -7,4 +7,11 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
+
+    <!-- Solo il dialogo di conferma sopra l'app che ha fatto la richiesta -->
+    <style name="Theme.Onda.Pin">
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
 </resources>

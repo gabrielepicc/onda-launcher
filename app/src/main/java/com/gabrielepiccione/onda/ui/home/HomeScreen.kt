@@ -111,7 +111,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gabrielepiccione.onda.HomeEntry
 import com.gabrielepiccione.onda.LauncherViewModel
 import com.gabrielepiccione.onda.data.AppInfo
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import com.gabrielepiccione.onda.data.FOLDER_PREFIX
+import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.GestureAction
@@ -199,6 +203,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     }
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
+    var shortcutMenu by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
     var folderIconFor by remember { mutableStateOf<String?>(null) }
     var moveFor by remember { mutableStateOf<AppInfo?>(null) }
     var homeMenu by remember { mutableStateOf(false) }
@@ -411,6 +416,16 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     onLongClick = { folderSheet = entry.folder },
                     hideName = settings.hideFavoriteNames,
                     modifier = itemMod.then(rowTracker("g_" + entry.folder.id)),
+                )
+                is HomeEntry.Shortcut -> PinnedShortcutRow(
+                    label = entry.info.label,
+                    icon = entry.info.icon,
+                    showIcon = settings.showIcons,
+                    hideName = settings.hideFavoriteNames,
+                    iconScale = iconScale,
+                    onClick = { vm.startShortcut(entry.info.shortcut) },
+                    onLongClick = { if (!settings.lockLayout) shortcutMenu = entry },
+                    modifier = itemMod,
                 )
             }
         }
@@ -1103,6 +1118,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 when (entry) {
                     is HomeEntry.App -> entry.app.key to entry.app.label
                     is HomeEntry.Group -> (FOLDER_PREFIX + entry.folder.id) to entry.folder.name
+                    is HomeEntry.Shortcut -> (SHORTCUT_PREFIX + entry.pinned.key) to entry.info.label
                 }
             },
             onBlocks = { vm.settingsRepo.setHomeLayout(it) },
@@ -1131,6 +1147,33 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onApp = { recentSheet = false; launchApp(it) },
             onDismiss = { recentSheet = false },
         )
+    }
+
+    shortcutMenu?.let { entry ->
+        val favoriteId = SHORTCUT_PREFIX + entry.pinned.key
+        val index = settings.favorites.indexOf(favoriteId)
+        ModalBottomSheet(
+            onDismissRequest = { shortcutMenu = null },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = colors.panel,
+            contentColor = colors.onWallpaper,
+        ) {
+            Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+                Text(
+                    entry.info.label,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                )
+                if (index > 0) SheetRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { vm.moveEntry(favoriteId, -1) }
+                if (index in 0 until settings.favorites.lastIndex) {
+                    SheetRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { vm.moveEntry(favoriteId, 1) }
+                }
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.pin_remove)) {
+                    vm.removePinnedShortcut(entry.pinned)
+                    shortcutMenu = null
+                }
+            }
+        }
     }
 
     folderSheet?.let { f ->

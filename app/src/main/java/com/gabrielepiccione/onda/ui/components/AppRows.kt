@@ -71,7 +71,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -306,6 +309,64 @@ fun FavoriteRow(
                 }
             }
             }
+        }
+    }
+}
+
+/** Scorciatoia aggiunta alla home da un'altra app: stesso aspetto di un preferito, senza notifiche. */
+@Composable
+fun PinnedShortcutRow(
+    label: String,
+    icon: ImageBitmap?,
+    showIcon: Boolean,
+    hideName: Boolean,
+    iconScale: Float,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalOndaColors.current
+    val ondaHaptics = LocalOndaHaptics.current
+    val interaction = remember { MutableInteractionSource() }
+    val listStyle = LocalListStyle.current
+    val listFont = LocalListFont.current
+    val shadow = LocalTextShadow.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = if (listStyle.align == HAlign.CENTER) Arrangement.Center else Arrangement.Start,
+        modifier = modifier
+            .fillMaxWidth()
+            .pressScale(interaction)
+            .clip(RoundedCornerShape(28.dp))
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = androidx.compose.material3.ripple(),
+                onClick = onClick,
+                onLongClick = {
+                    ondaHaptics?.perform(HapticEvent.LONG_PRESS)
+                    onLongClick()
+                },
+            )
+            .semantics { contentDescription = label }
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+    ) {
+        if (showIcon) {
+            if (icon != null) Image(icon, null, Modifier.size(44.dp * iconScale))
+            else Box(Modifier.size(44.dp * iconScale).clip(CircleShape).background(colors.accentContainer))
+            Spacer(Modifier.width(18.dp))
+        }
+        if (!(hideName && showIcon)) {
+            Text(
+                text = label,
+                color = colors.onWallpaper,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight(listStyle.weight.coerceIn(100, 900)),
+                    letterSpacing = listStyle.letterSpacingEm.em,
+                    shadow = shadow,
+                ).let { st -> if (listFont != null) st.copy(fontFamily = listFont) else st },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
