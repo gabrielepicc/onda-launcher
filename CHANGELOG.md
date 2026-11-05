@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Bolla vera per il popup**: si apre come un cerchio con pellicola iridescente che nasce dall'icona e diventa il popup. Chiudendolo si
+  raccoglie in un cerchio, la pellicola si fora in un punto, si ritira dal foro e il bordo si rompe in goccioline. Niente più riquadro stirato.
+- **Notifiche nel popup**: testo della stessa misura delle scorciatoie, una sola scheda, massimo 4 righe, azioni che vanno a capo.
 - **Popup dell'app riordinato**: in alto l'app ("Apri l'app") e, in alto a destra, i tre puntini con il menu di tutte le azioni
   (preferiti, informazioni, modifica popup, disinstalla, altre opzioni). Sotto, sezioni con titolo: Notifiche in schede, Scorciatoie
   in un gruppo, App correlate e Widget. Spariscono i cinque pulsanti in fondo.
