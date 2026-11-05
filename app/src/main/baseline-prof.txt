@@ -1,0 +1,5 @@
+# Profilo di base di Onda: profileinstaller (già tra le dipendenze) fa compilare in anticipo queste classi
+# all'installazione, così avvio, primo scorrimento e primo popup non passano dall'interprete.
+# Le librerie Compose portano già i propri profili; qui c'è solo il codice dell'app.
+HSPLcom/gabrielepiccione/onda/**->**(**)**
+Lcom/gabrielepiccione/onda/**;

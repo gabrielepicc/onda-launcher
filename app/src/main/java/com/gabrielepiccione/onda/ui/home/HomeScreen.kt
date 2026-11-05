@@ -426,7 +426,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     // Voci della home (preferiti e cartelle), inserite nella posizione del blocco "app"
     fun androidx.compose.foundation.lazy.LazyListScope.homeEntries() {
-        items(state.home, key = { it.key }) { entry ->
+        items(state.home, key = { it.key }, contentType = { it::class }) { entry ->
             val clearOfLetters = 48.dp - 28.dp
             val itemMod = Modifier
                 .animateItem(

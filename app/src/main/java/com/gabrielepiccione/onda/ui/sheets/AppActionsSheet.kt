@@ -205,7 +205,7 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
                                 .padding(vertical = 12.dp),
                         )
                     }
-                    items(actions.allApps.size) { i ->
+                    items(actions.allApps.size, key = { actions.allApps[it].key }) { i ->
                         val target = actions.allApps[i]
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

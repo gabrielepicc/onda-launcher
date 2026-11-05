@@ -147,7 +147,7 @@ fun AllAppsPanel(
         modifier = modifier.fillMaxSize(),
     ) {
         sections.forEach { section ->
-            item(key = "h_${section.letter}") {
+            item(key = "h_${section.letter}", contentType = "header") {
                 val color by animateColorAsState(
                     if (section.letter == activeLetter) colors.accent else colors.onWallpaperMuted,
                     label = "header",
@@ -160,7 +160,7 @@ fun AllAppsPanel(
                 )
             }
             section.apps.forEach { app ->
-                item(key = app.key) {
+                item(key = app.key, contentType = "app") {
                     AppListRow(
                         app = app,
                         hasNotification = notifications[app.packageName].orEmpty().isNotEmpty(),
@@ -180,7 +180,7 @@ fun AllAppsPanel(
                 }
             }
             section.contacts.forEach { contact ->
-                item(key = "c_${contact.id}") { ContactListRow(contact, onClick = { onContact(contact) }) }
+                item(key = "c_${contact.id}", contentType = "contact") { ContactListRow(contact, onClick = { onContact(contact) }) }
             }
         }
         // Contenitore separato dello Spazio privato, dopo tutte le lettere
@@ -204,7 +204,7 @@ fun AllAppsPanel(
                 }
             }
             privateApps.forEach { app ->
-                item(key = "p_" + app.key) {
+                item(key = "p_" + app.key, contentType = "app") {
                     AppListRow(
                         app = app,
                         hasNotification = notifications[app.packageName].orEmpty().isNotEmpty(),
@@ -221,7 +221,7 @@ fun AllAppsPanel(
         if (folders.isNotEmpty()) {
             item(key = "folders_header") { EndSectionHeader(stringResource(R.string.list_folders)) }
             folders.forEach { folder ->
-                item(key = "f_" + folder.id) { folderRow(folder) }
+                item(key = "f_" + folder.id, contentType = "folder") { folderRow(folder) }
             }
         }
         item(key = "onda_header") { EndSectionHeader(stringResource(R.string.app_name)) }
