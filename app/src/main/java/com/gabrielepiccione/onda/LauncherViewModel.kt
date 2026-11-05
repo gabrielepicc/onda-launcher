@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.UsageStatsRepository
 import android.app.Application
 import android.content.pm.ShortcutInfo
 import androidx.lifecycle.AndroidViewModel
@@ -93,6 +94,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val audio = ondaApp.audio
     val contacts = ContactsRepository(app)
     val weatherRepo = WeatherRepository(app)
+    val usageStats = UsageStatsRepository(app)
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
 

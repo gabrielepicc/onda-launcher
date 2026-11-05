@@ -4,6 +4,14 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Benessere digitale**, nuova pagina delle impostazioni:
+  - **Giornata**: tempo davanti allo schermo e confronto con la media, sblocchi, aperture e notifiche ricevute.
+  - **Grafici**: ultimi 7 giorni con la media tratteggiata, uso ora per ora (si tocca una barra per vedere quel giorno o quell'ora).
+  - **Sintesi**: media, variazione sulla settimana prima, sessione tipica, controlli rapidi, uso notturno, primo utilizzo, giorno più intenso, tempo per sblocco.
+  - **App**: elenco per tempo con aperture e sessione più lunga. Toccandone una si imposta un limite giornaliero: superato, l'app passa dalla pausa e, se la stai usando, arriva un avviso. Non viene mai bloccata.
+  - Usage Breaker e promemoria sono spostati qui.
+  - Tutti i dati restano sul telefono; per le notifiche si salva solo un numero per app e per giorno.
+- **Pausa di Usage Breaker** con conto alla rovescia circolare, aperture e tempo di oggi, e stato del limite.
 - **Popup con il movimento di Material 3**: cresce dall'icona con una molla appena elastica, il contenuto entra a cascata, esce in 200 ms
   rimpicciolendosi verso l'icona. Tirato oltre il bordo si rimpicciolisce come con il gesto Indietro. Via la bolla.
 - **Tocco sulla notifica**: l'anteprima sotto il nome apre la notifica (prima apriva il popup); il popup resta su swipe a destra e pressione lunga.

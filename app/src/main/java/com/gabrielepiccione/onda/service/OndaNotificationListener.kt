@@ -4,6 +4,7 @@ package com.gabrielepiccione.onda.service
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import com.gabrielepiccione.onda.data.NotificationCounter
 import com.gabrielepiccione.onda.data.NotificationStore
 
 class OndaNotificationListener : NotificationListenerService() {
@@ -31,7 +32,10 @@ class OndaNotificationListener : NotificationListenerService() {
         super.onDestroy()
     }
 
-    override fun onNotificationPosted(sbn: StatusBarNotification?) = refresh()
+    override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        sbn?.let { runCatching { NotificationCounter.record(this, it) } }
+        refresh()
+    }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) = refresh()
 
