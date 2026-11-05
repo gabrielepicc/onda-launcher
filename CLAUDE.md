@@ -15,12 +15,40 @@ nomi, icone o grafica di Niagara.
 - Nuove impostazioni: campo con default in `Settings` (data/Models.kt). Se cambia il significato di un
   campo esistente: incrementa `Settings.CURRENT_SCHEMA` e aggiungi il passo in `SettingsCodec.migrate` + test.
 - Target touch ≥ 48dp, `contentDescription` sugli elementi senza testo.
+- Niente permesso `INTERNET` finché il proprietario non decide sul meteo (vedi roadmap).
+
+## Flusso di lavoro con git
+- **Mai push diretti su `main`.** Ogni blocco di lavoro su un branch `claude/<tema-breve>`, poi una PR
+  verso `main` con descrizione in italiano (cosa cambia, cosa provare sul telefono).
+- Si unisce (squash) **solo con la CI verde** sulla PR. Claude può unire da solo le proprie PR se la CI è verde;
+  se è rossa, si corregge sullo stesso branch, non su `main`.
+- Una PR = un tema (una funzione o una correzione), così è facile da rivedere e da annullare.
+- Dopo l'unione: aggiornare `docs/roadmap.md`, `CHANGELOG.md` e, quando si chiude una versione,
+  `versionCode`/`versionName` e `fastlane/metadata/android/{en-US,it-IT}/changelogs/<versionCode>.txt`.
+
+## Stile del codice
+- Importare classi e funzioni: **niente nomi completi** nel codice (`com.gabrielepiccione.onda.data.X.f()`).
+- La logica pura (calcoli, regole, migrazioni) sta in funzioni testabili su JVM in `data/` o `util/`, con test.
+
+## Decisioni da rispettare
+- Backup: il formato di riferimento è un unico file che contiene impostazioni **e** risorse dell'utente
+  (immagini delle icone, font importati, temi salvati). Il backup automatico gira con WorkManager ogni 24 ore
+  (oltre che all'uscita dal launcher) e conserva gli ultimi 7 file. Il ripristino deve accettare anche i vecchi `.json`.
+- Elenco delle funzioni di Niagara ancora mancanti e priorità: `docs/niagara-gap.md`. Prima di iniziare un tema,
+  leggere la voce corrispondente; a lavoro finito, segnarla come fatta lì e in roadmap.
 
 ## Verifica
 Non c'è SDK Android in locale: la verifica è la CI di GitHub Actions (`.github/workflows/build-apk.yml`):
-`testDebugUnitTest`, `lintRelease`, `ktlintCheck`, `assembleRelease`. Dopo ogni push attendere la run:
+`testDebugUnitTest`, `lintRelease`, `ktlintCheck`, `assembleRelease`. Gira su ogni push e su ogni PR.
 ```bash
-gh api "repos/gabrielepicc/onda-launcher/actions/runs?branch=main&per_page=1" --jq '.workflow_runs[0] | "\(.id) \(.status) \(.conclusion)"'
+# stato dell'ultima run di un branch
+gh api "repos/gabrielepicc/onda-launcher/actions/runs?branch=<branch>&per_page=1" --jq '.workflow_runs[0] | "\(.id) \(.status) \(.conclusion)"'
+# (in queste sessioni GraphQL non è disponibile: niente `gh pr ...`, usare l'API REST)
+# aprire la PR
+gh api repos/gabrielepicc/onda-launcher/pulls -f base=main -f head=<branch> -f title="..." -f body="..." --jq .number
+# unione con CI verde, poi eliminazione del branch
+gh api -X PUT repos/gabrielepicc/onda-launcher/pulls/<numero>/merge -f merge_method=squash
+gh api -X DELETE repos/gabrielepicc/onda-launcher/git/refs/heads/<branch>
 # errori: gh api repos/gabrielepicc/onda-launcher/actions/jobs/<job_id>/logs | grep -E " e: file|FAILED|Error:"
 ```
 Lint: evitare `produceState` (falso positivo `ProduceStateDoesNotAssignValue`), usare `LaunchedEffect` + stato.

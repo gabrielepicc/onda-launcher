@@ -33,10 +33,15 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ annulla dopo un preset e conferma prima di eliminare un widget
 6. ✅ Fase 6 — ✅ gesture configurabili estese, ✅ animazioni di apertura app, ✅ landscape/tablet, ✅ Private Space, ✅ onboarding, ✅ backup automatico
 
+7. ⬜ Fase 7 — Parità con Niagara: elenco dettagliato e priorità in `docs/niagara-gap.md`.
+   Prima: alfabeto localizzato, suggerimenti nella home, popup dell'app come cartella, Usage Breaker a promemoria,
+   backup completo (impostazioni + icone + font + temi, pianificato con WorkManager), taratura dei gesti.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.
 - Spazio privato fuori da alfabeto, ricerca e suggerimenti, in un contenitore separato come chiede Android: si raggiunge da fondo elenco.
+- Si lavora su branch + PR, unione solo con CI verde (vedi CLAUDE.md).
 - Meteo rimandato: aggiungerebbe la prima connessione a internet dell'app; serve l'OK dell'utente.
 - Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
 - App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).
