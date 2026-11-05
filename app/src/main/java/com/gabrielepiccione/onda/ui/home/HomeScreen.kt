@@ -1391,7 +1391,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 folder = folder,
                 apps = state.folders.firstOrNull { it.folder.id == id }?.apps.orEmpty(),
                 themedIcons = settings.themedIcons,
+                packs = vm.appsRepo.packs,
                 onPick = { vm.settingsRepo.setFolderIcon(id, it) },
+                onPickPackIcon = { pkg, name ->
+                    scope.launch {
+                        savePackIconForFolder(context, vm.appsRepo.packs, id, pkg, name)?.let { vm.settingsRepo.setFolderIcon(id, it) }
+                    }
+                    folderIconFor = null
+                },
                 onPickImage = { callbacks.pickIconImage(FolderIcons.IMAGE_KEY_PREFIX + id) },
                 onDismiss = { folderIconFor = null },
             )

@@ -16,6 +16,9 @@ object FolderIcons {
         "folder", "star", "favorite", "work", "home", "school", "games", "music", "photo", "movie",
         "chat", "mail", "shopping", "wallet", "travel", "car", "food", "fitness", "health", "pets",
         "book", "news", "code", "tools", "lightbulb", "cloud", "sport", "family",
+        "map", "bank", "card", "receipt", "phone", "calendar", "settings", "security", "coffee", "beach",
+        "bike", "train", "palette", "brush", "science", "wifi", "tv", "headphones", "flower", "baby",
+        "group", "gift", "bolt", "moon", "sun", "language", "bookmark", "puzzle",
     )
 
     /** Altezze ammesse per i widget dentro una cartella (dp). */

@@ -21,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import com.gabrielepiccione.onda.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -70,7 +69,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
@@ -105,7 +103,7 @@ fun FolderRow(
     val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     var open by rememberSaveable(folder.id) { mutableStateOf(false) }
-    val arrow by animateFloatAsState(if (open) 180f else 0f, Motion.bouncy(), label = "arrow")
+    val toggleLabel = stringResource(if (open) R.string.cd_folder_close else R.string.cd_folder_open)
     val unread = apps.count { notifications[it.packageName].orEmpty().isNotEmpty() }
 
     Column(
@@ -122,6 +120,7 @@ fun FolderRow(
                 .clip(RoundedCornerShape(28.dp))
                 .combinedClickable(
                     onClick = { open = !open },
+                    onClickLabel = toggleLabel,
                     onLongClick = {
                         ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                         onLongClick()
@@ -159,12 +158,6 @@ fun FolderRow(
                         .padding(horizontal = 8.dp, vertical = 2.dp),
                 )
             }
-            Icon(
-                Icons.Filled.KeyboardArrowDown,
-                contentDescription = stringResource(if (open) R.string.cd_folder_close else R.string.cd_folder_open),
-                tint = colors.onWallpaperMuted,
-                modifier = Modifier.graphicsLayer { rotationZ = arrow },
-            )
         }
 
         AnimatedVisibility(
