@@ -175,6 +175,7 @@ interface HomeCallbacks {
     fun requestWeatherPermission()
     fun requestLocationPermission()
     fun requestBluetoothPermission()
+    fun restartLauncher()
     fun requestPostNotifications()
     fun openUsageAccess()
     fun requestDefaultLauncher()
@@ -352,6 +353,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 settings.homeWifi,
                 now,
                 sun,
+                java.time.LocalTime.now().let { it.hour * 60 + it.minute },
             )
             delay(60_000L)
         }
@@ -1144,17 +1146,24 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun locationPermission() = callbacks.requestLocationPermission()
                         override fun bluetoothPermission() = callbacks.requestBluetoothPermission()
                         override fun pickLightsWidget() = openWidgetPicker(HomePresence.GOOGLE_HOME_PACKAGE, WidgetTarget.HomeLights)
-                        override fun setHomeHere() {
-                            val ssid = HomePresence.currentSsid(context)
-                            val place = HomePresence.lastLocation(context)
-                            vm.updateSettings { s ->
-                                s.copy(
-                                    homeWifi = ssid ?: s.homeWifi,
-                                    homeLatitude = place?.first ?: s.homeLatitude,
-                                    homeLongitude = place?.second ?: s.homeLongitude,
-                                )
+                        override fun currentWifi(): String? = HomePresence.currentSsid(context)
+                        override fun saveHome(ssid: String) {
+                            vm.updateSettings { it.copy(homeWifi = ssid) }
+                            // La posizione serve una volta sola, per gli orari del sole: se non c'è, la si chiede ora
+                            scope.launch {
+                                HomePresence.locate(context)?.let { (lat, lon) ->
+                                    vm.updateSettings { it.copy(homeLatitude = lat, homeLongitude = lon) }
+                                }
                             }
                         }
+                        override fun locateHome() {
+                            scope.launch {
+                                HomePresence.locate(context)?.let { (lat, lon) ->
+                                    vm.updateSettings { it.copy(homeLatitude = lat, homeLongitude = lon) }
+                                }
+                            }
+                        }
+                        override fun restartLauncher() = callbacks.restartLauncher()
                         override fun postNotifications() = callbacks.requestPostNotifications()
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)

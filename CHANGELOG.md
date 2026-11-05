@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Luci di casa più chiare e affidabili**:
+  - "Wi-Fi di casa" chiede conferma ("Sei collegato a «rete». Lo uso come Wi-Fi di casa?") e mostra la rete salvata.
+  - Un riquadro "Adesso" dice in diretta Wi-Fi attuale, se sei a casa, quando è buio, se il widget è scelto e il primo motivo per cui non compare.
+  - Il nome del Wi-Fi si legge nel modo che funziona da Android 12. Se manca la posizione Onda la chiede alla rete; finché non c'è, il buio è dalle 19 alle 7.
+- **Riavvia launcher** in fondo alle impostazioni, con conferma.
 - **Preferiti contestuali** (Impostazioni → Preferiti contestuali):
   - **Condizioni**: Wi-Fi, dispositivo Bluetooth, luogo approssimativo, fascia oraria, evento in calendario, carica, cuffie e Non disturbare, anche al contrario.
   - **Regole**: E dentro un gruppo, O tra i gruppi. Tra più profili validi vince la priorità più alta, a parità il primo. Niente deduzioni nascoste.
