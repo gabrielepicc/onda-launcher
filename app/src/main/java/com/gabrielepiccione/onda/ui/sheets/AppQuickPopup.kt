@@ -14,6 +14,17 @@ import android.app.Notification
 import android.content.pm.ShortcutInfo
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animate
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Velocity
+import com.gabrielepiccione.onda.util.PullToDismiss
+import kotlinx.coroutines.coroutineScope
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -170,6 +181,50 @@ fun AppQuickPopup(
     }
     BackHandler(onBack = dismiss)
 
+    // Tirare il popup oltre il bordo del contenuto (o quando non c'è nulla da scorrere) lo sposta col dito:
+    // lasciandolo abbastanza lontano, o con un colpo deciso, esce nella stessa direzione e si chiude
+    var pull by remember(app.key) { mutableFloatStateOf(0f) }
+    val thresholdPx = with(density) { PullToDismiss.THRESHOLD_DP.dp.toPx() }
+    val flingPx = with(density) { PullToDismiss.FLING_DP.dp.toPx() }
+    val exitPx = with(density) { 160.dp.toPx() }
+    val pullConnection = remember(app.key, thresholdPx, flingPx) {
+        object : NestedScrollConnection {
+            // Se è già spostato, il dito che torna indietro riporta prima a posto il popup
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (closing[0] || pull == 0f || source != NestedScrollSource.UserInput) return Offset.Zero
+                val moved = PullToDismiss.next(pull, available.y)
+                val used = (moved - pull) / PullToDismiss.RESISTANCE
+                pull = moved
+                return Offset(0f, used)
+            }
+
+            // Quello che il contenuto non può più scorrere sposta il popup
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (closing[0] || source != NestedScrollSource.UserInput || available.y == 0f) return Offset.Zero
+                pull = PullToDismiss.next(pull, available.y)
+                return Offset(0f, available.y)
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (closing[0] || pull == 0f) return Velocity.Zero
+                val from = pull
+                if (PullToDismiss.shouldDismiss(from, available.y, thresholdPx, flingPx)) {
+                    closing[0] = true
+                    ondaHaptics?.perform(HapticEvent.CONFIRM)
+                    val target = if (from > 0f) exitPx else -exitPx
+                    coroutineScope {
+                        launch { animate(from, target, available.y, tween(PULL_EXIT_MILLIS, easing = Motion.EmphasizedAccelerate)) { v, _ -> pull = v } }
+                        launch { enter.animateTo(0f, tween(PULL_EXIT_MILLIS, easing = Motion.EmphasizedAccelerate)) }
+                    }
+                    onDismiss()
+                } else {
+                    animate(from, 0f, available.y, spring(dampingRatio = 0.75f, stiffness = 500f)) { v, _ -> pull = v }
+                }
+                return available
+            }
+        }
+    }
+
     val above = remember { booleanArrayOf(false) }
     val screenWidth = config.screenWidthDp.dp
     val popupWidth = min(320.dp, screenWidth - 32.dp)
@@ -206,6 +261,7 @@ fun AppQuickPopup(
                 .width(popupWidth)
                 .heightIn(max = maxHeight)
                 .graphicsLayer {
+                    translationY = pull
                     val s = 0.85f + 0.15f * enter.value
                     scaleX = s
                     scaleY = s
@@ -215,6 +271,7 @@ fun AppQuickPopup(
                 .background(colors.panel)
                 // I tocchi dentro il popup non devono chiuderlo
                 .pointerInput(Unit) { detectTapGestures { } }
+                .nestedScroll(pullConnection)
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = 8.dp),
         ) {
@@ -348,3 +405,4 @@ private fun QuickAction(icon: ImageVector, description: String, onClick: () -> U
 }
 
 private const val CLOSE_MILLIS = 150
+private const val PULL_EXIT_MILLIS = 220
