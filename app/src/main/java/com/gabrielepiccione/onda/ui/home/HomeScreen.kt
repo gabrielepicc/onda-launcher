@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.UsageStatsMath
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -264,7 +265,18 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     // Usage Breaker: qualunque cosa apra l'app (riga, notifica, scorciatoia, gesto) passa da qui
     var breakerFor by remember { mutableStateOf<BreakerRequest?>(null) }
     fun guarded(app: AppInfo?, go: () -> Unit) {
-        if (app != null && app.key in vm.settingsRepo.current.breakerApps) breakerFor = BreakerRequest(app, go) else go()
+        if (app == null) return go()
+        val current = vm.settingsRepo.current
+        val limit = current.appLimits[app.packageName] ?: 0
+        when {
+            app.key in current.breakerApps -> breakerFor = BreakerRequest(app, go)
+            // Limite giornaliero: si legge l'uso di oggi solo se serve, poi pausa o apertura diretta
+            limit > 0 && status.usageAccess -> scope.launch {
+                val used = vm.usageStats.todayMs(app.packageName)
+                if (UsageStatsMath.overLimit(used, limit)) breakerFor = BreakerRequest(app, go) else go()
+            }
+            else -> go()
+        }
     }
 
     fun startApp(app: AppInfo) {
@@ -1023,6 +1035,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         postNotifications = status.postNotifications,
                     ),
                     widgets = vm.widgets,
+                    usageStats = vm.usageStats,
                     actions = object : SettingsActions {
                         override fun edit(transform: (com.gabrielepiccione.onda.data.Settings) -> com.gabrielepiccione.onda.data.Settings) = vm.updateSettings(transform)
                         override fun requestDefault() = callbacks.requestDefaultLauncher()
@@ -1512,10 +1525,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     breakerFor?.let { request ->
         val app = request.app
         val today = remember(app.key) { java.time.LocalDate.now().toString() }
+        var usedToday by remember(app.key) { mutableStateOf<Long?>(null) }
+        LaunchedEffect(app.key) { if (status.usageAccess) usedToday = vm.usageStats.todayMs(app.packageName) }
         UsageBreakerDialog(
             app = app,
             seconds = settings.breakerSeconds,
             opensToday = com.gabrielepiccione.onda.data.UsageBreaker.opensToday(settings, app.key, today),
+            usedTodayMs = usedToday,
+            limitMinutes = settings.appLimits[app.packageName] ?: 0,
             onOpen = {
                 breakerFor = null
                 vm.updateSettings { com.gabrielepiccione.onda.data.UsageBreaker.recordOpen(it, app.key, today) }

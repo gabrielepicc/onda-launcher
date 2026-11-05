@@ -376,6 +376,8 @@ data class Settings(
     val reminderStartMinutes: Int = 20,
     /** Durata della pausa in secondi. */
     val breakerSeconds: Int = 10,
+    /** Limite giornaliero in minuti per pacchetto: superato, l'app passa dalla pausa e arriva un avviso. */
+    val appLimits: Map<String, Int> = emptyMap(),
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
     val breakerDay: String = "",
     /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */

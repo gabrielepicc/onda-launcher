@@ -92,5 +92,10 @@ Raggi solo dalla scala (4, 8, 12, 16, 20, 28, 32, 48, pieno), testi dai ruoli di
 bersagli di tocco di almeno 48dp, durate dai token. Regole e differenze volute in `docs/material-audit.md`.
 Popup dell'app: movimento Material 3 Expressive (molla spaziale 0,8/380, effetti 1600, uscita 200 ms, contenuto a cascata).
 
+## Benessere digitale
+Statistiche pure in `data/UsageStatsMath` (testate), lettura degli eventi in `data/UsageStatsRepository` (launcher e UI di sistema esclusi),
+notifiche contate da `NotificationCounter` (solo numeri). Limiti in `Settings.appLimits` (pacchetto -> minuti): pausa nel launcher (`guarded` in HomeScreen)
+e avviso da `UsageReminderEngine`. Pagina `SettingsPage.WELLBEING`, grafici in `ui/settings/WellbeingDashboard`.
+
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.

@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.material.icons.filled.HourglassEmpty
+import com.gabrielepiccione.onda.data.UsageStatsRepository
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.HapticSupport
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
@@ -143,6 +145,7 @@ fun SettingsScreen(
     status: SettingsStatus,
     widgets: WidgetManager,
     actions: SettingsActions,
+    usageStats: UsageStatsRepository? = null,
 ) {
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -626,7 +629,39 @@ fun SettingsScreen(
             ClickRow(stringResource(R.string.plug_play_choose), current?.label ?: stringResource(R.string.plug_play_none)) { plugDialog = true }
         }
 
-        if (page == SettingsPage.APPS) Group(stringResource(R.string.section_breaker)) {
+        if (page == SettingsPage.WELLBEING && usageStats != null) {
+            WellbeingDashboard(
+                repo = usageStats,
+                hasAccess = status.usageAccess,
+                apps = allApps,
+                limits = settings.appLimits,
+                onRequestAccess = { actions.usageAccess() },
+                onSetLimit = { pkg, minutes ->
+                    onEdit { s -> s.copy(appLimits = if (minutes > 0) s.appLimits + (pkg to minutes) else s.appLimits - pkg) }
+                },
+            )
+        }
+
+        if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_limits)) {
+            Text(stringResource(R.string.limits_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            if (settings.appLimits.isNotEmpty() && !status.postNotifications) {
+                StatusRow(stringResource(R.string.post_notifications), false, stringResource(R.string.post_notifications_ok), stringResource(R.string.post_notifications_ko)) { actions.postNotifications() }
+            }
+            if (settings.appLimits.isEmpty()) {
+                Text(stringResource(R.string.breaker_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            }
+            settings.appLimits.forEach { (pkg, minutes) ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.weight(1f)) {
+                        Text(allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                        Text(durationText(minutes * 60_000L), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                    }
+                    TextButton(onClick = { onEdit { it.copy(appLimits = it.appLimits - pkg) } }) { Text(stringResource(R.string.remove)) }
+                }
+            }
+        }
+
+        if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_breaker)) {
             Text(stringResource(R.string.breaker_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             Label(stringResource(R.string.breaker_seconds, settings.breakerSeconds))
             Slider(
@@ -646,7 +681,7 @@ fun SettingsScreen(
             }
         }
 
-        if (page == SettingsPage.APPS) Group(stringResource(R.string.section_reminders)) {
+        if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_reminders)) {
             Text(stringResource(R.string.reminder_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             Label(stringResource(R.string.reminder_start))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -827,6 +862,7 @@ private enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val sub
     HOME(R.string.section_home, R.string.page_home_sub, Icons.Filled.Home),
     ALPHABET(R.string.page_alphabet, R.string.page_alphabet_sub, Icons.Filled.Search),
     GESTURES(R.string.section_gestures, R.string.page_gestures_sub, Icons.Filled.TouchApp),
+    WELLBEING(R.string.page_wellbeing, R.string.page_wellbeing_sub, Icons.Filled.HourglassEmpty),
     APPS(R.string.page_apps, R.string.page_apps_sub, Icons.Filled.Apps),
     BACKUP(R.string.section_backup, R.string.page_backup_sub, Icons.Filled.Backup),
 }
@@ -876,8 +912,10 @@ private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.open_animation, SettingsPage.GESTURES, R.string.kw_gestures),
     SettingEntry(R.string.haptics, SettingsPage.GESTURES, R.string.kw_haptics),
     SettingEntry(R.string.section_plug_play, SettingsPage.APPS, R.string.kw_apps),
-    SettingEntry(R.string.section_breaker, SettingsPage.APPS, R.string.kw_apps),
-    SettingEntry(R.string.section_reminders, SettingsPage.APPS, R.string.kw_apps),
+    SettingEntry(R.string.section_breaker, SettingsPage.WELLBEING, R.string.kw_wellbeing),
+    SettingEntry(R.string.section_reminders, SettingsPage.WELLBEING, R.string.kw_wellbeing),
+    SettingEntry(R.string.page_wellbeing, SettingsPage.WELLBEING, R.string.kw_wellbeing),
+    SettingEntry(R.string.section_limits, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.private_space, SettingsPage.APPS, R.string.kw_apps),
     SettingEntry(R.string.section_hidden, SettingsPage.APPS, R.string.kw_apps),
     SettingEntry(R.string.protect_hidden, SettingsPage.APPS, R.string.kw_apps),
