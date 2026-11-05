@@ -58,13 +58,13 @@ import kotlin.math.exp
  */
 @Composable
 fun AlphabetWaveScroller(
-    letters: List<Char>,
+    letters: List<String>,
     leftSide: Boolean,
     modifier: Modifier = Modifier,
     showLetters: Boolean = true,
     onTouchStart: () -> Unit = {},
     /** Lettera scelta e altezza del dito nella finestra (px), per allineare l'elenco al dito. */
-    onLetter: (Char, Float) -> Unit,
+    onLetter: (String, Float) -> Unit,
     onTouchEnd: () -> Unit = {},
     /** Doppio tocco sulla colonna (es. blocco schermo); null = disattivato. */
     onDoubleTap: (() -> Unit)? = null,
@@ -93,8 +93,8 @@ fun AlphabetWaveScroller(
     val letterStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium, color = colors.onWallpaperMuted)
     val bubbleStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold, color = colors.onAccentContainer)
     // Misuriamo le lettere una sola volta
-    val measured = remember(letters, letterStyle) { letters.map { measurer.measure(it.toString(), letterStyle) } }
-    val bubbleLayouts = remember(letters, bubbleStyle) { letters.map { measurer.measure(it.toString(), bubbleStyle) } }
+    val measured = remember(letters, letterStyle) { letters.map { measurer.measure(it, letterStyle) } }
+    val bubbleLayouts = remember(letters, bubbleStyle) { letters.map { measurer.measure(it, bubbleStyle) } }
 
     // La zona di tocco è alta tutto il bordo: si può iniziare a scorrere ovunque. La colonna visibile
     // resta alta quanto le lettere (passo massimo [MAX_LETTER_STEP]) e ancorata in basso, vicino al pollice.

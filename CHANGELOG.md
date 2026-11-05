@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Alfabeto localizzato**: lettere e ordine seguono le lingue del telefono (per esempio Å Ä Ö in svedese, Ñ in spagnolo).
+  I nomi in altri alfabeti vanno sotto la lettera giusta invece che sotto "#"; se la lingua non li copre, da Android 10
+  vengono traslitterati.
 - **Alfabeto**: si può iniziare a scorrere ovunque lungo il bordo, mentre le lettere restano raccolte in basso.
   In cima c'è una stella che riporta ai preferiti.
 - **Meteo senza internet**: la temperatura accanto alla data e le previsioni (24 ore e 7 giorni) arrivano dall'app
