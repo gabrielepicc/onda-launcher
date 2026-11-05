@@ -702,4 +702,11 @@
     <string name="restart_launcher_sub">Closes and reopens Onda</string>
     <string name="restart_launcher_body">Onda will close and reopen straight away. Your settings stay as they are.</string>
     <string name="restart_launcher_go">Restart</string>
+    <string name="home_menu_title">Home</string>
+    <string name="home_menu_widget">Widget</string>
+    <string name="home_menu_wallpaper">Wallpaper</string>
+    <string name="home_menu_add">Add to home</string>
+    <string name="home_menu_layout">Layout</string>
+    <string name="home_menu_folder_sub">Group apps under one name</string>
+    <string name="home_menu_reorder_sub">Move clock, widgets and apps</string>
 </resources>

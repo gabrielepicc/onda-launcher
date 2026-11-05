@@ -4,6 +4,14 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Impostazioni secondo Material You**:
+  - **Barra in alto**: grande, si riduce scorrendo.
+  - **Voci**: tutte uguali, con titolo a 16sp, supporto a 14sp, 56/72 dp di altezza e l'interruttore che si attiva toccando tutta la riga.
+  - **Sezioni**: titoli a 14sp nel colore d'accento, spiegazioni sempre nello stesso stile, stato dei permessi con l'icona a destra.
+  - Le pagine Benessere digitale e Preferiti contestuali usano gli stessi componenti.
+- **Pannello della pressione lunga sulla home**:
+  - In cima, quattro riquadri: Widget, Sfondo, Cerca, Impostazioni.
+  - Sotto, le sezioni "Aggiungi alla home" e "Disposizione", con spiegazioni brevi e un interruttore per bloccare la disposizione.
 - **Luci di casa più chiare e affidabili**:
   - "Wi-Fi di casa" chiede conferma ("Sei collegato a «rete». Lo uso come Wi-Fi di casa?") e mostra la rete salvata.
   - Un riquadro "Adesso" dice in diretta Wi-Fi attuale, se sei a casa, quando è buio, se il widget è scelto e il primo motivo per cui non compare.

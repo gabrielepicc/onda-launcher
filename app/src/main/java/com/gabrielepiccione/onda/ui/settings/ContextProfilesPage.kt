@@ -151,7 +151,7 @@ internal fun ContextProfilesPage(
                         color = colors.onWallpaper,
                         style = MaterialTheme.typography.bodyLarge,
                     )
-                    Text(profileSummary(p), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(profileSummary(p), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 Switch(checked = p.enabled, onCheckedChange = { v -> onEdit { s -> s.copy(contextProfiles = s.contextProfiles.map { if (it.id == p.id) it.copy(enabled = v) else it }) } })
             }
@@ -174,7 +174,7 @@ internal fun ContextProfilesPage(
     }
     if (suggestions.isNotEmpty()) {
         Card(stringResource(R.string.ctx_suggestions_title)) {
-            Text(stringResource(R.string.ctx_suggestions_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.ctx_suggestions_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             suggestions.forEach { s ->
                 val label = byKey[s.appKey]?.label ?: s.appKey
                 val day = dayLong(s.dayOfWeek)
@@ -220,17 +220,7 @@ internal fun ContextProfilesPage(
 }
 
 @Composable
-private fun Card(title: String, content: @Composable () -> Unit) {
-    val colors = LocalOndaColors.current
-    Text(title, color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 8.dp, top = 24.dp, bottom = 8.dp))
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(colors.panel)
-            .padding(horizontal = 18.dp, vertical = 14.dp),
-    ) { content() }
-}
+private fun Card(title: String, content: @Composable () -> Unit) = SettingsSection(title) { content() }
 
 /** Le regole in una riga: "Wi-Fi Casa e Lun–Ven 9:00–18:00, oppure In carica". */
 @Composable
@@ -337,7 +327,7 @@ private fun ProfileEditor(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 12.dp)) {
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.ctx_priority), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(R.string.ctx_priority_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.ctx_priority_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
                     }
                     TextButton(onClick = { p = p.copy(priority = (p.priority - 1).coerceAtLeast(0)) }) { Text("−") }
                     Text("${p.priority}", color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium)
@@ -389,7 +379,7 @@ private fun ProfileEditor(
                 }
 
                 Card(stringResource(R.string.ctx_apps)) {
-                    Text(stringResource(R.string.ctx_apps_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.ctx_apps_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
                     p.apps.forEachIndexed { i, key ->
                         val app = byKey[key]
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
@@ -414,7 +404,7 @@ private fun ProfileEditor(
                 }
 
                 Card(stringResource(R.string.ctx_accent)) {
-                    Text(stringResource(R.string.ctx_accent_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.ctx_accent_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
                     FilterChip(selected = p.accent == 0L, onClick = { p = p.copy(accent = 0L) }, label = { Text(stringResource(R.string.ctx_accent_none)) })
                     ColorSwatches(AccentChoices, p.accent) { argb -> p = p.copy(accent = argb) }
                 }
@@ -483,7 +473,7 @@ private fun TriggerEditor(trigger: Trigger, env: ContextEnvironment, onChange: (
                 Text(
                     stringResource(if (set) R.string.ctx_place_set else R.string.ctx_place_unset),
                     color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 TextButton(onClick = {
                     env.currentLocation()?.let { (lat, lon) -> onChange(trigger.copy(latitude = lat, longitude = lon)) } ?: env.requestLocation()
@@ -520,7 +510,7 @@ private fun TriggerEditor(trigger: Trigger, env: ContextEnvironment, onChange: (
             }
             TriggerType.CALENDAR -> {
                 OutlinedTextField(trigger.text, { onChange(trigger.copy(text = it)) }, label = { Text(stringResource(R.string.ctx_calendar_word)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                Text(stringResource(R.string.ctx_calendar_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.ctx_calendar_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             }
             TriggerType.CHARGING, TriggerType.HEADPHONES, TriggerType.FOCUS -> Unit
         }

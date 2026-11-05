@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.material3.Switch
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import com.gabrielepiccione.onda.ui.settings.ContextEnvironment
 import com.gabrielepiccione.onda.data.HomeLights
@@ -1566,38 +1569,62 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             containerColor = colors.panel,
             contentColor = colors.onWallpaper,
         ) {
-            Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
-                SheetRow(Icons.Filled.Settings, stringResource(R.string.settings)) { homeMenu = false; overlay = Overlay.SETTINGS }
+            Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
+                Text(
+                    stringResource(R.string.home_menu_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = colors.onWallpaper,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                )
+                // Le quattro azioni più usate, a portata di pollice
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MenuTile(Icons.Filled.Widgets, stringResource(R.string.home_menu_widget), Modifier.weight(1f), enabled = !settings.lockLayout) {
+                        homeMenu = false
+                        openWidgetPicker(null, WidgetTarget.Home)
+                    }
+                    MenuTile(Icons.Filled.Wallpaper, stringResource(R.string.home_menu_wallpaper), Modifier.weight(1f)) {
+                        homeMenu = false
+                        SystemActions.openWallpaperPicker(context)
+                    }
+                    MenuTile(Icons.Filled.Search, stringResource(R.string.search), Modifier.weight(1f)) { homeMenu = false; overlay = Overlay.SEARCH }
+                    MenuTile(Icons.Filled.Settings, stringResource(R.string.settings), Modifier.weight(1f)) { homeMenu = false; overlay = Overlay.SETTINGS }
+                }
                 if (!settings.lockLayout) {
-                    SheetRow(Icons.Filled.SwapVert, stringResource(R.string.reorder_home)) { homeMenu = false; reorderOpen = true }
-                    SheetRow(Icons.Filled.CreateNewFolder, stringResource(R.string.new_folder)) { newFolder = true }
-                    SheetRow(Icons.Filled.Widgets, stringResource(R.string.add_widget)) { homeMenu = false; openWidgetPicker(null, WidgetTarget.Home) }
+                    MenuSection(stringResource(R.string.home_menu_add))
+                    MenuItem(Icons.Filled.CreateNewFolder, stringResource(R.string.new_folder), stringResource(R.string.home_menu_folder_sub)) { newFolder = true }
+                    if (!settings.showClock) {
+                        MenuItem(Icons.Filled.Schedule, stringResource(R.string.show_clock_again), null) {
+                            homeMenu = false
+                            vm.updateSettings { it.copy(showClock = true) }
+                        }
+                    }
                     if (!settings.showNotificationSummary) {
-                        SheetRow(Icons.Filled.Notifications, stringResource(R.string.summary_add)) {
+                        MenuItem(Icons.Filled.Notifications, stringResource(R.string.summary_add), stringResource(R.string.summary_sub)) {
                             homeMenu = false
                             vm.updateSettings { it.copy(showNotificationSummary = true) }
                         }
                     }
                     if (!settings.showAgenda) {
-                        SheetRow(Icons.Filled.Event, stringResource(R.string.agenda_add)) {
+                        MenuItem(Icons.Filled.Event, stringResource(R.string.agenda_add), stringResource(R.string.agenda_sub)) {
                             homeMenu = false
                             vm.updateSettings { it.copy(showAgenda = true) }
                             if (!status.calendarPermission) callbacks.requestCalendarPermission()
                         }
                     }
                 }
-                SheetRow(if (settings.lockLayout) Icons.Filled.LockOpen else Icons.Filled.Lock, stringResource(if (settings.lockLayout) R.string.layout_unlock else R.string.layout_lock)) {
-                    homeMenu = false
-                    vm.updateSettings { it.copy(lockLayout = !it.lockLayout) }
-                }
-                SheetRow(Icons.Filled.Search, stringResource(R.string.search)) { homeMenu = false; overlay = Overlay.SEARCH }
-                if (!settings.showClock) {
-                    SheetRow(Icons.Filled.Schedule, stringResource(R.string.show_clock_again)) {
+                MenuSection(stringResource(R.string.home_menu_layout))
+                if (!settings.lockLayout) {
+                    MenuItem(Icons.Filled.SwapVert, stringResource(R.string.reorder_home), stringResource(R.string.home_menu_reorder_sub)) {
                         homeMenu = false
-                        vm.updateSettings { it.copy(showClock = true) }
+                        reorderOpen = true
                     }
                 }
-                SheetRow(Icons.Filled.Wallpaper, stringResource(R.string.change_wallpaper)) { homeMenu = false; SystemActions.openWallpaperPicker(context) }
+                MenuItem(
+                    Icons.Filled.Lock,
+                    stringResource(R.string.layout_lock),
+                    stringResource(R.string.layout_lock_sub),
+                    trailing = { Switch(checked = settings.lockLayout, onCheckedChange = null) },
+                ) { vm.updateSettings { it.copy(lockLayout = !it.lockLayout) } }
             }
         }
         if (newFolder) {
@@ -1717,3 +1744,57 @@ private class BreakerRequest(val app: AppInfo, val go: () -> Unit)
 
 /** Altezza del widget delle luci accanto all'orologio. */
 private const val LIGHTS_HEIGHT = 120
+
+/** Azione principale del pannello della home: riquadro tonale con icona ed etichetta. */
+@Composable
+private fun MenuTile(icon: ImageVector, label: String, modifier: Modifier, enabled: Boolean = true, onClick: () -> Unit) {
+    val colors = LocalOndaColors.current
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.accentContainer.copy(alpha = if (enabled) 1f else 0.4f))
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = 16.dp, horizontal = 4.dp),
+    ) {
+        Icon(icon, null, tint = colors.onAccentContainer, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.size(8.dp))
+        Text(label, color = colors.onAccentContainer, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+/** Titolo di una sezione del pannello. */
+@Composable
+private fun MenuSection(title: String) {
+    Text(
+        title,
+        color = LocalOndaColors.current.accent,
+        style = MaterialTheme.typography.titleSmall,
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 4.dp),
+    )
+}
+
+/** Voce del pannello: icona, titolo, supporto e, se serve, un controllo in fondo. */
+@Composable
+private fun MenuItem(icon: ImageVector, title: String, supporting: String?, trailing: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
+    val colors = LocalOndaColors.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = if (supporting == null) 56.dp else 72.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+    ) {
+        Icon(icon, null, tint = colors.onWallpaperMuted, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(16.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = colors.onWallpaper)
+            if (supporting != null) Text(supporting, style = MaterialTheme.typography.bodyMedium, color = colors.onWallpaperMuted)
+        }
+        if (trailing != null) {
+            Spacer(Modifier.width(16.dp))
+            trailing()
+        }
+    }
+}
