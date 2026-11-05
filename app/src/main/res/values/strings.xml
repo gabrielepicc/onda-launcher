@@ -757,4 +757,8 @@
     <string name="plug_play_device_hint">Connected now are listed above. Or type the name exactly as the phone shows it.</string>
     <string name="plug_play_resume">Resume music</string>
     <string name="plug_play_resume_sub">When you connect these headphones, the chosen app (or the last one that played) starts again. Never during a call or if something is already playing.</string>
+    <string name="music_backdrop_beat">To the beat</string>
+    <string name="music_beat_title">Background to the beat</string>
+    <string name="music_beat_body">To pulse on the bass, Onda reads the strength of the sound frequencies coming out of the phone, moment by moment, with Android\'s audio analyser. Android calls this \"microphone\" permission, but nothing is recorded from the microphone, nothing is saved and nothing leaves the phone. It only works while music plays and Onda is on screen. You can turn it off at any time.</string>
+    <string name="music_beat_allow">Continue</string>
 </resources>

@@ -184,6 +184,7 @@ interface HomeCallbacks {
     fun requestWeatherPermission()
     fun requestLocationPermission()
     fun requestBluetoothPermission()
+    fun requestMicrophonePermission()
     fun restartLauncher()
     fun requestPostNotifications()
     fun openUsageAccess()
@@ -213,6 +214,7 @@ data class HomeStatus(
     val weatherInstalled: Boolean = false,
     val weatherPermission: Boolean = false,
     val locationPermission: Boolean = false,
+    val microphonePermission: Boolean = false,
     val usageAccess: Boolean = false,
     val postNotifications: Boolean = false,
 )
@@ -589,6 +591,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 intensity = settings.musicBackdropIntensity,
                 dark = colors.dark,
                 modifier = Modifier.matchParentSize(),
+                beatAllowed = status.microphonePermission,
             )
         }
         Box(Modifier.matchParentSize().background(dimColor.copy(alpha = settings.wallpaperDim)))
@@ -1180,6 +1183,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         contactsPermission = status.contactsPermission,
                         weatherInstalled = status.weatherInstalled,
                         weatherPermission = status.weatherPermission,
+                        microphonePermission = status.microphonePermission,
                         locationPermission = status.locationPermission,
                         usageAccess = status.usageAccess,
                         postNotifications = status.postNotifications,
@@ -1205,6 +1209,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun weatherPermission() = callbacks.requestWeatherPermission()
                         override fun locationPermission() = callbacks.requestLocationPermission()
                         override fun bluetoothPermission() = callbacks.requestBluetoothPermission()
+                        override fun microphonePermission() = callbacks.requestMicrophonePermission()
                         override fun pickLightsWidget() = openWidgetPicker(HomePresence.GOOGLE_HOME_PACKAGE, WidgetTarget.HomeLights)
                         override fun currentWifi(): String? = HomePresence.currentSsid(context)
                         override fun saveHome(ssid: String) {

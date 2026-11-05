@@ -75,7 +75,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
   3. ✅ riproduzione dalla ricerca (`p`, `sp`, prefissi personalizzabili);
   4. ✅ playlist e brani come voci (nei preferiti; cartelle e icona personalizzata dopo);
   5. ✅ ripresa con le cuffie;
-  6. ⬜ livello "a ritmo" (approvato, spento di default).
+  6. ✅ livello "a ritmo" (approvato, spento di default).
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
