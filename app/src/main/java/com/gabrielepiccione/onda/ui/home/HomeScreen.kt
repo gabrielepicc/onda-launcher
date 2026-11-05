@@ -392,7 +392,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     )
     val listMode by animateFloatAsState(
         if (overlay == Overlay.ALL_APPS) 1f else 0f,
-        androidx.compose.animation.core.tween(140, easing = Motion.Standard),
+        androidx.compose.animation.core.tween(150, easing = Motion.Standard),
         label = "listMode",
     )
     val panelScale = 1f - 0.1f * backProgress

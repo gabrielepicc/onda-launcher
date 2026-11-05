@@ -189,7 +189,7 @@ fun PackIconBrowser(
                 .padding(vertical = 8.dp)
                 .fillMaxWidth()
                 .height(48.dp)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(28.dp))
                 .background(colors.panelHigh)
                 .padding(horizontal = 18.dp),
             contentAlignment = Alignment.CenterStart,

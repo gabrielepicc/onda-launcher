@@ -303,7 +303,7 @@ internal fun Conversation(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(28.dp))
             .background(if (selectedForReply) colors.accentContainer.copy(alpha = 0.35f) else colors.panelHigh.copy(alpha = 0.5f))
             .clickable(onClick = onOpen)
             .padding(16.dp)
@@ -376,7 +376,7 @@ internal fun CompactConversation(
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(colors.panelHigh.copy(alpha = 0.5f))
             .clickable(onClick = onOpen)
             .padding(start = 12.dp, top = 4.dp, end = 0.dp, bottom = 8.dp)

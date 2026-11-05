@@ -46,7 +46,7 @@ fun NotificationSummaryCard(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
-    val shape = RoundedCornerShape(22.dp)
+    val shape = RoundedCornerShape(28.dp)
     Column(
         modifier
             .fillMaxWidth()

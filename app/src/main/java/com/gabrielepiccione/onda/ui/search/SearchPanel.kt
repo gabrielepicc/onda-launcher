@@ -52,10 +52,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.gabrielepiccione.onda.SearchResults
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.ContactHit
@@ -108,13 +106,13 @@ fun SearchPanel(
             Spacer(Modifier.width(12.dp))
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (results.query.isEmpty()) {
-                    Text(stringResource(R.string.search_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyLarge, fontSize = 18.sp)
+                    Text(stringResource(R.string.search_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyLarge)
                 }
                 BasicTextField(
                     value = results.query,
                     onValueChange = onQueryChange,
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onWallpaper, fontSize = 18.sp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onWallpaper),
                     cursorBrush = SolidColor(colors.accent),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
                     keyboardActions = KeyboardActions(onGo = {
@@ -162,13 +160,13 @@ fun SearchPanel(
                         Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
-                            .clip(RoundedCornerShape(24.dp))
+                            .clip(RoundedCornerShape(28.dp))
                             .background(colors.accentContainer)
                             .clickable { clipboard.setText(androidx.compose.ui.text.AnnotatedString(value)) }
                             .padding(horizontal = 18.dp, vertical = 14.dp)
                     ) {
-                        Text("= $value", color = colors.onAccentContainer, fontSize = 30.sp, fontWeight = FontWeight.Medium)
-                        Text(stringResource(R.string.tap_to_copy), color = colors.onAccentContainer.copy(alpha = 0.7f), fontSize = 12.sp)
+                        Text("= $value", color = colors.onAccentContainer, style = MaterialTheme.typography.headlineLarge)
+                        Text(stringResource(R.string.tap_to_copy), color = colors.onAccentContainer, style = MaterialTheme.typography.labelMedium)
                     }
                 }
             }
@@ -229,8 +227,7 @@ private fun SectionLabel(text: String) {
     Text(
         text,
         color = LocalOndaColors.current.onWallpaperMuted,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.titleSmall,
         modifier = Modifier.padding(start = 12.dp, top = 18.dp, bottom = 4.dp),
     )
 }
@@ -242,13 +239,13 @@ private fun SimpleRow(icon: @Composable () -> Unit, label: String, muted: Boolea
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 12.dp)
     ) {
         Box(Modifier.size(34.dp), contentAlignment = Alignment.Center) { icon() }
         Spacer(Modifier.width(14.dp))
-        Text(label, color = if (muted) colors.onWallpaperMuted else colors.onWallpaper, fontSize = 17.sp)
+        Text(label, color = if (muted) colors.onWallpaperMuted else colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

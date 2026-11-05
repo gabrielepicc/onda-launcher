@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Material 3, forme e testi**: raggi solo dalla scala ufficiale (4, 8, 12, 16, 20, 28), testi dai ruoli della scala tipografica invece di
+  misure scritte a mano, titolo delle barre in alto come quello di Material.
 - **Bolla vera per il popup**: si apre come un cerchio con pellicola iridescente che nasce dall'icona e diventa il popup. Chiudendolo si
   raccoglie in un cerchio, la pellicola si fora in un punto, si ritira dal foro e il bordo si rompe in goccioline. Niente più riquadro stirato.
 - **Notifiche nel popup**: testo della stessa misura delle scorciatoie, una sola scheda, massimo 4 righe, azioni che vanno a capo.

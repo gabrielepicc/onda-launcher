@@ -64,11 +64,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.ui.theme.LocalHapticsEnabled
@@ -164,7 +162,7 @@ fun NotificationCard(
                             .clickable(onClick = onToggleExpand)
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Text("+$extraCount", color = colors.onAccentContainer, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("+$extraCount", color = colors.onAccentContainer, style = MaterialTheme.typography.labelMedium)
                     }
                 }
                 if (item.clearable) {
@@ -219,7 +217,7 @@ fun NotificationCard(
                     modifier = Modifier
                         .padding(top = 8.dp, end = 6.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(28.dp))
                         .background(colors.panelHigh)
                         .padding(start = 16.dp, end = 4.dp)
                 ) {
