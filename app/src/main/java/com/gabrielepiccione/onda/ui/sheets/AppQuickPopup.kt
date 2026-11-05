@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.sheets
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import android.app.Notification
@@ -147,6 +149,8 @@ fun AppQuickPopup(
     val popupWidth = min(320.dp, screenWidth - 32.dp)
     val maxHeight = config.screenHeightDp.dp * 0.7f
 
+    // Tutto il testo del popup parte dal colore leggibile sul pannello, anche quello senza colore esplicito
+    CompositionLocalProvider(LocalContentColor provides colors.onWallpaper) {
     Box(
         Modifier
             .fillMaxSize()
@@ -247,6 +251,7 @@ fun AppQuickPopup(
                 QuickAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { onMoreOptions(); onDismiss() }
             }
         }
+    }
     }
 }
 

@@ -308,6 +308,8 @@ internal fun Conversation(
             Column(Modifier.weight(1f)) {
                 Text(
                     item.replyTo.ifBlank { item.title },
+                    // Colore esplicito: dentro il popup il colore ereditato può essere quello di sistema (nero)
+                    color = colors.onWallpaper,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
