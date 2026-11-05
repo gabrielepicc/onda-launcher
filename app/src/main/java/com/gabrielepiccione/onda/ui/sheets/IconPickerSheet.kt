@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -83,26 +83,14 @@ fun IconPickerSheet(
     val colors = LocalOndaColors.current
     val context = LocalContext.current
     var installed by remember { mutableStateOf<List<IconPacks.Pack>>(emptyList()) }
-    var selected by remember { mutableStateOf<String?>(null) }
-    var query by remember { mutableStateOf("") }
     var suggestions by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
-    var catalog by remember { mutableStateOf<List<String>>(emptyList()) }
+    // Mentre si cerca restano solo pack, campo e risultati: la tastiera lascia poco spazio
+    var searching by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         val list = withContext(Dispatchers.IO) { IconPacks.installed(context) }
         installed = list
-        selected = list.firstOrNull()?.packageName
-        // Suggerimenti da tutti i pack, i migliori per primi
-        suggestions = withContext(Dispatchers.Default) {
-            list.flatMap { p ->
-                val loaded = packs.get(p.packageName) ?: return@flatMap emptyList()
-                IconMatcher.suggest(app.originalLabel, app.packageName, loaded.allDrawables, limit = 6).map { p.packageName to it }
-            }.take(18)
-        }
-    }
-    LaunchedEffect(selected) {
-        val pkg = selected ?: return@LaunchedEffect
-        catalog = withContext(Dispatchers.IO) { packs.get(pkg)?.allDrawables.orEmpty() }
+        suggestions = suggestPackIcons(packs, list, app.originalLabel, app.packageName)
     }
 
     ModalBottomSheet(
@@ -123,18 +111,20 @@ fun IconPickerSheet(
                 TextButton(onClick = { onReset(); onDismiss() }) { Text(stringResource(R.string.icon_reset)) }
             }
 
-            FilledTonalButton(onClick = { onPickImage(); onDismiss() }, modifier = Modifier.padding(top = 8.dp)) {
-                Text(stringResource(R.string.icon_from_image))
-            }
+            if (!searching) {
+                FilledTonalButton(onClick = { onPickImage(); onDismiss() }, modifier = Modifier.padding(top = 8.dp)) {
+                    Text(stringResource(R.string.icon_from_image))
+                }
 
-            Label(stringResource(R.string.icon_shape))
-            Row(Modifier.horizontalScroll(rememberScrollState()).padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = currentShape == null, onClick = { onShape(null) }, label = { Text(stringResource(R.string.icon_shape_default)) })
-                listOf(
-                    "CIRCLE" to R.string.shape_circle, "SQUIRCLE" to R.string.shape_squircle, "ROUNDED_SQUARE" to R.string.shape_rounded,
-                    "TEARDROP" to R.string.shape_teardrop, "CYLINDER" to R.string.shape_cylinder, "PETAL" to R.string.shape_petal,
-                ).forEach { (id, res) ->
-                    FilterChip(selected = currentShape == id, onClick = { onShape(id) }, label = { Text(stringResource(res)) })
+                Label(stringResource(R.string.icon_shape))
+                Row(Modifier.horizontalScroll(rememberScrollState()).padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(selected = currentShape == null, onClick = { onShape(null) }, label = { Text(stringResource(R.string.icon_shape_default)) })
+                    listOf(
+                        "CIRCLE" to R.string.shape_circle, "SQUIRCLE" to R.string.shape_squircle, "ROUNDED_SQUARE" to R.string.shape_rounded,
+                        "TEARDROP" to R.string.shape_teardrop, "CYLINDER" to R.string.shape_cylinder, "PETAL" to R.string.shape_petal,
+                    ).forEach { (id, res) ->
+                        FilterChip(selected = currentShape == id, onClick = { onShape(id) }, label = { Text(stringResource(res)) })
+                    }
                 }
             }
 
@@ -143,56 +133,93 @@ fun IconPickerSheet(
                 return@Column
             }
 
-            val filtered = remember(catalog, query) {
-                if (query.isBlank()) catalog else catalog.filter { it.contains(query.trim().replace(' ', '_'), ignoreCase = true) }
-            }
+            PackIconBrowser(
+                packs = packs,
+                installed = installed,
+                suggestions = suggestions,
+                onPick = { pkg, name -> onPick(pkg, name); onDismiss() },
+                onSearching = { searching = it },
+                modifier = Modifier.weight(1f, fill = false),
+            )
+        }
+    }
+}
 
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(64.dp),
-                modifier = Modifier.heightIn(max = 560.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                if (suggestions.isNotEmpty() && query.isBlank()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) { Label(stringResource(R.string.icon_suggested)) }
-                    items(suggestions, key = { "s_${it.first}_${it.second}" }) { (pkg, name) ->
-                        IconCell(packs, pkg, name) { onPick(pkg, name); onDismiss() }
-                    }
+/** Le icone dei pack che somigliano di più a [label], le migliori per prime. */
+suspend fun suggestPackIcons(packs: IconPackCache, installed: List<IconPacks.Pack>, label: String, packageName: String): List<Pair<String, String>> =
+    withContext(Dispatchers.Default) {
+        installed.flatMap { p ->
+            val loaded = packs.get(p.packageName) ?: return@flatMap emptyList()
+            IconMatcher.suggest(label, packageName, loaded.allDrawables, limit = 6).map { p.packageName to it }
+        }.take(18)
+    }
+
+/**
+ * Catalogo degli icon pack: scelta del pack e ricerca stanno ferme sopra la griglia. Fuori dalla griglia
+ * il campo non viene mai spostato o rimosso mentre si scrive, e la tastiera resta aperta.
+ */
+@Composable
+fun PackIconBrowser(
+    packs: IconPackCache,
+    installed: List<IconPacks.Pack>,
+    suggestions: List<Pair<String, String>>,
+    onPick: (packPackage: String, drawable: String) -> Unit,
+    modifier: Modifier = Modifier,
+    onSearching: (Boolean) -> Unit = {},
+) {
+    val colors = LocalOndaColors.current
+    var selected by remember(installed) { mutableStateOf(installed.firstOrNull()?.packageName) }
+    var query by remember { mutableStateOf("") }
+    var catalog by remember { mutableStateOf<List<String>>(emptyList()) }
+    LaunchedEffect(selected) {
+        val pkg = selected ?: return@LaunchedEffect
+        catalog = withContext(Dispatchers.IO) { packs.get(pkg)?.allDrawables.orEmpty() }
+    }
+    val filtered = remember(catalog, query) {
+        if (query.isBlank()) catalog else catalog.filter { it.contains(query.trim().replace(' ', '_'), ignoreCase = true) }
+    }
+    Column(modifier) {
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            installed.forEach { p ->
+                FilterChip(selected = selected == p.packageName, onClick = { selected = p.packageName }, label = { Text(p.label) })
+            }
+        }
+        Box(
+            Modifier
+                .padding(vertical = 8.dp)
+                .fillMaxWidth()
+                .height(48.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(colors.panelHigh)
+                .padding(horizontal = 18.dp),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            if (query.isEmpty()) Text(stringResource(R.string.icon_search), color = colors.onWallpaperMuted)
+            BasicTextField(
+                value = query,
+                onValueChange = { query = it },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onWallpaper),
+                cursorBrush = SolidColor(colors.accent),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { onSearching(it.isFocused) },
+            )
+        }
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(64.dp),
+            modifier = Modifier.weight(1f, fill = false),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            if (suggestions.isNotEmpty() && query.isBlank()) {
+                item(span = { GridItemSpan(maxLineSpan) }) { Label(stringResource(R.string.icon_suggested)) }
+                items(suggestions, key = { "s_${it.first}_${it.second}" }) { (pkg, name) ->
+                    IconCell(packs, pkg, name) { onPick(pkg, name) }
                 }
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column {
-                        Row(Modifier.horizontalScroll(rememberScrollState()).padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            installed.forEach { p ->
-                                FilterChip(selected = selected == p.packageName, onClick = { selected = p.packageName }, label = { Text(p.label) })
-                            }
-                        }
-                        Box(
-                            Modifier
-                                .padding(vertical = 8.dp)
-                                .fillMaxWidth()
-                                .height(48.dp)
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(colors.panelHigh)
-                                .padding(horizontal = 18.dp),
-                            contentAlignment = Alignment.CenterStart,
-                        ) {
-                            if (query.isEmpty()) Text(stringResource(R.string.icon_search), color = colors.onWallpaperMuted)
-                            BasicTextField(
-                                value = query,
-                                onValueChange = { query = it },
-                                singleLine = true,
-                                textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onWallpaper),
-                                cursorBrush = SolidColor(colors.accent),
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
-                    }
-                }
-                val pkg = selected
-                if (pkg != null) {
-                    items(filtered, key = { "c_${pkg}_$it" }) { name ->
-                        IconCell(packs, pkg, name) { onPick(pkg, name); onDismiss() }
-                    }
+            }
+            val pkg = selected
+            if (pkg != null) {
+                items(filtered, key = { "c_${pkg}_$it" }) { name ->
+                    IconCell(packs, pkg, name) { onPick(pkg, name) }
                 }
             }
         }
