@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Altezza dell'alfabeto**: in Alfabeto e ricerca si sceglie dove riposa la colonna delle lettere, dal basso (predefinito)
+  al centro fino in cima; l'anteprima del telefono la segue. Toccando più in alto la colonna sale ancora sotto il dito.
 - **Cerca nelle impostazioni**: un campo in cima all'indice trova la voce per nome (senza maiuscole né accenti, anche con più
   parole) e porta alla pagina che la contiene.
 - **Alfabeto**: toccando il bordo sopra le lettere, la colonna sale incontro al dito e lo scorrimento parte da lì, invece di

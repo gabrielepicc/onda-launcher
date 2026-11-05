@@ -521,4 +521,9 @@
     <string name="kw_haptics">vibration haptic feedback</string>
     <string name="kw_apps">apps hidden private space plug usage breaker limit reminder</string>
     <string name="kw_backup">backup restore export import</string>
+    <string name="alphabet_height">Letters height</string>
+    <string name="alphabet_height_bottom">Bottom</string>
+    <string name="alphabet_height_middle">Middle</string>
+    <string name="alphabet_height_top">Top</string>
+    <string name="alphabet_height_custom">Custom</string>
 </resources>

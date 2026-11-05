@@ -12,17 +12,20 @@ object AlphabetLayout {
     fun step(zoneHeight: Float, count: Int, maxStep: Float): Float =
         if (count <= 0) 0f else minOf(maxStep, zoneHeight / count)
 
-    /** Dove inizia la colonna dentro la zona di tocco. */
-    fun top(zoneHeight: Float, count: Int, maxStep: Float): Float =
-        (zoneHeight - step(zoneHeight, count, maxStep) * count).coerceAtLeast(0f)
+    /**
+     * Dove inizia la colonna dentro la zona di tocco. [rest] dice dove riposa: 1 = in basso (predefinito),
+     * 0 = in cima, 0,5 = al centro.
+     */
+    fun top(zoneHeight: Float, count: Int, maxStep: Float, rest: Float = 1f): Float =
+        (zoneHeight - step(zoneHeight, count, maxStep) * count).coerceAtLeast(0f) * rest.coerceIn(0f, 1f)
 
     /**
      * Dove si porta la colonna quando il dito si appoggia ad altezza [touchY]. Sulle lettere resta
      * ferma; più in alto sale fino a mettere la voce [anchorIndex] sotto il dito, così lo scorrimento
      * parte da lì. Non esce mai dalla zona di tocco.
      */
-    fun anchoredTop(touchY: Float, zoneHeight: Float, count: Int, maxStep: Float, anchorIndex: Int = 0): Float {
-        val rest = top(zoneHeight, count, maxStep)
+    fun anchoredTop(touchY: Float, zoneHeight: Float, count: Int, maxStep: Float, anchorIndex: Int = 0, restFraction: Float = 1f): Float {
+        val rest = top(zoneHeight, count, maxStep, restFraction)
         if (touchY >= rest) return rest
         val step = step(zoneHeight, count, maxStep)
         return (touchY - step * (anchorIndex + 0.5f)).coerceIn(0f, rest)

@@ -489,6 +489,15 @@ fun SettingsScreen(
         if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_alphabet)) {
             SwitchRow(stringResource(R.string.alphabet_left), stringResource(R.string.alphabet_left_sub), settings.leftHanded) { v -> onEdit { it.copy(leftHanded = v) } }
             SwitchRow(stringResource(R.string.hide_alphabet), stringResource(R.string.hide_alphabet_sub), settings.hideAlphabet) { v -> onEdit { it.copy(hideAlphabet = v) } }
+            val restText = stringResource(
+                when {
+                    settings.alphabetRest >= 0.95f -> R.string.alphabet_height_bottom
+                    settings.alphabetRest <= 0.05f -> R.string.alphabet_height_top
+                    settings.alphabetRest in 0.45f..0.55f -> R.string.alphabet_height_middle
+                    else -> R.string.alphabet_height_custom
+                },
+            )
+            ValueSlider(stringResource(R.string.alphabet_height), restText, settings.alphabetRest, Settings().alphabetRest, 0f..1f) { v -> onEdit { it.copy(alphabetRest = v) } }
             ValueSlider(stringResource(R.string.alphabet_size), percentText(settings.alphabetScale), settings.alphabetScale, Settings().alphabetScale, 0.8f..1.4f) { v -> onEdit { it.copy(alphabetScale = v) } }
             ValueSlider(
                 stringResource(R.string.alphabet_spacing),

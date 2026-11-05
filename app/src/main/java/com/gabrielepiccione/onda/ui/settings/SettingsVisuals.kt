@@ -390,7 +390,8 @@ private fun PhoneMock(settings: Settings, emphasizeAlphabet: Boolean, onPosition
             val step = (settings.alphabetStepDp.dp.toPx() * ratio).coerceAtMost((size.height - bottomInset.toPx()) / letters)
             val radius = 1.dp.toPx() * settings.alphabetScale
             for (i in 0 until letters) {
-                val y = size.height - bottomInset.toPx() - step * (letters - i - 0.5f)
+                val free = (size.height - bottomInset.toPx() - step * letters).coerceAtLeast(0f)
+                val y = size.height - bottomInset.toPx() - step * (letters - i - 0.5f) - free * (1f - settings.alphabetRest.coerceIn(0f, 1f))
                 drawCircle(letterTint.copy(alpha = lettersAlpha), radius, Offset(size.width / 2f, y))
             }
         }

@@ -8,6 +8,18 @@ import org.junit.Test
 class AlphabetLayoutTest {
 
     @Test
+    fun restFractionMovesTheColumnBetweenBottomAndTop() {
+        assertEquals(1500f, AlphabetLayout.top(2000f, 10, 50f, 1f), 0.01f)
+        assertEquals(750f, AlphabetLayout.top(2000f, 10, 50f, 0.5f), 0.01f)
+        assertEquals(0f, AlphabetLayout.top(2000f, 10, 50f, 0f), 0.01f)
+    }
+
+    @Test
+    fun anchoredColumnStaysPutWhenTouchIsOnTheLetters() {
+        assertEquals(750f, AlphabetLayout.anchoredTop(1000f, 2000f, 10, 50f, 0, 0.5f), 0.01f)
+    }
+
+    @Test
     fun columnStaysCompactAndAtTheBottom() {
         assertEquals(50f, AlphabetLayout.step(2000f, 10, 50f), 0.01f)
         assertEquals(1500f, AlphabetLayout.top(2000f, 10, 50f), 0.01f)

@@ -302,6 +302,8 @@ data class Settings(
     val alphabetScale: Float = 1f,
     /** Distanza massima tra le lettere dell'alfabeto, in dp. */
     val alphabetStepDp: Int = 19,
+    /** Dove riposa la colonna dell'alfabeto: 1 = in basso, 0 = in cima. */
+    val alphabetRest: Float = 1f,
     /** Mostra i contatti nell'elenco alfabetico, insieme alle app. */
     val contactsInAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,

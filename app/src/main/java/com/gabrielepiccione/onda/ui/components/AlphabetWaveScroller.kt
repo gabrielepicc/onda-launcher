@@ -65,6 +65,8 @@ fun AlphabetWaveScroller(
     letterScale: Float = 1f,
     /** Distanza massima tra due lettere: oltre, la colonna smette di allungarsi. */
     maxLetterStep: Dp = 19.dp,
+    /** Dove riposa la colonna: 1 = in basso, 0 = in cima. */
+    restFraction: Float = 1f,
     onTouchStart: () -> Unit = {},
     onLetter: (String) -> Unit,
     onTouchEnd: () -> Unit = {},
@@ -118,8 +120,8 @@ fun AlphabetWaveScroller(
                     val zone = size.height.toFloat()
                     val count = currentLetters.size
                     val anchor = if (currentLetters.firstOrNull() == FAVORITES_MARK) 1 else 0
-                    val restTop = AlphabetLayout.top(zone, count, maxStepPx)
-                    val gestureTop = AlphabetLayout.anchoredTop(down.position.y, zone, count, maxStepPx, anchor)
+                    val restTop = AlphabetLayout.top(zone, count, maxStepPx, restFraction)
+                    val gestureTop = AlphabetLayout.anchoredTop(down.position.y, zone, count, maxStepPx, anchor, restFraction)
                     scope.launch { columnShift.animateTo(gestureTop - restTop, spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMedium)) }
 
                     fun update(y: Float) {
@@ -171,7 +173,7 @@ fun AlphabetWaveScroller(
         val n = letters.size
         val maxStepPx = maxLetterStep.toPx()
         val step = AlphabetLayout.step(size.height, n, maxStepPx)
-        val columnTop = AlphabetLayout.top(size.height, n, maxStepPx) + columnShift.value
+        val columnTop = AlphabetLayout.top(size.height, n, maxStepPx, restFraction) + columnShift.value
         val k = intensity.value
         val center = (touchY.floatValue - columnTop) / step - 0.5f
         val maxShift = 52.dp.toPx()

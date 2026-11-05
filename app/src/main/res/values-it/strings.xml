@@ -521,4 +521,9 @@
     <string name="kw_haptics">vibrazione feedback aptico</string>
     <string name="kw_apps">app nascoste spazio privato limite promemoria cuffie</string>
     <string name="kw_backup">backup ripristino esporta importa</string>
+    <string name="alphabet_height">Altezza delle lettere</string>
+    <string name="alphabet_height_bottom">In basso</string>
+    <string name="alphabet_height_middle">Al centro</string>
+    <string name="alphabet_height_top">In alto</string>
+    <string name="alphabet_height_custom">Personalizzata</string>
 </resources>
