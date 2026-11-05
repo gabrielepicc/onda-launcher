@@ -531,4 +531,5 @@
     <string name="popup_section_shortcuts">Shortcuts</string>
     <string name="popup_section_related">Related apps</string>
     <string name="popup_section_widgets">Widgets</string>
+    <string name="color_option">Color %1$d of %2$d</string>
 </resources>

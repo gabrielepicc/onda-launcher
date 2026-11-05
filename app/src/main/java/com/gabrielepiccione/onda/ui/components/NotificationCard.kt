@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -157,6 +158,7 @@ fun NotificationCard(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
+                            .minimumInteractiveComponentSize()
                             .clip(RoundedCornerShape(50))
                             .background(colors.accentContainer)
                             .clickable(onClick = onToggleExpand)
@@ -170,7 +172,7 @@ fun NotificationCard(
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(48.dp)
                             .clip(CircleShape)
                             .semantics { contentDescription = cd }
                             .clickable(onClick = onDismiss)
@@ -240,7 +242,7 @@ fun NotificationCard(
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(48.dp)
                             .clip(CircleShape)
                             .background(if (draft.isBlank()) colors.panel else colors.accent)
                             .semantics { contentDescription = cdSend }
@@ -264,6 +266,7 @@ private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> U
         style = MaterialTheme.typography.labelLarge,
         maxLines = 1,
         modifier = Modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(50))
             .background(if (primary) colors.accentContainer else colors.panelHigh)
             .clickable(onClick = onClick)

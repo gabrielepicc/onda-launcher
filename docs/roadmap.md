@@ -58,6 +58,9 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ cartelle senza freccetta, con più simboli e icone dagli icon pack; ✅ ricerca delle icone stabile; ✅ immagini nelle notifiche (GIF ferme);
    ✅ cerca nelle impostazioni, ✅ altezza dell'alfabeto, ✅ stessi selettori visivi nei fogli di modifica della home.
 
+9. ✅ Popup a bolla e controllo con Material 3: bolla che si fora in goccioline, popup con sezioni e menu, forme, testi, tocco e contrasto
+   (dettagli e differenze volute in `docs/material-audit.md`). ⬜ Da giudicare sul telefono.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.

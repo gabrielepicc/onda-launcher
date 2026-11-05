@@ -87,5 +87,10 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - Backup: `data/BackupArchive` (ZIP, accetta solo `icons` e `fonts`), `data/Backups` (file e WorkManager), `data/AutoBackup` (cartella scelta).
 - Promemoria di Usage Breaker: regole in `data/UsageReminders`, controllo in `service/UsageReminderEngine`, avviato dal servizio notifiche.
 
+## Material 3
+Raggi solo dalla scala (4, 8, 12, 16, 20, 28, 32, 48, pieno), testi dai ruoli di `MaterialTheme.typography` (mai `fontSize` a mano, tranne orologio e alfabeto),
+bersagli di tocco di almeno 48dp, durate dai token. Regole e differenze volute in `docs/material-audit.md`.
+Popup a bolla: fisica in `util/BubbleMotion`, disegno in `ui/components/Bubble.kt`.
+
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.

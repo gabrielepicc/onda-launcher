@@ -1542,17 +1542,6 @@ private fun HintChip(icon: ImageVector, text: String, onClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun RoundIcon(icon: ImageVector, onClick: () -> Unit) {
-    val colors = LocalOndaColors.current
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.size(48.dp).clip(CircleShape).clickable(onClick = onClick)
-    ) {
-        Icon(icon, null, tint = colors.onWallpaper)
-    }
-}
-
 /** Dall'inizio della sezione al centro della sua prima app: lettera più metà riga. */
 private val FIRST_ROW_CENTER = 72.dp
 

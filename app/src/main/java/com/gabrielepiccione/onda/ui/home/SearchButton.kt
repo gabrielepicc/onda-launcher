@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -125,7 +126,7 @@ fun SearchButton(
             )
             .combinedClickable(
                 interactionSource = interaction,
-                indication = null,
+                indication = ripple(),
                 onClick = { onAction(settings.searchButtonTap, settings.searchButtonTapApp) },
                 onLongClick = {
                     if (settings.searchButtonLong != GestureAction.NONE) {
