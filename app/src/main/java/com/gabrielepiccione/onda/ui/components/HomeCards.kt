@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.home.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -323,7 +326,7 @@ private fun eventWhen(e: CalendarEvent, locale: Locale, today: String, tomorrowF
  * Player della musica in riproduzione.
  * Compatto: una riga, copertina e comandi di dimensione fissa, il testo ha la priorità.
  * Esteso: titolo in evidenza, barra di avanzamento sottile e comandi discreti.
- * [scale] ingrandisce soprattutto il testo, non copertina e pulsanti.
+ * [scale] ingrandisce tutto insieme: copertina, testo, pulsanti e spazi.
  */
 @Composable
 fun MediaCard(
@@ -339,10 +342,29 @@ fun MediaCard(
     highlighted: Boolean = false,
     onLongPress: (() -> Unit)? = null,
 ) {
-    if (compact) {
-        CompactMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, scale, highlighted, onLongPress)
-        return
+    // Una densità diversa scala in un colpo solo tutte le misure del player
+    val base = LocalDensity.current
+    CompositionLocalProvider(LocalDensity provides Density(base.density * scale.coerceIn(0.75f, 1.25f), base.fontScale)) {
+        if (compact) {
+            CompactMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, highlighted, onLongPress)
+        } else {
+            FullMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, onSeek, highlighted, onLongPress)
+        }
     }
+}
+
+@Composable
+private fun FullMediaCard(
+    media: MediaInfo,
+    onOpen: () -> Unit,
+    onPlayPause: () -> Unit,
+    onPrev: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier,
+    onSeek: (Long) -> Unit,
+    highlighted: Boolean,
+    onLongPress: (() -> Unit)?,
+) {
     val colors = LocalOndaColors.current
     var now by remember { androidx.compose.runtime.mutableLongStateOf(android.os.SystemClock.elapsedRealtime()) }
     androidx.compose.runtime.LaunchedEffect(media.playing, media.positionTime) {
@@ -353,7 +375,6 @@ fun MediaCard(
         }
     }
     var dragging by remember { mutableStateOf<Float?>(null) }
-    val textScale = scale.coerceIn(0.75f, 1.25f)
 
     Column(
         modifier
@@ -371,7 +392,7 @@ fun MediaCard(
                 Text(
                     media.title,
                     color = colors.onWallpaper,
-                    style = MaterialTheme.typography.titleLarge.let { it.copy(fontSize = it.fontSize * textScale, fontWeight = FontWeight.SemiBold) },
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                     maxLines = 1,
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
                 )
@@ -379,7 +400,7 @@ fun MediaCard(
                     Text(
                         media.artist,
                         color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.bodyLarge.let { it.copy(fontSize = it.fontSize * textScale) },
+                        style = MaterialTheme.typography.bodyLarge,
                         maxLines = 1,
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                     )
@@ -428,12 +449,10 @@ private fun CompactMediaCard(
     onPrev: () -> Unit,
     onNext: () -> Unit,
     modifier: Modifier,
-    scale: Float,
     highlighted: Boolean,
     onLongPress: (() -> Unit)?,
 ) {
     val colors = LocalOndaColors.current
-    val textScale = scale.coerceIn(0.75f, 1.25f)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -450,7 +469,7 @@ private fun CompactMediaCard(
             Text(
                 media.title,
                 color = colors.onWallpaper,
-                style = MaterialTheme.typography.titleSmall.let { it.copy(fontSize = it.fontSize * textScale) },
+                style = MaterialTheme.typography.titleSmall,
                 maxLines = 1,
                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
             )
@@ -458,7 +477,7 @@ private fun CompactMediaCard(
                 Text(
                     media.artist,
                     color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodySmall.let { it.copy(fontSize = it.fontSize * textScale) },
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                 )
