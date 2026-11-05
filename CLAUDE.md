@@ -67,6 +67,7 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - `:core:icons` — parser `appfilter.xml`, `IconPacks`/`IconPackCache`, `IconRenderer` (forme, fallback, puntini), `IconMatcher`.
 - Gesti righe app: componente `SwipeActions` (destra = popup dell'app `AppQuickPopup`, sinistra = elimina notifiche).
 - Home a blocchi ordinabili (`HomeBlocks`: orologio, media, widget, pile, agenda, riepilogo notifiche, app) modificabili con pressione lunga (`HomeEditSheet`) o trascinando (`HomeReorderSheet`).
+- Impostazioni: `ui/settings/SettingsScreen` (pagine `SettingsPage`), scelte visive e anteprime in `ui/settings/SettingsVisuals` (`ChoiceTile`, `TileGrid`, `PhonePreview`).
 - Popup dell'app in `ui/sheets/AppQuickPopup`; `AppPanelSheet` resta per rispondere sopra la tastiera, `AppActionsSheet` per "Altre opzioni".
 - Elenco app (`ui/drawer/AllAppsPanel`): lettere, poi Spazio privato, cartelle e voci di Onda ("Installate di recente",
   "Impostazioni"); il segno `END_OF_LIST_MARK` dell'alfabeto porta lì (`endOfListIndex`).

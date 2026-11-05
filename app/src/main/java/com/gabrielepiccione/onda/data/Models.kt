@@ -286,6 +286,10 @@ data class Settings(
     val swipeUp: GestureAction = GestureAction.SEARCH,
     val hideStatusBar: Boolean = false,
     val hideAlphabet: Boolean = false,
+    /** Dimensione delle lettere dell'alfabeto rispetto a quella normale. */
+    val alphabetScale: Float = 1f,
+    /** Distanza massima tra le lettere dell'alfabeto, in dp. */
+    val alphabetStepDp: Int = 19,
     /** Mostra i contatti nell'elenco alfabetico, insieme alle app. */
     val contactsInAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,
