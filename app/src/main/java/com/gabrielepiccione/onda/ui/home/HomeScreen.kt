@@ -114,6 +114,7 @@ import com.gabrielepiccione.onda.data.AppInfo
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import com.gabrielepiccione.onda.data.CalendarEvent
 import com.gabrielepiccione.onda.data.FOLDER_PREFIX
 import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
@@ -133,6 +134,7 @@ import kotlin.math.sqrt
 enum class Overlay { NONE, ALL_APPS, SEARCH, SETTINGS, STYLES }
 
 private const val UNDO_VISIBLE_MS = 8000L
+private const val AGENDA_SHEET_DAYS = 7
 
 /** Dove finisce un widget appena scelto. */
 sealed interface WidgetTarget {
@@ -149,6 +151,7 @@ sealed interface WidgetTarget {
 interface HomeCallbacks {
     fun requestContactsPermission()
     fun requestCalendarPermission()
+    fun requestWeatherPermission()
     fun requestDefaultLauncher()
     fun openNotificationAccess()
     fun openAccessibilitySettings()
@@ -171,6 +174,8 @@ data class HomeStatus(
     val contactsPermission: Boolean,
     val calendarPermission: Boolean,
     val accessibilityEnabled: Boolean,
+    val weatherInstalled: Boolean = false,
+    val weatherPermission: Boolean = false,
 )
 
 @Composable
@@ -204,6 +209,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
     var shortcutMenu by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
+    var agendaOpen by remember { mutableStateOf(false) }
+    var agendaWeek by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
+    val weather by vm.weather.collectAsStateWithLifecycle()
+    LaunchedEffect(agendaOpen, status.calendarPermission) {
+        if (agendaOpen) agendaWeek = vm.calendar.upcoming(AGENDA_SHEET_DAYS)
+    }
     var folderIconFor by remember { mutableStateOf<String?>(null) }
     var moveFor by remember { mutableStateOf<AppInfo?>(null) }
     var homeMenu by remember { mutableStateOf(false) }
@@ -273,6 +284,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     LaunchedEffect(state.loaded) { if (state.loaded) vm.seedFavoritesIfNeeded() }
     LaunchedEffect(settings.showAgenda, settings.agendaDays, status.calendarPermission) { vm.refreshCalendar() }
     LaunchedEffect(settings.contactsInAlphabet, status.contactsPermission) { vm.refreshAlphabetContacts() }
+    LaunchedEffect(settings.showWeather, status.weatherPermission, status.weatherInstalled) { vm.refreshWeather(force = true) }
 
     LaunchedEffect(Unit) {
         vm.homePressed.collect {
@@ -285,6 +297,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             homeMenu = false
             widgetPicker = false
             breakerFor = null
+            agendaOpen = false
         }
     }
 
@@ -501,7 +514,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             ClockHeader(
                                 event = if (settings.showCalendar) nextEvent else null,
                                 onTime = { SystemActions.openAlarms(context) },
-                                onDate = { SystemActions.openCalendar(context) },
+                                onDate = { agendaOpen = true },
+                                temperature = weather?.temperature,
                                 onEvent = { vm.calendar.open(it) },
                                 style = settings.clockStyle,
                                 scale = settings.clockScale,
@@ -881,6 +895,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         calendarPermission = status.calendarPermission,
                         accessibilityEnabled = status.accessibilityEnabled,
                         contactsPermission = status.contactsPermission,
+                        weatherInstalled = status.weatherInstalled,
+                        weatherPermission = status.weatherPermission,
                     ),
                     widgets = vm.widgets,
                     actions = object : SettingsActions {
@@ -889,6 +905,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun notificationAccess() = withRestrictedHelp(callbacks::openNotificationAccess)
                         override fun calendarPermission() = callbacks.requestCalendarPermission()
                         override fun contactsPermission() = callbacks.requestContactsPermission()
+                        override fun weatherPermission() = callbacks.requestWeatherPermission()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
@@ -1146,6 +1163,24 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             themedIcons = settings.themedIcons,
             onApp = { recentSheet = false; launchApp(it) },
             onDismiss = { recentSheet = false },
+        )
+    }
+
+    if (agendaOpen) {
+        AgendaSheet(
+            weather = weather,
+            weatherHint = when {
+                !settings.showWeather -> null
+                !status.weatherInstalled -> stringResource(R.string.weather_needs_app)
+                !status.weatherPermission -> stringResource(R.string.weather_needs_permission)
+                else -> stringResource(R.string.weather_no_data)
+            },
+            events = agendaWeek,
+            onEvent = { vm.calendar.open(it) },
+            onEmptyAgenda = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
+            onOpenWeather = { vm.weatherRepo.open() },
+            onOpenCalendar = { SystemActions.openCalendar(context) },
+            onDismiss = { agendaOpen = false },
         )
     }
 

@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gabrielepiccione.onda.data.NotificationStore
+import com.gabrielepiccione.onda.data.WeatherRepository
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.service.OndaAccessibilityService
 import com.gabrielepiccione.onda.ui.home.HomeCallbacks
@@ -55,6 +56,11 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     private val contactsLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         refreshStatus()
         if (granted) vm.updateSearch(vm.search.value.query)
+    }
+
+    private val weatherLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        refreshStatus()
+        if (granted) vm.refreshWeather(force = true)
     }
 
     private val calendarLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -260,6 +266,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         if (status.notificationAccess) ondaApp.media.start()
         vm.refreshCalendar()
         vm.refreshAlphabetContacts()
+        vm.refreshWeather()
     }
 
     private fun refreshStatus() {
@@ -269,6 +276,8 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             contactsPermission = vm.contacts.hasPermission(),
             calendarPermission = vm.calendar.hasPermission(),
             accessibilityEnabled = OndaAccessibilityService.isEnabled,
+            weatherInstalled = vm.weatherRepo.isInstalled(),
+            weatherPermission = vm.weatherRepo.hasPermission(),
         )
     }
 
@@ -290,6 +299,8 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun requestContactsPermission() = contactsLauncher.launch(Manifest.permission.READ_CONTACTS)
 
     override fun requestCalendarPermission() = calendarLauncher.launch(Manifest.permission.READ_CALENDAR)
+
+    override fun requestWeatherPermission() = weatherLauncher.launch(WeatherRepository.PERMISSION)
 
     override fun requestDefaultLauncher() = SystemActions.requestDefaultLauncher(this)
 

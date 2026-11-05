@@ -11,8 +11,12 @@
     <!-- Permesso "normal": mostra lo Spazio privato di Android 15+ quando Onda è il launcher predefinito -->
     <uses-permission android:name="android.permission.ACCESS_HIDDEN_PROFILES" />
 
+    <!-- Meteo letto dall'app Breezy Weather, se installata: chiesto solo attivando il meteo -->
+    <uses-permission android:name="org.breezyweather.READ_PROVIDER" />
+
     <!-- Visibilità delle app installabili da launcher (Android 11+) -->
     <queries>
+        <package android:name="org.breezyweather" />
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />

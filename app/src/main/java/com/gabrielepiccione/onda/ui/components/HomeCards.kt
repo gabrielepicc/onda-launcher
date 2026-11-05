@@ -99,6 +99,8 @@ fun ClockHeader(
     onLongPress: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showBattery: Boolean = false,
+    /** Temperatura attuale accanto alla data; null = meteo spento o non disponibile. */
+    temperature: Int? = null,
 ) {
     val colors = LocalOndaColors.current
     val shadow = LocalTextShadow.current
@@ -147,6 +149,14 @@ fun ClockHeader(
                         style = MaterialTheme.typography.titleMedium.copy(shadow = shadow),
                     )
                 }
+            }
+            if (temperature != null) {
+                Text(
+                    "  ·  " + stringResource(R.string.weather_degrees, temperature),
+                    color = colors.onWallpaperMuted,
+                    style = MaterialTheme.typography.titleMedium.copy(shadow = shadow),
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onDate).padding(vertical = 2.dp),
+                )
             }
         }
         if (event != null) {

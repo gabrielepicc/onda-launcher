@@ -361,6 +361,8 @@ data class Settings(
     val textScale: Float = 1f,
     val showClock: Boolean = true,
     val showCalendar: Boolean = true,
+    /** Temperatura nell'orologio e previsioni nel foglio agenda, lette da Breezy Weather. */
+    val showWeather: Boolean = false,
     val showMedia: Boolean = true,
     val wallpaperDim: Float = 0.2f,
     val leftHanded: Boolean = false,
