@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import com.gabrielepiccione.onda.ui.settings.ContextEnvironment
 import com.gabrielepiccione.onda.data.HomeLights
 import com.gabrielepiccione.onda.data.HomePresence
 import com.gabrielepiccione.onda.data.HAlign
@@ -172,6 +174,7 @@ interface HomeCallbacks {
     fun requestCalendarPermission()
     fun requestWeatherPermission()
     fun requestLocationPermission()
+    fun requestBluetoothPermission()
     fun requestPostNotifications()
     fun openUsageAccess()
     fun requestDefaultLauncher()
@@ -351,6 +354,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 sun,
             )
             delay(60_000L)
+        }
+    }
+
+    // Preferiti contestuali: il profilo si ricalcola ogni 30 secondi, e subito se cambiano le regole
+    LaunchedEffect(settings.contextProfiles, settings.profileOverride) {
+        while (true) {
+            vm.refreshContext()
+            delay(30_000L)
         }
     }
 
@@ -593,7 +604,25 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     block == HomeBlocks.CLOCK -> if (settings.showClock) {
                         item(key = "clock") {
                             // Luci di casa: il widget di Google Home sta accanto all'orologio, dalla parte libera
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter)) {
+                            Column(Modifier.animateItem(placementSpec = Motion.offsetEnter)) {
+                            // Scorrere di lato sull'orologio sceglie a mano il profilo dei preferiti per un'ora
+                            val swipePx = with(density) { 64.dp.toPx() }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.pointerInput(settings.contextProfiles.isNotEmpty()) {
+                                    if (settings.contextProfiles.isEmpty()) return@pointerInput
+                                    var dragged = 0f
+                                    detectHorizontalDragGestures(
+                                        onDragStart = { dragged = 0f },
+                                        onDragEnd = {
+                                            if (kotlin.math.abs(dragged) > swipePx) {
+                                                ondaHaptics?.perform(HapticEvent.CONFIRM)
+                                                vm.cycleProfile()
+                                            }
+                                        },
+                                    ) { _, delta -> dragged += delta }
+                                },
+                            ) {
                             if (lightsVisible && settings.clockAlign == HAlign.END) {
                                 Box(Modifier.weight(1f).padding(end = 8.dp)) { HostedWidget(settings.homeLightsWidget, vm.widgets, heightDp = LIGHTS_HEIGHT) }
                             }
@@ -613,6 +642,21 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             )
                             if (lightsVisible && settings.clockAlign != HAlign.END) {
                                 Box(Modifier.weight(1f).padding(start = 8.dp)) { HostedWidget(settings.homeLightsWidget, vm.widgets, heightDp = LIGHTS_HEIGHT) }
+                            }
+                            }
+                            val manual = settings.profileOverride
+                            if (settings.contextProfiles.isNotEmpty() && manual.until > System.currentTimeMillis()) {
+                                Text(
+                                    stringResource(
+                                        R.string.ctx_manual_label,
+                                        state.activeProfile?.name ?: stringResource(R.string.ctx_manual_none),
+                                        java.time.Instant.ofEpochMilli(manual.until).atZone(java.time.ZoneId.systemDefault()).toLocalTime()
+                                            .format(java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT)),
+                                    ),
+                                    color = LocalOndaColors.current.onWallpaperMuted,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    modifier = Modifier.padding(horizontal = 24.dp),
+                                )
                             }
                             }
                         }
@@ -1081,6 +1125,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     ),
                     widgets = vm.widgets,
                     usageStats = vm.usageStats,
+                    activeProfile = state.activeProfile,
+                    contextEnvironment = object : ContextEnvironment {
+                        override fun currentWifi() = HomePresence.currentSsid(context)
+                        override fun currentLocation() = HomePresence.lastLocation(context)
+                        override fun bondedDevices() = vm.contextReader.bondedDevices()
+                        override fun requestLocation() { if (!status.locationPermission) callbacks.requestLocationPermission() }
+                        override fun requestCalendar() { if (!status.calendarPermission) callbacks.requestCalendarPermission() }
+                        override fun requestBluetooth() = callbacks.requestBluetoothPermission()
+                    },
                     actions = object : SettingsActions {
                         override fun edit(transform: (com.gabrielepiccione.onda.data.Settings) -> com.gabrielepiccione.onda.data.Settings) = vm.updateSettings(transform)
                         override fun requestDefault() = callbacks.requestDefaultLauncher()
@@ -1089,6 +1142,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun contactsPermission() = callbacks.requestContactsPermission()
                         override fun weatherPermission() = callbacks.requestWeatherPermission()
                         override fun locationPermission() = callbacks.requestLocationPermission()
+                        override fun bluetoothPermission() = callbacks.requestBluetoothPermission()
                         override fun pickLightsWidget() = openWidgetPicker(HomePresence.GOOGLE_HOME_PACKAGE, WidgetTarget.HomeLights)
                         override fun setHomeHere() {
                             val ssid = HomePresence.currentSsid(context)

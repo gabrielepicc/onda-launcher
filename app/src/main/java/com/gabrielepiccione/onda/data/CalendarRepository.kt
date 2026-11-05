@@ -84,6 +84,34 @@ class CalendarRepository(private val context: Context) {
         out
     }
 
+    /** Titolo, luogo e descrizione degli eventi in corso adesso (non quelli di tutto il giorno), per i profili. */
+    suspend fun currentEventTexts(): List<String> = withContext(Dispatchers.IO) {
+        if (!hasPermission()) return@withContext emptyList()
+        val now = System.currentTimeMillis()
+        val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().also {
+            ContentUris.appendId(it, now - 12 * 60 * 60 * 1000L)
+            ContentUris.appendId(it, now + 60 * 1000L)
+        }.build()
+        val projection = arrayOf(
+            CalendarContract.Instances.TITLE,
+            CalendarContract.Instances.EVENT_LOCATION,
+            CalendarContract.Instances.DESCRIPTION,
+            CalendarContract.Instances.BEGIN,
+            CalendarContract.Instances.END,
+            CalendarContract.Instances.ALL_DAY,
+        )
+        val out = mutableListOf<String>()
+        runCatching {
+            context.contentResolver.query(uri, projection, null, null, null)?.use { c ->
+                while (c.moveToNext()) {
+                    if (c.getInt(5) == 1 || c.getLong(3) > now || c.getLong(4) <= now) continue
+                    out += listOf(c.getString(0), c.getString(1), c.getString(2)).filterNotNull().joinToString("\n")
+                }
+            }
+        }
+        out
+    }
+
     fun open(event: CalendarEvent) {
         val intent = Intent(Intent.ACTION_VIEW, ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.eventId))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

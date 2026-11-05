@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.BluetoothWatcher
 import com.gabrielepiccione.onda.data.HomePresence
 import androidx.core.content.FileProvider
 import com.gabrielepiccione.onda.data.AppPopups
@@ -75,6 +76,11 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     private val locationLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         refreshStatus()
+    }
+
+    private val bluetoothLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        refreshStatus()
+        vm.refreshContext()
     }
 
     private val calendarLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -269,7 +275,9 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
         setContent {
             val state by vm.state.collectAsStateWithLifecycle()
-            OndaTheme(state.settings) {
+            // Il profilo attivo può cambiare appena l'accento: l'unico segnale del cambio, niente popup
+            val themed = state.activeProfile?.accent?.takeIf { it != 0L }?.let { state.settings.copy(accent = it, dynamicColor = false) } ?: state.settings
+            OndaTheme(themed) {
                 val dark = LocalOndaColors.current.dark
                 val hideBar = state.settings.hideStatusBar
                 SideEffect {
@@ -347,6 +355,9 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     override fun requestWeatherPermission() = weatherLauncher.launch(WeatherRepository.PERMISSION)
     override fun requestLocationPermission() = locationLauncher.launch(HomePresence.PERMISSIONS)
+    override fun requestBluetoothPermission() {
+        BluetoothWatcher.PERMISSION?.let { bluetoothLauncher.launch(it) }
+    }
 
     override fun requestPostNotifications() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {

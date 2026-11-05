@@ -2,6 +2,11 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.ContextProfile
+import com.gabrielepiccione.onda.data.ContextProfiles
+import com.gabrielepiccione.onda.data.ContextReader
+import com.gabrielepiccione.onda.data.LaunchLog
+import com.gabrielepiccione.onda.data.TriggerType
 import com.gabrielepiccione.onda.data.UsageStatsRepository
 import android.app.Application
 import android.content.pm.ShortcutInfo
@@ -66,6 +71,8 @@ data class LauncherState(
     val notifications: Map<String, List<NotificationItem>> = emptyMap(),
     val settings: Settings = Settings(),
     val loaded: Boolean = false,
+    /** Profilo dei preferiti contestuali attivo adesso, o null. */
+    val activeProfile: ContextProfile? = null,
 ) {
     private val byKey: Map<String, AppInfo> by lazy { (allApps + hiddenApps + privateApps).associateBy { it.key } }
     fun app(key: String?): AppInfo? = key?.let { byKey[it] }
@@ -98,12 +105,42 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
 
+    // --- Preferiti contestuali ---
+    private val activeProfileFlow = MutableStateFlow<ContextProfile?>(null)
+    val contextReader = ContextReader(app, ondaApp.audio, ondaApp.calendar)
+
+    /** Rilegge il contesto e sceglie il profilo; senza profili non legge nulla. */
+    fun refreshContext() {
+        viewModelScope.launch {
+            val s = settingsRepo.current
+            if (s.contextProfiles.none { it.enabled }) {
+                activeProfileFlow.value = null
+                return@launch
+            }
+            contextReader.start()
+            val types = s.contextProfiles.flatMap { p -> p.groups.flatMap { g -> g.triggers.map { it.type } } }.toSet()
+            val snapshot = contextReader.snapshot(TriggerType.PLACE in types, TriggerType.CALENDAR in types)
+            activeProfileFlow.value = ContextProfiles.resolve(s.contextProfiles, snapshot, s.profileOverride, System.currentTimeMillis())
+        }
+    }
+
+    /** Gesto sull'orologio: passa al profilo successivo per un'ora, poi si torna al profilo automatico. */
+    fun cycleProfile() {
+        val now = System.currentTimeMillis()
+        settingsRepo.edit { s -> s.copy(profileOverride = ContextProfiles.nextOverride(s.contextProfiles, activeProfileFlow.value?.id, now)) }
+        viewModelScope.launch {
+            delay(150)
+            refreshContext()
+        }
+    }
+
     val state: StateFlow<LauncherState> = combine(
         appsRepo.apps,
         settingsRepo.settings,
         NotificationStore.byPackage,
         appsRepo.pinned,
-    ) { raw, settings, notifs, pinned ->
+        activeProfileFlow,
+    ) { raw, settings, notifs, pinned, profile ->
         val all = raw.map { r ->
             AppInfo(
                 key = r.key,
@@ -126,7 +163,8 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         }.sortedWith { a, b -> collator.compare(a.label, b.label) }
 
         val byKey = all.associateBy { it.key }
-        val home = settings.favorites.mapNotNull { entry ->
+        // Preferiti contestuali: i primi slot restano, gli altri vengono dal profilo attivo
+        val home = ContextProfiles.favorites(settings.favorites, settings.fixedFavoriteSlots, profile).mapNotNull { entry ->
             if (entry.startsWith(com.gabrielepiccione.onda.data.FOLDER_PREFIX)) {
                 val f = settings.folders[entry.removePrefix(com.gabrielepiccione.onda.data.FOLDER_PREFIX)] ?: return@mapNotNull null
                 HomeEntry.Group(f, f.apps.mapNotNull { byKey[it] })
@@ -161,6 +199,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
             notifications = notifs.filterKeys { it !in settings.mutedNotifications },
             settings = settings,
             loaded = raw.isNotEmpty(),
+            activeProfile = profile,
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, LauncherState())
 
@@ -284,6 +323,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     // --- Azioni sulle app ---
     fun launch(app: AppInfo) {
         appsRepo.launch(app)
+        LaunchLog.record(getApplication(), app.key)
         viewModelScope.launch { delay(600); settingsRepo.recordLaunch(app.key) }
     }
 

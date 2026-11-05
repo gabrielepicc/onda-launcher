@@ -387,6 +387,14 @@ data class Settings(
     val homeLongitude: Double = 0.0,
     /** Widget delle luci (di solito "Preferiti" di Google Home); 0 = non scelto. */
     val homeLightsWidget: Int = 0,
+    /** Preferiti contestuali: profili con le loro regole, in ordine (a parità di priorità vince il primo). */
+    val contextProfiles: List<ContextProfile> = emptyList(),
+    /** Quanti dei primi preferiti non cambiano mai con i profili (memoria muscolare). */
+    val fixedFavoriteSlots: Int = 2,
+    /** Profilo scelto a mano dall'orologio, valido per un'ora. */
+    val profileOverride: ProfileOverride = ProfileOverride(),
+    /** Regole proposte che l'utente ha scartato. */
+    val dismissedSuggestions: Set<String> = emptySet(),
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
     val breakerDay: String = "",
     /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */

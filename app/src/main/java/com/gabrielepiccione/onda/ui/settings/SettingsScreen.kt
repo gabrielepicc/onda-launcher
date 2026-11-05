@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.material.icons.filled.AutoAwesome
+import com.gabrielepiccione.onda.data.ContextProfile
 import androidx.compose.material.icons.filled.HourglassEmpty
 import com.gabrielepiccione.onda.data.UsageStatsRepository
 import com.gabrielepiccione.onda.util.HapticEvent
@@ -119,6 +121,7 @@ interface SettingsActions {
     fun contactsPermission()
     fun weatherPermission()
     fun locationPermission()
+    fun bluetoothPermission()
     /** Salva il Wi-Fi attuale e la posizione approssimativa come "casa". */
     fun setHomeHere()
     fun pickLightsWidget()
@@ -151,6 +154,8 @@ fun SettingsScreen(
     widgets: WidgetManager,
     actions: SettingsActions,
     usageStats: UsageStatsRepository? = null,
+    activeProfile: ContextProfile? = null,
+    contextEnvironment: ContextEnvironment? = null,
 ) {
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -659,6 +664,10 @@ fun SettingsScreen(
             ClickRow(stringResource(R.string.plug_play_choose), current?.label ?: stringResource(R.string.plug_play_none)) { plugDialog = true }
         }
 
+        if (page == SettingsPage.CONTEXTS && contextEnvironment != null) {
+            ContextProfilesPage(settings, allApps, activeProfile, contextEnvironment, onEdit)
+        }
+
         if (page == SettingsPage.WELLBEING && usageStats != null) {
             WellbeingDashboard(
                 repo = usageStats,
@@ -895,6 +904,7 @@ private enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val sub
     HOME(R.string.section_home, R.string.page_home_sub, Icons.Filled.Home),
     ALPHABET(R.string.page_alphabet, R.string.page_alphabet_sub, Icons.Filled.Search),
     GESTURES(R.string.section_gestures, R.string.page_gestures_sub, Icons.Filled.TouchApp),
+    CONTEXTS(R.string.page_contexts, R.string.page_contexts_sub, Icons.Filled.AutoAwesome),
     WELLBEING(R.string.page_wellbeing, R.string.page_wellbeing_sub, Icons.Filled.HourglassEmpty),
     APPS(R.string.page_apps, R.string.page_apps_sub, Icons.Filled.Apps),
     BACKUP(R.string.section_backup, R.string.page_backup_sub, Icons.Filled.Backup),
@@ -949,6 +959,8 @@ private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.section_breaker, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.section_reminders, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.page_wellbeing, SettingsPage.WELLBEING, R.string.kw_wellbeing),
+    SettingEntry(R.string.page_contexts, SettingsPage.CONTEXTS, R.string.kw_contexts),
+    SettingEntry(R.string.ctx_fixed_title, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.section_limits, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.private_space, SettingsPage.APPS, R.string.kw_apps),
     SettingEntry(R.string.section_hidden, SettingsPage.APPS, R.string.kw_apps),

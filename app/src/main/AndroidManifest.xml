@@ -16,6 +16,9 @@
     <!-- Luci di casa: Android chiede la posizione anche solo per leggere il nome del Wi-Fi. Chiesto solo attivando la funzione. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Preferiti contestuali: nome dei dispositivi Bluetooth collegati (auto, cuffie). Chiesto solo per una condizione Bluetooth. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />

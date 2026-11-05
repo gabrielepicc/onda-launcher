@@ -64,6 +64,9 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 10. ✅ Benessere digitale: dashboard statistica (`data/UsageStatsMath`, `data/UsageStatsRepository`), limiti giornalieri, Usage Breaker su notifiche e scorciatoie.
     ✅ Pausa anche per le aperture fuori dal launcher, tramite il servizio di accessibilità (solo nome del pacchetto, `data/BreakerGate`).
 
+11. ✅ Luci di casa (Wi-Fi + tramonto) e pausa anche fuori dal launcher.
+12. ✅ Preferiti contestuali: profili con regole E/O, priorità, slot fissi, scelta a mano di un'ora, profilo riunioni Teams, regole proposte.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.
@@ -75,4 +78,5 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
 - Pausa fuori dal launcher con il servizio di accessibilità già presente, approvata dal proprietario: legge solo il pacchetto in primo piano, mai il contenuto.
 - Luci di casa: widget di Google Home accanto all'orologio quando si è sul Wi-Fi di casa e fa buio. Permesso di posizione approvato dal proprietario, chiesto solo attivando la funzione; nessun dato lascia il telefono.
+- Preferiti contestuali: permesso Bluetooth "dispositivi nelle vicinanze" chiesto solo aggiungendo una condizione Bluetooth (richiesta del proprietario); registro delle aperture solo sul telefono, 35 giorni.
 - App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).
