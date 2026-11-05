@@ -1,9 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Gabriele Piccione
-@file:OptIn(ExperimentalLayoutApi::class)
+@file:OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -151,9 +162,13 @@ internal fun ContextProfilesPage(
                         color = colors.onWallpaper,
                         style = MaterialTheme.typography.bodyLarge,
                     )
-                    Text(profileSummary(p), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(profileSummary(p), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
                 }
-                Switch(checked = p.enabled, onCheckedChange = { v -> onEdit { s -> s.copy(contextProfiles = s.contextProfiles.map { if (it.id == p.id) it.copy(enabled = v) else it }) } })
+                Switch(
+                    checked = p.enabled,
+                    onCheckedChange = { v -> onEdit { s -> s.copy(contextProfiles = s.contextProfiles.map { if (it.id == p.id) it.copy(enabled = v) else it }) } },
+                    modifier = Modifier.semantics { contentDescription = p.name },
+                )
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
@@ -273,7 +288,7 @@ private fun daysText(days: Set<Int>): String =
 
 /** Modifica completa di un profilo, a schermo intero. */
 @Composable
-private fun ProfileEditor(
+internal fun ProfileEditor(
     initial: ContextProfile,
     isNew: Boolean,
     allApps: List<AppInfo>,
@@ -291,29 +306,32 @@ private fun ProfileEditor(
         p = p.copy(groups = p.groups.mapIndexed { i, g -> if (i == index) group else g })
     }
 
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
         Column(
             Modifier
                 .fillMaxSize()
                 .background(colors.scrim)
-                .statusBarsPadding()
-                .navigationBarsPadding(),
+                .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp)) {
-                IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, stringResource(R.string.close), tint = colors.onWallpaper) }
-                Text(
-                    stringResource(if (isNew) R.string.ctx_editor_new else R.string.ctx_editor_edit),
-                    color = colors.onWallpaper,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f),
-                )
-                TextButton(onClick = { onSave(p.copy(name = p.name.ifBlank { initial.name }, groups = p.groups.filter { it.triggers.isNotEmpty() })) }) {
-                    Text(stringResource(R.string.wellbeing_limit_save))
-                }
-            }
+            TopAppBar(
+                title = { Text(stringResource(if (isNew) R.string.ctx_editor_new else R.string.ctx_editor_edit)) },
+                navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, stringResource(R.string.close)) } },
+                actions = {
+                    TextButton(onClick = { onSave(p.copy(name = p.name.ifBlank { initial.name }, groups = p.groups.filter { it.triggers.isNotEmpty() })) }) {
+                        Text(stringResource(R.string.wellbeing_limit_save))
+                    }
+                },
+                windowInsets = WindowInsets(0),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colors.scrim,
+                    titleContentColor = colors.onWallpaper,
+                    navigationIconContentColor = colors.onWallpaper,
+                ),
+            )
             Column(
                 Modifier
                     .weight(1f)
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
@@ -514,15 +532,22 @@ private fun TriggerEditor(trigger: Trigger, env: ContextEnvironment, onChange: (
             }
             TriggerType.CHARGING, TriggerType.HEADPHONES, TriggerType.FOCUS -> Unit
         }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onChange(trigger.copy(negate = !trigger.negate)) }) {
-            Checkbox(checked = trigger.negate, onCheckedChange = { onChange(trigger.copy(negate = it)) })
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .toggleable(value = trigger.negate, role = Role.Checkbox) { onChange(trigger.copy(negate = it)) },
+        ) {
+            Checkbox(checked = trigger.negate, onCheckedChange = null)
+            Spacer(Modifier.width(12.dp))
             Text(stringResource(R.string.ctx_negate), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
 @Composable
-private fun AppPicker(apps: List<AppInfo>, onPick: (AppInfo) -> Unit, onDismiss: () -> Unit) {
+internal fun AppPicker(apps: List<AppInfo>, onPick: (AppInfo) -> Unit, onDismiss: () -> Unit) {
     var query by remember { mutableStateOf("") }
     val shown = remember(apps, query) { apps.filter { query.isBlank() || it.label.contains(query, ignoreCase = true) } }
     AlertDialog(

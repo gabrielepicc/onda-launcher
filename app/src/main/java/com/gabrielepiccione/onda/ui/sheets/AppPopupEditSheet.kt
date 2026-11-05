@@ -109,8 +109,6 @@ fun AppPopupEditSheet(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(
                         widgetLabel(id) ?: stringResource(R.string.widget_number, id),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
                     TextButton(onClick = { widgetToRemove = id }) { Text(stringResource(R.string.remove)) }

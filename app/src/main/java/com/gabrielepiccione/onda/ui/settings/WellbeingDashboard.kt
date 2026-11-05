@@ -206,7 +206,7 @@ private fun StatTile(value: String, label: String, modifier: Modifier) {
             .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {
         Text(value, color = colors.onWallpaper, style = MaterialTheme.typography.titleLarge)
-        Text(label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelMedium)
     }
 }
 
@@ -354,6 +354,7 @@ private fun AppUsageRow(
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // troncamento voluto: nome dell'app in una riga dell'elenco
                 Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 Text(durationText(usedMs), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             }
@@ -365,6 +366,7 @@ private fun AppUsageRow(
                     .clip(RoundedCornerShape(2.dp))
                     .background(colors.panelHigh),
             ) {
+                // altezza fissa voluta: è la barra della quota, non contiene testo
                 Box(Modifier.fillMaxWidth(bar).height(4.dp).clip(RoundedCornerShape(2.dp)).background(colors.accent))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {

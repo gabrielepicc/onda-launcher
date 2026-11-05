@@ -721,4 +721,8 @@
     <string name="music_backdrop_search">Nella ricerca</string>
     <string name="kw_music">musica sfondo copertina colori animato onde spotify player</string>
     <string name="media_up_next">Dopo: %1$s</string>
+    <string name="choose_apps">Scegli app</string>
+    <string name="section_notifications">Notifiche</string>
+    <string name="hide_shortcuts_with_notifications">Nascondi le scorciatoie quando ci sono notifiche</string>
+    <string name="hide_shortcuts_with_notifications_sub">Nel popup di un\'app le notifiche vengono prima; scorciatoie e widget si piegano in una riga in fondo</string>
 </resources>

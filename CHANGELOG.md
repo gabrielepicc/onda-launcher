@@ -4,6 +4,16 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Revisione dell'interfaccia, parte 1**:
+  - **Scelte**: non si troncano più. Fino a 3 opzioni corte sono chip che vanno a capo interi, altrimenti un elenco con pulsanti radio (es. "Immagini nelle notifiche", "Primo promemoria dopo").
+  - **Etichette e titoli**: le etichette dei riquadri vanno su più righe; il titolo delle pagine non ha più "…".
+  - **Anteprima fissa**: solo su schermi alti e con testo normale, altrimenti scorre con la pagina e non copre la sezione sotto.
+  - **Pagine e editor**: ogni pagina riparte con la barra grande; tastiera e barre di sistema non coprono il contenuto; l'editor dei profili ha la barra di Material e non finisce sotto la barra di stato.
+  - **Chip comuni** con margini 16/8 dp e altezza minima 40 dp: azioni delle notifiche, suggerimenti in home.
+  - **Benessere digitale**: "Scegli app" per Usage Breaker e promemoria.
+  - **TalkBack**: interruttori, caselle e colori ora hanno un nome.
+  - **Popup dell'app con notifiche**: prima le notifiche, scorciatoie e widget piegati in una riga "Scorciatoie" in fondo, che si apre sul posto. Si spegne in Impostazioni → Home → Notifiche.
+  - **Controllo statico** (`UiRulesTest`): fallisce se nelle impostazioni, nei chip o nei pulsanti un testo si tronca, o se un contenitore con testo ha un'altezza fissa.
 - **Player: azioni dell'app e prossimo brano** (Musica, passo 2).
   - Se l'app mette azioni in più nella sessione (es. il cuore "Mi piace" di Spotify), compaiono accanto ai comandi, con la sua icona: una nel player compatto, fino a tre in quello esteso.
   - Se l'app espone la coda, sotto l'artista compare "Dopo: titolo — artista".
