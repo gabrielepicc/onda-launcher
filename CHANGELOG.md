@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Popup dell'app**: tirandolo oltre il bordo del contenuto (in cima, in fondo, o quando c'è tutto in vista) segue il dito con
+  resistenza; lasciandolo abbastanza lontano, o con un colpo deciso, esce con un'animazione fluida nella stessa direzione.
+  Altrimenti torna al suo posto con un rimbalzo.
 - **Altezza dell'alfabeto**: in Alfabeto e ricerca si sceglie dove riposa la colonna delle lettere, dal basso (predefinito)
   al centro fino in cima; l'anteprima del telefono la segue. Toccando più in alto la colonna sale ancora sotto il dito.
 - **Cerca nelle impostazioni**: un campo in cima all'indice trova la voce per nome (senza maiuscole né accenti, anche con più
