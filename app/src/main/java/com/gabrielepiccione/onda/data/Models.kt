@@ -276,6 +276,10 @@ data class Settings(
     /** Widget mostrato nel pannello dell'app (swipe sulla riga): chiave app -> id widget. */
     val appWidgets: Map<String, Int> = emptyMap(),
     val launchCounts: Map<String, Int> = emptyMap(),
+    /** Mostra sotto i preferiti le app usate spesso (vedi [HomeSuggestions]). */
+    val suggestInHome: Boolean = false,
+    /** App per cui si è scelto "Smetti di suggerire". */
+    val suggestionsDismissed: Set<String> = emptySet(),
     val swipeDown: GestureAction = GestureAction.SEARCH,
     val swipeUp: GestureAction = GestureAction.SEARCH,
     val hideStatusBar: Boolean = false,

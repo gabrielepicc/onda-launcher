@@ -44,7 +44,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    2. ✅ Meteo senza internet da Breezy Weather (gap 12.1, 7.1): orologio + foglio agenda toccando la data (1.5).
    3. ✅ Alfabeto: zona di tocco a tutta altezza con colonna visibile compatta (12.3) e stella dei preferiti in cima (10.1).
    4. ✅ Alfabeto localizzato con `AlphabeticIndex` (2.1).
-   5. App suggerite sotto i preferiti con "Smetti di suggerire" (1.1, 10.9).
+   5. ✅ App suggerite sotto i preferiti con "Smetti di suggerire" (1.1, 10.9).
    6. Popup dell'app come cartella: app correlate, widget e pile, scorciatoie nascondibili (3.1, 3.2).
    7. Usage Breaker a promemoria (6.1) e backup completo con WorkManager (9.1).
    8. Rilascio 0.10: versionCode 10, changelog fastlane 10.txt, roadmap.
@@ -55,5 +55,6 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - Spazio privato fuori da alfabeto, ricerca e suggerimenti, in un contenitore separato come chiede Android: si raggiunge da fondo elenco.
 - Si lavora su branch + PR, unione solo con CI verde (vedi CLAUDE.md).
 - Meteo senza connessione: Onda legge i dati dall'app Breezy Weather (se installata). Open-Meteo diretto resta escluso finché l'utente non dà l'OK al permesso INTERNET.
+- App suggerite in home spente di default, per non cambiare da sole la home di chi aggiorna; si attivano nelle impostazioni.
 - Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
 - App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).

@@ -15,7 +15,7 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 
 | # | Comportamento di Niagara | Onda oggi | Priorità |
 |---|---|---|---|
-| 1.1 | **App suggerite in fondo ai preferiti**: le app più usate compaiono da sole sotto i preferiti; si può tenere la home senza preferiti, del tutto "adattiva". Pressione lunga su un suggerimento = nascondilo per sempre. | ⬜ i suggerimenti ci sono solo nella ricerca | P1 |
+| 1.1 | **App suggerite in fondo ai preferiti**: le app più usate compaiono da sole sotto i preferiti; si può tenere la home senza preferiti, del tutto "adattiva". Pressione lunga su un suggerimento = nascondilo per sempre. | ✅ 0.10 fino a 3 app, spente di default | P1 |
 | 1.2 | **Animazione quando cambiano i preferiti** (aggiunta, rimozione, spostamento: le righe scorrono al loro posto). | 🟡 da verificare `animateItem` su tutte le liste della home | P2 |
 | 1.3 | **Pulsante flottante in basso a destra** (equivalente del "Niagara Button"): tocco = apre un'app o una cartella popup; swipe su = seconda azione. Pressione lunga = "modifica azione del tocco" / "crea cartella popup". | ⬜ | P2 |
 | 1.4 | **Spazio vuoto sopra i preferiti pensato per il pollice**: il player compare sotto lo spazio vuoto e spinge giù i preferiti, così i comandi restano a portata. | 🟡 c'è la posizione della home; controllare che il player non sposti i preferiti fuori dalla zona del pollice | P2 |
@@ -113,7 +113,7 @@ Ricavato dai testi dell'interfaccia e dalle impostazioni contenute nell'APK (nes
 | 10.6 | **Riconoscimento nel testo cercato**: un URL → "Apri"; un numero → "Chiama" / "Messaggio"; un'email → "Scrivi email"; un contatto inesistente → "Aggiungi ai contatti". | ⬜ | P2 |
 | 10.7 | **Popup / cartelle create direttamente nell'elenco app** (alla creazione si sceglie: preferiti o elenco app) e **suggerimenti di app da aggiungere a una cartella**. | 🟡 le cartelle nascono solo dai preferiti | P2 |
 | 10.8 | **Scorciatoie delle app come voci a sé**: "Aggiungi alla home" e "Mostra nell'elenco app" per una singola scorciatoia (gruppo "Scorciatoie" nell'elenco). | ⬜ | P2 |
-| 10.9 | **"Smetti di suggerire" / "Suggerisci di nuovo"** sulle app suggerite sotto i preferiti; interruttore "Suggerisci app usate spesso". | ⬜ (vedi 1.1) | P1 |
+| 10.9 | **"Smetti di suggerire" / "Suggerisci di nuovo"** sulle app suggerite sotto i preferiti; interruttore "Suggerisci app usate spesso". | ✅ 0.10 | P1 |
 | 10.10 | **Ordinamento per uso disattivabile** ("Ordina l'elenco per utilizzo"). | 🟡 in Onda è sempre attivo: aggiungere l'interruttore | P3 |
 | 10.11 | **"Riordina l'elenco"**: propone di nascondere le app usate raramente (gruppi "Usate spesso" / "Usate raramente"). | ⬜ | P3 |
 | 10.12 | **Tempo di utilizzo per app** dal menu dell'app ("Tempo di utilizzo", "aperta N volte"), app più usate degli ultimi 7 giorni e riepilogo annuale. | ⬜ (richiede l'accesso ai dati di utilizzo, già previsto per 6.1) | P3 |

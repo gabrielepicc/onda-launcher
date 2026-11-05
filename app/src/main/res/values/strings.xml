@@ -393,6 +393,11 @@
     <string name="weather_feels">Feels like %1$s</string>
     <string name="weather_updated">Updated at %1$s</string>
     <string name="agenda_open_calendar">Open calendar</string>
+    <string name="suggested_label">Suggested</string>
+    <string name="suggested_stop">Stop suggesting</string>
+    <string name="suggested_restore">Suggest again</string>
+    <string name="suggested_setting">Suggest frequently used apps</string>
+    <string name="suggested_setting_sub">Shown below your favorites, up to 3. Works out on this phone only.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Adds a pause before opening the apps you want to use less. Turn it on from an app\'s options (long press).</string>
     <string name="breaker_seconds">Pause: %1$d seconds</string>
