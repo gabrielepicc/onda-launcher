@@ -12,6 +12,7 @@ import com.gabrielepiccione.onda.ui.sheets.*
 import androidx.compose.ui.res.stringResource
 import com.gabrielepiccione.onda.R
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,7 +87,8 @@ fun SearchPanel(
     Column(
         Modifier
             .fillMaxSize()
-            .background(colors.scrim)
+            // Nessun pannello opaco: resta visibile lo sfondo, appena velato per leggere i risultati
+            .background((if (colors.dark) Color.Black else Color.White).copy(alpha = SEARCH_TINT))
             .blockTouches()
             .statusBarsPadding()
             .imePadding()
@@ -249,3 +251,6 @@ private fun SimpleRow(icon: @Composable () -> Unit, label: String, muted: Boolea
         Text(label, color = if (muted) colors.onWallpaperMuted else colors.onWallpaper, fontSize = 17.sp)
     }
 }
+
+/** Velatura sopra lo sfondo durante la ricerca (si somma a quella generale della home). */
+private const val SEARCH_TINT = 0.28f
