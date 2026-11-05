@@ -38,9 +38,13 @@ class IcuSectionIndex private constructor(locales: List<ULocale>) : SectionIndex
     override fun sectionOf(label: String): String = cache.getOrPut(label) {
         val name = label.trim()
         if (name.isEmpty()) return@getOrPut OTHER_SECTION
-        normalBucket(name)
-            ?: latin?.let { t -> runCatching { normalBucket(t.transliterate(name)) }.getOrNull() }
-            ?: OTHER_SECTION
+        normalBucket(name) ?: transliteratedBucket(name) ?: OTHER_SECTION
+    }
+
+    private fun transliteratedBucket(name: String): String? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
+        val transliterator = latin ?: return null
+        return runCatching { normalBucket(transliterator.transliterate(name)) }.getOrNull()
     }
 
     /** Lettera del nome; null se finisce nei gruppi "prima, in mezzo o dopo" l'alfabeto. */
