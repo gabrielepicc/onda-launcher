@@ -29,7 +29,8 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 |---|---|---|---|
 | 2.1 | **Alfabeto localizzato**: lettere extra secondo le lingue del telefono (Å Ä Ö dopo la Z per svedese/finlandese, Æ Ø Å per danese/norvegese, Ñ per spagnolo); nomi in altri alfabeti (giapponese, cinese, cirillico, greco) **traslitterati** e messi sotto la lettera giusta, non sotto "#". Conta l'ordine delle lingue di sistema. | ⬜ tutto ciò che non è A–Z finisce in "#". Soluzione: `android.icu.text.AlphabeticIndex` (API 24+) con le lingue di sistema | P1 |
 | 2.2 | **Velatura dietro l'elenco app** per leggere meglio sullo sfondo (niente sfocatura: Android non la permette sullo sfondo del launcher). | 🟡 c'è `wallpaperDim`; verificare che si applichi in modo diverso a home ed elenco | P3 |
-| 2.3 | **Cartelle popup "mostra nell'elenco app"**: una cartella può comparire nell'elenco alfabetico come una voce. | ⬜ | P2 |
+| 2.3 | **Fondo dell'elenco**: dopo la Z le **cartelle**, poi le voci del launcher **"Installate di recente"** e **"Impostazioni"**; un segno in fondo all'alfabeto ci porta direttamente. | ✅ 0.10 (tutte le cartelle, senza interruttore per singola cartella) | P1 |
+| 2.3b | **Stella in cima all'alfabeto** che riporta ai preferiti. | ⬜ | P2 |
 | 2.4 | **Profilo di lavoro**: badge a valigetta (✅ c'è) e, quando il profilo è in pausa, app **in grigio** e non avviabili; interruttore per riattivarlo. | 🟡 manca lo stato "in pausa" in grigio | P2 |
 | 2.5 | Voce **"App nascoste"** in fondo all'elenco e opzione per **toglierle anche dalla ricerca**. | 🟡 verificare l'opzione "escludi dalla ricerca" | P2 |
 | 2.6 | **Due colonne nell'elenco app** su tablet e pieghevoli; alfabeto e lista più lontani dai bordi; icone scalate sull'altezza dello schermo. Interruttore "Layout a due colonne". | 🟡 c'è solo il contenuto centrato | P3 |

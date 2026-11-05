@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.gabrielepiccione.onda.data.RecentInstalls
 import java.text.Collator
 import java.util.Locale
 
@@ -45,6 +46,8 @@ data class LauncherState(
     val home: List<HomeEntry> = emptyList(),      // app + cartelle, nell'ordine scelto
     val suggestions: List<AppInfo> = emptyList(), // app più usate
     val hiddenApps: List<AppInfo> = emptyList(),
+    val folders: List<HomeEntry.Group> = emptyList(),      // tutte le cartelle, per il fondo dell'elenco
+    val recentlyInstalled: List<AppInfo> = emptyList(),   // dalla più recente
     val notifications: Map<String, List<NotificationItem>> = emptyMap(),
     val settings: Settings = Settings(),
     val loaded: Boolean = false,
@@ -100,6 +103,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 swipeTarget = settings.swipeActions[r.key],
                 hasCustomIcon = r.key in settings.iconOverrides || r.key in settings.iconShapeOverrides,
                 isPrivate = r.isPrivate,
+                installedAt = r.installedAt,
             )
         }.sortedWith { a, b -> collator.compare(a.label, b.label) }
 
@@ -125,6 +129,11 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 .take(8)
                 .ifEmpty { visible.take(8) },
             hiddenApps = all.filter { it.isHidden && !it.isPrivate },
+            // In fondo all'elenco: tutte le cartelle, in ordine alfabetico
+            folders = settings.folders.values
+                .sortedWith { a, b -> collator.compare(a.name, b.name) }
+                .map { f -> HomeEntry.Group(f, f.apps.mapNotNull { byKey[it]?.takeIf { a -> !a.isHidden } }) },
+            recentlyInstalled = RecentInstalls.pick(visible) { it.installedAt },
             notifications = notifs.filterKeys { it !in settings.mutedNotifications },
             settings = settings,
             loaded = raw.isNotEmpty(),

@@ -12,6 +12,7 @@ import com.gabrielepiccione.onda.ui.sheets.*
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,9 +28,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -48,11 +51,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.ContactHit
+import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.sectionOf
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +69,18 @@ data class AppSection(
     val firstIndex: Int,
     val contacts: List<ContactHit> = emptyList(),
 )
+
+/** Segno dell'alfabeto che porta in fondo all'elenco (cartelle e voci di Onda). */
+const val END_OF_LIST_MARK = '•'
+
+/**
+ * Posizione nell'elenco della prima voce dopo le lettere: tutte le sezioni (intestazione + righe)
+ * più il contenitore dello Spazio privato, se visibile ([privateRows] = intestazione + app).
+ */
+fun endOfListIndex(sections: List<AppSection>, privateRows: Int = 0): Int {
+    val last = sections.lastOrNull() ?: return privateRows
+    return last.firstIndex + 1 + last.apps.size + last.contacts.size + privateRows
+}
 
 /**
  * Raggruppa app e contatti per lettera ('#' per primo) e calcola l'indice d'inizio di ogni sezione.
@@ -108,6 +125,11 @@ fun AllAppsPanel(
     privateLocked: Boolean? = null,
     privateApps: List<AppInfo> = emptyList(),
     onTogglePrivateLock: () -> Unit = {},
+    /** Cartelle mostrate in fondo all'elenco, dopo le lettere; ciascuna disegnata da [folderRow]. */
+    folders: List<Folder> = emptyList(),
+    folderRow: @Composable (Folder) -> Unit = {},
+    onRecentlyInstalled: () -> Unit = {},
+    onLauncherSettings: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
@@ -185,6 +207,53 @@ fun AllAppsPanel(
                 }
             }
         }
+        // Cartelle, poi le voci del launcher: sempre in fondo, raggiungibili con il segno finale dell'alfabeto
+        if (folders.isNotEmpty()) {
+            item(key = "folders_header") { EndSectionHeader(stringResource(R.string.list_folders)) }
+            folders.forEach { folder ->
+                item(key = "f_" + folder.id) { folderRow(folder) }
+            }
+        }
+        item(key = "onda_header") { EndSectionHeader(stringResource(R.string.app_name)) }
+        item(key = "onda_recent") {
+            LauncherEntryRow(Icons.Filled.History, stringResource(R.string.recently_installed), onRecentlyInstalled)
+        }
+        item(key = "onda_settings") {
+            LauncherEntryRow(Icons.Filled.Settings, stringResource(R.string.onda_settings), onLauncherSettings)
+        }
+    }
+}
+
+@Composable
+private fun EndSectionHeader(text: String) {
+    Text(
+        text,
+        color = LocalOndaColors.current.onWallpaperMuted,
+        style = MaterialTheme.typography.titleSmall,
+        modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 4.dp),
+    )
+}
+
+/** Voce del launcher in fondo all'elenco: icona su fondo tonale, stessa misura delle righe delle app. */
+@Composable
+private fun LauncherEntryRow(icon: ImageVector, label: String, onClick: () -> Unit) {
+    val colors = LocalOndaColors.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(colors.accentContainer),
+        ) {
+            Icon(icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(22.dp))
+        }
+        Spacer(Modifier.width(16.dp))
+        Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium)
     }
 }
 

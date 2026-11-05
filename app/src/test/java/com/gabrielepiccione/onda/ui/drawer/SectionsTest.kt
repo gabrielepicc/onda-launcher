@@ -23,6 +23,15 @@ class SectionsTest {
     }
 
     @Test
+    fun endOfListComesAfterLastSectionAndPrivateSpace() {
+        val sections = buildSections(emptyList(), contacts = listOf(contact(1, "Anna"), contact(2, "Aldo"), contact(3, "Bea")))
+        // A: intestazione + 2, B: intestazione + 1 → 5 righe; lo Spazio privato ne aggiunge 3
+        assertEquals(5, endOfListIndex(sections))
+        assertEquals(8, endOfListIndex(sections, privateRows = 3))
+        assertEquals(0, endOfListIndex(emptyList()))
+    }
+
+    @Test
     fun noContactsNoSections() {
         assertEquals(emptyList<AppSection>(), buildSections(emptyList()))
     }

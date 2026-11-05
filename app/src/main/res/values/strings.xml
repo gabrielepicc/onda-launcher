@@ -400,4 +400,8 @@
     <string name="home_position_auto">Automatic (bottom)</string>
     <string name="home_position_manual">Choose</string>
     <string name="home_position_hint">The first item on home starts here; everything else, favorites included, follows it.</string>
+    <string name="list_folders">Folders</string>
+    <string name="recently_installed">Recently installed</string>
+    <string name="recently_installed_empty">No apps installed recently</string>
+    <string name="onda_settings">Onda settings</string>
 </resources>

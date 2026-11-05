@@ -27,6 +27,8 @@ data class RawApp(
     val color: Int = 0xFF808080.toInt(),
     /** App dello Spazio privato (Android 15+): non è un'app del profilo di lavoro. */
     val isPrivate: Boolean = false,
+    /** Momento della prima installazione (ms), per "Installate di recente". */
+    val installedAt: Long = 0L,
 )
 
 /** App pronta per la UI, con nome personalizzato applicato. */
@@ -48,6 +50,7 @@ data class AppInfo(
     /** Icona scelta a mano: ha la precedenza sugli stili generati. */
     val hasCustomIcon: Boolean = false,
     val isPrivate: Boolean = false,
+    val installedAt: Long = 0L,
 ) {
     val packageName: String get() = component.packageName
     val section: Char get() = sectionOf(label)
