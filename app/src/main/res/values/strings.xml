@@ -285,7 +285,7 @@
     <string name="layout_unlock">Unlock layout</string>
     <string name="layout_lock_sub">Prevents accidental changes to clock, widgets and folders</string>
     <string name="search_button">Search button</string>
-    <string name="search_button_sub">In the bottom corner, under the alphabet</string>
+    <string name="search_button_sub">Floating at the bottom, next to the alphabet</string>
     <string name="search_prefix_hint">Tip: “=” to calculate, “@” to search contacts only, “/” for settings. Enter opens the first result.</string>
     <string name="set_onda">Onda settings</string>
     <string name="set_wifi">Wi-Fi</string>

@@ -374,7 +374,7 @@ private fun PhoneMock(settings: Settings, emphasizeAlphabet: Boolean, onPosition
         val letters = 27
         val letterTint = if (emphasizeAlphabet) colors.accent else colors.onWallpaperMuted
         val lettersAlpha = if (settings.hideAlphabet) 0.25f else 1f
-        val bottomInset = if (settings.showSearchButton) 26.dp else 10.dp
+        val bottomInset = 10.dp
         Canvas(
             Modifier
                 .align(if (settings.leftHanded) Alignment.CenterStart else Alignment.CenterEnd)
@@ -403,7 +403,7 @@ private fun PhoneMock(settings: Settings, emphasizeAlphabet: Boolean, onPosition
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .align(if (settings.leftHanded) Alignment.BottomStart else Alignment.BottomEnd)
-                    .padding(2.dp)
+                    .padding(start = if (settings.leftHanded) 14.dp else 0.dp, end = if (settings.leftHanded) 0.dp else 14.dp, bottom = 6.dp)
                     .size(18.dp)
                     .clip(CircleShape)
                     .background(if (emphasizeAlphabet) colors.accentContainer else colors.panelHigh),
