@@ -393,6 +393,8 @@ fun AppListRow(
     /** Swipe come in home: destra = pannello, sinistra = elimina notifiche. */
     swipeEnabled: Boolean = false,
     onDismissNotifications: () -> Unit = {},
+    /** Tocco sull'anteprima della notifica: la apre. */
+    onNotificationClick: (NotificationItem) -> Unit = { onOpenPanel() },
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
@@ -441,7 +443,7 @@ fun AppListRow(
                         item = notification,
                         extraCount = (notificationCount - 1).coerceAtLeast(0),
                         summary = summary,
-                        onOpen = onOpenPanel,
+                        onOpen = { onNotificationClick(notification) },
                         onDismiss = {},
                     )
                 }

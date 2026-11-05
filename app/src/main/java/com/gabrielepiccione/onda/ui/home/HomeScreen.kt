@@ -128,6 +128,7 @@ import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.GestureAction
+import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.NotificationStore
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.service.OndaAccessibilityService
@@ -260,7 +261,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         vm.clearSearch()
     }
 
-    var breakerFor by remember { mutableStateOf<AppInfo?>(null) }
+    // Usage Breaker: qualunque cosa apra l'app (riga, notifica, scorciatoia, gesto) passa da qui
+    var breakerFor by remember { mutableStateOf<BreakerRequest?>(null) }
+    fun guarded(app: AppInfo?, go: () -> Unit) {
+        if (app != null && app.key in vm.settingsRepo.current.breakerApps) breakerFor = BreakerRequest(app, go) else go()
+    }
 
     fun startApp(app: AppInfo) {
         val go = {
@@ -273,7 +278,16 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     fun launchApp(app: AppInfo) {
         // Usage Breaker: prima la pausa, poi l'eventuale sblocco
-        if (app.key in vm.settingsRepo.current.breakerApps) breakerFor = app else startApp(app)
+        guarded(app) { startApp(app) }
+    }
+
+    /** Apre la notifica come farebbe la tendina, ma con la pausa di Usage Breaker se l'app ce l'ha. */
+    fun openNotification(item: NotificationItem) {
+        val app = state.allApps.firstOrNull { it.packageName == item.packageName }
+        guarded(app) {
+            NotificationStore.open(context, item)
+            scope.launch { delay(380); closeAll() }
+        }
     }
 
     fun openWidgetPicker(filter: String?, target: WidgetTarget) {
@@ -429,7 +443,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         onSwipe = { openQuick(app, "h_" + app.key) },
                         onOpenPanel = { openQuick(app, "h_" + app.key) },
                         onSwipeLeft = { NotificationStore.dismissAll(app.packageName) },
-                        onNotificationClick = { openQuick(app, "h_" + app.key) },
+                        onNotificationClick = { openNotification(it) },
                         onNotificationDismiss = { NotificationStore.dismiss(it) },
                         onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
                         onNotificationAction = { n, a -> NotificationStore.runAction(context, n, a) },
@@ -689,7 +703,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                     onSwipe = { openQuick(app, rowId) },
                                     onOpenPanel = { openQuick(app, rowId) },
                                     onSwipeLeft = { NotificationStore.dismissAll(app.packageName) },
-                                    onNotificationClick = { openQuick(app, rowId) },
+                                    onNotificationClick = { openNotification(it) },
                                     onNotificationDismiss = { NotificationStore.dismiss(it) },
                                     modifier = Modifier
                                         .animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit())
@@ -788,6 +802,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onClick = { launchApp(it) },
             onLongClick = { openQuick(it, "a_" + it.key) },
             onOpenPanel = { openQuick(it, "a_" + it.key) },
+            onNotificationClick = { openNotification(it) },
             rowModifier = { rowTracker("a_" + it.key) },
             privateLocked = privateSpace?.locked?.takeUnless { settings.hidePrivateSpace },
             privateApps = state.privateApps,
@@ -1129,8 +1144,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             widgets = vm.widgets,
             themedIcons = settings.themedIcons,
             onOpenApp = { launchApp(app) },
-            onShortcut = vm::startShortcut,
-            onNotification = { NotificationStore.open(context, it) },
+            onShortcut = { sc -> guarded(app) { vm.startShortcut(sc) } },
+            onNotification = { openNotification(it) },
             onDismissNotification = { NotificationStore.dismiss(it) },
             onNotificationAction = { n, act -> NotificationStore.runAction(context, n, act) },
             onReply = { panelFor = app },
@@ -1189,8 +1204,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             widgets = vm.widgets,
             themedIcons = settings.themedIcons,
             onOpenApp = { launchApp(app) },
-            onShortcut = vm::startShortcut,
-            onNotification = { NotificationStore.open(context, it) },
+            onShortcut = { sc -> guarded(app) { vm.startShortcut(sc) } },
+            onNotification = { openNotification(it) },
             onDismissNotification = { NotificationStore.dismiss(it) },
             onReplyNotification = { n, text -> NotificationStore.reply(context, n, text) },
             onNotificationAction = { n, act -> NotificationStore.runAction(context, n, act) },
@@ -1236,7 +1251,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 isMuted = app.packageName in settings.mutedNotifications,
                 favoriteIndex = favIndex,
                 favoriteCount = settings.favorites.size,
-                onShortcut = vm::startShortcut,
+                onShortcut = { sc -> guarded(app) { vm.startShortcut(sc) } },
                 onToggleFavorite = {
                     if (inFolder != null) vm.moveToFolder(app, null) else vm.toggleFavorite(app)
                 },
@@ -1488,13 +1503,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         NotificationSummarySheet(
             notifications = state.notifications,
             appLabel = packageLabel,
-            onNotification = { NotificationStore.open(context, it) },
+            onNotification = { openNotification(it) },
             onDismissAll = { digest.packages.forEach(NotificationStore::dismissAll); summaryOpen = false },
             onDismiss = { summaryOpen = false },
         )
     }
 
-    breakerFor?.let { app ->
+    breakerFor?.let { request ->
+        val app = request.app
         val today = remember(app.key) { java.time.LocalDate.now().toString() }
         UsageBreakerDialog(
             app = app,
@@ -1503,7 +1519,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onOpen = {
                 breakerFor = null
                 vm.updateSettings { com.gabrielepiccione.onda.data.UsageBreaker.recordOpen(it, app.key, today) }
-                startApp(app)
+                request.go()
             },
             onDismiss = { breakerFor = null },
         )
@@ -1555,3 +1571,6 @@ private val FIRST_ROW_CENTER = 72.dp
 
 /** Altezza della sfumatura sotto la barra di stato, in cima all'elenco delle app. */
 private val TOP_FADE = 40.dp
+
+/** Apertura in attesa della pausa di Usage Breaker: cosa fare quando l'utente conferma. */
+private class BreakerRequest(val app: AppInfo, val go: () -> Unit)

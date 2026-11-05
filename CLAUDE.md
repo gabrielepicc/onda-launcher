@@ -90,7 +90,7 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 ## Material 3
 Raggi solo dalla scala (4, 8, 12, 16, 20, 28, 32, 48, pieno), testi dai ruoli di `MaterialTheme.typography` (mai `fontSize` a mano, tranne orologio e alfabeto),
 bersagli di tocco di almeno 48dp, durate dai token. Regole e differenze volute in `docs/material-audit.md`.
-Popup a bolla: fisica in `util/BubbleMotion`, disegno in `ui/components/Bubble.kt`.
+Popup dell'app: movimento Material 3 Expressive (molla spaziale 0,8/380, effetti 1600, uscita 200 ms, contenuto a cascata).
 
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.
