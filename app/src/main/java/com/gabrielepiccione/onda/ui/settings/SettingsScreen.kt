@@ -788,7 +788,7 @@ fun SettingsScreen(
             title = { Text(stringResource(R.string.gesture_choose_app)) },
             text = {
                 androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
-                    items(allApps.size) { i ->
+                    items(allApps.size, key = { allApps[it].key }) { i ->
                         val app = allApps[i]
                         ChoiceRow(app.label, false) {
                             save(app.key)
@@ -812,7 +812,7 @@ fun SettingsScreen(
                             onEdit { it.copy(plugPlayApp = "") }; plugDialog = false
                         }
                     }
-                    items(allApps.size) { i ->
+                    items(allApps.size, key = { allApps[it].key }) { i ->
                         val app = allApps[i]
                         ChoiceRow(app.label, settings.plugPlayApp == app.key) {
                             onEdit { it.copy(plugPlayApp = app.key) }; plugDialog = false

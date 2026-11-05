@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.runtime.derivedStateOf
 import com.gabrielepiccione.onda.data.ConversationSummary
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
@@ -173,9 +174,12 @@ fun FavoriteRow(
     val canSwipe = true
     val canDismiss = notifications.any { it.clearable }
 
+    // Letti con derivedStateOf: durante lo scorrimento la riga si ricompone solo quando cambia lato o compare lo sfondo
+    val revealed by remember { derivedStateOf { kotlin.math.abs(offsetX.value) > 1f } }
+    val toRight by remember { derivedStateOf { offsetX.value > 0f } }
     Box(modifier.fillMaxWidth()) {
         // Sfondo rivelato dallo scorrimento
-        if (kotlin.math.abs(offsetX.value) > 1f) {
+        if (revealed) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -183,11 +187,17 @@ fun FavoriteRow(
                     .clip(RoundedCornerShape(28.dp))
                     .background(if (armed) colors.accentContainer else colors.panel)
                     .padding(horizontal = 20.dp),
-                horizontalArrangement = if (offsetX.value > 0f) Arrangement.Start else Arrangement.End,
+                horizontalArrangement = if (toRight) Arrangement.Start else Arrangement.End,
             ) {
-                val p = (kotlin.math.abs(offsetX.value) / triggerPx).coerceIn(0f, 1f)
-                Box(Modifier.graphicsLayer { alpha = p; scaleX = 0.6f + 0.4f * p; scaleY = 0.6f + 0.4f * p }) {
-                    if (offsetX.value > 0f) {
+                Box(
+                    Modifier.graphicsLayer {
+                        val p = (kotlin.math.abs(offsetX.value) / triggerPx).coerceIn(0f, 1f)
+                        alpha = p
+                        scaleX = 0.6f + 0.4f * p
+                        scaleY = 0.6f + 0.4f * p
+                    },
+                ) {
+                    if (toRight) {
                         Icon(Icons.Filled.KeyboardArrowRight, null, tint = colors.onAccentContainer)
                     } else if (canDismiss) {
                         Icon(Icons.Filled.Close, null, tint = colors.onAccentContainer)
@@ -202,7 +212,7 @@ fun FavoriteRow(
                 .fillMaxWidth()
                 .pressScale(interaction)
                 .clip(RoundedCornerShape(28.dp))
-                .then(if (kotlin.math.abs(offsetX.value) > 1f) Modifier.background(colors.scrim) else Modifier)
+                .then(if (revealed) Modifier.background(colors.scrim) else Modifier)
                 .draggable(
                     enabled = canSwipe,
                     orientation = Orientation.Horizontal,

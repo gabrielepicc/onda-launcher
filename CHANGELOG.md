@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Più fluida**: profilo di base per compilare Onda in anticipo all'installazione, righe che non si ricompongono a ogni pixel
+  mentre si scorrono di lato, elenco con tipi di elemento per riciclare meglio le righe.
 - **Benessere digitale**, nuova pagina delle impostazioni:
   - **Giornata**: tempo davanti allo schermo e confronto con la media, sblocchi, aperture e notifiche ricevute.
   - **Grafici**: ultimi 7 giorni con la media tratteggiata, uso ora per ora (si tocca una barra per vedere quel giorno o quell'ora).

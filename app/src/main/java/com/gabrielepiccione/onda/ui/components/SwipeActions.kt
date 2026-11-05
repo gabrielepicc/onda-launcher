@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.runtime.derivedStateOf
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import androidx.compose.animation.core.Animatable
@@ -73,21 +74,29 @@ fun SwipeActions(
     val currentLeft by rememberUpdatedState(onLeft)
     val currentCanDismiss by rememberUpdatedState(canDismiss)
 
+    // Letti con derivedStateOf: mentre il dito scorre la riga si ridisegna, ma si ricompone solo ai cambi di stato
+    val revealed by remember { derivedStateOf { abs(offsetX.value) > 1f } }
+    val toRight by remember { derivedStateOf { offsetX.value > 0f } }
     Box(modifier.fillMaxWidth()) {
-        val x = offsetX.value
-        if (abs(x) > 1f) {
+        if (revealed) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = if (x > 0f) Arrangement.Start else Arrangement.End,
+                horizontalArrangement = if (toRight) Arrangement.Start else Arrangement.End,
                 modifier = Modifier
                     .matchParentSize()
                     .clip(RoundedCornerShape(28.dp))
                     .background(if (armed) colors.accentContainer else colors.panel)
                     .padding(horizontal = 20.dp),
             ) {
-                val p = (abs(x) / triggerPx).coerceIn(0f, 1f)
-                Box(Modifier.graphicsLayer { alpha = p; scaleX = 0.6f + 0.4f * p; scaleY = 0.6f + 0.4f * p }) {
-                    if (x > 0f) Icon(Icons.Filled.KeyboardArrowRight, null, tint = colors.onAccentContainer)
+                Box(
+                    Modifier.graphicsLayer {
+                        val p = (abs(offsetX.value) / triggerPx).coerceIn(0f, 1f)
+                        alpha = p
+                        scaleX = 0.6f + 0.4f * p
+                        scaleY = 0.6f + 0.4f * p
+                    },
+                ) {
+                    if (toRight) Icon(Icons.Filled.KeyboardArrowRight, null, tint = colors.onAccentContainer)
                     else if (canDismiss) Icon(Icons.Filled.Close, null, tint = colors.onAccentContainer)
                 }
             }
@@ -95,7 +104,7 @@ fun SwipeActions(
         Box(
             Modifier
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                .then(if (abs(x) > 1f) Modifier.clip(RoundedCornerShape(28.dp)).background(colors.scrim) else Modifier)
+                .then(if (revealed) Modifier.clip(RoundedCornerShape(28.dp)).background(colors.scrim) else Modifier)
                 .draggable(
                     enabled = enabled,
                     orientation = Orientation.Horizontal,
