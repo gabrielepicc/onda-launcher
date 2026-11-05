@@ -13,14 +13,14 @@ Vincoli:
 - niente librerie di Spotify, niente API web, niente permesso `INTERNET`;
 - tutto passa da quello che Android già offre: sessione multimediale, intent di sistema, link `spotify:`.
 
-### Decisioni che spettano al proprietario (in attesa)
+### Decisioni del proprietario
 
 | # | Domanda | Proposta | Stato |
 |---|---|---|---|
-| 1 | Livello "a ritmo di musica": legge l'audio in riproduzione e fa pulsare lo sfondo sui bassi. Richiede il permesso **microfono** (`RECORD_AUDIO`), perché Android lo pretende per l'analizzatore audio anche se non registra nulla dal microfono. Lo facciamo? | Sì, ma sempre spento di default, chiesto solo attivandolo e con una spiegazione prima della richiesta. Nessun audio viene salvato o inviato: si leggono solo le ampiezze delle frequenze, istante per istante. | ⏳ |
-| 2 | Lo sfondo animato solo **dentro il launcher**, o anche come **sfondo animato di sistema** (visibile anche nella schermata di blocco)? | Solo nel launcher: consuma meno ed è più semplice. Lo sfondo di sistema richiederebbe un servizio sempre attivo. | ⏳ |
+| 1 | Livello "a ritmo di musica": legge l'audio in riproduzione e fa pulsare lo sfondo sui bassi. Richiede il permesso **microfono** (`RECORD_AUDIO`), perché Android lo pretende per l'analizzatore audio anche se non registra nulla dal microfono. Lo facciamo? | Sì, ma sempre spento di default, chiesto solo attivandolo e con una spiegazione prima della richiesta. Nessun audio viene salvato o inviato: si leggono solo le ampiezze delle frequenze, istante per istante. | ✅ Sì, spento di default (5 novembre 2026) |
+| 2 | Lo sfondo animato solo **dentro il launcher**, o anche come **sfondo animato di sistema** (visibile anche nella schermata di blocco)? | Solo nel launcher: consuma meno ed è più semplice. Lo sfondo di sistema richiederebbe un servizio sempre attivo. | ✅ Solo nel launcher (5 novembre 2026) |
 
-Finché le due risposte non arrivano si lavora solo sui passi che non ne dipendono (PR 1–5). Il livello "a ritmo" è la PR 6.
+Il livello "a ritmo" è la PR 6, approvata.
 
 Le altre scelte sono già fatte nelle richieste del proprietario:
 - `androidx.palette` (Apache 2.0, compatibile con GPLv3) come nuova dipendenza;

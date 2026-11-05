@@ -68,14 +68,14 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 12. ✅ Preferiti contestuali: profili con regole E/O, priorità, slot fissi, scelta a mano di un'ora, profilo riunioni Teams, regole proposte.
 
 ## Fase 8 (specifiche in `docs/fase8.md`)
-- Area 5 — Musica, per ogni app con sessione multimediale, senza internet. ⏳ In attesa di 2 decisioni del proprietario (livello "a ritmo" con microfono; sfondo solo nel launcher o anche di sistema).
+- Area 5 — Musica, per ogni app con sessione multimediale, senza internet. Decisioni prese: livello "a ritmo" sì, spento di default; sfondo solo nel launcher.
   PR previste, in ordine:
   1. ⬜ sfondo animato con i colori della copertina;
   2. ⬜ mi piace e prossimo brano;
   3. ⬜ riproduzione dalla ricerca (`p`, `sp`, prefissi personalizzabili);
   4. ⬜ playlist e brani come voci;
   5. ⬜ ripresa con le cuffie;
-  6. ⬜ livello "a ritmo" (se approvato).
+  6. ⬜ livello "a ritmo" (approvato, spento di default).
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
