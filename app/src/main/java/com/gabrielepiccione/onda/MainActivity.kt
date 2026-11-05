@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.FolderIcons
 import android.Manifest
 import android.app.Activity
 import android.appwidget.AppWidgetManager
@@ -151,7 +152,12 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         uri ?: return@registerForActivityResult
         lifecycleScope.launch {
             val path = withContext(Dispatchers.IO) { copyIconImage(uri) }
-            if (path != null) vm.settingsRepo.setIconImage(appKey, path) else toast(getString(R.string.icon_image_invalid))
+            val folderId = FolderIcons.folderOfImageKey(appKey)
+            when {
+                path == null -> toast(getString(R.string.icon_image_invalid))
+                folderId != null -> vm.settingsRepo.setFolderIcon(folderId, FolderIcons.image(path))
+                else -> vm.settingsRepo.setIconImage(appKey, path)
+            }
         }
     }
 

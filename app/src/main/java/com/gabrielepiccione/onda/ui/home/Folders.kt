@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.ui.platform.LocalDensity
+import com.gabrielepiccione.onda.data.FolderIcons
+import com.gabrielepiccione.onda.data.WidgetStack
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
@@ -125,27 +129,9 @@ fun FolderRow(
                 )
                 .padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
-            // Mini-icone sovrapposte (fino a 3)
+            // Icona scelta dall'utente, oppure le prime app sovrapposte
             if (showIcons) {
-                Box(Modifier.size(44.dp * iconScale)) {
-                    val shown = apps.take(3)
-                    if (shown.isEmpty()) {
-                        Box(
-                            Modifier
-                                .size(44.dp * iconScale)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(colors.accentContainer)
-                        )
-                    }
-                    shown.forEachIndexed { i, a ->
-                        AppIcon(
-                            a,
-                            28.dp * iconScale,
-                            themedIcons,
-                            Modifier.offset(x = (8 * i).dp * iconScale, y = (8 * i).dp * iconScale),
-                        )
-                    }
-                }
+                FolderIcon(folder, apps, 44.dp * iconScale, themedIcons)
                 Spacer(Modifier.width(18.dp))
             }
             if (nameHidden) {
@@ -187,7 +173,17 @@ fun FolderRow(
             exit = fadeOut(Motion.exit()) + shrinkVertically(Motion.exit()),
         ) {
             Column(Modifier.padding(start = 8.dp, end = 8.dp, bottom = 10.dp)) {
-                folder.widgets.forEach { id -> HostedWidget(id, widgets) }
+                // Più widget: un carosello orizzontale; tutti con l'altezza scelta per la cartella
+                if (folder.widgets.size > 1) {
+                    WidgetStackCard(
+                        stack = WidgetStack("f_" + folder.id, folder.widgets, folder.widgetHeightDp),
+                        widgets = widgets,
+                        highlighted = false,
+                        onLongPress = onLongClick,
+                    )
+                } else {
+                    folder.widgets.forEach { id -> HostedWidget(id, widgets, heightDp = folder.widgetHeightDp, onLongPress = onLongClick) }
+                }
                 apps.forEach { app ->
                     AppListRow(
                         app = app,
@@ -224,8 +220,11 @@ fun FolderSheet(
     onRemoveWidget: (Int) -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
+    onChangeIcon: () -> Unit = {},
+    onWidgetHeight: (Int?) -> Unit = {},
 ) {
     val colors = LocalOndaColors.current
+    val density = LocalDensity.current
     var renaming by remember { mutableStateOf(false) }
     val pm = androidx.compose.ui.platform.LocalContext.current.packageManager
     ModalBottomSheet(
@@ -242,9 +241,29 @@ fun FolderSheet(
         ) {
             Text(folder.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             SheetRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
+            SheetRow(Icons.Filled.Palette, stringResource(R.string.folder_icon)) { onChangeIcon(); onDismiss() }
             if (canMoveUp) SheetRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { onMove(-1) }
             if (canMoveDown) SheetRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { onMove(1) }
             SheetRow(Icons.Filled.Add, stringResource(R.string.folder_add_widget)) { onAddWidget(); onDismiss() }
+            if (folder.widgets.isNotEmpty()) {
+                // Altezza dei widget nella cartella, dal vivo; il predefinito è la più alta tra quelle dei widget
+                val defaultHeight = remember(folder.widgets) {
+                    folder.widgets.mapNotNull { widgets.infoFor(it) }
+                        .maxOfOrNull { with(density) { it.minHeight.toDp().value.toInt() } }
+                        ?.coerceIn(FolderIcons.HEIGHT_RANGE.first, FolderIcons.HEIGHT_RANGE.last) ?: 160
+                }
+                val current = folder.widgetHeightDp ?: defaultHeight
+                Column(Modifier.padding(horizontal = 24.dp)) {
+                    ValueSlider(
+                        label = stringResource(R.string.folder_widget_height),
+                        valueText = stringResource(R.string.value_dp, current),
+                        value = current.toFloat(),
+                        default = defaultHeight.toFloat(),
+                        range = FolderIcons.HEIGHT_RANGE.first.toFloat()..FolderIcons.HEIGHT_RANGE.last.toFloat(),
+                        onChange = { v -> onWidgetHeight(if (v.toInt() == defaultHeight) null else v.toInt()) },
+                    )
+                }
+            }
             folder.widgets.forEach { id ->
                 val label = widgets.infoFor(id)?.let { runCatching { it.loadLabel(pm) }.getOrNull() } ?: stringResource(R.string.section_widgets)
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { onRemoveWidget(id) }

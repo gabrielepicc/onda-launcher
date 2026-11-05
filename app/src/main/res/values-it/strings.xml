@@ -409,4 +409,9 @@
     <string name="haptics_support_basic">Solo vibrazione di base: si usano i colpi standard di sistema</string>
     <string name="haptics_support_unknown">Questa versione di Android non lo indica: si usano i colpi standard di sistema</string>
     <string name="haptics_support_none">Questo dispositivo non ha un motore di vibrazione</string>
+    <string name="folder_icon">Icona della cartella</string>
+    <string name="folder_icon_auto">Automatica</string>
+    <string name="folder_icon_from_app">Da un\'app della cartella</string>
+    <string name="folder_icon_symbols">Simboli</string>
+    <string name="folder_widget_height">Altezza dei widget</string>
 </resources>

@@ -209,6 +209,15 @@ class SettingsRepository(context: Context) {
         s.copy(folders = s.folders + (id to f.copy(name = name.ifBlank { f.name })))
     }
 
+    /** Cambia l'icona della cartella; un'immagine scelta prima viene cancellata. */
+    fun setFolderIcon(id: String, spec: String) {
+        val old = current.folders[id]?.icon.orEmpty()
+        if (old != spec && old.startsWith(ICON_FILE_PREFIX)) runCatching { java.io.File(old.removePrefix(ICON_FILE_PREFIX)).delete() }
+        edit { FolderIcons.setIcon(it, id, spec) }
+    }
+
+    fun setFolderWidgetHeight(id: String, dp: Int?) = edit { FolderIcons.setWidgetHeight(it, id, dp) }
+
     /** Elimina la cartella; le app tornano tra i preferiti. Restituisce i widget da rilasciare. */
     fun deleteFolder(id: String): List<Int> {
         val widgets = current.folders[id]?.widgets.orEmpty()
