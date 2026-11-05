@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.home.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -72,6 +74,7 @@ fun AlphabetWaveScroller(
     if (letters.isEmpty()) return
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     val scope = rememberCoroutineScope()
     val measurer = rememberTextMeasurer(cacheSize = 64)
@@ -117,7 +120,7 @@ fun AlphabetWaveScroller(
                         val idx = (y / step).toInt().coerceIn(0, currentLetters.lastIndex)
                         if (idx != selected.intValue) {
                             selected.intValue = idx
-                            if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            ondaHaptics?.perform(if (idx == 0 || idx == currentLetters.lastIndex) HapticEvent.EDGE else HapticEvent.LETTER)
                             currentOnLetter(currentLetters[idx], originY[0] + touchY.floatValue)
                         }
                     }

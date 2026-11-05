@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -59,6 +61,7 @@ fun SwipeActions(
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
@@ -105,7 +108,7 @@ fun SwipeActions(
                             val nowArmed = next >= triggerPx || (currentCanDismiss && next <= -triggerPx)
                             if (nowArmed != armed) {
                                 armed = nowArmed
-                                if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                ondaHaptics?.perform(if (nowArmed) HapticEvent.THRESHOLD_ON else HapticEvent.THRESHOLD_OFF)
                             }
                         }
                     },

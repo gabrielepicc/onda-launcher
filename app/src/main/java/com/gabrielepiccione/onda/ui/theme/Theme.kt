@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.theme
 
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
+import com.gabrielepiccione.onda.util.rememberOndaHaptics
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.home.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -159,6 +161,7 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
         LocalListStyle provides ListStyle(settings.listAlign, settings.listFontWeight, settings.listLetterSpacing),
         LocalClockFont provides rememberFileFont(settings.customFontClock),
         LocalHapticsEnabled provides settings.haptics,
+        LocalOndaHaptics provides rememberOndaHaptics(settings.haptics),
         LocalIconStyle provides settings.iconStyle,
         LocalOndaTokens provides OndaTokens(),
         LocalDensity provides Density(base.density, base.fontScale * settings.textScale),

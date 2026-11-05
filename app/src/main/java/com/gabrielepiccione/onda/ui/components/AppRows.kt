@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.home.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -151,6 +153,7 @@ fun FavoriteRow(
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
@@ -208,7 +211,7 @@ fun FavoriteRow(
                             val nowArmed = next >= triggerPx || (canDismiss && next <= -triggerPx)
                             if (nowArmed != armed) {
                                 armed = nowArmed
-                                if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                             }
                         }
                     },
@@ -225,7 +228,7 @@ fun FavoriteRow(
                     indication = androidx.compose.material3.ripple(),
                     onClick = onClick,
                     onLongClick = {
-                        if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                         onLongClick()
                     },
                 )
@@ -328,12 +331,13 @@ fun AppListRow(
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     val interaction = remember { MutableInteractionSource() }
     SwipeActions(
         canDismiss = notification?.clearable == true,
         onRight = onOpenPanel,
-        onLeft = onDismissNotifications,
+        onLeft = { ondaHaptics?.perform(HapticEvent.CONFIRM); onDismissNotifications() },
         enabled = swipeEnabled,
         modifier = modifier,
     ) {
@@ -349,7 +353,7 @@ fun AppListRow(
                     indication = androidx.compose.material3.ripple(),
                     onClick = onClick,
                     onLongClick = {
-                        if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                         onLongClick()
                     },
                 )

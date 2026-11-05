@@ -2,6 +2,13 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.HapticSupport
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
+import com.gabrielepiccione.onda.util.OndaHaptics
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.home.*
@@ -401,6 +408,29 @@ fun SettingsScreen(
                 }
             }
             SwitchRow(stringResource(R.string.haptics), stringResource(R.string.haptics_sub), settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
+            if (settings.haptics) {
+                // Prova: fa sentire i colpi principali e dice se il telefono ha le vibrazioni leggere
+                val hapticContext = LocalContext.current
+                val support = remember { OndaHaptics.support(hapticContext) }
+                val tester = LocalOndaHaptics.current
+                val testScope = rememberCoroutineScope()
+                ClickRow(
+                    stringResource(R.string.haptics_test),
+                    stringResource(
+                        when (support) {
+                            HapticSupport.LIGHT -> R.string.haptics_support_light
+                            HapticSupport.BASIC -> R.string.haptics_support_basic
+                            HapticSupport.UNKNOWN -> R.string.haptics_support_unknown
+                            HapticSupport.NONE -> R.string.haptics_support_none
+                        },
+                    ),
+                ) {
+                    testScope.launch {
+                        listOf(HapticEvent.LETTER, HapticEvent.LETTER, HapticEvent.LETTER, HapticEvent.EDGE, HapticEvent.THRESHOLD_ON, HapticEvent.CONFIRM)
+                            .forEach { e -> tester?.perform(e); delay(if (e == HapticEvent.LETTER) 90 else 420) }
+                    }
+                }
+            }
             Text(
                 stringResource(R.string.gestures_help),
                 color = colors.onWallpaperMuted,

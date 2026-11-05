@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -180,6 +182,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
 
     var overlay by rememberSaveable { mutableStateOf(Overlay.NONE) }
     var actionsFor by remember { mutableStateOf<AppInfo?>(null) }
@@ -319,7 +322,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 val nowArmed = abs(next) >= threshold
                 if (nowArmed != armed) {
                     armed = nowArmed
-                    if (currentSettings.haptics) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    ondaHaptics?.perform(if (nowArmed) HapticEvent.THRESHOLD_ON else HapticEvent.THRESHOLD_OFF)
                 }
                 return available
             }
@@ -464,7 +467,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 .pointerInput(settings.doubleTapAction, settings.doubleTapApp) {
                     detectTapGestures(
                         onLongPress = {
-                            if (settings.haptics) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                             homeMenu = true
                         },
                         onDoubleTap = if (settings.doubleTapAction != GestureAction.NONE) {

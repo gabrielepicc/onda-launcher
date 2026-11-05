@@ -130,6 +130,18 @@ Ricavato dai testi dell'interfaccia e dalle impostazioni contenute nell'APK (nes
 | 10.23 | **Spazio privato nascosto raggiungibile cercando "spazio privato"**. | 🟡 verificare | P3 |
 | 10.24 | **Impostazioni del launcher**: "Riavvia launcher", "Cambia launcher predefinito", guida alla navigazione a gesti, integrazione con Tasker/Locale per cambiare profilo. | 🟡 | P3 |
 
+## 11. Feedback aptico
+
+Niagara (dall'APK: impostazione "Consenti feedback aptico — segue il sistema", verifica "vibrazioni leggere supportate",
+uso di composizioni di primitive e di effetti predefiniti, colpi distinti come tick, bump, spin, appear legati alle animazioni).
+
+| # | Comportamento | Onda | Priorità |
+|---|---|---|---|
+| 11.1 | Colpi diversi per eventi diversi, leggerissimi sullo scorrimento dell'alfabeto | ✅ 0.10 (`HapticPlan`/`OndaHaptics`) | P1 |
+| 11.2 | Segue l'impostazione di sistema del feedback al tocco | ✅ 0.10 | P1 |
+| 11.3 | Verifica del supporto alle vibrazioni leggere nelle impostazioni | ✅ 0.10 ("Prova la vibrazione") | P3 |
+| 11.4 | Vibrazione legata al progresso delle animazioni (es. un colpo quando il popup "atterra", al cambio di brano) | ⬜ | P3 |
+
 ## Non da copiare (scelte di Niagara o incompatibili con le regole di Onda)
 - Feed di Google Discover: richiede l'app Google, contrario alla regola "niente Google".
 - Integrazione con Sesame: app abbandonata, Niagara la sta togliendo.
