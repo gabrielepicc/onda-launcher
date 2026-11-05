@@ -84,6 +84,8 @@ data class AppActions(
     val onToggleProtected: () -> Unit = {},
     val hasBreaker: Boolean = false,
     val onToggleBreaker: () -> Unit = {},
+    val hasReminder: Boolean = false,
+    val onToggleReminder: () -> Unit = {},
     val onMoveToFolder: () -> Unit,
     val isMuted: Boolean,
     val favoriteIndex: Int,
@@ -171,6 +173,9 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
             }
             ActionRow(Icons.Filled.HourglassEmpty, stringResource(if (actions.hasBreaker) R.string.breaker_off else R.string.breaker_on)) {
                 actions.onToggleBreaker(); onDismiss()
+            }
+            ActionRow(Icons.Filled.Notifications, stringResource(if (actions.hasReminder) R.string.reminder_off else R.string.reminder_on)) {
+                actions.onToggleReminder(); onDismiss()
             }
             ActionRow(if (app.isHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, if (app.isHidden) stringResource(R.string.show_in_list) else stringResource(R.string.hide)) {
                 actions.onToggleHidden(); onDismiss()

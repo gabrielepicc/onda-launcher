@@ -337,6 +337,10 @@ data class Settings(
     val protectHidden: Boolean = false,
     /** Usage Breaker: app che mostrano una pausa prima di aprirsi. */
     val breakerApps: Set<String> = emptySet(),
+    /** Usage Breaker a promemoria: app per cui avvisare durante l'uso (vedi [UsageReminders]). */
+    val reminderApps: Set<String> = emptySet(),
+    /** Minuti di uso continuo a cui arriva il primo promemoria. */
+    val reminderStartMinutes: Int = 20,
     /** Durata della pausa in secondi. */
     val breakerSeconds: Int = 10,
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */

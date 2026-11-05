@@ -34,6 +34,7 @@ import com.gabrielepiccione.onda.data.NotificationStore
 import com.gabrielepiccione.onda.data.WeatherRepository
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.service.OndaAccessibilityService
+import com.gabrielepiccione.onda.service.UsageReminderEngine
 import com.gabrielepiccione.onda.ui.home.HomeCallbacks
 import com.gabrielepiccione.onda.ui.home.HomeScreen
 import com.gabrielepiccione.onda.ui.home.HomeStatus
@@ -60,6 +61,10 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     private val contactsLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         refreshStatus()
         if (granted) vm.updateSearch(vm.search.value.query)
+    }
+
+    private val postNotificationsLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        refreshStatus()
     }
 
     private val weatherLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -308,6 +313,8 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             accessibilityEnabled = OndaAccessibilityService.isEnabled,
             weatherInstalled = vm.weatherRepo.isInstalled(),
             weatherPermission = vm.weatherRepo.hasPermission(),
+            usageAccess = UsageReminderEngine.hasUsageAccess(this),
+            postNotifications = UsageReminderEngine.canNotify(this),
         )
     }
 
@@ -331,6 +338,16 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun requestCalendarPermission() = calendarLauncher.launch(Manifest.permission.READ_CALENDAR)
 
     override fun requestWeatherPermission() = weatherLauncher.launch(WeatherRepository.PERMISSION)
+
+    override fun requestPostNotifications() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            postNotificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    override fun openUsageAccess() {
+        runCatching { startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) }
+    }
 
     override fun requestDefaultLauncher() = SystemActions.requestDefaultLauncher(this)
 

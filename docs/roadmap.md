@@ -46,7 +46,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    4. ✅ Alfabeto localizzato con `AlphabeticIndex` (2.1).
    5. ✅ App suggerite sotto i preferiti con "Smetti di suggerire" (1.1, 10.9).
    6. ✅ Popup dell'app come cartella: app correlate, widget e pile, scorciatoie nascondibili (3.1, 3.2).
-   7. Usage Breaker a promemoria (6.1) e backup completo con WorkManager (9.1).
+   7. ✅ Usage Breaker a promemoria (6.1) e backup completo con WorkManager (9.1; manca il ricollegamento dei widget).
    8. Rilascio 0.10: versionCode 10, changelog fastlane 10.txt, roadmap.
 
 ## Decisioni prese (modificabili)
@@ -56,5 +56,6 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - Si lavora su branch + PR, unione solo con CI verde (vedi CLAUDE.md).
 - Meteo senza connessione: Onda legge i dati dall'app Breezy Weather (se installata). Open-Meteo diretto resta escluso finché l'utente non dà l'OK al permesso INTERNET.
 - App suggerite in home spente di default, per non cambiare da sole la home di chi aggiorna; si attivano nelle impostazioni.
+- Promemoria di Usage Breaker con `PACKAGE_USAGE_STATS` e `POST_NOTIFICATIONS`, approvati dal proprietario: il controllo gira nel servizio notifiche già presente, una volta al minuto a schermo acceso e solo con app scelte.
 - Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
 - App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).

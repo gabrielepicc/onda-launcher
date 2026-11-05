@@ -118,6 +118,7 @@ import com.gabrielepiccione.onda.data.AppPopups
 import com.gabrielepiccione.onda.data.CalendarEvent
 import com.gabrielepiccione.onda.data.FOLDER_PREFIX
 import com.gabrielepiccione.onda.data.HomeSuggestions
+import com.gabrielepiccione.onda.data.UsageReminders
 import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
@@ -157,6 +158,8 @@ interface HomeCallbacks {
     fun requestContactsPermission()
     fun requestCalendarPermission()
     fun requestWeatherPermission()
+    fun requestPostNotifications()
+    fun openUsageAccess()
     fun requestDefaultLauncher()
     fun openNotificationAccess()
     fun openAccessibilitySettings()
@@ -182,6 +185,8 @@ data class HomeStatus(
     val accessibilityEnabled: Boolean,
     val weatherInstalled: Boolean = false,
     val weatherPermission: Boolean = false,
+    val usageAccess: Boolean = false,
+    val postNotifications: Boolean = false,
 )
 
 @Composable
@@ -948,6 +953,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         contactsPermission = status.contactsPermission,
                         weatherInstalled = status.weatherInstalled,
                         weatherPermission = status.weatherPermission,
+                        usageAccess = status.usageAccess,
+                        postNotifications = status.postNotifications,
                     ),
                     widgets = vm.widgets,
                     actions = object : SettingsActions {
@@ -957,6 +964,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun calendarPermission() = callbacks.requestCalendarPermission()
                         override fun contactsPermission() = callbacks.requestContactsPermission()
                         override fun weatherPermission() = callbacks.requestWeatherPermission()
+                        override fun postNotifications() = callbacks.requestPostNotifications()
+                        override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
@@ -1165,6 +1174,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 },
                 hasBreaker = app.key in settings.breakerApps,
                 onToggleBreaker = { vm.updateSettings { com.gabrielepiccione.onda.data.UsageBreaker.toggle(it, app.key) } },
+                hasReminder = app.key in settings.reminderApps,
+                onToggleReminder = {
+                    vm.updateSettings { UsageReminders.toggle(it, app.key) }
+                    // Attivandola si passa dalle impostazioni, dove si vede quali permessi mancano
+                    if (app.key !in settings.reminderApps && !(status.usageAccess && status.postNotifications && status.notificationAccess)) {
+                        overlay = Overlay.SETTINGS
+                    }
+                },
                 isMuted = app.packageName in settings.mutedNotifications,
                 favoriteIndex = favIndex,
                 favoriteCount = settings.favorites.size,

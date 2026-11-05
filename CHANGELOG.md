@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Usage Breaker a promemoria**: per le app scelte, una notifica dopo 5–240 minuti di uso continuo chiede se vuoi
+  continuare, senza bloccare nulla. Si aggiunge alla pausa prima di aprire l'app. Richiede l'accesso ai dati di
+  utilizzo, le notifiche di Onda e l'accesso alle notifiche, chiesti solo a chi la usa; i dati restano sul telefono.
 - **Backup completo in un unico file**: oltre alle impostazioni contiene le immagini delle icone e i font importati.
   Si può anche condividere. Il backup automatico gira ogni 24 ore pure a launcher chiuso (con WorkManager).
   I vecchi backup `.json` restano ripristinabili. I widget vanno ancora aggiunti di nuovo.
