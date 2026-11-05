@@ -32,14 +32,43 @@ object HomeLights {
         return now == home
     }
 
-    /** Buio: prima dell'alba o dal tramonto (meno il margine). Senza orari di sole, non si sa: no. */
-    fun isDark(now: Long, sun: SunTimes?): Boolean {
-        sun ?: return false
+    /** Senza posizione salvata non si sa quando tramonta: si usa una fascia fissa, e lo stato lo dice. */
+    const val FALLBACK_DUSK_MINUTE = 19 * 60
+    const val FALLBACK_DAWN_MINUTE = 7 * 60
+
+    /**
+     * Buio: prima dell'alba o dal tramonto (meno il margine). Senza orari di sole si usa la fascia
+     * dalle 19 alle 7, con [localMinute] i minuti dalla mezzanotte dell'ora locale.
+     */
+    fun isDark(now: Long, sun: SunTimes?, localMinute: Int): Boolean {
+        if (sun == null) return localMinute >= FALLBACK_DUSK_MINUTE || localMinute < FALLBACK_DAWN_MINUTE
         return now < sun.sunrise || now >= sun.sunset - DUSK_MARGIN_MS
     }
 
-    fun shouldShow(enabled: Boolean, widgetId: Int, currentSsid: String?, homeSsid: String, now: Long, sun: SunTimes?): Boolean =
-        enabled && widgetId > 0 && isHome(currentSsid, homeSsid) && isDark(now, sun)
+    fun shouldShow(enabled: Boolean, widgetId: Int, currentSsid: String?, homeSsid: String, now: Long, sun: SunTimes?, localMinute: Int): Boolean =
+        enabled && widgetId > 0 && isHome(currentSsid, homeSsid) && isDark(now, sun, localMinute)
+
+    /** Perché il widget non c'è, nell'ordine in cui conviene sistemarlo; null se c'è. */
+    enum class Missing { DISABLED, PERMISSION, LOCATION_OFF, NO_HOME_WIFI, NOT_HOME, NO_WIDGET, NOT_DARK }
+
+    fun missing(
+        enabled: Boolean,
+        permission: Boolean,
+        locationOn: Boolean,
+        widgetId: Int,
+        currentSsid: String?,
+        homeSsid: String,
+        dark: Boolean,
+    ): Missing? = when {
+        !enabled -> Missing.DISABLED
+        !permission -> Missing.PERMISSION
+        !locationOn -> Missing.LOCATION_OFF
+        normalizeSsid(homeSsid) == null -> Missing.NO_HOME_WIFI
+        !isHome(currentSsid, homeSsid) -> Missing.NOT_HOME
+        widgetId <= 0 -> Missing.NO_WIDGET
+        !dark -> Missing.NOT_DARK
+        else -> null
+    }
 
     /**
      * Alba e tramonto con l'algoritmo semplificato della NOAA (errore di pochi minuti), per [date] alla

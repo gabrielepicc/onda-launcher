@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.HomeLights
+import com.gabrielepiccione.onda.data.HomePresence
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.material.icons.filled.AutoAwesome
 import com.gabrielepiccione.onda.data.ContextProfile
 import androidx.compose.material.icons.filled.HourglassEmpty
@@ -80,6 +83,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -122,8 +126,13 @@ interface SettingsActions {
     fun weatherPermission()
     fun locationPermission()
     fun bluetoothPermission()
-    /** Salva il Wi-Fi attuale e la posizione approssimativa come "casa". */
-    fun setHomeHere()
+    /** Nome del Wi-Fi collegato adesso, o null se Android non lo dice. */
+    fun currentWifi(): String?
+    /** Salva [ssid] come Wi-Fi di casa e, se manca, la posizione approssimativa. */
+    fun saveHome(ssid: String)
+    /** Rilegge la posizione approssimativa di casa. */
+    fun locateHome()
+    fun restartLauncher()
     fun pickLightsWidget()
     fun postNotifications()
     fun usageAccess()
@@ -164,6 +173,9 @@ fun SettingsScreen(
     var plugDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
     var page by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
+    // Conferma del Wi-Fi di casa: null = chiusa, vuoto = Android non dice il nome
+    var wifiConfirm by remember { mutableStateOf<String?>(null) }
+    var restartConfirm by remember { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     // Dove salvare l'app scelta per un gesto; null = scelta chiusa
@@ -301,6 +313,9 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+            if (query.isBlank()) Group(stringResource(R.string.section_app)) {
+                ClickRow(stringResource(R.string.restart_launcher), stringResource(R.string.restart_launcher_sub)) { restartConfirm = true }
             }
             if (query.isBlank()) Text(
                 stringResource(R.string.version_line, com.gabrielepiccione.onda.BuildConfig.VERSION_NAME),
@@ -476,16 +491,13 @@ fun SettingsScreen(
                 }
                 ClickRow(
                     stringResource(R.string.lights_wifi),
-                    settings.homeWifi.ifBlank { stringResource(R.string.lights_wifi_none) },
-                ) { actions.setHomeHere() }
-                Text(stringResource(R.string.lights_wifi_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                    if (settings.homeWifi.isBlank()) stringResource(R.string.lights_wifi_none) else stringResource(R.string.lights_wifi_saved, settings.homeWifi),
+                ) { wifiConfirm = actions.currentWifi().orEmpty() }
                 ClickRow(
                     stringResource(R.string.lights_widget),
                     stringResource(if (settings.homeLightsWidget > 0) R.string.lights_widget_set else R.string.lights_widget_none),
                 ) { actions.pickLightsWidget() }
-                if (settings.homeLatitude == 0.0 && settings.homeLongitude == 0.0) {
-                    Text(stringResource(R.string.lights_no_location), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
-                }
+                LightsStatus(settings, status.locationPermission, onLocate = { actions.locateHome() })
             }
         }
 
@@ -866,6 +878,37 @@ fun SettingsScreen(
         )
     }
 
+    wifiConfirm?.let { ssid ->
+        AlertDialog(
+            onDismissRequest = { wifiConfirm = null },
+            title = { Text(stringResource(R.string.lights_wifi)) },
+            text = {
+                Text(
+                    if (ssid.isBlank()) stringResource(R.string.lights_wifi_unknown) else stringResource(R.string.lights_wifi_confirm, ssid),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            },
+            confirmButton = {
+                if (ssid.isNotBlank()) {
+                    TextButton(onClick = { actions.saveHome(ssid); wifiConfirm = null }) { Text(stringResource(R.string.lights_wifi_use)) }
+                } else if (!status.locationPermission) {
+                    TextButton(onClick = { actions.locationPermission(); wifiConfirm = null }) { Text(stringResource(R.string.lights_permission)) }
+                }
+            },
+            dismissButton = { TextButton(onClick = { wifiConfirm = null }) { Text(stringResource(R.string.breaker_cancel)) } },
+        )
+    }
+
+    if (restartConfirm) {
+        AlertDialog(
+            onDismissRequest = { restartConfirm = false },
+            title = { Text(stringResource(R.string.restart_launcher)) },
+            text = { Text(stringResource(R.string.restart_launcher_body)) },
+            confirmButton = { TextButton(onClick = { actions.restartLauncher() }) { Text(stringResource(R.string.restart_launcher_go)) } },
+            dismissButton = { TextButton(onClick = { restartConfirm = false }) { Text(stringResource(R.string.breaker_cancel)) } },
+        )
+    }
+
     if (iconPackDialog) {
         val packs = remember { IconPacks.installed(context) }
         AlertDialog(
@@ -1122,5 +1165,83 @@ private fun StatusRow(title: String, ok: Boolean, okText: String, koText: String
             Text(title, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
             Text(if (ok) okText else koText, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
         }
+    }
+}
+
+/**
+ * Stato delle luci di casa in diretta: cosa vede il telefono adesso e, se il widget non c'è, il primo
+ * motivo da sistemare. Si aggiorna ogni 5 secondi mentre la pagina è aperta.
+ */
+@Composable
+private fun LightsStatus(settings: Settings, permission: Boolean, onLocate: () -> Unit) {
+    val colors = LocalOndaColors.current
+    val context = LocalContext.current
+    var tick by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(5_000)
+            tick++
+        }
+    }
+    val ssid = remember(tick, permission) { HomePresence.currentSsid(context) }
+    val locationOn = remember(tick) { HomePresence.locationEnabled(context) }
+    val hasPlace = settings.homeLatitude != 0.0 || settings.homeLongitude != 0.0
+    val sun = remember(settings.homeLatitude, settings.homeLongitude) {
+        if (hasPlace) HomeLights.sunTimes(java.time.LocalDate.now(), settings.homeLatitude, settings.homeLongitude) else null
+    }
+    val minute = java.time.LocalTime.now().let { it.hour * 60 + it.minute }
+    val dark = HomeLights.isDark(System.currentTimeMillis(), sun, minute)
+    val missing = HomeLights.missing(settings.homeLights, permission, locationOn, settings.homeLightsWidget, ssid, settings.homeWifi, dark)
+    val time = java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT)
+    fun clock(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault()).toLocalTime().format(time)
+
+    Column(
+        Modifier
+            .padding(top = 12.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.panelHigh)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(stringResource(R.string.lights_status_title), color = colors.accent, style = MaterialTheme.typography.labelLarge)
+        StatusLine(stringResource(R.string.lights_status_wifi_now), ssid ?: stringResource(R.string.lights_status_unknown), ssid != null)
+        StatusLine(stringResource(R.string.lights_status_home), stringResource(if (HomeLights.isHome(ssid, settings.homeWifi)) R.string.yes else R.string.no), HomeLights.isHome(ssid, settings.homeWifi))
+        StatusLine(
+            stringResource(R.string.lights_status_dark),
+            if (sun != null) stringResource(R.string.lights_status_sun, clock(sun.sunset - HomeLights.DUSK_MARGIN_MS), clock(sun.sunrise))
+            else stringResource(R.string.lights_status_fallback),
+            dark,
+        )
+        StatusLine(stringResource(R.string.lights_widget), stringResource(if (settings.homeLightsWidget > 0) R.string.lights_widget_set else R.string.lights_widget_none), settings.homeLightsWidget > 0)
+        Text(
+            when (missing) {
+                null -> stringResource(R.string.lights_ok)
+                HomeLights.Missing.DISABLED -> stringResource(R.string.lights_why_disabled)
+                HomeLights.Missing.PERMISSION -> stringResource(R.string.lights_why_permission)
+                HomeLights.Missing.LOCATION_OFF -> stringResource(R.string.lights_why_location_off)
+                HomeLights.Missing.NO_HOME_WIFI -> stringResource(R.string.lights_why_no_home)
+                HomeLights.Missing.NOT_HOME -> stringResource(R.string.lights_why_not_home)
+                HomeLights.Missing.NO_WIDGET -> stringResource(R.string.lights_why_no_widget)
+                HomeLights.Missing.NOT_DARK -> stringResource(R.string.lights_why_not_dark)
+            },
+            color = colors.onWallpaper,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+        if (!hasPlace && permission) {
+            TextButton(onClick = onLocate) { Text(stringResource(R.string.lights_locate)) }
+        }
+    }
+}
+
+@Composable
+private fun StatusLine(label: String, value: String, ok: Boolean) {
+    val colors = LocalOndaColors.current
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(if (ok) Icons.Filled.Check else Icons.Filled.Close, null, tint = if (ok) colors.accent else colors.onWallpaperMuted, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+        Text(value, color = colors.onWallpaper, style = MaterialTheme.typography.bodySmall)
     }
 }

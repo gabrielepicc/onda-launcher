@@ -52,18 +52,32 @@ class HomeLightsTest {
     @Test
     fun darkFromJustBeforeSunsetUntilSunrise() {
         val sun = SunTimes(sunrise = 1_000_000L, sunset = 10_000_000L)
-        assertTrue(HomeLights.isDark(500_000L, sun))
-        assertFalse(HomeLights.isDark(5_000_000L, sun))
-        assertTrue(HomeLights.isDark(10_000_000L - 60_000L, sun))
-        assertFalse(HomeLights.isDark(5_000_000L, null))
+        assertTrue(HomeLights.isDark(500_000L, sun, 0))
+        assertFalse(HomeLights.isDark(5_000_000L, sun, 0))
+        assertTrue(HomeLights.isDark(10_000_000L - 60_000L, sun, 0))
+        // Senza posizione: dalle 19 alle 7
+        assertTrue(HomeLights.isDark(5_000_000L, null, 21 * 60 + 35))
+        assertTrue(HomeLights.isDark(5_000_000L, null, 6 * 60))
+        assertFalse(HomeLights.isDark(5_000_000L, null, 12 * 60))
     }
 
     @Test
     fun showsOnlyWithEverythingInPlace() {
         val sun = SunTimes(1_000_000L, 10_000_000L)
-        assertTrue(HomeLights.shouldShow(true, 7, "\"Casa\"", "Casa", 11_000_000L, sun))
-        assertFalse(HomeLights.shouldShow(false, 7, "\"Casa\"", "Casa", 11_000_000L, sun))
-        assertFalse(HomeLights.shouldShow(true, 0, "\"Casa\"", "Casa", 11_000_000L, sun))
-        assertFalse(HomeLights.shouldShow(true, 7, "\"Casa\"", "Casa", 5_000_000L, sun))
+        assertTrue(HomeLights.shouldShow(true, 7, "\"Casa\"", "Casa", 11_000_000L, sun, 0))
+        assertFalse(HomeLights.shouldShow(false, 7, "\"Casa\"", "Casa", 11_000_000L, sun, 0))
+        assertFalse(HomeLights.shouldShow(true, 0, "\"Casa\"", "Casa", 11_000_000L, sun, 0))
+        assertFalse(HomeLights.shouldShow(true, 7, "\"Casa\"", "Casa", 5_000_000L, sun, 0))
+    }
+
+    @Test
+    fun missingSaysWhatToFixFirst() {
+        assertEquals(HomeLights.Missing.PERMISSION, HomeLights.missing(true, false, true, 7, "Casa", "Casa", true))
+        assertEquals(HomeLights.Missing.LOCATION_OFF, HomeLights.missing(true, true, false, 7, null, "Casa", true))
+        assertEquals(HomeLights.Missing.NO_HOME_WIFI, HomeLights.missing(true, true, true, 7, "Casa", "", true))
+        assertEquals(HomeLights.Missing.NOT_HOME, HomeLights.missing(true, true, true, 7, "Ufficio", "Casa", true))
+        assertEquals(HomeLights.Missing.NO_WIDGET, HomeLights.missing(true, true, true, 0, "Casa", "Casa", true))
+        assertEquals(HomeLights.Missing.NOT_DARK, HomeLights.missing(true, true, true, 7, "Casa", "Casa", false))
+        assertNull(HomeLights.missing(true, true, true, 7, "Casa", "Casa", true))
     }
 }

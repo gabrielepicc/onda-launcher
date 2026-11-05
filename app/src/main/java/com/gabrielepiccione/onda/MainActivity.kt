@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import android.content.ComponentName
 import com.gabrielepiccione.onda.data.BluetoothWatcher
 import com.gabrielepiccione.onda.data.HomePresence
 import androidx.core.content.FileProvider
@@ -355,6 +356,13 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     override fun requestWeatherPermission() = weatherLauncher.launch(WeatherRepository.PERMISSION)
     override fun requestLocationPermission() = locationLauncher.launch(HomePresence.PERMISSIONS)
+    /** Chiude e riapre Onda da capo: utile se qualcosa resta in uno stato strano. */
+    override fun restartLauncher() {
+        val restart = Intent.makeRestartActivityTask(ComponentName(this, MainActivity::class.java))
+        startActivity(restart)
+        Runtime.getRuntime().exit(0)
+    }
+
     override fun requestBluetoothPermission() {
         BluetoothWatcher.PERMISSION?.let { bluetoothLauncher.launch(it) }
     }
