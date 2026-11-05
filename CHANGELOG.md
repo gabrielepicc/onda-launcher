@@ -4,6 +4,10 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Sfondo "a ritmo di musica"** (Musica, passo 6, approvato).
+  - Con l'analizzatore audio di Android lo sfondo pulsa sui bassi (20–150 Hz) dell'audio in riproduzione.
+  - Spento di default; il permesso microfono si chiede solo scegliendolo, dopo una spiegazione.
+  - Legge solo l'intensità delle frequenze, mentre suona e Onda si vede: niente viene registrato o salvato.
 - **Cuffie** (Musica, passo 5).
   - Plug & Play può valere per cuffie precise, scelte per nome; Android lo dà senza permessi.
   - Nuova opzione "Riprendi la musica", spenta di default: collegando le cuffie riparte l'app scelta, mai durante una chiamata o se qualcosa suona già.

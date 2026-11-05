@@ -757,4 +757,8 @@
     <string name="plug_play_device_hint">Quelle collegate adesso sono qui sopra. Oppure scrivi il nome come lo mostra il telefono.</string>
     <string name="plug_play_resume">Riprendi la musica</string>
     <string name="plug_play_resume_sub">Collegando queste cuffie, l\'app scelta (o l\'ultima che ha suonato) riparte. Mai durante una chiamata o se qualcosa sta già suonando.</string>
+    <string name="music_backdrop_beat">A ritmo di musica</string>
+    <string name="music_beat_title">Sfondo a ritmo di musica</string>
+    <string name="music_beat_body">Per pulsare sui bassi, Onda legge l\'intensità delle frequenze del suono che esce dal telefono, istante per istante, con l\'analizzatore audio di Android. Android lo chiama permesso \"microfono\", ma dal microfono non si registra nulla, non si salva nulla e niente lascia il telefono. Funziona solo mentre suona la musica e Onda è sullo schermo. Puoi spegnerlo quando vuoi.</string>
+    <string name="music_beat_allow">Continua</string>
 </resources>

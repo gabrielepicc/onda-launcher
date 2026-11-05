@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.material.icons.filled.GraphicEq
 import com.gabrielepiccione.onda.data.PrefixKind
 import com.gabrielepiccione.onda.data.SearchPrefixes
 import com.gabrielepiccione.onda.data.MusicBackdropMode
@@ -123,6 +124,7 @@ data class SettingsStatus(
     val weatherInstalled: Boolean = false,
     val weatherPermission: Boolean = false,
     val locationPermission: Boolean = false,
+    val microphonePermission: Boolean = false,
     val usageAccess: Boolean = false,
     val postNotifications: Boolean = false,
 )
@@ -136,6 +138,7 @@ interface SettingsActions {
     fun weatherPermission()
     fun locationPermission()
     fun bluetoothPermission()
+    fun microphonePermission()
     /** Nome del Wi-Fi collegato adesso, o null se Android non lo dice. */
     fun currentWifi(): String?
     /** Salva [ssid] come Wi-Fi di casa e, se manca, la posizione approssimativa. */
@@ -191,6 +194,7 @@ fun SettingsScreen(
     var restartConfirm by remember { mutableStateOf(false) }
     var musicAppPick by remember { mutableStateOf<List<String>?>(null) }
     var deviceDialog by remember { mutableStateOf(false) }
+    var beatExplain by remember { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     // Dove salvare l'app scelta per un gesto; null = scelta chiusa
@@ -342,10 +346,14 @@ fun SettingsScreen(
                     MusicBackdropMode.OFF to stringResource(R.string.music_backdrop_off),
                     MusicBackdropMode.COLORS to stringResource(R.string.music_backdrop_colors),
                     MusicBackdropMode.MOTION to stringResource(R.string.music_backdrop_motion),
+                    MusicBackdropMode.BEAT to stringResource(R.string.music_backdrop_beat),
                 ),
                 settings.musicBackdrop,
-                columns = 3,
-            ) { m -> onEdit { it.copy(musicBackdrop = m) } }
+                columns = 2,
+            ) { m ->
+                // "A ritmo" chiede il microfono: prima si spiega perché, poi si chiede
+                if (m == MusicBackdropMode.BEAT && !status.microphonePermission) beatExplain = true else onEdit { it.copy(musicBackdrop = m) }
+            }
             if (settings.musicBackdrop != MusicBackdropMode.OFF) {
                 // Anteprima dal vivo con i colori di esempio: com'è lo strato sotto la velatura
                 Box(
@@ -980,6 +988,23 @@ fun SettingsScreen(
                 }
             },
             dismissButton = { TextButton(onClick = { wifiConfirm = null }) { Text(stringResource(R.string.breaker_cancel)) } },
+        )
+    }
+
+    if (beatExplain) {
+        AlertDialog(
+            onDismissRequest = { beatExplain = false },
+            icon = { Icon(Icons.Filled.GraphicEq, null) },
+            title = { Text(stringResource(R.string.music_beat_title)) },
+            text = { Text(stringResource(R.string.music_beat_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    beatExplain = false
+                    onEdit { it.copy(musicBackdrop = MusicBackdropMode.BEAT) }
+                    actions.microphonePermission()
+                }) { Text(stringResource(R.string.music_beat_allow)) }
+            },
+            dismissButton = { TextButton(onClick = { beatExplain = false }) { Text(stringResource(R.string.breaker_cancel)) } },
         )
     }
 
