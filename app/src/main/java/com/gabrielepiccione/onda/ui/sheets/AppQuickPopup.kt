@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.sheets
 
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.rememberCoroutineScope
+import com.gabrielepiccione.onda.ui.theme.Motion
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.LocalContentColor
 import com.gabrielepiccione.onda.util.HapticEvent
@@ -152,7 +156,19 @@ fun AppQuickPopup(
     val bars = WindowInsets.systemBars.asPaddingValues()
     val enter = remember(app.key) { Animatable(0f) }
     LaunchedEffect(app.key) { enter.animateTo(1f, spring(dampingRatio = 0.8f, stiffness = 700f)) }
-    BackHandler(onBack = onDismiss)
+    // Si chiude al contrario di come si è aperto; sparisce davvero solo a fine animazione
+    val scope = rememberCoroutineScope()
+    val closing = remember(app.key) { booleanArrayOf(false) }
+    val dismiss: () -> Unit = {
+        if (!closing[0]) {
+            closing[0] = true
+            scope.launch {
+                enter.animateTo(0f, tween(CLOSE_MILLIS, easing = Motion.EmphasizedAccelerate))
+                onDismiss()
+            }
+        }
+    }
+    BackHandler(onBack = dismiss)
 
     val above = remember { booleanArrayOf(false) }
     val screenWidth = config.screenWidthDp.dp
@@ -166,7 +182,7 @@ fun AppQuickPopup(
             .fillMaxSize()
             .graphicsLayer { alpha = enter.value.coerceIn(0f, 1f) }
             .background(Color.Black.copy(alpha = 0.25f))
-            .pointerInput(Unit) { detectTapGestures { onDismiss() } }
+            .pointerInput(Unit) { detectTapGestures { dismiss() } }
     ) {
         Column(
             Modifier
@@ -206,7 +222,7 @@ fun AppQuickPopup(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onOpenApp(); onDismiss() }
+                    .clickable { onOpenApp(); dismiss() }
                     .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 AppIcon(app, 36.dp, themedIcons)
@@ -218,8 +234,8 @@ fun AppQuickPopup(
                 Conversation(
                     item = n,
                     selectedForReply = false,
-                    onOpen = { onNotification(n); onDismiss() },
-                    onSelectReply = { onReply(n); onDismiss() },
+                    onOpen = { onNotification(n); dismiss() },
+                    onSelectReply = { onReply(n); dismiss() },
                     onAction = { a -> onNotificationAction(n, a) },
                     onDismiss = { onDismissNotification(n) },
                 )
@@ -236,7 +252,7 @@ fun AppQuickPopup(
                             modifier = Modifier
                                 .width(68.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .clickable { onRelatedApp(other); onDismiss() }
+                                .clickable { onRelatedApp(other); dismiss() }
                                 .padding(vertical = 8.dp),
                         ) {
                             AppIcon(other, 40.dp, themedIcons)
@@ -272,7 +288,7 @@ fun AppQuickPopup(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onShortcut(sc); onDismiss() }
+                        .clickable { onShortcut(sc); dismiss() }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     if (icon != null) {
@@ -290,7 +306,7 @@ fun AppQuickPopup(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { stop(); onDismiss() }
+                        .clickable { stop(); dismiss() }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     Icon(Icons.Filled.VisibilityOff, null, tint = colors.accent, modifier = Modifier.size(24.dp))
@@ -306,11 +322,11 @@ fun AppQuickPopup(
                 QuickAction(
                     if (app.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
                     stringResource(if (app.isFavorite) R.string.favorite_remove else R.string.favorite_add),
-                ) { onToggleFavorite(); onDismiss() }
-                QuickAction(Icons.Filled.Info, stringResource(R.string.app_info)) { onInfo(); onDismiss() }
-                QuickAction(Icons.Filled.Delete, stringResource(R.string.uninstall)) { onUninstall(); onDismiss() }
-                QuickAction(Icons.Filled.Edit, stringResource(R.string.popup_edit)) { onEdit(); onDismiss() }
-                QuickAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { onMoreOptions(); onDismiss() }
+                ) { onToggleFavorite(); dismiss() }
+                QuickAction(Icons.Filled.Info, stringResource(R.string.app_info)) { onInfo(); dismiss() }
+                QuickAction(Icons.Filled.Delete, stringResource(R.string.uninstall)) { onUninstall(); dismiss() }
+                QuickAction(Icons.Filled.Edit, stringResource(R.string.popup_edit)) { onEdit(); dismiss() }
+                QuickAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { onMoreOptions(); dismiss() }
             }
         }
     }
@@ -330,3 +346,5 @@ private fun QuickAction(icon: ImageVector, description: String, onClick: () -> U
         Icon(icon, null, tint = LocalOndaColors.current.onWallpaper)
     }
 }
+
+private const val CLOSE_MILLIS = 150
