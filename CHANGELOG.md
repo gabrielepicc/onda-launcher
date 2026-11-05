@@ -12,7 +12,14 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
   Orologio, testo, icone, home, alfabeto e ricerca hanno ora pagine separate, con un'anteprima in alto che cambia mentre modifichi.
   Le scelte si vedono invece di essere solo nomi: stili dell'orologio, caratteri, stili e forme delle icone, tema, allineamento.
   Un telefono in miniatura mostra la home; toccandolo o trascinando si sceglie dove inizia.
-- **Alfabeto**: si possono regolare la dimensione delle lettere e la distanza tra loro.
+- **Alfabeto**: si possono regolare la dimensione delle lettere e la distanza tra loro. La prima app della lettera scelta
+  va al centro dello schermo, qualunque sia la lettera.
+- **Elenco delle app**: in alto le righe svaniscono prima di arrivare alla barra di stato.
+- **Player**: la dimensione ora cambia tutto il player, non solo il testo.
+- **Popup dell'app**: si chiude con un'animazione.
+- **Cartelle**: via la freccetta; molti più simboli e icone prese dagli icon pack, salvate anche nel backup.
+- **Cambia icona**: scelta del pack e ricerca restano ferme sopra la griglia e la tastiera non salta più.
+- **Notifiche**: anteprima di immagini e sticker, quando l'app li rende disponibili. Le GIF mostrano il primo fotogramma.
 - **Gesti**: ogni gesto dice dove si fa e cosa fa ora; quelli sempre attivi sono elencati uno per riga.
 
 ## [0.10.0]
