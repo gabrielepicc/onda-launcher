@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Alfabeto**: si può iniziare a scorrere ovunque lungo il bordo, mentre le lettere restano raccolte in basso.
+  In cima c'è una stella che riporta ai preferiti.
 - **Meteo senza internet**: la temperatura accanto alla data e le previsioni (24 ore e 7 giorni) arrivano dall'app
   Breezy Weather, se installata. Si attiva nelle impostazioni della home; il permesso viene chiesto solo allora.
 - **Foglio agenda**: toccando la data si aprono meteo ed eventi dei prossimi 7 giorni, invece del calendario di sistema.

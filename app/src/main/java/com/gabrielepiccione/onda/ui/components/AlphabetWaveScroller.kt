@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.AlphabetLayout
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
@@ -22,9 +23,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -98,26 +96,24 @@ fun AlphabetWaveScroller(
     val measured = remember(letters, letterStyle) { letters.map { measurer.measure(it.toString(), letterStyle) } }
     val bubbleLayouts = remember(letters, bubbleStyle) { letters.map { measurer.measure(it.toString(), bubbleStyle) } }
 
-    // La colonna è alta quanto le lettere (passo massimo [MAX_LETTER_STEP]) e ancorata in basso,
-    // vicino al pollice: con poche lettere è più corta, con molte usa al massimo lo spazio disponibile.
-    BoxWithConstraints(modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
-    val columnHeight = minOf(maxHeight, MAX_LETTER_STEP * letters.size)
+    // La zona di tocco è alta tutto il bordo: si può iniziare a scorrere ovunque. La colonna visibile
+    // resta alta quanto le lettere (passo massimo [MAX_LETTER_STEP]) e ancorata in basso, vicino al pollice.
     Canvas(
-        Modifier
-            .height(columnHeight)
+        modifier
+            .fillMaxHeight()
             .width(if (showLetters) 36.dp else 28.dp)
             .onGloballyPositioned { originY[0] = it.positionInRoot().y }
             .pointerInput(letters.size) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
                     down.consume()
-                    val step = size.height.toFloat() / currentLetters.size
+                    val maxStepPx = MAX_LETTER_STEP.toPx()
                     currentOnStart()
                     scope.launch { intensity.animateTo(1f, spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMediumLow)) }
 
                     fun update(y: Float) {
                         touchY.floatValue = y.coerceIn(0f, size.height.toFloat())
-                        val idx = (y / step).toInt().coerceIn(0, currentLetters.lastIndex)
+                        val idx = AlphabetLayout.indexAt(y, size.height.toFloat(), currentLetters.size, maxStepPx)
                         if (idx != selected.intValue) {
                             selected.intValue = idx
                             ondaHaptics?.perform(if (idx == 0 || idx == currentLetters.lastIndex) HapticEvent.EDGE else HapticEvent.LETTER)
@@ -161,9 +157,11 @@ fun AlphabetWaveScroller(
             }
     ) {
         val n = letters.size
-        val step = size.height / n
+        val maxStepPx = MAX_LETTER_STEP.toPx()
+        val step = AlphabetLayout.step(size.height, n, maxStepPx)
+        val columnTop = AlphabetLayout.top(size.height, n, maxStepPx)
         val k = intensity.value
-        val center = touchY.floatValue / step - 0.5f
+        val center = (touchY.floatValue - columnTop) / step - 0.5f
         val maxShift = 52.dp.toPx()
         val sigma = 2.4f
         val dir = if (leftSide) 1f else -1f
@@ -174,7 +172,7 @@ fun AlphabetWaveScroller(
                 val wave = if (k > 0f) exp(-(d * d) / (2 * sigma * sigma)) * k else 0f
                 val layout = measured[i]
                 val cx = size.width / 2f + dir * maxShift * wave
-                val cy = i * step + step / 2f
+                val cy = columnTop + i * step + step / 2f
                 val s = 1f + 1.15f * wave
                 scale(s, s, pivot = Offset(cx, cy)) {
                     drawText(
@@ -205,7 +203,6 @@ fun AlphabetWaveScroller(
                 alpha = k.coerceIn(0f, 1f),
             )
         }
-    }
     }
 }
 

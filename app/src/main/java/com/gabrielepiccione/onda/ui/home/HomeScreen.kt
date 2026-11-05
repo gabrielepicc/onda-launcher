@@ -231,7 +231,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         buildSections(state.allApps, settings.launchCounts, alphabetContacts)
     }
     // Il segno finale porta a cartelle e voci di Onda in fondo all'elenco
-    val letters = remember(sections) { sections.map { it.letter } + END_OF_LIST_MARK }
+    val letters = remember(sections) { listOf(FAVORITES_MARK) + sections.map { it.letter } + END_OF_LIST_MARK }
     var recentSheet by remember { mutableStateOf(false) }
     val iconScale = settings.iconSize
 
@@ -792,7 +792,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         // così la prima app è subito sotto il pollice; vicino agli estremi l'elenco si ferma da solo.
         val listTopPx = with(density) { (bars.calculateTopPadding() + 16.dp).toPx() }
         val headerHalfPx = with(density) { 24.dp.toPx() }
-        val onLetter: (Char, Float) -> Unit = { letter, fingerY ->
+        val onLetter: (Char, Float) -> Unit = onLetter@{ letter, fingerY ->
+            // La stella riporta ai preferiti; scendendo sulle lettere l'elenco torna subito
+            if (letter == FAVORITES_MARK) {
+                overlay = Overlay.NONE
+                scope.launch { homeList.animateScrollToItem(0) }
+                return@onLetter
+            }
+            overlay = Overlay.ALL_APPS
             val target = if (letter == END_OF_LIST_MARK) {
                 val privateShown = privateSpace?.takeUnless { settings.hidePrivateSpace } != null
                 val privateRows = if (privateShown) 1 + state.privateApps.size else 0
