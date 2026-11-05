@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Swipe sulle righe più leggero**:
+  - Niente più fondo pieno scuro. La riga che si sposta resta trasparente, con una velatura leggerissima, e si vede sempre lo sfondo.
+  - La traccia dietro nasce invisibile e si colora d'accento fino a circa il 22% alla soglia; superata la soglia passa al colore contenitore al 35%, con la vibrazione di sempre.
+  - L'icona dell'azione appare con una dissolvenza e si ingrandisce alla soglia. Rilasciando prima, tutto torna trasparente con una molla morbida.
+  - Il pulsante di ricerca si fa piccolo e tenue mentre trascini una riga, e in home le ultime righe restano sopra di lui.
 - **Sfondo "a ritmo di musica"** (Musica, passo 6, approvato).
   - Con l'analizzatore audio di Android lo sfondo pulsa sui bassi (20–150 Hz) dell'audio in riproduzione.
   - Spento di default; il permesso microfono si chiede solo scegliendolo, dopo una spiegazione.

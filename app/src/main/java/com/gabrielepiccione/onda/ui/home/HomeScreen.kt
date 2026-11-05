@@ -617,7 +617,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 start = hiddenSide,
                 end = hiddenSide,
                 top = bars.calculateTopPadding() + 24.dp + chosenTop,
-                bottom = bars.calculateBottomPadding() + 28.dp,
+                // Con il pulsante di ricerca in basso le ultime righe restano sopra di lui
+                bottom = bars.calculateBottomPadding() + if (settings.showSearchButton) 88.dp else 28.dp,
             ),
             modifier = Modifier
                 .fillMaxSize()
