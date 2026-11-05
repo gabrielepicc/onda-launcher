@@ -54,6 +54,8 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 8. 🟡 Dopo la prima prova sul telefono (0.10):
    ✅ alfabeto che parte dal punto toccato; ✅ pulsante di ricerca nell'angolo;
    ✅ impostazioni rifatte: pagine per argomento, anteprima dal vivo su ogni pagina di aspetto, scelte visive, telefono in miniatura;
+   ✅ prima app della lettera al centro; ✅ sfumatura in cima all'elenco; ✅ player scalato per intero; ✅ chiusura animata del popup;
+   ✅ cartelle senza freccetta, con più simboli e icone dagli icon pack; ✅ ricerca delle icone stabile; ✅ immagini nelle notifiche (GIF ferme);
    ⬜ cerca nelle impostazioni, ⬜ posizione dell'alfabeto, ⬜ stessi selettori visivi nei fogli di modifica della home.
 
 ## Decisioni prese (modificabili)
