@@ -22,7 +22,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 2. 🟡 Fase 3 — Temi: ✅ `LookTheme` serializzabile, Theme Studio (salva/applica/rinomina/duplica/elimina), file `.onda-theme`
    con font incorporati, palette dallo sfondo anche su Android 8.1–11. ⬜ QR/deep link, sfondo automatico per orario
 3. 🟡 Fase 4 — ✅ agenda del calendario come blocco della home, ✅ blocca layout.
-   ✅ widget stack, ⬜ meteo Open-Meteo (**in attesa di decisione**: richiede il permesso INTERNET, valutare flavor `offline`)
+   ✅ widget stack, ⬜ meteo: si farà leggendo Breezy Weather installato, senza permesso INTERNET (Fase 7, passo 2)
 4. 🟡 Fase 5 — ✅ prefissi di ricerca (= @ /), ✅ scorciatoie impostazioni di sistema, ✅ motore web selezionabile,
    ✅ Plug & Play cuffie, ✅ app protette con biometria e protezione delle app nascoste.
    ✅ Usage Breaker, ✅ contatti dall'alfabeto, ✅ riepilogo notifiche, ⬜ conversioni unità/valute
@@ -33,20 +33,27 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ annulla dopo un preset e conferma prima di eliminare un widget
 6. ✅ Fase 6 — ✅ gesture configurabili estese, ✅ animazioni di apertura app, ✅ landscape/tablet, ✅ Private Space, ✅ onboarding, ✅ backup automatico
 
-7. 🟡 Fase 7 — Parità con Niagara (0.10 in corso): ✅ fondo elenco con cartelle, installate di recente e impostazioni;
-   ✅ alfabeto compatto allineato al dito; ✅ ricerca sopra lo sfondo; ✅ feedback aptico a colpi distinti;
-   ✅ player solo in riproduzione; ✅ cartelle con icona, carosello di widget e altezza.
-   Prossime: alfabeto localizzato, suggerimenti sotto i preferiti, popup dell'app come cartella, Usage Breaker a promemoria,
-   backup completo, stella dei preferiti in cima all'alfabeto.
-   Fase 7 — Parità con Niagara: elenco dettagliato e priorità in `docs/niagara-gap.md`.
-   Prima: alfabeto localizzato, suggerimenti nella home, popup dell'app come cartella, Usage Breaker a promemoria,
-   backup completo (impostazioni + icone + font + temi, pianificato con WorkManager), taratura dei gesti.
+7. 🟡 Fase 7 — Parità con Niagara (versione 0.10 in corso, non ancora rilasciata). Elenco completo e priorità in `docs/niagara-gap.md`.
+   Fatto (PR #2–#7): ✅ fondo elenco con cartelle, "Installate di recente" e "Impostazioni di Onda" (segno • sull'alfabeto);
+   ✅ alfabeto compatto ancorato in basso e lettera allineata al dito; ✅ ricerca sopra lo sfondo (niente pannello nero);
+   ✅ feedback aptico a colpi distinti con "Prova la vibrazione"; ✅ player solo con riproduzione attiva (60 s dopo la pausa);
+   ✅ cartelle con icona personalizzabile, widget in carosello e altezza regolabile; ✅ titolo delle notifiche leggibile nel popup.
+
+   **Prossimi passi, in ordine** (una voce = un branch = una PR):
+   1. Aggiungi alla home dalle altre app: richieste di pin di scorciatoie e widget (gap 12.2).
+   2. Meteo senza internet da Breezy Weather (gap 12.1, 7.1): orologio + foglio agenda toccando la data (1.5).
+   3. Alfabeto: zona di tocco a tutta altezza con colonna visibile compatta (12.3) e stella dei preferiti in cima (10.1).
+   4. Alfabeto localizzato con `AlphabeticIndex` (2.1).
+   5. App suggerite sotto i preferiti con "Smetti di suggerire" (1.1, 10.9).
+   6. Popup dell'app come cartella: app correlate, widget e pile, scorciatoie nascondibili (3.1, 3.2).
+   7. Usage Breaker a promemoria (6.1) e backup completo con WorkManager (9.1).
+   8. Rilascio 0.10: versionCode 10, changelog fastlane 10.txt, roadmap.
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.
 - Spazio privato fuori da alfabeto, ricerca e suggerimenti, in un contenitore separato come chiede Android: si raggiunge da fondo elenco.
 - Si lavora su branch + PR, unione solo con CI verde (vedi CLAUDE.md).
-- Meteo rimandato: aggiungerebbe la prima connessione a internet dell'app; serve l'OK dell'utente.
+- Meteo senza connessione: Onda legge i dati dall'app Breezy Weather (se installata). Open-Meteo diretto resta escluso finché l'utente non dà l'OK al permesso INTERNET.
 - Plug & Play mostra l'app scelta in cima ai preferiti (non un blocco separato), solo mentre le cuffie sono collegate.
 - App protette senza blocco schermo configurato: si aprono comunque, con un avviso (non c'è nulla da verificare).
