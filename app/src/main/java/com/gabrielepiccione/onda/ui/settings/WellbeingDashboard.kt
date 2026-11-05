@@ -194,22 +194,7 @@ internal fun WellbeingDashboard(
 }
 
 @Composable
-private fun DashCard(title: String, content: @Composable () -> Unit) {
-    val colors = LocalOndaColors.current
-    Text(
-        title,
-        color = colors.accent,
-        style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(start = 8.dp, top = 24.dp, bottom = 8.dp),
-    )
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(colors.panel)
-            .padding(horizontal = 18.dp, vertical = 16.dp),
-    ) { content() }
-}
+private fun DashCard(title: String, content: @Composable () -> Unit) = SettingsSection(title) { content() }
 
 @Composable
 private fun StatTile(value: String, label: String, modifier: Modifier) {
@@ -423,7 +408,7 @@ private fun LimitDialog(label: String, current: Int, averageMs: Long, onSave: (I
                     valueRange = 0f..MAX_LIMIT.toFloat(),
                 )
                 Text(stringResource(R.string.wellbeing_limit_average, durationText(averageMs)), style = MaterialTheme.typography.bodyMedium)
-                Text(stringResource(R.string.wellbeing_limit_how), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.wellbeing_limit_how), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
             }
         },
         confirmButton = { TextButton(onClick = { onSave(minutes) }) { Text(stringResource(R.string.wellbeing_limit_save)) } },

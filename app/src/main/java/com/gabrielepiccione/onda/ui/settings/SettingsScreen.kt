@@ -2,6 +2,13 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.ui.text.style.TextOverflow
 import com.gabrielepiccione.onda.data.HomeLights
 import com.gabrielepiccione.onda.data.HomePresence
 import androidx.compose.runtime.mutableIntStateOf
@@ -62,7 +69,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
@@ -153,6 +159,7 @@ interface SettingsActions {
     fun close()
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     settings: Settings,
@@ -184,25 +191,24 @@ fun SettingsScreen(
     val onEdit = actions::edit
     BackHandler(enabled = page != null) { page = null }
 
-    Column(Modifier.fillMaxSize().blockTouches()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(colors.scrim)
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(48.dp).clip(CircleShape).clickable { if (page != null) page = null else actions.close() }
-            ) {
-                @Suppress("DEPRECATION")
-                Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.onWallpaper)
-            }
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(page?.titleRes ?: R.string.settings), style = MaterialTheme.typography.titleLarge, color = colors.onWallpaper)
-        }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Column(Modifier.fillMaxSize().blockTouches().nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        LargeTopAppBar(
+            title = { Text(stringResource(page?.titleRes ?: R.string.settings), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            navigationIcon = {
+                IconButton(onClick = { if (page != null) page = null else actions.close() }) {
+                    @Suppress("DEPRECATION")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                }
+            },
+            colors = TopAppBarDefaults.largeTopAppBarColors(
+                containerColor = colors.scrim,
+                scrolledContainerColor = colors.panel,
+                titleContentColor = colors.onWallpaper,
+                navigationIconContentColor = colors.onWallpaper,
+            ),
+            scrollBehavior = scrollBehavior,
+        )
 
         // Anteprima dal vivo sopra lo sfondo vero: resta ferma mentre sotto si scorre e si modifica
         if (LocalConfiguration.current.screenHeightDp >= MIN_HEIGHT_FOR_PREVIEW) {
@@ -274,19 +280,10 @@ fun SettingsScreen(
                 }
                 Group(stringResource(R.string.settings_search_results)) {
                     if (found.isEmpty()) {
-                        Text(stringResource(R.string.settings_search_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+                        SettingsSupporting(stringResource(R.string.settings_search_none))
                     }
                     found.forEach { e ->
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable { page = e.page; query = "" }
-                                .padding(vertical = 10.dp),
-                        ) {
-                            Text(stringResource(e.titleRes), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-                            Text(stringResource(e.page.titleRes), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
-                        }
+                        SettingsItem(stringResource(e.titleRes), stringResource(e.page.titleRes), onClick = { page = e.page; query = "" })
                     }
                 }
             }
@@ -309,7 +306,7 @@ fun SettingsScreen(
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
                             Text(stringResource(p.titleRes), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-                            Text(stringResource(p.subRes), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                            SettingsSupporting(stringResource(p.subRes))
                         }
                     }
                 }
@@ -326,7 +323,7 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.STYLE) Group(stringResource(R.string.section_styles)) {
-            Text(stringResource(R.string.styles_subtitle), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SettingsSupporting(stringResource(R.string.styles_subtitle))
             FilledTonalButton(onClick = { actions.openStyles() }, modifier = Modifier.padding(top = 10.dp)) { Text(stringResource(R.string.styles_open)) }
         }
 
@@ -416,7 +413,7 @@ fun SettingsScreen(
                 IconStyleTiles(settings.iconStyle, sample) { id -> onEdit { it.copy(iconStyle = id) } }
                 Label(stringResource(R.string.icon_shape))
                 IconShapeTiles(settings.iconShape) { id -> onEdit { it.copy(iconShape = id) } }
-                Text(stringResource(R.string.icon_shape_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                SettingsSupporting(stringResource(R.string.icon_shape_hint))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     SwitchRow(stringResource(R.string.themed_icons), stringResource(R.string.themed_icons_sub), settings.themedIcons) { v -> onEdit { it.copy(themedIcons = v) } }
                 }
@@ -448,7 +445,7 @@ fun SettingsScreen(
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_widgets)) {
             val homeWidgets = settings.widgetIds + settings.widgetStacks.flatMap { it.widgets }
             if (homeWidgets.isEmpty()) {
-                Text(stringResource(R.string.no_home_widgets), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+                SettingsSupporting(stringResource(R.string.no_home_widgets))
             }
             homeWidgets.forEach { id ->
                 val info = widgets.infoFor(id)
@@ -469,7 +466,7 @@ fun SettingsScreen(
                 settings.notificationImages,
                 columns = 3,
             ) { v -> onEdit { it.copy(notificationImages = v) } }
-            Text(stringResource(R.string.notif_images_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            SettingsSupporting(stringResource(R.string.notif_images_sub))
             SwitchRow(stringResource(R.string.suggested_setting), stringResource(R.string.suggested_setting_sub), settings.suggestInHome) { v -> onEdit { it.copy(suggestInHome = v) } }
             allApps.filter { it.key in settings.suggestionsDismissed }.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -480,7 +477,7 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_lights)) {
-            Text(stringResource(R.string.lights_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SettingsSupporting(stringResource(R.string.lights_sub))
             SwitchRow(stringResource(R.string.lights_enable), null, settings.homeLights) { v ->
                 onEdit { it.copy(homeLights = v) }
                 if (v && !status.locationPermission) actions.locationPermission()
@@ -594,7 +591,7 @@ fun SettingsScreen(
                 ),
                 settings.searchEngine,
             ) { id -> onEdit { it.copy(searchEngine = id) } }
-            Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+            Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
         }
 
         if (page == SettingsPage.GESTURES) Group(stringResource(R.string.section_gestures_custom)) {
@@ -671,7 +668,7 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.APPS) Group(stringResource(R.string.section_plug_play)) {
-            Text(stringResource(R.string.plug_play_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SettingsSupporting(stringResource(R.string.plug_play_sub))
             val current = allApps.firstOrNull { it.key == settings.plugPlayApp }
             ClickRow(stringResource(R.string.plug_play_choose), current?.label ?: stringResource(R.string.plug_play_none)) { plugDialog = true }
         }
@@ -694,18 +691,18 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_limits)) {
-            Text(stringResource(R.string.limits_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SettingsSupporting(stringResource(R.string.limits_sub))
             if (settings.appLimits.isNotEmpty() && !status.postNotifications) {
                 StatusRow(stringResource(R.string.post_notifications), false, stringResource(R.string.post_notifications_ok), stringResource(R.string.post_notifications_ko)) { actions.postNotifications() }
             }
             if (settings.appLimits.isEmpty()) {
-                Text(stringResource(R.string.breaker_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                SettingsSupporting(stringResource(R.string.breaker_none))
             }
             settings.appLimits.forEach { (pkg, minutes) ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.weight(1f)) {
                         Text(allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-                        Text(durationText(minutes * 60_000L), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                        Text(durationText(minutes * 60_000L), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
                     }
                     TextButton(onClick = { onEdit { it.copy(appLimits = it.appLimits - pkg) } }) { Text(stringResource(R.string.remove)) }
                 }
@@ -713,7 +710,7 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_breaker)) {
-            Text(stringResource(R.string.breaker_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SettingsSupporting(stringResource(R.string.breaker_sub))
             if ((settings.breakerApps.isNotEmpty() || settings.appLimits.isNotEmpty()) && !status.accessibilityEnabled) {
                 StatusRow(stringResource(R.string.breaker_everywhere), false, stringResource(R.string.breaker_everywhere_ok), stringResource(R.string.breaker_everywhere_ko)) { actions.accessibility() }
             }
@@ -725,7 +722,7 @@ fun SettingsScreen(
             )
             val breakerApps = allApps.filter { it.key in settings.breakerApps }
             if (breakerApps.isEmpty()) {
-                Text(stringResource(R.string.breaker_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                SettingsSupporting(stringResource(R.string.breaker_none))
             }
             breakerApps.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -736,7 +733,7 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_reminders)) {
-            Text(stringResource(R.string.reminder_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SettingsSupporting(stringResource(R.string.reminder_sub))
             Label(stringResource(R.string.reminder_start))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 UsageReminders.START_CHOICES.forEach { m ->
@@ -749,7 +746,7 @@ fun SettingsScreen(
             }
             val reminderApps = allApps.filter { it.key in settings.reminderApps }
             if (reminderApps.isEmpty()) {
-                Text(stringResource(R.string.breaker_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                SettingsSupporting(stringResource(R.string.breaker_none))
             }
             reminderApps.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -772,7 +769,7 @@ fun SettingsScreen(
                 return@Group
             }
             if (hiddenApps.isEmpty()) {
-                Text(stringResource(R.string.no_hidden_apps), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+                SettingsSupporting(stringResource(R.string.no_hidden_apps))
             }
             hiddenApps.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
@@ -785,14 +782,14 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.BACKUP) Group(stringResource(R.string.section_backup)) {
-            Text(stringResource(R.string.backup_desc), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            SettingsSupporting(stringResource(R.string.backup_desc))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
                 FilledTonalButton(onClick = { actions.exportBackup() }) { Text(stringResource(R.string.export)) }
                 OutlinedButton(onClick = { actions.importBackup() }) { Text(stringResource(R.string.restore)) }
             }
             TextButton(onClick = { actions.shareBackup() }) { Text(stringResource(R.string.backup_share)) }
             Label(stringResource(R.string.auto_backup))
-            Text(stringResource(R.string.auto_backup_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            SettingsSupporting(stringResource(R.string.auto_backup_sub))
             if (settings.autoBackupUri.isNotBlank()) {
                 Text(
                     if (settings.autoBackupLastDay.isBlank()) stringResource(R.string.auto_backup_pending) else stringResource(R.string.auto_backup_last, settings.autoBackupLastDay),
@@ -1036,14 +1033,14 @@ private fun GestureSetting(
             .padding(vertical = 10.dp),
     ) {
         Text(title, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-        Text(subtitle, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+        Text(subtitle, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
         Text(stringResource(action.labelRes), color = colors.accent, style = MaterialTheme.typography.bodyMedium)
     }
     if (action == GestureAction.OPEN_APP) {
         ClickRow(stringResource(R.string.gesture_choose_app), allApps.firstOrNull { it.key == appKey }?.label ?: stringResource(R.string.gesture_app_none), onChooseApp)
     }
     if (action == GestureAction.LOCK_SCREEN && !accessibilityEnabled) {
-        Text(stringResource(R.string.double_tap_lock_off), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+        SettingsSupporting(stringResource(R.string.double_tap_lock_off))
     }
 }
 
@@ -1058,7 +1055,7 @@ private fun FontRow(title: String, path: String, onImport: () -> Unit, onClear: 
             Text(
                 if (path.isBlank()) stringResource(R.string.font_from_theme) else java.io.File(path).name.substringAfter('_'),
                 color = colors.onWallpaperMuted,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
         if (path.isNotBlank()) TextButton(onClick = onClear) { Text(stringResource(R.string.remove)) }
@@ -1067,61 +1064,16 @@ private fun FontRow(title: String, path: String, onImport: () -> Unit, onClear: 
 }
 
 @Composable
-private fun Group(title: String, content: @Composable () -> Unit) {
-    val colors = LocalOndaColors.current
-    Text(
-        title,
-        color = colors.accent,
-        style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(start = 8.dp, top = 24.dp, bottom = 8.dp),
-    )
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(colors.panel)
-            .padding(horizontal = 18.dp, vertical = 14.dp)
-    ) { content() }
-}
+private fun Group(title: String, content: @Composable () -> Unit) = SettingsSection(title) { content() }
 
 @Composable
-private fun Label(text: String) {
-    Text(text, color = LocalOndaColors.current.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 6.dp, bottom = 6.dp))
-}
+private fun Label(text: String) = SettingsLabel(text)
 
 @Composable
-private fun SwitchRow(text: String, sub: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
-    val colors = LocalOndaColors.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onChange(!checked) }
-            .padding(vertical = 8.dp)
-    ) {
-        Column(Modifier.weight(1f).padding(end = 12.dp)) {
-            Text(text, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-            if (sub != null) Text(sub, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
-        }
-        Switch(checked = checked, onCheckedChange = onChange)
-    }
-}
+private fun SwitchRow(text: String, sub: String?, checked: Boolean, onChange: (Boolean) -> Unit) = SettingsSwitch(text, sub, checked, onChange = onChange)
 
 @Composable
-private fun ClickRow(text: String, value: String, onClick: () -> Unit) {
-    val colors = LocalOndaColors.current
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 10.dp)
-    ) {
-        Text(text, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-        Text(value, color = colors.accent, style = MaterialTheme.typography.bodyMedium)
-    }
-}
+private fun ClickRow(text: String, value: String, onClick: () -> Unit) = SettingsItem(text, value, onClick = onClick)
 
 @Composable
 private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
@@ -1142,30 +1094,18 @@ private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 private fun StatusRow(title: String, ok: Boolean, okText: String, koText: String, onClick: () -> Unit) {
     val colors = LocalOndaColors.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 10.dp)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(28.dp)
-                .clip(CircleShape)
-                .background(if (ok) colors.accentContainer else MaterialTheme.colorScheme.errorContainer)
-        ) {
-            if (ok) Icon(Icons.Filled.Check, null, tint = colors.onAccentContainer, modifier = Modifier.size(16.dp))
-            else Text("!", color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.labelLarge)
-        }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-            Text(if (ok) okText else koText, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
-        }
-    }
+    SettingsItem(
+        headline = title,
+        supporting = (if (ok) okText else koText).ifBlank { null },
+        onClick = onClick,
+        trailing = {
+            Icon(
+                if (ok) Icons.Filled.CheckCircle else Icons.Filled.Error,
+                contentDescription = null,
+                tint = if (ok) colors.accent else MaterialTheme.colorScheme.error,
+            )
+        },
+    )
 }
 
 /**
@@ -1241,7 +1181,7 @@ private fun StatusLine(label: String, value: String, ok: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(if (ok) Icons.Filled.Check else Icons.Filled.Close, null, tint = if (ok) colors.accent else colors.onWallpaperMuted, modifier = Modifier.size(16.dp))
         Spacer(Modifier.width(8.dp))
-        Text(label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-        Text(value, color = colors.onWallpaper, style = MaterialTheme.typography.bodySmall)
+        Text(label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Text(value, color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium)
     }
 }

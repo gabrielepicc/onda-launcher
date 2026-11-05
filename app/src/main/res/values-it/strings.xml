@@ -702,4 +702,11 @@
     <string name="restart_launcher_sub">Chiude e riapre Onda</string>
     <string name="restart_launcher_body">Onda si chiude e si riapre subito. Le impostazioni restano come sono.</string>
     <string name="restart_launcher_go">Riavvia</string>
+    <string name="home_menu_title">Home</string>
+    <string name="home_menu_widget">Widget</string>
+    <string name="home_menu_wallpaper">Sfondo</string>
+    <string name="home_menu_add">Aggiungi alla home</string>
+    <string name="home_menu_layout">Disposizione</string>
+    <string name="home_menu_folder_sub">Raggruppa più app sotto un nome</string>
+    <string name="home_menu_reorder_sub">Sposta orologio, widget e app</string>
 </resources>
