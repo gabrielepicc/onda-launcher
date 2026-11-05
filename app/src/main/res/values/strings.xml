@@ -491,4 +491,5 @@
     <string name="gesture_help_hold">Hold an app: options.</string>
     <string name="gesture_help_edges">Slide along the screen edges: alphabet, also on the side without letters.</string>
     <string name="gesture_help_alphabet">Double tap the alphabet: runs the double tap action.</string>
+    <string name="notif_image">Image in the notification</string>
 </resources>

@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.ui.components.NotificationImage
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import android.app.Notification
@@ -338,6 +339,7 @@ internal fun Conversation(
         } else if (item.text.isNotBlank()) {
             Text(item.text, style = MaterialTheme.typography.bodyLarge, color = colors.onWallpaper)
         }
+        NotificationImage(item, 240.dp)
         if (item.actions.isNotEmpty() || (item.canReply && !selectedForReply)) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

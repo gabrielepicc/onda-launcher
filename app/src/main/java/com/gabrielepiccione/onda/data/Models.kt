@@ -75,6 +75,8 @@ data class NotificationItem(
     val actions: List<android.app.Notification.Action> = emptyList(),
     /** Foto del contatto o icona grande della notifica. */
     val largeIcon: ImageBitmap? = null,
+    /** Immagine, GIF o sticker allegati, se l'app li rende disponibili (GIF: primo fotogramma). */
+    val image: ImageBitmap? = null,
     /** Nome della conversazione (gruppi) se diverso dal titolo. */
     val conversationTitle: String? = null,
 ) {
