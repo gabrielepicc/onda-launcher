@@ -13,7 +13,11 @@ import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import android.app.Notification
 import android.content.pm.ShortcutInfo
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.Animatable
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.animation.core.animate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -272,33 +276,94 @@ fun AppQuickPopup(
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = 8.dp),
         ) {
+            var menu by remember(app.key) { mutableStateOf(false) }
+            val tint = colors.onWallpaper.copy(alpha = 0.07f)
+
+            // Intestazione: l'app (si apre toccandola) e, in alto a destra, il menu con le altre azioni
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onOpenApp(); dismiss() }
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 4.dp),
             ) {
-                AppIcon(app, 36.dp, themedIcons)
-                Spacer(Modifier.width(12.dp))
-                Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onOpenApp(); dismiss() }
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                ) {
+                    AppIcon(app, 40.dp, themedIcons)
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(app.label, color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(stringResource(R.string.popup_open_app), color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+                Box {
+                    QuickAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { menu = true }
+                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        MenuEntry(
+                            if (app.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                            stringResource(if (app.isFavorite) R.string.favorite_remove else R.string.favorite_add),
+                        ) { menu = false; onToggleFavorite(); dismiss() }
+                        MenuEntry(Icons.Filled.Info, stringResource(R.string.app_info)) { menu = false; onInfo(); dismiss() }
+                        MenuEntry(Icons.Filled.Edit, stringResource(R.string.popup_edit)) { menu = false; onEdit(); dismiss() }
+                        onStopSuggesting?.let { stop ->
+                            MenuEntry(Icons.Filled.VisibilityOff, stringResource(R.string.suggested_stop)) { menu = false; stop(); dismiss() }
+                        }
+                        MenuEntry(Icons.Filled.Delete, stringResource(R.string.uninstall)) { menu = false; onUninstall(); dismiss() }
+                        MenuEntry(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { menu = false; onMoreOptions(); dismiss() }
+                    }
+                }
             }
 
-            notifications.forEach { n ->
-                Conversation(
-                    item = n,
-                    selectedForReply = false,
-                    onOpen = { onNotification(n); dismiss() },
-                    onSelectReply = { onReply(n); dismiss() },
-                    onAction = { a -> onNotificationAction(n, a) },
-                    onDismiss = { onDismissNotification(n) },
-                )
+            if (notifications.isNotEmpty()) {
+                SectionLabel(R.string.popup_section_notifications)
+                Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    notifications.forEach { n ->
+                        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(tint)) {
+                            Conversation(
+                                item = n,
+                                selectedForReply = false,
+                                onOpen = { onNotification(n); dismiss() },
+                                onSelectReply = { onReply(n); dismiss() },
+                                onAction = { a -> onNotificationAction(n, a) },
+                                onDismiss = { onDismissNotification(n) },
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (shortcuts.isNotEmpty()) {
+                SectionLabel(R.string.popup_section_shortcuts)
+                Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(tint)) {
+                    shortcuts.forEach { sc ->
+                        val icon = remember(sc.id) { shortcutIcon(sc) }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onShortcut(sc); dismiss() }
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                        ) {
+                            if (icon != null) {
+                                Image(icon, null, Modifier.size(24.dp).clip(CircleShape))
+                            } else {
+                                Icon(Icons.Filled.PlayArrow, null, tint = colors.accent, modifier = Modifier.size(24.dp))
+                            }
+                            Spacer(Modifier.width(14.dp))
+                            Text((sc.shortLabel ?: sc.longLabel ?: "").toString(), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
             }
 
             if (relatedApps.isNotEmpty()) {
+                SectionLabel(R.string.popup_section_related)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp),
                 ) {
                     relatedApps.forEach { other ->
                         Column(
@@ -324,67 +389,42 @@ fun AppQuickPopup(
             }
 
             // Più widget si sfogliano in orizzontale, come le pile della home
-            when (widgetIds.size) {
-                0 -> Unit
-                1 -> Box(Modifier.padding(horizontal = 8.dp)) { HostedWidget(widgetIds.single(), widgets) }
-                else -> WidgetStackCard(
-                    stack = WidgetStack("popup_" + app.key, widgetIds),
-                    widgets = widgets,
-                    highlighted = false,
-                    onLongPress = null,
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                )
-            }
-
-            shortcuts.forEach { sc ->
-                val icon = remember(sc.id) { shortcutIcon(sc) }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onShortcut(sc); dismiss() }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    if (icon != null) {
-                        Image(icon, null, Modifier.size(24.dp).clip(CircleShape))
-                    } else {
-                        Icon(Icons.Filled.PlayArrow, null, tint = colors.accent, modifier = Modifier.size(24.dp))
-                    }
-                    Spacer(Modifier.width(14.dp))
-                    Text((sc.shortLabel ?: sc.longLabel ?: "").toString(), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (widgetIds.isNotEmpty()) {
+                SectionLabel(R.string.popup_section_widgets)
+                when (widgetIds.size) {
+                    1 -> Box(Modifier.padding(horizontal = 8.dp)) { HostedWidget(widgetIds.single(), widgets) }
+                    else -> WidgetStackCard(
+                        stack = WidgetStack("popup_" + app.key, widgetIds),
+                        widgets = widgets,
+                        highlighted = false,
+                        onLongPress = null,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
                 }
-            }
-
-            onStopSuggesting?.let { stop ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { stop(); dismiss() }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    Icon(Icons.Filled.VisibilityOff, null, tint = colors.accent, modifier = Modifier.size(24.dp))
-                    Spacer(Modifier.width(14.dp))
-                    Text(stringResource(R.string.suggested_stop), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-                }
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-            ) {
-                QuickAction(
-                    if (app.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
-                    stringResource(if (app.isFavorite) R.string.favorite_remove else R.string.favorite_add),
-                ) { onToggleFavorite(); dismiss() }
-                QuickAction(Icons.Filled.Info, stringResource(R.string.app_info)) { onInfo(); dismiss() }
-                QuickAction(Icons.Filled.Delete, stringResource(R.string.uninstall)) { onUninstall(); dismiss() }
-                QuickAction(Icons.Filled.Edit, stringResource(R.string.popup_edit)) { onEdit(); dismiss() }
-                QuickAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { onMoreOptions(); dismiss() }
             }
         }
     }
     }
+}
+
+/** Titolo di una sezione del popup, così si distingue cosa è l'app, cosa sono le notifiche e cosa le scorciatoie. */
+@Composable
+private fun SectionLabel(@StringRes res: Int) {
+    Text(
+        stringResource(res),
+        color = LocalOndaColors.current.accent,
+        style = MaterialTheme.typography.labelMedium,
+        modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp),
+    )
+}
+
+@Composable
+private fun MenuEntry(icon: ImageVector, text: String, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text(text) },
+        leadingIcon = { Icon(icon, null) },
+        onClick = onClick,
+    )
 }
 
 @Composable

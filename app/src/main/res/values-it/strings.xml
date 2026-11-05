@@ -526,4 +526,9 @@
     <string name="alphabet_height_middle">Al centro</string>
     <string name="alphabet_height_top">In alto</string>
     <string name="alphabet_height_custom">Personalizzata</string>
+    <string name="popup_open_app">Apri l\'app</string>
+    <string name="popup_section_notifications">Notifiche</string>
+    <string name="popup_section_shortcuts">Scorciatoie</string>
+    <string name="popup_section_related">App correlate</string>
+    <string name="popup_section_widgets">Widget</string>
 </resources>
