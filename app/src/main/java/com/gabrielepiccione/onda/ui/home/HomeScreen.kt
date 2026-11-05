@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.HomeLights
+import com.gabrielepiccione.onda.data.HomePresence
+import com.gabrielepiccione.onda.data.HAlign
+import com.gabrielepiccione.onda.ui.components.HostedWidget
 import com.gabrielepiccione.onda.data.UsageStatsMath
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -158,6 +162,8 @@ sealed interface WidgetTarget {
     data class ToStack(val block: String) : WidgetTarget
     /** Nel popup dell'app [appKey]. */
     data class ToPopup(val appKey: String) : WidgetTarget
+    /** Il widget delle luci di casa, accanto all'orologio. */
+    data object HomeLights : WidgetTarget
 }
 
 /** Azioni che richiedono l'Activity (permessi, risultati di altre schermate). */
@@ -165,6 +171,7 @@ interface HomeCallbacks {
     fun requestContactsPermission()
     fun requestCalendarPermission()
     fun requestWeatherPermission()
+    fun requestLocationPermission()
     fun requestPostNotifications()
     fun openUsageAccess()
     fun requestDefaultLauncher()
@@ -192,6 +199,7 @@ data class HomeStatus(
     val accessibilityEnabled: Boolean,
     val weatherInstalled: Boolean = false,
     val weatherPermission: Boolean = false,
+    val locationPermission: Boolean = false,
     val usageAccess: Boolean = false,
     val postNotifications: Boolean = false,
 )
@@ -324,6 +332,25 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             GestureAction.SETTINGS -> overlay = Overlay.SETTINGS
             GestureAction.OPEN_APP -> state.app(appKey)?.let { launchApp(it) }
             GestureAction.NONE -> Unit
+        }
+    }
+
+    // Luci di casa: si controlla ogni minuto (e a ogni cambio di impostazione) se si è a casa e fa buio
+    var lightsVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(settings.homeLights, settings.homeWifi, settings.homeLightsWidget, settings.homeLatitude, status.locationPermission) {
+        while (true) {
+            val now = System.currentTimeMillis()
+            val sun = if (settings.homeLatitude == 0.0 && settings.homeLongitude == 0.0) null
+            else HomeLights.sunTimes(java.time.LocalDate.now(), settings.homeLatitude, settings.homeLongitude)
+            lightsVisible = HomeLights.shouldShow(
+                settings.homeLights,
+                settings.homeLightsWidget,
+                HomePresence.currentSsid(context),
+                settings.homeWifi,
+                now,
+                sun,
+            )
+            delay(60_000L)
         }
     }
 
@@ -565,6 +592,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 when {
                     block == HomeBlocks.CLOCK -> if (settings.showClock) {
                         item(key = "clock") {
+                            // Luci di casa: il widget di Google Home sta accanto all'orologio, dalla parte libera
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter)) {
+                            if (lightsVisible && settings.clockAlign == HAlign.END) {
+                                Box(Modifier.weight(1f).padding(end = 8.dp)) { HostedWidget(settings.homeLightsWidget, vm.widgets, heightDp = LIGHTS_HEIGHT) }
+                            }
                             ClockHeader(
                                 event = if (settings.showCalendar) nextEvent else null,
                                 onTime = { SystemActions.openAlarms(context) },
@@ -577,8 +609,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 highlighted = editing == HomeBlocks.CLOCK,
                                 onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.CLOCK },
                                 showBattery = settings.showBattery,
-                                modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
+                                modifier = if (lightsVisible) Modifier.weight(1f) else Modifier,
                             )
+                            if (lightsVisible && settings.clockAlign != HAlign.END) {
+                                Box(Modifier.weight(1f).padding(start = 8.dp)) { HostedWidget(settings.homeLightsWidget, vm.widgets, heightDp = LIGHTS_HEIGHT) }
+                            }
+                            }
                         }
                     }
                     block == HomeBlocks.AGENDA -> item(key = "agenda") {
@@ -1039,6 +1075,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         contactsPermission = status.contactsPermission,
                         weatherInstalled = status.weatherInstalled,
                         weatherPermission = status.weatherPermission,
+                        locationPermission = status.locationPermission,
                         usageAccess = status.usageAccess,
                         postNotifications = status.postNotifications,
                     ),
@@ -1051,6 +1088,19 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun calendarPermission() = callbacks.requestCalendarPermission()
                         override fun contactsPermission() = callbacks.requestContactsPermission()
                         override fun weatherPermission() = callbacks.requestWeatherPermission()
+                        override fun locationPermission() = callbacks.requestLocationPermission()
+                        override fun pickLightsWidget() = openWidgetPicker(HomePresence.GOOGLE_HOME_PACKAGE, WidgetTarget.HomeLights)
+                        override fun setHomeHere() {
+                            val ssid = HomePresence.currentSsid(context)
+                            val place = HomePresence.lastLocation(context)
+                            vm.updateSettings { s ->
+                                s.copy(
+                                    homeWifi = ssid ?: s.homeWifi,
+                                    homeLatitude = place?.first ?: s.homeLatitude,
+                                    homeLongitude = place?.second ?: s.homeLongitude,
+                                )
+                            }
+                        }
                         override fun postNotifications() = callbacks.requestPostNotifications()
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
@@ -1601,3 +1651,6 @@ private val TOP_FADE = 40.dp
 
 /** Apertura in attesa della pausa di Usage Breaker: cosa fare quando l'utente conferma. */
 private class BreakerRequest(val app: AppInfo, val go: () -> Unit)
+
+/** Altezza del widget delle luci accanto all'orologio. */
+private const val LIGHTS_HEIGHT = 120

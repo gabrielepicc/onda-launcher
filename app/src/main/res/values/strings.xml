@@ -586,4 +586,17 @@
     <string name="breaker_everywhere">Pause outside the launcher</string>
     <string name="breaker_everywhere_ok">On</string>
     <string name="breaker_everywhere_ko">Turn on Onda\'s accessibility to pause apps opened from notifications or recent apps</string>
+    <string name="section_lights">Home lights</string>
+    <string name="lights_sub">When you\'re on your home Wi-Fi and it\'s getting dark, the Google Home widget appears next to the clock. Location is used only to read the Wi-Fi name and, once, to work out sunset: nothing leaves the phone.</string>
+    <string name="lights_enable">Show light controls at home after dark</string>
+    <string name="lights_permission">Location</string>
+    <string name="lights_permission_ko">Needed to recognise your home Wi-Fi</string>
+    <string name="lights_wifi">Home Wi-Fi</string>
+    <string name="lights_wifi_none">Tap at home to use the current Wi-Fi</string>
+    <string name="lights_wifi_hint">Tap while connected to your home Wi-Fi: Onda also saves your approximate position for sunset times. Location must be on for Android to share the Wi-Fi name.</string>
+    <string name="lights_widget">Lights widget</string>
+    <string name="lights_widget_none">Choose a Google Home widget</string>
+    <string name="lights_widget_set">Chosen · tap to change</string>
+    <string name="lights_no_location">No position saved yet: tap Home Wi-Fi again when location is available.</string>
+    <string name="kw_lights">lights home google wifi dark sunset smart</string>
 </resources>

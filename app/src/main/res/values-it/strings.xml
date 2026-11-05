@@ -586,4 +586,17 @@
     <string name="breaker_everywhere">Pausa anche fuori dal launcher</string>
     <string name="breaker_everywhere_ok">Attiva</string>
     <string name="breaker_everywhere_ko">Attiva l\'accessibilità di Onda per la pausa sulle app aperte da notifiche o app recenti</string>
+    <string name="section_lights">Luci di casa</string>
+    <string name="lights_sub">Quando sei sul Wi-Fi di casa e sta facendo buio, accanto all\'orologio compare il widget di Google Home. La posizione serve solo per leggere il nome del Wi-Fi e, una volta, per calcolare il tramonto: niente lascia il telefono.</string>
+    <string name="lights_enable">Mostra le luci a casa quando è buio</string>
+    <string name="lights_permission">Posizione</string>
+    <string name="lights_permission_ko">Serve per riconoscere il Wi-Fi di casa</string>
+    <string name="lights_wifi">Wi-Fi di casa</string>
+    <string name="lights_wifi_none">Tocca da casa per usare il Wi-Fi attuale</string>
+    <string name="lights_wifi_hint">Tocca mentre sei collegato al Wi-Fi di casa: Onda salva anche la posizione approssimativa per gli orari del tramonto. La posizione del telefono deve essere accesa perché Android dica il nome del Wi-Fi.</string>
+    <string name="lights_widget">Widget delle luci</string>
+    <string name="lights_widget_none">Scegli un widget di Google Home</string>
+    <string name="lights_widget_set">Scelto · tocca per cambiarlo</string>
+    <string name="lights_no_location">Nessuna posizione salvata: tocca di nuovo Wi-Fi di casa quando la posizione è disponibile.</string>
+    <string name="kw_lights">luci casa google wifi buio tramonto smart domotica</string>
 </resources>

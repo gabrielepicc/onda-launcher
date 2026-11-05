@@ -378,6 +378,15 @@ data class Settings(
     val breakerSeconds: Int = 10,
     /** Limite giornaliero in minuti per pacchetto: superato, l'app passa dalla pausa e arriva un avviso. */
     val appLimits: Map<String, Int> = emptyMap(),
+    /** Luci di casa: widget di Google Home accanto all'orologio quando si è sul Wi-Fi di casa e fa buio. */
+    val homeLights: Boolean = false,
+    /** Nome del Wi-Fi di casa. */
+    val homeWifi: String = "",
+    /** Posizione approssimativa di casa, salvata una volta per alba e tramonto (0,0 = non ancora). */
+    val homeLatitude: Double = 0.0,
+    val homeLongitude: Double = 0.0,
+    /** Widget delle luci (di solito "Preferiti" di Google Home); 0 = non scelto. */
+    val homeLightsWidget: Int = 0,
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
     val breakerDay: String = "",
     /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */

@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Luci di casa**: quando il telefono è sul Wi-Fi di casa e sta facendo buio (dal tramonto, calcolato sul telefono), accanto
+  all'orologio compare il widget di Google Home scelto. Si attiva in Impostazioni → Home; chiede la posizione solo attivandolo.
 - **Pausa anche fuori dal launcher**: con l'accessibilità di Onda attiva, Usage Breaker e i limiti giornalieri mostrano la pausa anche
   aprendo l'app dalla tendina di sistema, dalle app recenti o da un link. Onda vede solo quale app è aperta, mai il contenuto.
 - **Più fluida**: profilo di base per compilare Onda in anticipo all'installazione, righe che non si ricompongono a ogni pixel

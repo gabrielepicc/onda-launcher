@@ -97,5 +97,10 @@ Statistiche pure in `data/UsageStatsMath` (testate), lettura degli eventi in `da
 notifiche contate da `NotificationCounter` (solo numeri). Limiti in `Settings.appLimits` (pacchetto -> minuti): pausa nel launcher (`guarded` in HomeScreen)
 e avviso da `UsageReminderEngine`. Pagina `SettingsPage.WELLBEING`, grafici in `ui/settings/WellbeingDashboard`.
 
+## Luci di casa e pausa ovunque
+Luci: `data/HomeLights` (Wi-Fi, buio, alba/tramonto NOAA, testati), `data/HomePresence` (SSID e ultima posizione, permesso di posizione),
+widget scelto con `WidgetTarget.HomeLights`, mostrato accanto all'orologio in HomeScreen. Pausa fuori dal launcher: `data/BreakerGate` +
+`OndaAccessibilityService` (solo pacchetto in primo piano) -> `MainActivity.EXTRA_PAUSE_PACKAGE` -> `vm.pauseRequests`.
+
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.
