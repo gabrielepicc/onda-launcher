@@ -10,13 +10,13 @@ object SettingsSearch {
     /** Minuscolo e senza accenti, così "Orologio" trova "orologio" e "lunghezza" trova "lunghèzza". */
     fun normalize(text: String): String =
         Normalizer.normalize(text, Normalizer.Form.NFD)
-            .replace(Regex("\p{Mn}+"), "")
+            .replace(Regex("\\p{Mn}+"), "")
             .lowercase()
             .trim()
 
     /** Vero se ogni parola della ricerca compare nel testo (l'ordine non conta). Ricerca vuota: nessun risultato. */
     fun matches(query: String, vararg texts: String): Boolean {
-        val words = normalize(query).split(Regex("\s+")).filter { it.isNotEmpty() }
+        val words = normalize(query).split(Regex("\\s+")).filter { it.isNotEmpty() }
         if (words.isEmpty()) return false
         val haystack = texts.joinToString(" ") { normalize(it) }
         return words.all { it in haystack }
