@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.drawer
 
+import com.gabrielepiccione.onda.data.ConversationSummary
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.home.*
@@ -163,6 +164,7 @@ fun AllAppsPanel(
                         hasNotification = notifications[app.packageName].orEmpty().isNotEmpty(),
                         notification = notifications[app.packageName]?.firstOrNull(),
                         notificationCount = notifications[app.packageName]?.size ?: 0,
+                        summary = ConversationSummary.of(notifications[app.packageName].orEmpty()),
                         onOpenPanel = { onOpenPanel(app) },
                         swipeEnabled = true,
                         onDismissNotifications = { onDismissNotifications(app) },

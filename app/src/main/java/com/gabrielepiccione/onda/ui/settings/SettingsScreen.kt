@@ -424,6 +424,13 @@ fun SettingsScreen(
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_favorites)) {
             SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
+            Label(stringResource(R.string.notif_images))
+            TextChoices(
+                com.gabrielepiccione.onda.data.NotificationImages.entries.map { it to stringResource(it.labelRes) },
+                settings.notificationImages,
+                columns = 3,
+            ) { v -> onEdit { it.copy(notificationImages = v) } }
+            Text(stringResource(R.string.notif_images_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
             SwitchRow(stringResource(R.string.suggested_setting), stringResource(R.string.suggested_setting_sub), settings.suggestInHome) { v -> onEdit { it.copy(suggestInHome = v) } }
             allApps.filter { it.key in settings.suggestionsDismissed }.forEach { app ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {

@@ -93,6 +93,7 @@ val LocalListStyle = staticCompositionLocalOf { ListStyle() }
 
 /** Stile delle icone corrente (ORIGINAL, DOTS, MATERIAL, OUTLINE, STICKER, WATERCOLOR, MARBLE). */
 val LocalIconStyle = staticCompositionLocalOf { "ORIGINAL" }
+val LocalNotificationImages = staticCompositionLocalOf { com.gabrielepiccione.onda.data.NotificationImages.THUMBNAIL }
 
 val AccentChoices = listOf(
     0xFF7FE3D1, // acqua
@@ -163,6 +164,7 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
         LocalHapticsEnabled provides settings.haptics,
         LocalOndaHaptics provides rememberOndaHaptics(settings.haptics),
         LocalIconStyle provides settings.iconStyle,
+        LocalNotificationImages provides settings.notificationImages,
         LocalOndaTokens provides OndaTokens(),
         LocalDensity provides Density(base.density, base.fontScale * settings.textScale),
     ) {

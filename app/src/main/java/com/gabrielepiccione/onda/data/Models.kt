@@ -77,6 +77,8 @@ data class NotificationItem(
     val largeIcon: ImageBitmap? = null,
     /** Immagine, GIF o sticker allegati, se l'app li rende disponibili (GIF: primo fotogramma). */
     val image: ImageBitmap? = null,
+    /** Messaggi della conversazione (tutti, non solo gli ultimi mostrati); 1 se non è una chat. */
+    val messageCount: Int = 1,
     /** Nome della conversazione (gruppi) se diverso dal titolo. */
     val conversationTitle: String? = null,
 ) {
@@ -124,6 +126,14 @@ enum class OpenAnimation(@StringRes val labelRes: Int) {
     FADE(R.string.anim_fade),
     SCALE(R.string.anim_scale),
     SLIDE(R.string.anim_slide),
+}
+
+/** Dove si vedono le immagini, le GIF e gli sticker allegati alle notifiche. */
+@Serializable
+enum class NotificationImages(@StringRes val labelRes: Int) {
+    THUMBNAIL(R.string.notif_images_thumbnail),
+    POPUP_ONLY(R.string.notif_images_popup),
+    OFF(R.string.notif_images_off),
 }
 
 /** Cartella in home: contiene app (per chiave) e widget (per id). */
@@ -295,6 +305,8 @@ data class Settings(
     /** Mostra i contatti nell'elenco alfabetico, insieme alle app. */
     val contactsInAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,
+    /** Immagini nelle notifiche: miniatura accanto al testo, solo nel popup o mai. */
+    val notificationImages: NotificationImages = NotificationImages.THUMBNAIL,
     val iconSize: Float = 1f,
     /** Ordine dei blocchi della home (vedi [HomeBlocks]). */
     val homeLayout: List<String> = emptyList(),

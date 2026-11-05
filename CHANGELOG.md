@@ -20,6 +20,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 - **Cartelle**: via la freccetta; molti più simboli e icone prese dagli icon pack, salvate anche nel backup.
 - **Cambia icona**: scelta del pack e ricerca restano ferme sopra la griglia e la tastiera non salta più.
 - **Notifiche**: anteprima di immagini e sticker, quando l'app li rende disponibili. Le GIF mostrano il primo fotogramma.
+  La miniatura sta accanto al testo e non allunga la riga; l'immagine intera si vede nel popup. Nelle impostazioni della home
+  si sceglie tra miniatura, solo nel popup e mai.
+- **Più messaggi**: la riga dell'app dice "5 messaggi da 2 chat" e sotto l'ultimo messaggio con il nome di chi l'ha scritto.
 - **Gesti**: ogni gesto dice dove si fa e cosa fa ora; quelli sempre attivi sono elencati uno per riga.
 
 ## [0.10.0]

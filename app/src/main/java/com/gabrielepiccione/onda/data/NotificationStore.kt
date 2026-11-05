@@ -97,6 +97,7 @@ object NotificationStore {
             actions = others,
             largeIcon = largeIconOf(context),
             image = imageOf(context, style),
+            messageCount = style?.messages?.size?.coerceAtLeast(1) ?: 1,
             conversationTitle = style?.conversationTitle?.toString()?.takeIf { it.isNotBlank() && it != title },
         )
     }

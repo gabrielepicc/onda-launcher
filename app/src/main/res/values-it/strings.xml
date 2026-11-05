@@ -492,4 +492,11 @@
     <string name="gesture_help_edges">Scorri lungo i bordi dello schermo: alfabeto, anche sul lato senza lettere.</string>
     <string name="gesture_help_alphabet">Doppio tocco sull\'alfabeto: esegue l\'azione del doppio tocco.</string>
     <string name="notif_image">Immagine nella notifica</string>
+    <string name="notif_summary_chats">%1$d messaggi da %2$d chat</string>
+    <string name="notif_summary_chat">%1$d messaggi da %2$s</string>
+    <string name="notif_images">Immagini nelle notifiche</string>
+    <string name="notif_images_sub">Foto, GIF e sticker, quando l\'app li allega alla notifica</string>
+    <string name="notif_images_thumbnail">Miniatura</string>
+    <string name="notif_images_popup">Solo nel popup</string>
+    <string name="notif_images_off">Mai</string>
 </resources>
