@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import android.app.Notification
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -84,6 +86,7 @@ fun NotificationCard(
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     var replying by rememberSaveable(item.key) { mutableStateOf(false) }
     var draft by rememberSaveable(item.key) { mutableStateOf("") }
@@ -200,7 +203,7 @@ fun NotificationCard(
                 LaunchedEffect(Unit) { focus.requestFocus() }
                 fun send() {
                     if (draft.isNotBlank() && onReply(draft)) {
-                        if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                         draft = ""
                         replying = false
                     }

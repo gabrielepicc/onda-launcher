@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -29,6 +31,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -179,6 +182,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
 
     var overlay by rememberSaveable { mutableStateOf(Overlay.NONE) }
     var actionsFor by remember { mutableStateOf<AppInfo?>(null) }
@@ -318,7 +322,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 val nowArmed = abs(next) >= threshold
                 if (nowArmed != armed) {
                     armed = nowArmed
-                    if (currentSettings.haptics) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    ondaHaptics?.perform(if (nowArmed) HapticEvent.THRESHOLD_ON else HapticEvent.THRESHOLD_OFF)
                 }
                 return available
             }
@@ -463,7 +467,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 .pointerInput(settings.doubleTapAction, settings.doubleTapApp) {
                     detectTapGestures(
                         onLongPress = {
-                            if (settings.haptics) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                             homeMenu = true
                         },
                         onDoubleTap = if (settings.doubleTapAction != GestureAction.NONE) {
@@ -753,14 +757,23 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 perform(settings.doubleTapAction, settings.doubleTapApp)
             }
         } else null
-        val onLetter: (Char) -> Unit = { letter ->
-            if (letter == END_OF_LIST_MARK) {
+        // L'inizio della lettera scelta si porta all'altezza del dito (non in cima allo schermo),
+        // così la prima app è subito sotto il pollice; vicino agli estremi l'elenco si ferma da solo.
+        val listTopPx = with(density) { (bars.calculateTopPadding() + 16.dp).toPx() }
+        val headerHalfPx = with(density) { 24.dp.toPx() }
+        val onLetter: (Char, Float) -> Unit = { letter, fingerY ->
+            val target = if (letter == END_OF_LIST_MARK) {
                 val privateShown = privateSpace?.takeUnless { settings.hidePrivateSpace } != null
                 val privateRows = if (privateShown) 1 + state.privateApps.size else 0
-                scope.launch { allAppsList.scrollToItem(endOfListIndex(sections, privateRows)) }
+                endOfListIndex(sections, privateRows)
             } else {
-                sections.firstOrNull { it.letter == letter }?.let { s ->
-                    scope.launch { allAppsList.scrollToItem(s.firstIndex) }
+                sections.firstOrNull { it.letter == letter }?.firstIndex
+            }
+            if (target != null) {
+                val lift = (fingerY - listTopPx - headerHalfPx).coerceAtLeast(0f)
+                scope.launch {
+                    allAppsList.scrollToItem(target)
+                    allAppsList.scrollBy(-lift)
                 }
             }
         }

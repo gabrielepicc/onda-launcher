@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import android.app.Notification
 import android.content.pm.ShortcutInfo
 import androidx.activity.compose.BackHandler
@@ -131,6 +133,8 @@ fun AppQuickPopup(
     onDismiss: () -> Unit,
 ) {
     val colors = LocalOndaColors.current
+    val ondaHaptics = LocalOndaHaptics.current
+    LaunchedEffect(app.key) { ondaHaptics?.perform(HapticEvent.OPEN) }
     val density = LocalDensity.current
     val config = LocalConfiguration.current
     val bars = WindowInsets.systemBars.asPaddingValues()

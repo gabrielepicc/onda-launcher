@@ -90,7 +90,7 @@
     <string name="double_tap_lock_on">Tocca due volte uno spazio vuoto della home</string>
     <string name="double_tap_lock_off">Richiede di attivare il servizio di accessibilità di Onda</string>
     <string name="haptics">Vibrazione</string>
-    <string name="haptics_sub">Feedback aptico su scroller e pressioni lunghe</string>
+    <string name="haptics_sub">Colpi leggeri e diversi per lettere, swipe e pressioni lunghe; segue il feedback al tocco di sistema</string>
     <string name="gestures_help">Scorri a destra su un\'app: pannello · a sinistra: elimina le notifiche · Tieni premuto: opzioni · Bordi dello schermo: alfabeto (anche il lato senza lettere) · Doppio tocco sull\'alfabeto: blocca</string>
     <string name="section_widgets">Widget</string>
     <string name="no_home_widgets">Nessun widget in home.</string>
@@ -404,4 +404,9 @@
     <string name="recently_installed">Installate di recente</string>
     <string name="recently_installed_empty">Nessuna app installata di recente</string>
     <string name="onda_settings">Impostazioni di Onda</string>
+    <string name="haptics_test">Prova la vibrazione</string>
+    <string name="haptics_support_light">Vibrazioni leggere supportate</string>
+    <string name="haptics_support_basic">Solo vibrazione di base: si usano i colpi standard di sistema</string>
+    <string name="haptics_support_unknown">Questa versione di Android non lo indica: si usano i colpi standard di sistema</string>
+    <string name="haptics_support_none">Questo dispositivo non ha un motore di vibrazione</string>
 </resources>

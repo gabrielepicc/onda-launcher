@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.home.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -18,6 +20,11 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -58,7 +65,8 @@ fun AlphabetWaveScroller(
     modifier: Modifier = Modifier,
     showLetters: Boolean = true,
     onTouchStart: () -> Unit = {},
-    onLetter: (Char) -> Unit,
+    /** Lettera scelta e altezza del dito nella finestra (px), per allineare l'elenco al dito. */
+    onLetter: (Char, Float) -> Unit,
     onTouchEnd: () -> Unit = {},
     /** Doppio tocco sulla colonna (es. blocco schermo); null = disattivato. */
     onDoubleTap: (() -> Unit)? = null,
@@ -66,6 +74,7 @@ fun AlphabetWaveScroller(
     if (letters.isEmpty()) return
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     val scope = rememberCoroutineScope()
     val measurer = rememberTextMeasurer(cacheSize = 64)
@@ -80,17 +89,24 @@ fun AlphabetWaveScroller(
     val currentOnEnd by rememberUpdatedState(onTouchEnd)
     val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
     val lastTapUp = remember { longArrayOf(0L) }
+    // Bordo superiore della colonna nella finestra: serve per passare l'altezza del dito
+    val originY = remember { floatArrayOf(0f) }
 
-    val letterStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, color = colors.onWallpaperMuted)
+    val letterStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium, color = colors.onWallpaperMuted)
     val bubbleStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold, color = colors.onAccentContainer)
     // Misuriamo le lettere una sola volta
     val measured = remember(letters, letterStyle) { letters.map { measurer.measure(it.toString(), letterStyle) } }
     val bubbleLayouts = remember(letters, bubbleStyle) { letters.map { measurer.measure(it.toString(), bubbleStyle) } }
 
+    // La colonna è alta quanto le lettere (passo massimo [MAX_LETTER_STEP]) e ancorata in basso,
+    // vicino al pollice: con poche lettere è più corta, con molte usa al massimo lo spazio disponibile.
+    BoxWithConstraints(modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
+    val columnHeight = minOf(maxHeight, MAX_LETTER_STEP * letters.size)
     Canvas(
-        modifier
-            .fillMaxHeight()
+        Modifier
+            .height(columnHeight)
             .width(if (showLetters) 36.dp else 28.dp)
+            .onGloballyPositioned { originY[0] = it.positionInRoot().y }
             .pointerInput(letters.size) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
@@ -104,8 +120,8 @@ fun AlphabetWaveScroller(
                         val idx = (y / step).toInt().coerceIn(0, currentLetters.lastIndex)
                         if (idx != selected.intValue) {
                             selected.intValue = idx
-                            if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            currentOnLetter(currentLetters[idx])
+                            ondaHaptics?.perform(if (idx == 0 || idx == currentLetters.lastIndex) HapticEvent.EDGE else HapticEvent.LETTER)
+                            currentOnLetter(currentLetters[idx], originY[0] + touchY.floatValue)
                         }
                     }
                     update(down.position.y)
@@ -190,4 +206,8 @@ fun AlphabetWaveScroller(
             )
         }
     }
+    }
 }
+
+/** Distanza massima tra due lettere: oltre, la colonna smette di allungarsi. */
+private val MAX_LETTER_STEP = 19.dp

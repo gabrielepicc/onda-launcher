@@ -7,6 +7,13 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 - Il player compare solo quando qualcosa è in riproduzione; dopo una pausa resta un minuto, poi sparisce.
 - In fondo all'elenco delle app: le cartelle, poi "Installate di recente" e "Impostazioni di Onda";
   il segno • in fondo all'alfabeto porta lì.
+- Alfabeto compatto e ancorato in basso, vicino al pollice: alto quanto le lettere invece di tutto lo schermo.
+- Scegliendo una lettera, l'inizio della sezione si porta all'altezza del dito.
+- La ricerca non apre più un pannello scuro: si vede sempre lo sfondo, appena velato.
+- Feedback aptico ripensato: colpi leggeri e diversi per lettera, inizio/fine alfabeto, soglia dello swipe
+  (attivata e disattivata), pressione lunga, apertura del popup ed eliminazione delle notifiche. Usa le
+  "vibrazioni leggere" del motore aptico quando ci sono (Android 11+), altrimenti i colpi di sistema;
+  segue sempre il feedback al tocco di sistema. Nuova voce "Prova la vibrazione" nelle impostazioni.
 
 ## [0.9.0]
 

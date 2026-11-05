@@ -90,7 +90,7 @@
     <string name="double_tap_lock_on">Double-tap an empty spot on home</string>
     <string name="double_tap_lock_off">Requires enabling Onda\'s accessibility service</string>
     <string name="haptics">Vibration</string>
-    <string name="haptics_sub">Haptic feedback on scroller and long-presses</string>
+    <string name="haptics_sub">Different light taps for letters, swipes and long-presses; follows the system touch feedback</string>
     <string name="gestures_help">Swipe right on an app: panel · left: dismiss its notifications · Long-press: options · Screen edges: alphabet (including the edge without letters) · Double-tap the alphabet: lock</string>
     <string name="section_widgets">Widgets</string>
     <string name="no_home_widgets">No widgets on home.</string>
@@ -404,4 +404,9 @@
     <string name="recently_installed">Recently installed</string>
     <string name="recently_installed_empty">No apps installed recently</string>
     <string name="onda_settings">Onda settings</string>
+    <string name="haptics_test">Try vibration</string>
+    <string name="haptics_support_light">Light haptics fully supported</string>
+    <string name="haptics_support_basic">Basic vibration only: the system default taps are used</string>
+    <string name="haptics_support_unknown">This Android version cannot tell: the system default taps are used</string>
+    <string name="haptics_support_none">This device has no vibration motor</string>
 </resources>
