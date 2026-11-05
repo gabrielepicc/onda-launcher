@@ -285,6 +285,8 @@
     <string name="layout_lock">Blocca layout</string>
     <string name="layout_unlock">Sblocca layout</string>
     <string name="layout_lock_sub">Evita modifiche accidentali a orologio, widget e cartelle</string>
+    <string name="search_button">Pulsante di ricerca</string>
+    <string name="search_button_sub">Nell\'angolo in basso, sotto l\'alfabeto</string>
     <string name="search_prefix_hint">Suggerimento: «=» per calcolare, «@» per cercare solo nei contatti, «/» per le impostazioni. Invio apre il primo risultato.</string>
     <string name="set_onda">Impostazioni di Onda</string>
     <string name="set_wifi">Wi-Fi</string>

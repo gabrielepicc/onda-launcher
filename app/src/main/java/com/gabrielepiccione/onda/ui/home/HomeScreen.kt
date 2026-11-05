@@ -874,6 +874,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     .zIndex(2f)
                     .graphicsLayer { alpha = scrollerAlpha }
                     .then(scrollerPadding)
+                    // Con il pulsante di ricerca, le lettere si fermano sopra di esso
+                    .padding(bottom = if (settings.showSearchButton) SEARCH_BUTTON_CLEARANCE else 0.dp)
                     .padding(horizontal = 6.dp),
                 onTouchStart = { overlay = Overlay.ALL_APPS },
                 onLetter = onLetter,
@@ -891,6 +893,22 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 onLetter = onLetter,
                 onDoubleTap = lockFromAlphabet,
             )
+            if (settings.showSearchButton) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .align(if (settings.leftHanded) Alignment.BottomStart else Alignment.BottomEnd)
+                        .zIndex(3f)
+                        .graphicsLayer { alpha = scrollerAlpha }
+                        .padding(bottom = bars.calculateBottomPadding() + 8.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(colors.panel)
+                        .clickable { overlay = Overlay.SEARCH },
+                ) {
+                    Icon(Icons.Filled.Search, stringResource(R.string.search), tint = colors.onWallpaper)
+                }
+            }
         }
 
         // ---------------- RICERCA ----------------
@@ -1502,3 +1520,6 @@ private fun RoundIcon(icon: ImageVector, onClick: () -> Unit) {
         Icon(icon, null, tint = colors.onWallpaper)
     }
 }
+
+/** Spazio in più sotto l'alfabeto per il pulsante di ricerca, che sta sotto le lettere. */
+private val SEARCH_BUTTON_CLEARANCE = 16.dp

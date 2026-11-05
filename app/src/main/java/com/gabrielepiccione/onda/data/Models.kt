@@ -329,6 +329,8 @@ data class Settings(
     val lockLayout: Boolean = false,
     /** Motore per la ricerca web: SYSTEM, DUCKDUCKGO, STARTPAGE, GOOGLE, ECOSIA, BRAVE. */
     val searchEngine: String = "SYSTEM",
+    /** Pulsante di ricerca nell'angolo in basso, dal lato dell'alfabeto. */
+    val showSearchButton: Boolean = true,
     /** Plug & Play: app mostrata in cima quando si collegano cuffie o casse (chiave app, vuoto = off). */
     val plugPlayApp: String = "",
     /** App che richiedono lo sblocco (impronta, volto o PIN) prima di aprirsi. */
