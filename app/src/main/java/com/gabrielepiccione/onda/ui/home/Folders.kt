@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -96,6 +98,7 @@ fun FolderRow(
     val nameHidden = hideName && showIcons
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
     var open by rememberSaveable(folder.id) { mutableStateOf(false) }
     val arrow by animateFloatAsState(if (open) 180f else 0f, Motion.bouncy(), label = "arrow")
@@ -116,7 +119,7 @@ fun FolderRow(
                 .combinedClickable(
                     onClick = { open = !open },
                     onLongClick = {
-                        if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                         onLongClick()
                     },
                 )

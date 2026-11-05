@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.util.HapticEvent
+import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import android.app.Notification
 import android.content.pm.ShortcutInfo
 import androidx.compose.animation.animateContentSize
@@ -103,6 +105,7 @@ fun AppPanelSheet(
 ) {
     val colors = LocalOndaColors.current
     val haptics = LocalHapticFeedback.current
+    val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
 
     // Conversazione a cui si risponde: di default la più recente che lo consente
@@ -215,7 +218,7 @@ fun AppPanelSheet(
             if (replyTarget != null) {
                 fun send() {
                     if (draft.isNotBlank() && onReplyNotification(replyTarget, draft)) {
-                        if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        ondaHaptics?.perform(HapticEvent.LONG_PRESS)
                         sentTo = replyTarget.replyTo
                         draft = ""
                     }
