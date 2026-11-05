@@ -1,6 +1,6 @@
 # Confronto con Niagara Launcher: cosa manca a Onda
 
-Aggiornato alla 0.9.0 (novembre 2026). Si replica il **comportamento**, mai codice, nomi, icone o grafica.
+Aggiornato alla 0.10.0 (novembre 2026). Si replica il **comportamento**, mai codice, nomi, icone o grafica.
 
 Fonti: centro assistenza ufficiale di Niagara (help.niagaralauncher.app), note delle versioni 2025
 (aggiornamenti "Theming" e "Artistic"), confronto con il codice di Onda. Le voci segnate *(da verificare)*
@@ -172,9 +172,8 @@ cambierebbe la licenza di Onda.
   stili di icone generati, contatti nell'alfabeto, Plug & Play nei preferiti, Spazio privato.
 
 ## Ordine proposto
-1. **P1 senza internet**: 12.2 aggiungi alla home dalle altre app · 12.1 meteo da Breezy Weather · 12.3 zona di tocco a tutta altezza · 2.1 alfabeto localizzato · 1.1 suggerimenti nella home · 3.1 popup come cartella ·
-   6.1 Usage Breaker a promemoria · 9.1 backup completo · 4.2 taratura dei gesti.
+1. **P1 rimasti**: 4.2 taratura dei gesti (si fa sul telefono) · 9.1 ricollegamento dei widget al ripristino. Il resto dei P1 è nella 0.10.
 2. **P2**: 1.3 pulsante flottante · 1.5–1.6 foglio agenda e prossimo evento · 2.3–2.5 · 3.2–3.3 · 4.1 · 4.3–4.4 (motori) ·
    5.1 · 7.3 · 8.1 · 8.4.
-3. **Meteo**: 7.1 si sblocca senza INTERNET con 12.1 (Breezy Weather). Restano bloccati solo i suggerimenti web (4.4).
+3. **Bloccati**: i suggerimenti web (4.4), che richiedono INTERNET.
 4. **P3**: il resto.

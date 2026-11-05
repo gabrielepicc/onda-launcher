@@ -3,7 +3,7 @@
 Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
 
-## [Non rilasciato]
+## [0.10.0]
 - **Usage Breaker a promemoria**: per le app scelte, una notifica dopo 5–240 minuti di uso continuo chiede se vuoi
   continuare, senza bloccare nulla. Si aggiunge alla pausa prima di aprire l'app. Richiede l'accesso ai dati di
   utilizzo, le notifiche di Onda e l'accesso alle notifiche, chiesti solo a chi la usa; i dati restano sul telefono.

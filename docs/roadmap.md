@@ -33,7 +33,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    ✅ annulla dopo un preset e conferma prima di eliminare un widget
 6. ✅ Fase 6 — ✅ gesture configurabili estese, ✅ animazioni di apertura app, ✅ landscape/tablet, ✅ Private Space, ✅ onboarding, ✅ backup automatico
 
-7. 🟡 Fase 7 — Parità con Niagara (versione 0.10 in corso, non ancora rilasciata). Elenco completo e priorità in `docs/niagara-gap.md`.
+7. ✅ Fase 7 — Parità con Niagara, parte per la versione 0.10 (rilasciata). Il resto dell'elenco e le priorità sono in `docs/niagara-gap.md`.
    Fatto (PR #2–#7): ✅ fondo elenco con cartelle, "Installate di recente" e "Impostazioni di Onda" (segno • sull'alfabeto);
    ✅ alfabeto compatto ancorato in basso e lettera allineata al dito; ✅ ricerca sopra lo sfondo (niente pannello nero);
    ✅ feedback aptico a colpi distinti con "Prova la vibrazione"; ✅ player solo con riproduzione attiva (60 s dopo la pausa);
@@ -47,7 +47,9 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
    5. ✅ App suggerite sotto i preferiti con "Smetti di suggerire" (1.1, 10.9).
    6. ✅ Popup dell'app come cartella: app correlate, widget e pile, scorciatoie nascondibili (3.1, 3.2).
    7. ✅ Usage Breaker a promemoria (6.1) e backup completo con WorkManager (9.1; manca il ricollegamento dei widget).
-   8. Rilascio 0.10: versionCode 10, changelog fastlane 10.txt, roadmap.
+   8. ✅ Rilascio 0.10: versionCode 10, changelog fastlane 10.txt, roadmap.
+
+   **Prima della prossima versione:** provare sul telefono le voci della 0.10, che finora hanno solo test e CI.
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
