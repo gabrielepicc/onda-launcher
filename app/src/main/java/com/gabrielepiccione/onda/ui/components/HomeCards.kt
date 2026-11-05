@@ -129,8 +129,8 @@ fun ClockHeader(
         horizontalAlignment = horizontal,
         modifier = modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(24.dp)) else Modifier)
-            .clip(RoundedCornerShape(24.dp))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
+            .clip(RoundedCornerShape(28.dp))
             .combinedClickable(onClick = onTime, onLongClick = onLongPress)
             .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
@@ -457,8 +457,8 @@ private fun CompactMediaCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(24.dp)) else Modifier)
-            .clip(RoundedCornerShape(24.dp))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
+            .clip(RoundedCornerShape(28.dp))
             .background(colors.panel.copy(alpha = 0.9f))
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
             .padding(start = 8.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)

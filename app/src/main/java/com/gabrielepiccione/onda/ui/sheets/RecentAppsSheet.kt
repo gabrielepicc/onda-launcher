@@ -70,7 +70,7 @@ fun RecentAppsSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(24.dp))
+                            .clip(RoundedCornerShape(28.dp))
                             .clickable { onApp(app) }
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                     ) {

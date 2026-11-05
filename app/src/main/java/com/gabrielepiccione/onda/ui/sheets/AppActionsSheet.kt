@@ -68,7 +68,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.gabrielepiccione.onda.data.AppInfo
 
 data class AppActions(
@@ -127,7 +126,7 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
                 Column {
                     Text(app.label, style = MaterialTheme.typography.headlineSmall)
                     if (app.label != app.originalLabel) {
-                        Text(app.originalLabel, fontSize = 13.sp, color = colors.onWallpaperMuted)
+                        Text(app.originalLabel, style = MaterialTheme.typography.bodySmall, color = colors.onWallpaperMuted)
                     }
                 }
             }

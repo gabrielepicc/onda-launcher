@@ -411,7 +411,7 @@ fun AppListRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .pressScale(interaction)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(28.dp))
                 .background(if (highlighted) colors.accentContainer.copy(alpha = 0.6f) else Color.Transparent)
                 .combinedClickable(
                     interactionSource = interaction,

@@ -60,7 +60,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.drawable.toBitmap
 import com.gabrielepiccione.onda.data.WidgetManager
@@ -98,10 +97,10 @@ fun HostedWidget(
             .fillMaxWidth()
             .padding(vertical = 6.dp)
             .then(
-                if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(24.dp)).padding(2.dp)
+                if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)).padding(2.dp)
                 else Modifier
             )
-            .clip(RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(28.dp))
     ) {
         val widthDp = maxWidth
         AndroidView(
@@ -220,8 +219,7 @@ fun WidgetPickerSheet(
     ) {
         Text(
             stringResource(R.string.add_widget),
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
         )
         if (providers.isEmpty()) {
@@ -251,8 +249,7 @@ fun WidgetPickerSheet(
                     Text(
                         appLabel,
                         color = colors.accent,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 2.dp),
                     )
                 }
@@ -276,7 +273,7 @@ fun WidgetPickerSheet(
                         .clickable { onPick(p) }
                         .padding(horizontal = 24.dp, vertical = 12.dp)
                 ) {
-                    Text(p.label, fontSize = 17.sp)
+                    Text(p.label, style = MaterialTheme.typography.bodyLarge)
                     preview?.let {
                         Image(
                             it,

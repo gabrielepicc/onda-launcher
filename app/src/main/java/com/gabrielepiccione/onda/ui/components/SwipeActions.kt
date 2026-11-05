@@ -105,7 +105,7 @@ fun SwipeActions(
         Box(
             Modifier
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                .then(if (abs(x) > 1f) Modifier.clip(RoundedCornerShape(24.dp)).background(colors.scrim) else Modifier)
+                .then(if (abs(x) > 1f) Modifier.clip(RoundedCornerShape(28.dp)).background(colors.scrim) else Modifier)
                 .draggable(
                     enabled = enabled,
                     orientation = Orientation.Horizontal,

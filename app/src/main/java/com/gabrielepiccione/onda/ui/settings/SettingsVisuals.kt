@@ -190,7 +190,7 @@ internal fun ThemeTiles(selected: ThemeMode, onPick: (ThemeMode) -> Unit) {
     val choices = listOf(ThemeMode.SYSTEM to R.string.theme_system, ThemeMode.LIGHT to R.string.theme_light, ThemeMode.DARK to R.string.theme_dark)
     TileGrid(choices, 3) { (mode, label), modifier ->
         ChoiceTile(selected == mode, stringResource(label), { onPick(mode) }, modifier) {
-            Row(Modifier.size(56.dp, 34.dp).clip(RoundedCornerShape(10.dp))) {
+            Row(Modifier.size(56.dp, 34.dp).clip(RoundedCornerShape(8.dp))) {
                 if (mode != ThemeMode.DARK) Box(Modifier.weight(1f).fillMaxHeight().background(Color(0xFFF2F2F2)))
                 if (mode != ThemeMode.LIGHT) Box(Modifier.weight(1f).fillMaxHeight().background(Color(0xFF1C1C1E)))
             }
@@ -364,7 +364,7 @@ internal fun PhonePreview(
 @Composable
 private fun PhoneMock(settings: Settings, emphasizeAlphabet: Boolean, onPosition: ((Float) -> Unit)?) {
     val colors = LocalOndaColors.current
-    val shape = RoundedCornerShape(18.dp)
+    val shape = RoundedCornerShape(16.dp)
     val currentOnPosition by rememberUpdatedState(onPosition)
     val phoneHeight = PHONE_HEIGHT
     val ratio = phoneHeight.value / LocalConfiguration.current.screenHeightDp.coerceAtLeast(1)
@@ -458,7 +458,7 @@ private fun MockBlock(block: String, settings: Settings) {
     val muted = colors.onWallpaperMuted.copy(alpha = 0.55f)
     @Composable
     fun Bar(height: Int, fraction: Float = 1f, color: Color = muted) {
-        Box(Modifier.fillMaxWidth(fraction).height(height.dp).clip(RoundedCornerShape(3.dp)).background(color))
+        Box(Modifier.fillMaxWidth(fraction).height(height.dp).clip(RoundedCornerShape(4.dp)).background(color))
     }
     when {
         block == HomeBlocks.CLOCK && settings.showClock -> Column(

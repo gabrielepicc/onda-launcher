@@ -116,7 +116,7 @@ fun StyleGallery(
                         Icon(Icons.Filled.ArrowBack, stringResource(R.string.back), tint = colors.onWallpaper)
                     }
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.styles_title), style = MaterialTheme.typography.headlineMedium, color = colors.onWallpaper)
+                    Text(stringResource(R.string.styles_title), style = MaterialTheme.typography.titleLarge, color = colors.onWallpaper)
                 }
                 Text(
                     stringResource(R.string.styles_subtitle),
@@ -275,7 +275,7 @@ private fun PresetCard(preset: StylePreset, selected: Boolean, onClick: () -> Un
                                 Box(
                                     Modifier
                                         .size(16.dp)
-                                        .clip(if (preset.themedIcons) CircleShape else RoundedCornerShape(5.dp))
+                                        .clip(if (preset.themedIcons) CircleShape else RoundedCornerShape(4.dp))
                                         .background(if (preset.themedIcons) previewColors.accent.copy(alpha = 0.6f) else fg.copy(alpha = 0.35f))
                                 )
                                 Spacer(Modifier.width(8.dp))

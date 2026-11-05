@@ -364,7 +364,7 @@ fun AppQuickPopup(
 
             if (shortcuts.isNotEmpty()) {
                 SectionLabel(R.string.popup_section_shortcuts)
-                Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(colors.panelHigh.copy(alpha = 0.5f))) {
+                Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.panelHigh.copy(alpha = 0.5f))) {
                     shortcuts.forEach { sc ->
                         val icon = remember(sc.id) { shortcutIcon(sc) }
                         Row(
@@ -522,8 +522,8 @@ private fun QuickAction(icon: ImageVector, description: String, onClick: () -> U
     }
 }
 
-/** Raccogliersi è rapido e scoppiare ancora di più: Material chiede uscite brevi (token Short4 e Medium2). */
-private const val GATHER_MILLIS = 140
+/** Raccogliersi è rapido e scoppiare ancora di più: Material chiede uscite brevi (token Short3 e Medium2). */
+private const val GATHER_MILLIS = 150
 private const val BURST_MILLIS = 300
 private const val DROPLETS = 22
 

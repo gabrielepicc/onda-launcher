@@ -249,7 +249,7 @@ private fun LauncherEntryRow(icon: ImageVector, label: String, onClick: () -> Un
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(28.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
@@ -282,7 +282,7 @@ private fun ContactListRow(contact: ContactHit, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {

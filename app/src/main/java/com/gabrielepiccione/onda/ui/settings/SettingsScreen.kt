@@ -176,7 +176,7 @@ fun SettingsScreen(
                 Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.onWallpaper)
             }
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(page?.titleRes ?: R.string.settings), style = MaterialTheme.typography.headlineMedium, color = colors.onWallpaper)
+            Text(stringResource(page?.titleRes ?: R.string.settings), style = MaterialTheme.typography.titleLarge, color = colors.onWallpaper)
         }
 
         // Anteprima dal vivo sopra lo sfondo vero: resta ferma mentre sotto si scorre e si modifica
