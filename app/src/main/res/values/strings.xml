@@ -526,4 +526,9 @@
     <string name="alphabet_height_middle">Middle</string>
     <string name="alphabet_height_top">Top</string>
     <string name="alphabet_height_custom">Custom</string>
+    <string name="popup_open_app">Open app</string>
+    <string name="popup_section_notifications">Notifications</string>
+    <string name="popup_section_shortcuts">Shortcuts</string>
+    <string name="popup_section_related">Related apps</string>
+    <string name="popup_section_widgets">Widgets</string>
 </resources>
