@@ -4,6 +4,11 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.ui.unit.Dp
 import com.gabrielepiccione.onda.ui.components.NotificationImage
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
@@ -354,24 +359,108 @@ internal fun Conversation(
     }
 }
 
+/**
+ * La stessa notifica nel popup, dove divide lo spazio con il resto: testo a 14sp come le scorciatoie,
+ * al massimo 4 righe (toccandola si apre per intero) e azioni che vanno a capo invece di tagliarsi.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Avatar(item: NotificationItem) {
+internal fun CompactConversation(
+    item: NotificationItem,
+    onOpen: () -> Unit,
+    onSelectReply: () -> Unit,
+    onAction: (Notification.Action) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val colors = LocalOndaColors.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.panelHigh.copy(alpha = 0.5f))
+            .clickable(onClick = onOpen)
+            .padding(start = 12.dp, top = 4.dp, end = 0.dp, bottom = 8.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Avatar(item, 32.dp, compact = true)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                item.replyTo.ifBlank { item.title },
+                color = colors.onWallpaper,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(relativeTime(item.postTime), style = MaterialTheme.typography.labelSmall, color = colors.onWallpaperMuted)
+            Spacer(Modifier.weight(1f))
+            if (item.clearable) {
+                RoundAction(Icons.Filled.Clear, stringResource(R.string.cd_dismiss_notification), iconSize = 18.dp, onClick = onDismiss)
+            }
+        }
+        Column(Modifier.padding(end = 12.dp)) {
+            val text = if (item.messages.isNotEmpty()) {
+                item.messages.takeLast(COMPACT_MESSAGES).joinToString("\n") { m ->
+                    val showSender = m.sender.isNotBlank() && m.sender != item.title && m.sender != item.replyTo
+                    if (showSender) m.sender + ": " + m.text else m.text
+                }
+            } else {
+                item.text
+            }
+            if (text.isNotBlank()) {
+                Text(
+                    text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onWallpaper,
+                    maxLines = COMPACT_LINES,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            NotificationImage(item, 160.dp)
+            if (item.actions.isNotEmpty() || item.canReply) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                    item.actions.forEach { a -> ActionChip(a.title?.toString().orEmpty()) { onAction(a) } }
+                    if (item.canReply) ActionChip(stringResource(R.string.notif_reply)) { onSelectReply() }
+                }
+            }
+        }
+    }
+}
+
+private const val COMPACT_LINES = 4
+private const val COMPACT_MESSAGES = 3
+
+/** Azione di una notifica: il chip di Material, con il suo bersaglio di tocco da 48dp. */
+@Composable
+private fun ActionChip(label: String, onClick: () -> Unit) {
+    val colors = LocalOndaColors.current
+    AssistChip(
+        onClick = onClick,
+        label = { Text(label, color = colors.onWallpaper, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        border = null,
+        colors = AssistChipDefaults.assistChipColors(containerColor = colors.panel),
+    )
+}
+
+@Composable
+private fun Avatar(item: NotificationItem, size: Dp = 48.dp, compact: Boolean = false) {
     val colors = LocalOndaColors.current
     val icon = item.largeIcon
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(48.dp)
+            .size(size)
             .clip(CircleShape)
             .background(colors.accentContainer)
     ) {
         if (icon != null) {
-            Image(icon, null, contentScale = ContentScale.Crop, modifier = Modifier.size(48.dp))
+            Image(icon, null, contentScale = ContentScale.Crop, modifier = Modifier.size(size))
         } else {
             Text(
                 item.replyTo.trim().take(1).uppercase(),
                 color = colors.onAccentContainer,
-                style = MaterialTheme.typography.titleLarge,
+                style = if (compact) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleLarge,
             )
         }
     }
@@ -395,7 +484,7 @@ private fun Chip(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun RoundAction(icon: androidx.compose.ui.graphics.vector.ImageVector, description: String, onClick: () -> Unit) {
+private fun RoundAction(icon: androidx.compose.ui.graphics.vector.ImageVector, description: String, iconSize: Dp = 24.dp, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -404,6 +493,6 @@ private fun RoundAction(icon: androidx.compose.ui.graphics.vector.ImageVector, d
             .semantics { contentDescription = description }
             .clickable(onClick = onClick)
     ) {
-        Icon(icon, null, tint = LocalOndaColors.current.onWallpaperMuted)
+        Icon(icon, null, tint = LocalOndaColors.current.onWallpaperMuted, modifier = Modifier.size(iconSize))
     }
 }
