@@ -51,6 +51,11 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 
    **Prima della prossima versione:** provare sul telefono le voci della 0.10, che finora hanno solo test e CI.
 
+8. 🟡 Dopo la prima prova sul telefono (0.10):
+   ✅ alfabeto che parte dal punto toccato; ✅ pulsante di ricerca nell'angolo;
+   ✅ impostazioni rifatte: pagine per argomento, anteprima dal vivo su ogni pagina di aspetto, scelte visive, telefono in miniatura;
+   ⬜ cerca nelle impostazioni, ⬜ posizione dell'alfabeto, ⬜ stessi selettori visivi nei fogli di modifica della home.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.

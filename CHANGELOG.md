@@ -8,6 +8,12 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
   selezionare la stella. Alzando il dito torna al suo posto. La zona di tocco arriva quasi in cima allo schermo.
 - **Pulsante di ricerca**: nell'angolo in basso sotto l'alfabeto, a destra o a sinistra secondo la mano. Si può togliere
   dalle impostazioni della ricerca.
+- **Impostazioni rifatte**: l'indice spiega cosa c'è in ogni pagina e mostra la configurazione solo se manca qualcosa.
+  Orologio, testo, icone, home, alfabeto e ricerca hanno ora pagine separate, con un'anteprima in alto che cambia mentre modifichi.
+  Le scelte si vedono invece di essere solo nomi: stili dell'orologio, caratteri, stili e forme delle icone, tema, allineamento.
+  Un telefono in miniatura mostra la home; toccandolo o trascinando si sceglie dove inizia.
+- **Alfabeto**: si possono regolare la dimensione delle lettere e la distanza tra loro.
+- **Gesti**: ogni gesto dice dove si fa e cosa fa ora; quelli sempre attivi sono elencati uno per riga.
 
 ## [0.10.0]
 - **Usage Breaker a promemoria**: per le app scelte, una notifica dopo 5–240 minuti di uso continuo chiede se vuoi

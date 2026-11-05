@@ -288,7 +288,7 @@ fun HomePositionControl(settings: Settings, edit: ((Settings) -> Settings) -> Un
 }
 
 private const val DEFAULT_HOME_TOP = 0.25f
-private const val MAX_HOME_TOP = 0.8f
+const val MAX_HOME_TOP = 0.8f
 
 @Composable
 private fun pluralStringResourceCompat(days: Int): String = stringResource(R.string.agenda_days_value, days)

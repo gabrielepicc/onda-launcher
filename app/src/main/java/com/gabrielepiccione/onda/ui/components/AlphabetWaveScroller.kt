@@ -43,6 +43,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -62,6 +63,10 @@ fun AlphabetWaveScroller(
     leftSide: Boolean,
     modifier: Modifier = Modifier,
     showLetters: Boolean = true,
+    /** Dimensione delle lettere rispetto a quella normale. */
+    letterScale: Float = 1f,
+    /** Distanza massima tra due lettere: oltre, la colonna smette di allungarsi. */
+    maxLetterStep: Dp = 19.dp,
     onTouchStart: () -> Unit = {},
     /** Lettera scelta e altezza del dito nella finestra (px), per allineare l'elenco al dito. */
     onLetter: (String, Float) -> Unit,
@@ -90,7 +95,7 @@ fun AlphabetWaveScroller(
     // Bordo superiore della colonna nella finestra: serve per passare l'altezza del dito
     val originY = remember { floatArrayOf(0f) }
 
-    val letterStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium, color = colors.onWallpaperMuted)
+    val letterStyle = TextStyle(fontSize = 13.sp * letterScale, fontWeight = FontWeight.Medium, color = colors.onWallpaperMuted)
     val bubbleStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold, color = colors.onAccentContainer)
     // Misuriamo le lettere una sola volta
     val measured = remember(letters, letterStyle) { letters.map { measurer.measure(it, letterStyle) } }
@@ -100,18 +105,18 @@ fun AlphabetWaveScroller(
     val columnShift = remember { Animatable(0f) }
 
     // La zona di tocco è alta tutto il bordo: si può iniziare a scorrere ovunque. La colonna visibile
-    // riposa in basso, alta quanto le lettere (passo massimo [MAX_LETTER_STEP]); toccando più in alto
+    // riposa in basso, alta quanto le lettere (passo massimo [maxLetterStep]); toccando più in alto
     // sale incontro al dito e torna giù quando lo si alza.
     Canvas(
         modifier
             .fillMaxHeight()
             .width(if (showLetters) 36.dp else 28.dp)
             .onGloballyPositioned { originY[0] = it.positionInRoot().y }
-            .pointerInput(letters.size) {
+            .pointerInput(letters.size, maxLetterStep) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
                     down.consume()
-                    val maxStepPx = MAX_LETTER_STEP.toPx()
+                    val maxStepPx = maxLetterStep.toPx()
                     currentOnStart()
                     scope.launch { intensity.animateTo(1f, spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMediumLow)) }
 
@@ -170,7 +175,7 @@ fun AlphabetWaveScroller(
             }
     ) {
         val n = letters.size
-        val maxStepPx = MAX_LETTER_STEP.toPx()
+        val maxStepPx = maxLetterStep.toPx()
         val step = AlphabetLayout.step(size.height, n, maxStepPx)
         val columnTop = AlphabetLayout.top(size.height, n, maxStepPx) + columnShift.value
         val k = intensity.value
@@ -218,6 +223,3 @@ fun AlphabetWaveScroller(
         }
     }
 }
-
-/** Distanza massima tra due lettere: oltre, la colonna smette di allungarsi. */
-private val MAX_LETTER_STEP = 19.dp
