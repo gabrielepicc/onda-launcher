@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.data
 
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import android.app.ActivityOptions
 import android.content.ComponentName
 import android.content.Context
@@ -32,6 +34,11 @@ data class MediaInfo(
     val positionTime: Long = 0,
     val duration: Long = 0,
     val speed: Float = 1f,
+    /** Azioni in più dell'app (es. "Mi piace") con le loro icone, se la sessione le espone. */
+    val actions: List<MediaAction> = emptyList(),
+    val actionIcons: Map<String, ImageBitmap> = emptyMap(),
+    /** Brano successivo, se l'app espone la coda. */
+    val next: QueueEntry? = null,
 ) {
     /** Posizione stimata adesso, tenendo conto della velocità di riproduzione. */
     fun positionAt(nowElapsed: Long): Long {
@@ -126,6 +133,7 @@ class MediaRepository(private val context: Context) {
             ?: meta.getBitmap(MediaMetadata.METADATA_KEY_ART)
             ?: meta.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
         val previous = _media.value
+        val actions = c.playbackState?.customActions.orEmpty().map { MediaAction(it.action, it.name?.toString().orEmpty(), it.icon) }
         _media.value = MediaInfo(
             title = title,
             artist = artist,
@@ -137,8 +145,29 @@ class MediaRepository(private val context: Context) {
             positionTime = c.playbackState?.lastPositionUpdateTime ?: 0,
             duration = meta.getLong(MediaMetadata.METADATA_KEY_DURATION).coerceAtLeast(0),
             speed = c.playbackState?.playbackSpeed?.takeIf { it > 0f } ?: 1f,
+            actions = actions,
+            actionIcons = actions.mapNotNull { a -> actionIcon(c.packageName, a.iconRes)?.let { a.id to it } }.toMap(),
+            next = runCatching { c.queue }.getOrNull()?.let { queue ->
+                MediaExtras.nextInQueue(
+                    queue.map { QueueEntry(it.queueId, it.description.title?.toString().orEmpty(), it.description.subtitle?.toString().orEmpty()) },
+                    c.playbackState?.activeQueueItemId ?: -1L,
+                )
+            },
         )
     }
+
+    /** Icone delle azioni, lette una volta dalle risorse dell'app e tenute in memoria. */
+    private val iconCache = HashMap<String, ImageBitmap?>()
+
+    private fun actionIcon(pkg: String, res: Int): ImageBitmap? = iconCache.getOrPut("$pkg:$res") {
+        runCatching {
+            val resources = context.packageManager.getResourcesForApplication(pkg)
+            ResourcesCompat.getDrawable(resources, res, null)?.toBitmap(ICON_PX, ICON_PX)?.asImageBitmap()
+        }.getOrNull()
+    }
+
+    /** Manda all'app l'azione scelta, come farebbe il suo pulsante nella notifica. */
+    fun customAction(action: MediaAction) = controller?.transportControls?.sendCustomAction(action.id, null)
 
     fun playPause() {
         val c = controller ?: return
@@ -166,3 +195,6 @@ class MediaRepository(private val context: Context) {
         }
     }
 }
+
+/** Lato delle icone delle azioni dell'app, in pixel. */
+private const val ICON_PX = 96

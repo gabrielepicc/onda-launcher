@@ -725,6 +725,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                     onPrev = { vm.media.previous() },
                                     onNext = { vm.media.next() },
                                     onSeek = { vm.media.seekTo(it) },
+                                    onAction = { vm.media.customAction(it) },
                                     compact = settings.mediaCompact,
                                     scale = settings.mediaScale,
                                     highlighted = editing == HomeBlocks.MEDIA,

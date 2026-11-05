@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Player: azioni dell'app e prossimo brano** (Musica, passo 2).
+  - Se l'app mette azioni in più nella sessione (es. il cuore "Mi piace" di Spotify), compaiono accanto ai comandi, con la sua icona: una nel player compatto, fino a tre in quello esteso.
+  - Se l'app espone la coda, sotto l'artista compare "Dopo: titolo — artista".
 - **Sfondo con la musica** (Fase 8, Musica, passo 1). Mentre suona qualcosa, dietro la home si muovono onde morbide con 3–5 colori presi dalla copertina.
   - Il movimento segue il "carattere" del brano, stimato dalla copertina: accesa e contrastata vuol dire più vivace, scura o tenua più lenta.
   - Al cambio di brano i colori cambiano in 1,5 secondi; quando la musica si ferma, le onde rallentano e svaniscono.

@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.data.MediaAction
+import com.gabrielepiccione.onda.data.MediaExtras
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
@@ -343,14 +346,16 @@ fun MediaCard(
     scale: Float = 1f,
     highlighted: Boolean = false,
     onLongPress: (() -> Unit)? = null,
+    /** Azione in più dell'app (es. "Mi piace"). */
+    onAction: (MediaAction) -> Unit = {},
 ) {
     // Una densità diversa scala in un colpo solo tutte le misure del player
     val base = LocalDensity.current
     CompositionLocalProvider(LocalDensity provides Density(base.density * scale.coerceIn(0.75f, 1.25f), base.fontScale)) {
         if (compact) {
-            CompactMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, highlighted, onLongPress)
+            CompactMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, highlighted, onLongPress, onAction)
         } else {
-            FullMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, onSeek, highlighted, onLongPress)
+            FullMediaCard(media, onOpen, onPlayPause, onPrev, onNext, modifier, onSeek, highlighted, onLongPress, onAction)
         }
     }
 }
@@ -366,6 +371,7 @@ private fun FullMediaCard(
     onSeek: (Long) -> Unit,
     highlighted: Boolean,
     onLongPress: (() -> Unit)?,
+    onAction: (MediaAction) -> Unit,
 ) {
     val colors = LocalOndaColors.current
     var now by remember { androidx.compose.runtime.mutableLongStateOf(android.os.SystemClock.elapsedRealtime()) }
@@ -407,6 +413,17 @@ private fun FullMediaCard(
                         modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                     )
                 }
+                // Prossimo brano: solo se l'app espone la coda
+                media.next?.let { next ->
+                    Text(
+                        stringResource(R.string.media_up_next, MediaExtras.nextLine(next)),
+                        color = colors.onWallpaperMuted,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
             }
         }
 
@@ -438,8 +455,28 @@ private fun FullMediaCard(
             PlayButton(media.playing, onPlayPause, width = 64.dp, height = 44.dp)
             Spacer(Modifier.width(20.dp))
             MediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper) }
+            MediaExtras.visibleActions(media.actions, compact = false).forEach { action ->
+                Spacer(Modifier.width(12.dp))
+                AppActionButton(media, action, onAction, iconSize = 24.dp, small = false)
+            }
         }
     }
+}
+
+/** Pulsante di un'azione dell'app, con l'icona che l'app stessa fornisce (cambia quando cambia lo stato). */
+@Composable
+private fun AppActionButton(media: MediaInfo, action: MediaAction, onAction: (MediaAction) -> Unit, iconSize: androidx.compose.ui.unit.Dp, small: Boolean) {
+    val colors = LocalOndaColors.current
+    val icon = media.actionIcons[action.id] ?: return
+    val content: @Composable () -> Unit = {
+        Image(
+            icon,
+            contentDescription = action.name,
+            colorFilter = ColorFilter.tint(colors.onWallpaper),
+            modifier = Modifier.size(iconSize),
+        )
+    }
+    if (small) SmallMediaButton({ onAction(action) }, content) else MediaButton({ onAction(action) }, content)
 }
 
 /** Versione su una riga: copertina piccola, testo con la priorità, comandi compatti. */
@@ -453,6 +490,7 @@ private fun CompactMediaCard(
     modifier: Modifier,
     highlighted: Boolean,
     onLongPress: (() -> Unit)?,
+    onAction: (MediaAction) -> Unit,
 ) {
     val colors = LocalOndaColors.current
     Row(
@@ -488,6 +526,9 @@ private fun CompactMediaCard(
         SmallMediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
         PlayButton(media.playing, onPlayPause, width = 40.dp, height = 40.dp)
         SmallMediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
+        MediaExtras.visibleActions(media.actions, compact = true).forEach { action ->
+            AppActionButton(media, action, onAction, iconSize = 20.dp, small = true)
+        }
     }
 }
 

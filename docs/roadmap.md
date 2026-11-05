@@ -70,8 +70,8 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 ## Fase 8 (specifiche in `docs/fase8.md`)
 - Area 5 — Musica, per ogni app con sessione multimediale, senza internet. Decisioni prese: livello "a ritmo" sì, spento di default; sfondo solo nel launcher.
   PR previste, in ordine:
-  1. ⬜ sfondo animato con i colori della copertina;
-  2. ⬜ mi piace e prossimo brano;
+  1. ✅ sfondo animato con i colori della copertina;
+  2. ✅ mi piace e prossimo brano (cosa espone Spotify: da verificare sul telefono);
   3. ⬜ riproduzione dalla ricerca (`p`, `sp`, prefissi personalizzabili);
   4. ⬜ playlist e brani come voci;
   5. ⬜ ripresa con le cuffie;
