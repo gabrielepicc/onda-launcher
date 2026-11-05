@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.CompositingStrategy
 import com.gabrielepiccione.onda.data.FolderIcons
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
@@ -819,7 +823,23 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             ),
             modifier = Modifier
                 .zIndex(if (overlay == Overlay.ALL_APPS) 1f else -1f)
-                .graphicsLayer { alpha = listMode }
+                .graphicsLayer {
+                    alpha = listMode
+                    compositingStrategy = CompositingStrategy.Offscreen
+                }
+                // Le righe svaniscono salendo sotto la barra di stato, così non si sovrappongono alle sue icone
+                .drawWithContent {
+                    drawContent()
+                    val statusBar = bars.calculateTopPadding().toPx()
+                    drawRect(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, Color.Black),
+                            startY = statusBar * 0.6f,
+                            endY = statusBar + TOP_FADE.toPx(),
+                        ),
+                        blendMode = BlendMode.DstIn,
+                    )
+                }
                 .nestedScroll(appsFloor),
         )
 
@@ -838,11 +858,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 perform(settings.doubleTapAction, settings.doubleTapApp)
             }
         } else null
-        // L'inizio della lettera scelta si porta all'altezza del dito (non in cima allo schermo),
-        // così la prima app è subito sotto il pollice; vicino agli estremi l'elenco si ferma da solo.
+        // La prima app della lettera scelta si porta al centro dello schermo, qualunque sia la lettera;
+        // agli estremi dell'elenco si ferma da solo.
         val listTopPx = with(density) { (bars.calculateTopPadding() + 16.dp).toPx() }
-        val headerHalfPx = with(density) { 24.dp.toPx() }
-        val onLetter: (String, Float) -> Unit = onLetter@{ letter, fingerY ->
+        val firstRowCenterPx = with(density) { FIRST_ROW_CENTER.toPx() }
+        val onLetter: (String) -> Unit = onLetter@{ letter ->
             // La stella riporta ai preferiti; scendendo sulle lettere l'elenco torna subito
             if (letter == FAVORITES_MARK) {
                 overlay = Overlay.NONE
@@ -858,7 +878,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 sections.firstOrNull { it.letter == letter }?.firstIndex
             }
             if (target != null) {
-                val lift = (fingerY - listTopPx - headerHalfPx).coerceAtLeast(0f)
+                val center = allAppsList.layoutInfo.viewportSize.height / 2f
+                val lift = (center - listTopPx - firstRowCenterPx).coerceAtLeast(0f)
                 scope.launch {
                     allAppsList.scrollToItem(target)
                     allAppsList.scrollBy(-lift)
@@ -1528,3 +1549,9 @@ private fun RoundIcon(icon: ImageVector, onClick: () -> Unit) {
         Icon(icon, null, tint = colors.onWallpaper)
     }
 }
+
+/** Dall'inizio della sezione al centro della sua prima app: lettera più metà riga. */
+private val FIRST_ROW_CENTER = 72.dp
+
+/** Altezza della sfumatura sotto la barra di stato, in cima all'elenco delle app. */
+private val TOP_FADE = 40.dp

@@ -74,7 +74,7 @@ L'APK release (firmato con `app/onda-dev.keystore`, chiave di sviluppo) è nell'
 - Alfabeto (`ui/components/AlphabetWaveScroller`, geometria in `util/AlphabetLayout`): zona di tocco a tutta altezza,
   colonna visibile alta quanto le lettere (max 19dp ciascuna) che riposa in basso e, toccando più in alto, sale sotto il dito
   (`AlphabetLayout.anchoredTop`); in cima `FAVORITES_MARK` riporta ai preferiti.
-  `onLetter(lettera, yDelDito)` e la home porta l'inizio della sezione all'altezza del dito.
+  `onLetter(lettera)`: la home porta la prima app della sezione al centro dello schermo.
 - Vibrazione: sempre `LocalOndaHaptics.current?.perform(HapticEvent.X)` (mai `LocalHapticFeedback` diretto).
   `util/HapticPlan` sceglie primitive o costanti di sistema (testato), `util/OndaHaptics` le suona e segue il sistema.
 - Player: visibile solo con riproduzione attiva o pausa recente (`data/MediaRules`).
