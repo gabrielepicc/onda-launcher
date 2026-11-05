@@ -5,6 +5,9 @@ package com.gabrielepiccione.onda.ui.components
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -66,8 +69,9 @@ fun SwipeActions(
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val offsetX = remember { Animatable(0f) }
-    val triggerPx = with(density) { 72.dp.toPx() }
-    val maxPx = with(density) { 140.dp.toPx() }
+    // Poco scorrimento: la riga si tende appena e al suo posto cresce una bolla
+    val triggerPx = with(density) { 44.dp.toPx() }
+    val maxPx = with(density) { 64.dp.toPx() }
     var armed by remember { mutableStateOf(false) }
     val currentRight by rememberUpdatedState(onRight)
     val currentLeft by rememberUpdatedState(onLeft)
@@ -81,12 +85,18 @@ fun SwipeActions(
                 horizontalArrangement = if (x > 0f) Arrangement.Start else Arrangement.End,
                 modifier = Modifier
                     .matchParentSize()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(if (armed) colors.accentContainer else colors.panel)
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 12.dp),
             ) {
                 val p = (abs(x) / triggerPx).coerceIn(0f, 1f)
-                Box(Modifier.graphicsLayer { alpha = p; scaleX = 0.6f + 0.4f * p; scaleY = 0.6f + 0.4f * p }) {
+                val bubble by animateFloatAsState(if (armed) 1.25f else 1f, spring(dampingRatio = 0.4f, stiffness = 500f), label = "swipeBubble")
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .graphicsLayer { alpha = p; scaleX = (0.3f + 0.7f * p) * bubble; scaleY = (0.3f + 0.7f * p) * bubble }
+                        .clip(CircleShape)
+                        .background(if (armed) colors.accentContainer else colors.panel),
+                ) {
                     if (x > 0f) Icon(Icons.Filled.KeyboardArrowRight, null, tint = colors.onAccentContainer)
                     else if (canDismiss) Icon(Icons.Filled.Close, null, tint = colors.onAccentContainer)
                 }

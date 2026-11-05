@@ -23,7 +23,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
 import com.gabrielepiccione.onda.util.PullToDismiss
-import kotlinx.coroutines.coroutineScope
+import kotlin.math.abs
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
@@ -166,27 +166,29 @@ fun AppQuickPopup(
     val config = LocalConfiguration.current
     val bars = WindowInsets.systemBars.asPaddingValues()
     val enter = remember(app.key) { Animatable(0f) }
-    LaunchedEffect(app.key) { enter.animateTo(1f, spring(dampingRatio = 0.8f, stiffness = 700f)) }
-    // Si chiude al contrario di come si è aperto; sparisce davvero solo a fine animazione
+    // Si apre come una bolla che si gonfia (supera un poco la misura e si assesta) e si chiude come se scoppiasse
+    LaunchedEffect(app.key) { enter.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 420f)) }
+    val burst = remember(app.key) { Animatable(0f) }
     val scope = rememberCoroutineScope()
     val closing = remember(app.key) { booleanArrayOf(false) }
+    val pop: suspend () -> Unit = {
+        ondaHaptics?.perform(HapticEvent.CONFIRM)
+        burst.animateTo(1f, tween(POP_MILLIS, easing = Motion.EmphasizedDecelerate))
+        onDismiss()
+    }
     val dismiss: () -> Unit = {
         if (!closing[0]) {
             closing[0] = true
-            scope.launch {
-                enter.animateTo(0f, tween(CLOSE_MILLIS, easing = Motion.EmphasizedAccelerate))
-                onDismiss()
-            }
+            scope.launch { pop() }
         }
     }
     BackHandler(onBack = dismiss)
 
-    // Tirare il popup oltre il bordo del contenuto (o quando non c'è nulla da scorrere) lo sposta col dito:
-    // lasciandolo abbastanza lontano, o con un colpo deciso, esce nella stessa direzione e si chiude
+    // Tirare il popup oltre il bordo del contenuto (o quando non c'è nulla da scorrere) lo tende come una bolla:
+    // lasciandolo abbastanza teso, o con un colpo deciso, scoppia; altrimenti torna com'era con un rimbalzo
     var pull by remember(app.key) { mutableFloatStateOf(0f) }
     val thresholdPx = with(density) { PullToDismiss.THRESHOLD_DP.dp.toPx() }
     val flingPx = with(density) { PullToDismiss.FLING_DP.dp.toPx() }
-    val exitPx = with(density) { 160.dp.toPx() }
     val pullConnection = remember(app.key, thresholdPx, flingPx) {
         object : NestedScrollConnection {
             // Se è già spostato, il dito che torna indietro riporta prima a posto il popup
@@ -210,15 +212,9 @@ fun AppQuickPopup(
                 val from = pull
                 if (PullToDismiss.shouldDismiss(from, available.y, thresholdPx, flingPx)) {
                     closing[0] = true
-                    ondaHaptics?.perform(HapticEvent.CONFIRM)
-                    val target = if (from > 0f) exitPx else -exitPx
-                    coroutineScope {
-                        launch { animate(from, target, available.y, tween(PULL_EXIT_MILLIS, easing = Motion.EmphasizedAccelerate)) { v, _ -> pull = v } }
-                        launch { enter.animateTo(0f, tween(PULL_EXIT_MILLIS, easing = Motion.EmphasizedAccelerate)) }
-                    }
-                    onDismiss()
+                    pop()
                 } else {
-                    animate(from, 0f, available.y, spring(dampingRatio = 0.75f, stiffness = 500f)) { v, _ -> pull = v }
+                    animate(from, 0f, available.y, spring(dampingRatio = 0.4f, stiffness = 350f)) { v, _ -> pull = v }
                 }
                 return available
             }
@@ -235,7 +231,7 @@ fun AppQuickPopup(
     Box(
         Modifier
             .fillMaxSize()
-            .graphicsLayer { alpha = enter.value.coerceIn(0f, 1f) }
+            .graphicsLayer { alpha = enter.value.coerceIn(0f, 1f) * (1f - burst.value) }
             .background(Color.Black.copy(alpha = 0.25f))
             .pointerInput(Unit) { detectTapGestures { dismiss() } }
     ) {
@@ -261,10 +257,11 @@ fun AppQuickPopup(
                 .width(popupWidth)
                 .heightIn(max = maxHeight)
                 .graphicsLayer {
-                    translationY = pull
-                    val s = 0.85f + 0.15f * enter.value
-                    scaleX = s
-                    scaleY = s
+                    // Bolla: parte piccola, si gonfia oltre la misura e si assesta; tirata si allunga; scoppiando si dilata
+                    val base = (0.25f + 0.75f * enter.value) * (1f + POP_GROWTH * burst.value)
+                    val stretch = (abs(pull) / 1400f).coerceAtMost(0.12f)
+                    scaleX = base * (1f - stretch / 2f)
+                    scaleY = base * (1f + stretch)
                     transformOrigin = TransformOrigin(0.15f, if (above[0]) 1f else 0f)
                 }
                 .clip(RoundedCornerShape(24.dp))
@@ -404,5 +401,5 @@ private fun QuickAction(icon: ImageVector, description: String, onClick: () -> U
     }
 }
 
-private const val CLOSE_MILLIS = 150
-private const val PULL_EXIT_MILLIS = 220
+private const val POP_MILLIS = 170
+private const val POP_GROWTH = 0.16f

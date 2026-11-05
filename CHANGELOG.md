@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Popup a bolla**: si apre gonfiandosi dall'icona (supera un poco la misura e si assesta) e si chiude come se scoppiasse:
+  si dilata e svanisce. Tirandolo oltre il bordo si tende come una bolla e, se lo lasci abbastanza teso, scoppia.
+  Il gesto a destra sulle righe non fa più scorrere la riga: si tende appena e cresce una bolla che, superata la soglia, scatta.
 - **Modifica dalla home**: stile e allineamento dell'orologio, stile del player e posizione della home usano gli stessi riquadri
   con il disegno delle Impostazioni, al posto dei semplici pulsanti con il nome.
 - **Popup dell'app**: tirandolo oltre il bordo del contenuto (in cima, in fondo, o quando c'è tutto in vista) segue il dito con
