@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- Il player compare solo quando qualcosa è in riproduzione; dopo una pausa resta un minuto, poi sparisce.
 - In fondo all'elenco delle app: le cartelle, poi "Installate di recente" e "Impostazioni di Onda";
   il segno • in fondo all'alfabeto porta lì.
 - Alfabeto compatto e ancorato in basso, vicino al pollice: alto quanto le lettere invece di tutto lo schermo.
