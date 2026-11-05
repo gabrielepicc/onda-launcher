@@ -4,6 +4,11 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.WidgetSize
+import com.gabrielepiccione.onda.data.WidgetSizing
+import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
+import com.gabrielepiccione.onda.ui.components.LocalWidgetSizes
+import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
 import com.gabrielepiccione.onda.data.PlugPlay
 import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcuts
@@ -252,6 +257,17 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
     var shortcutMenu by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
+    var lightsEdit by remember { mutableStateOf(false) }
+    // Widget delle luci accanto all'orologio: le sue misure come ogni altro widget; pressione lunga per cambiarle
+    val lightsWidget: @Composable () -> Unit = {
+        HostedWidget(
+            settings.homeLightsWidget,
+            vm.widgets,
+            heightDp = settings.widgetHeights[settings.homeLightsWidget] ?: LIGHTS_HEIGHT,
+            size = settings.widgetSizes[WidgetSizing.widgetKey(settings.homeLightsWidget)],
+            onLongPress = { if (!settings.lockLayout) lightsEdit = true },
+        )
+    }
     var mediaMenu by remember { mutableStateOf<HomeEntry.Media?>(null) }
     var mediaRename by remember { mutableStateOf<HomeEntry.Media?>(null) }
     var popupEditFor by remember { mutableStateOf<AppInfo?>(null) }
@@ -610,7 +626,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         // ---------------- HOME ----------------
         LazyColumn(
             state = homeList,
-            verticalArrangement = Arrangement.spacedBy(2.dp, if (manualTop) Alignment.Top else Alignment.Bottom),
+            verticalArrangement = Arrangement.spacedBy(settings.homeBlockSpacing.dp, if (manualTop) Alignment.Top else Alignment.Bottom),
             // Orologio, widget e player: stesso margine a destra e a sinistra.
             // Solo le righe delle app si tengono lontane dalle lettere (vedi homeEntries).
             contentPadding = PaddingValues(
@@ -668,7 +684,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 },
                             ) {
                             if (lightsVisible && settings.clockAlign == HAlign.END) {
-                                Box(Modifier.weight(1f).padding(end = 8.dp)) { HostedWidget(settings.homeLightsWidget, vm.widgets, heightDp = LIGHTS_HEIGHT) }
+                                Box(Modifier.weight(1f).padding(end = 8.dp)) { lightsWidget() }
                             }
                             ClockHeader(
                                 event = if (settings.showCalendar) nextEvent else null,
@@ -685,7 +701,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 modifier = if (lightsVisible) Modifier.weight(1f) else Modifier,
                             )
                             if (lightsVisible && settings.clockAlign != HAlign.END) {
-                                Box(Modifier.weight(1f).padding(start = 8.dp)) { HostedWidget(settings.homeLightsWidget, vm.widgets, heightDp = LIGHTS_HEIGHT) }
+                                Box(Modifier.weight(1f).padding(start = 8.dp)) { lightsWidget() }
                             }
                             }
                             val manual = settings.profileOverride
@@ -781,6 +797,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                         id = id,
                                         widgets = vm.widgets,
                                         heightDp = settings.widgetHeights[id],
+                                        size = settings.widgetSizes[WidgetSizing.widgetKey(id)],
                                         highlighted = editing == block,
                                         onLongPress = { if (!settings.lockLayout) editing = block },
                                     )
@@ -789,7 +806,6 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         }
                     }
                     block == HomeBlocks.APPS -> {
-                        item(key = "spacer") { Spacer(Modifier.size(12.dp)) }
                         // Plug & Play: con cuffie o casse collegate, l'app scelta compare in cima
                         val plug = if (headphones && PlugPlay.matches(settings.plugPlayDevice, headphoneNames)) state.app(settings.plugPlayApp) else null
                         if (plug != null) {
@@ -1559,6 +1575,30 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     }
 
     // Voce multimediale (playlist, album…): sposta, rinomina, togli
+    if (lightsEdit && settings.homeLightsWidget > 0) {
+        val id = settings.homeLightsWidget
+        val key = WidgetSizing.widgetKey(id)
+        ModalBottomSheet(
+            onDismissRequest = { lightsEdit = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = colors.panel,
+            contentColor = colors.onWallpaper,
+            scrimColor = Color.Transparent,
+        ) {
+            Column(Modifier.navigationBarsPadding().padding(horizontal = 24.dp).padding(bottom = 16.dp)) {
+                Text(stringResource(R.string.section_lights), style = MaterialTheme.typography.headlineSmall)
+                WidgetSizeControls(
+                    size = settings.widgetSizes[key] ?: WidgetSize(),
+                    height = settings.widgetHeights[id] ?: LIGHTS_HEIGHT,
+                    defaultHeight = LIGHTS_HEIGHT,
+                    maxWidth = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp / 2,
+                    onSize = { size -> vm.updateSettings { WidgetSizing.set(it, key, size) } },
+                    onHeight = { h -> vm.updateSettings { s -> s.copy(widgetHeights = if (h == null) s.widgetHeights - id else s.widgetHeights + (id to h)) } },
+                )
+            }
+        }
+    }
+
     mediaMenu?.let { entry ->
         val favoriteId = MEDIA_PREFIX + entry.shortcut.id
         val index = settings.favorites.indexOf(favoriteId)

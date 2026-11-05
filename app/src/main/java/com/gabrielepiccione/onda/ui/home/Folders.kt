@@ -4,6 +4,12 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.WidgetSize
+import com.gabrielepiccione.onda.data.WidgetSizing
+import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
+import com.gabrielepiccione.onda.ui.components.LocalWidgetSizes
+import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.ui.platform.LocalDensity
 import com.gabrielepiccione.onda.data.FolderIcons
@@ -173,9 +179,12 @@ fun FolderRow(
                         widgets = widgets,
                         highlighted = false,
                         onLongPress = onLongClick,
+                        size = LocalWidgetSizes.current[WidgetSizing.folderKey(folder.id)],
                     )
                 } else {
-                    folder.widgets.forEach { id -> HostedWidget(id, widgets, heightDp = folder.widgetHeightDp, onLongPress = onLongClick) }
+                    folder.widgets.forEach { id ->
+                        HostedWidget(id, widgets, heightDp = folder.widgetHeightDp, onLongPress = onLongClick, size = LocalWidgetSizes.current[WidgetSizing.folderKey(folder.id)])
+                    }
                 }
                 apps.forEach { app ->
                     AppListRow(
@@ -247,13 +256,15 @@ fun FolderSheet(
                 }
                 val current = folder.widgetHeightDp ?: defaultHeight
                 Column(Modifier.padding(horizontal = 24.dp)) {
-                    ValueSlider(
-                        label = stringResource(R.string.folder_widget_height),
-                        valueText = stringResource(R.string.value_dp, current),
-                        value = current.toFloat(),
-                        default = defaultHeight.toFloat(),
-                        range = FolderIcons.HEIGHT_RANGE.first.toFloat()..FolderIcons.HEIGHT_RANGE.last.toFloat(),
-                        onChange = { v -> onWidgetHeight(if (v.toInt() == defaultHeight) null else v.toInt()) },
+                    val key = WidgetSizing.folderKey(folder.id)
+                    val setSize = LocalWidgetSizeSetter.current
+                    WidgetSizeControls(
+                        size = LocalWidgetSizes.current[key] ?: WidgetSize(),
+                        height = current,
+                        defaultHeight = defaultHeight,
+                        maxWidth = LocalConfiguration.current.screenWidthDp - 48,
+                        onSize = { size -> setSize(key, size) },
+                        onHeight = { h -> onWidgetHeight(h) },
                     )
                 }
             }

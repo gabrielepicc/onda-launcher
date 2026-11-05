@@ -580,6 +580,24 @@ internal fun SettingsScreen(
             }
         }
 
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.home_block_spacing)) {
+            SettingsSupporting(stringResource(R.string.home_block_spacing_sub))
+            ValueSlider(
+                stringResource(R.string.home_block_spacing),
+                stringResource(
+                    when {
+                        settings.homeBlockSpacing <= 4 -> R.string.spacing_compact
+                        settings.homeBlockSpacing >= 24 -> R.string.spacing_wide
+                        else -> R.string.spacing_normal
+                    },
+                ) + " · " + stringResource(R.string.value_dp, settings.homeBlockSpacing),
+                settings.homeBlockSpacing.toFloat(),
+                Settings().homeBlockSpacing.toFloat(),
+                0f..32f,
+                steps = 7,
+            ) { v -> onEdit { it.copy(homeBlockSpacing = (v / 4f).roundToInt() * 4) } }
+        }
+
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_layout)) {
             SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
             SwitchRow(stringResource(R.string.hide_status_bar), null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
@@ -1177,6 +1195,7 @@ private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.suggested_setting, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.layout_lock, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.hide_status_bar, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.home_block_spacing, SettingsPage.HOME, R.string.kw_home),
     SettingEntry(R.string.section_lights, SettingsPage.HOME, R.string.kw_lights),
     SettingEntry(R.string.alphabet_left, SettingsPage.ALPHABET, R.string.kw_alphabet),
     SettingEntry(R.string.hide_alphabet, SettingsPage.ALPHABET, R.string.kw_alphabet),

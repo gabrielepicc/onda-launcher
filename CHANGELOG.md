@@ -4,6 +4,10 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Home più compatta e widget ridimensionabili**:
+  - **Spazio tra i blocchi**: da 2 a 8 dp tra orologio, widget, player e app, su griglia da 4 dp. Nuovo slider in Impostazioni → Home (da compatto ad ampio), con ripristino; il telefono in miniatura lo segue.
+  - **Data attaccata all'orologio**: le cifre non portano più lo spazio vuoto sopra e sotto. Anche i margini dell'orologio sono ridotti.
+  - **Widget ridimensionabili in altezza e larghezza**, più "Automatica" (la misura preferita dal widget). Vale per i widget della home, le pile, le cartelle e per quello delle luci accanto all'orologio, che si regola tenendolo premuto.
 - **Swipe sulle righe più leggero**:
   - Niente più fondo pieno scuro. La riga che si sposta resta trasparente, con una velatura leggerissima, e si vede sempre lo sfondo.
   - La traccia dietro nasce invisibile e si colora d'accento fino a circa il 22% alla soglia; superata la soglia passa al colore contenitore al 35%, con la vibrazione di sempre.

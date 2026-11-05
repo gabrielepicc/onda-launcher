@@ -474,7 +474,7 @@ private fun PhoneMock(settings: Settings, emphasizeAlphabet: Boolean, onPosition
             },
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy((settings.homeBlockSpacing / 3f).dp),
             modifier = Modifier
                 .align(if (manual) Alignment.TopStart else Alignment.BottomStart)
                 .fillMaxWidth()

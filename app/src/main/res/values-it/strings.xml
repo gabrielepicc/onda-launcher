@@ -765,4 +765,13 @@
     <string name="section_notifications">Notifiche</string>
     <string name="hide_shortcuts_with_notifications">Nascondi le scorciatoie quando ci sono notifiche</string>
     <string name="hide_shortcuts_with_notifications_sub">Nel popup di un\'app le notifiche vengono prima; scorciatoie e widget si piegano in una riga in fondo</string>
+    <string name="widget_size_auto">Automatica</string>
+    <string name="widget_size_auto_sub">La misura preferita dal widget</string>
+    <string name="edit_width">Larghezza</string>
+    <string name="widget_full_width">Tutta la larghezza</string>
+    <string name="home_block_spacing">Spazio tra i blocchi</string>
+    <string name="home_block_spacing_sub">Distanza tra orologio, widget, player e app in home. Il telefono in anteprima qui sopra la segue.</string>
+    <string name="spacing_compact">Compatto</string>
+    <string name="spacing_normal">Normale</string>
+    <string name="spacing_wide">Ampio</string>
 </resources>
