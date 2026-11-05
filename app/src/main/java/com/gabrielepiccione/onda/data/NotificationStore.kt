@@ -2,6 +2,11 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.data
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Icon
+import android.net.Uri
+import androidx.compose.ui.graphics.ImageBitmap
 import android.app.ActivityOptions
 import android.app.Notification
 import android.content.ComponentName
@@ -91,6 +96,7 @@ object NotificationStore {
             replyAction = reply,
             actions = others,
             largeIcon = largeIconOf(context),
+            image = imageOf(context, style),
             conversationTitle = style?.conversationTitle?.toString()?.takeIf { it.isNotBlank() && it != title },
         )
     }
@@ -101,6 +107,53 @@ object NotificationStore {
         val size = 128
         d.toBitmap(size, size).asImageBitmap()
     }.getOrNull()
+
+    /** Immagini già lette: ogni nuova notifica ripubblica tutte le altre, e non vanno decodificate di nuovo. */
+    private val images = object : LinkedHashMap<String, ImageBitmap?>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ImageBitmap?>): Boolean = size > IMAGE_CACHE_SIZE
+    }
+
+    /** L'ultima immagine della conversazione o, in alternativa, quella grande della notifica. */
+    private fun StatusBarNotification.imageOf(context: Context, style: NotificationCompat.MessagingStyle?): ImageBitmap? {
+        val uri = runCatching {
+            style?.messages?.lastOrNull { it.dataUri != null && it.dataMimeType?.startsWith("image/") == true }?.dataUri
+        }.getOrNull()
+        val id = uri?.toString() ?: "$key@$postTime"
+        synchronized(images) {
+            if (images.containsKey(id)) return images[id]
+        }
+        val bitmap = (uri?.let { decodeImage(context, it) } ?: pictureOf(context))?.let(::fitted)?.asImageBitmap()
+        synchronized(images) { images[id] = bitmap }
+        return bitmap
+    }
+
+    /** Legge l'immagine in dimensioni ridotte; Android concede l'accesso a chi ascolta le notifiche. */
+    private fun decodeImage(context: Context, uri: Uri): Bitmap? = runCatching {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > IMAGE_MAX_PX * 2) sample *= 2
+        context.contentResolver.openInputStream(uri)?.use {
+            BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
+        }
+    }.getOrNull()
+
+    @Suppress("DEPRECATION")
+    private fun StatusBarNotification.pictureOf(context: Context): Bitmap? = runCatching {
+        val extras = notification.extras
+        extras.getParcelable<Bitmap>(Notification.EXTRA_PICTURE)
+            ?: extras.getParcelable<Icon>(NotificationCompat.EXTRA_PICTURE_ICON)?.loadDrawable(context)?.toBitmap()
+    }.getOrNull()
+
+    private fun fitted(bitmap: Bitmap): Bitmap {
+        val largest = maxOf(bitmap.width, bitmap.height)
+        if (largest <= IMAGE_MAX_PX) return bitmap
+        val ratio = IMAGE_MAX_PX.toFloat() / largest
+        return Bitmap.createScaledBitmap(bitmap, (bitmap.width * ratio).toInt().coerceAtLeast(1), (bitmap.height * ratio).toInt().coerceAtLeast(1), true)
+    }
+
+    private const val IMAGE_MAX_PX = 720
+    private const val IMAGE_CACHE_SIZE = 16
 
     fun isPermissionGranted(context: Context): Boolean =
         NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)

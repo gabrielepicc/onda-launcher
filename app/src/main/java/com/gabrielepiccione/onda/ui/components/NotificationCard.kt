@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import android.app.Notification
@@ -268,6 +271,18 @@ private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> U
     )
 }
 
+/** Immagine, GIF o sticker della notifica, intera e senza tagli; nulla se non c'è. */
+@Composable
+fun NotificationImage(item: NotificationItem, maxHeight: Dp, modifier: Modifier = Modifier) {
+    val image = item.image ?: return
+    Image(
+        image,
+        contentDescription = stringResource(R.string.notif_image),
+        contentScale = ContentScale.Fit,
+        modifier = modifier.padding(top = 6.dp).heightIn(max = maxHeight).clip(RoundedCornerShape(12.dp)),
+    )
+}
+
 /** Tempo trascorso breve e localizzato ("2 min", "1 h"…). */
 @Composable
 fun relativeTime(postTime: Long): String {
@@ -342,6 +357,7 @@ fun NotificationPreview(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                NotificationImage(item, 160.dp)
             }
             Icon(
                 Icons.Filled.KeyboardArrowRight,
