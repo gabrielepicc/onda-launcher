@@ -123,6 +123,8 @@ fun AllAppsPanel(
     onLongClick: (AppInfo) -> Unit,
     contentPadding: PaddingValues,
     onOpenPanel: (AppInfo) -> Unit = {},
+    /** Tocco sull'anteprima di una notifica: la apre. */
+    onNotificationClick: (NotificationItem) -> Unit = {},
     onDismissNotifications: (AppInfo) -> Unit = {},
     onContact: (ContactHit) -> Unit = {},
     /** Modifier della riga di un'app, ad esempio per conoscerne la posizione. */
@@ -166,6 +168,7 @@ fun AllAppsPanel(
                         notificationCount = notifications[app.packageName]?.size ?: 0,
                         summary = ConversationSummary.of(notifications[app.packageName].orEmpty()),
                         onOpenPanel = { onOpenPanel(app) },
+                        onNotificationClick = onNotificationClick,
                         swipeEnabled = true,
                         onDismissNotifications = { onDismissNotifications(app) },
                         showIcon = showIcons,

@@ -28,18 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
 import com.gabrielepiccione.onda.util.PullToDismiss
 import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.drawscope.clipPath
-import com.gabrielepiccione.onda.ui.components.bubbleClip
-import com.gabrielepiccione.onda.ui.components.drawBubbleBurst
-import com.gabrielepiccione.onda.ui.components.drawBubbleFilm
-import com.gabrielepiccione.onda.ui.components.puncturePoint
-import com.gabrielepiccione.onda.util.BubbleMotion
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -87,6 +76,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -179,37 +169,37 @@ fun AppQuickPopup(
     val density = LocalDensity.current
     val config = LocalConfiguration.current
     val bars = WindowInsets.systemBars.asPaddingValues()
+    // Movimento di Material 3 Expressive: il contenitore cresce dall'icona con una molla spaziale appena
+    // elastica, la sua opacità segue una molla "effetto" senza rimbalzi, e il contenuto entra a cascata
     val enter = remember(app.key) { Animatable(0f) }
-    // Si apre come una bolla che esce dall'icona. Si chiude come una bolla vera: si raccoglie in un cerchio,
-    // la pellicola si fora in un punto, si ritira dal foro e il bordo si rompe in goccioline
-    LaunchedEffect(app.key) { enter.animateTo(1f, spring(dampingRatio = 0.62f, stiffness = 260f)) }
-    val gather = remember(app.key) { Animatable(0f) }
-    val burst = remember(app.key) { Animatable(0f) }
-    val droplets = remember(app.key) { BubbleMotion.droplets(app.key.hashCode(), DROPLETS) }
+    val opacity = remember(app.key) { Animatable(0f) }
+    val content = remember(app.key) { Animatable(0f) }
+    val exit = remember(app.key) { Animatable(0f) }
+    LaunchedEffect(app.key) {
+        launch { enter.animateTo(1f, spring(dampingRatio = SPATIAL_DAMPING, stiffness = SPATIAL_STIFFNESS)) }
+        launch { opacity.animateTo(1f, spring(dampingRatio = 1f, stiffness = EFFECTS_STIFFNESS)) }
+        content.animateTo(1f, tween(CONTENT_MILLIS, easing = Motion.EmphasizedDecelerate))
+    }
     val scope = rememberCoroutineScope()
     val closing = remember(app.key) { booleanArrayOf(false) }
-    val pop: suspend () -> Unit = {
-        gather.animateTo(1f, tween(GATHER_MILLIS, easing = Motion.EmphasizedAccelerate))
-        ondaHaptics?.perform(HapticEvent.CONFIRM)
-        burst.animateTo(1f, tween(BURST_MILLIS, easing = LinearEasing))
+    // Uscita: breve e accelerata, il popup sfuma rimpicciolendosi verso l'icona da cui era uscito
+    val leave: suspend () -> Unit = {
+        exit.animateTo(1f, tween(EXIT_MILLIS, easing = Motion.EmphasizedAccelerate))
         onDismiss()
     }
     val dismiss: () -> Unit = {
         if (!closing[0]) {
             closing[0] = true
-            scope.launch { pop() }
+            scope.launch { leave() }
         }
     }
     BackHandler(onBack = dismiss)
 
-    // Tirare il popup oltre il bordo del contenuto (o quando non c'è nulla da scorrere) lo arrotonda verso la bolla:
-    // lasciandolo abbastanza teso, o con un colpo deciso, scoppia; altrimenti torna com'era con un rimbalzo
+    // Tirare il popup oltre il bordo del contenuto (o quando non c'è nulla da scorrere) lo rimpicciolisce e lo
+    // schiarisce, come il gesto Indietro predittivo: lasciato abbastanza lontano, o con un colpo deciso, si chiude
     var pull by remember(app.key) { mutableFloatStateOf(0f) }
     val thresholdPx = with(density) { PullToDismiss.THRESHOLD_DP.dp.toPx() }
     val flingPx = with(density) { PullToDismiss.FLING_DP.dp.toPx() }
-    val cornerPx = with(density) { POPUP_CORNER.toPx() }
-    val rimPx = with(density) { 1.5.dp.toPx() }
-    val dropletPx = with(density) { 3.5.dp.toPx() }
     val pullConnection = remember(app.key, thresholdPx, flingPx) {
         object : NestedScrollConnection {
             // Se è già spostato, il dito che torna indietro riporta prima a posto il popup
@@ -233,17 +223,17 @@ fun AppQuickPopup(
                 val from = pull
                 if (PullToDismiss.shouldDismiss(from, available.y, thresholdPx, flingPx)) {
                     closing[0] = true
-                    gather.snapTo((abs(from) / thresholdPx * PULL_GATHER).coerceIn(0f, PULL_GATHER))
-                    pop()
+                    leave()
                 } else {
-                    animate(from, 0f, available.y, spring(dampingRatio = 0.4f, stiffness = 350f)) { v, _ -> pull = v }
+                    animate(from, 0f, available.y, spring(dampingRatio = SPATIAL_DAMPING, stiffness = SPATIAL_STIFFNESS)) { v, _ -> pull = v }
                 }
                 return available
             }
         }
     }
 
-    val bubble = remember(app.key) { BubbleGeometry() }
+    // Punto da cui cresce il popup, in frazioni della sua misura: l'icona della riga
+    val origin = remember(app.key) { floatArrayOf(0.15f, 0f) }
     val screenWidth = config.screenWidthDp.dp
     val popupWidth = min(320.dp, screenWidth - 32.dp)
     val maxHeight = config.screenHeightDp.dp * 0.7f
@@ -254,7 +244,7 @@ fun AppQuickPopup(
         Box(
             Modifier
                 .matchParentSize()
-                .graphicsLayer { alpha = enter.value.coerceIn(0f, 1f) * (1f - burst.value) }
+                .graphicsLayer { alpha = opacity.value.coerceIn(0f, 1f) * (1f - exit.value) }
                 .background(Color.Black.copy(alpha = 0.25f))
                 .pointerInput(Unit) { detectTapGestures { dismiss() } }
         )
@@ -274,32 +264,27 @@ fun AppQuickPopup(
                         bottomLimit = with(density) { bars.calculateBottomPadding().roundToPx() },
                         margin = with(density) { 8.dp.roundToPx() },
                     )
-                    // La bolla nasce dall'icona della riga, non da un angolo del popup
                     val iconX = anchor?.let { it.left + with(density) { ICON_CENTER.toPx() } } ?: (spot.x + placeable.width / 2f)
                     val iconY = anchor?.center?.y ?: (spot.y + placeable.height / 2f)
-                    bubble.left = spot.x.toFloat()
-                    bubble.top = spot.y.toFloat()
-                    bubble.originX = iconX - spot.x
-                    bubble.originY = iconY - spot.y
-                    bubble.width = placeable.width.toFloat()
-                    bubble.height = placeable.height.toFloat()
+                    origin[0] = ((iconX - spot.x) / placeable.width.coerceAtLeast(1)).coerceIn(0f, 1f)
+                    origin[1] = ((iconY - spot.y) / placeable.height.coerceAtLeast(1)).coerceIn(0f, 1f)
                     layout(constraints.maxWidth, constraints.maxHeight) { placeable.place(spot.x, spot.y) }
                 }
                 .width(popupWidth)
                 .heightIn(max = maxHeight)
-                .graphicsLayer { translationY = pull * PULL_FOLLOW }
-                .drawWithContent {
-                    if (burst.value >= 1f) return@drawWithContent
-                    val state = bubble.state(enter.value, gather.value, pull, thresholdPx, burst.value)
-                    if (state == null) {
-                        drawContent()
-                    } else {
-                        clipPath(bubbleClip(size, cornerPx, state.center, state.radius, state.hole, state.holeRadius)) {
-                            this@drawWithContent.drawContent()
-                        }
-                    }
+                .graphicsLayer {
+                    val pulled = (abs(pull) / thresholdPx).coerceIn(0f, 1f)
+                    val scale = (ENTER_SCALE + (1f - ENTER_SCALE) * enter.value) *
+                        (1f - PULL_SHRINK * pulled) * (1f - (1f - EXIT_SCALE) * exit.value)
+                    scaleX = scale
+                    scaleY = scale
+                    alpha = opacity.value.coerceIn(0f, 1f) * (1f - PULL_FADE * pulled) * (1f - exit.value)
+                    translationY = pull * PULL_FOLLOW
+                    transformOrigin = TransformOrigin(origin[0], origin[1])
+                    shadowElevation = 6.dp.toPx() * alpha
+                    shape = RoundedCornerShape(POPUP_CORNER)
+                    clip = true
                 }
-                .clip(RoundedCornerShape(POPUP_CORNER))
                 .background(colors.panel)
                 // I tocchi dentro il popup non devono chiuderlo
                 .pointerInput(Unit) { detectTapGestures { } }
@@ -312,7 +297,7 @@ fun AppQuickPopup(
             // Intestazione: l'app (si apre toccandola) e, in alto a destra, il menu con le altre azioni
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 4.dp),
+                modifier = Modifier.cascade(content, 0).fillMaxWidth().padding(start = 8.dp, end = 4.dp),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -347,7 +332,7 @@ fun AppQuickPopup(
                 }
             }
 
-            if (notifications.isNotEmpty()) {
+            if (notifications.isNotEmpty()) Column(Modifier.cascade(content, 1)) {
                 SectionLabel(R.string.popup_section_notifications)
                 Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     notifications.forEach { n ->
@@ -362,7 +347,7 @@ fun AppQuickPopup(
                 }
             }
 
-            if (shortcuts.isNotEmpty()) {
+            if (shortcuts.isNotEmpty()) Column(Modifier.cascade(content, 2)) {
                 SectionLabel(R.string.popup_section_shortcuts)
                 Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.panelHigh.copy(alpha = 0.5f))) {
                     shortcuts.forEach { sc ->
@@ -387,7 +372,7 @@ fun AppQuickPopup(
                 }
             }
 
-            if (relatedApps.isNotEmpty()) {
+            if (relatedApps.isNotEmpty()) Column(Modifier.cascade(content, 3)) {
                 SectionLabel(R.string.popup_section_related)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -417,7 +402,7 @@ fun AppQuickPopup(
             }
 
             // Più widget si sfogliano in orizzontale, come le pile della home
-            if (widgetIds.isNotEmpty()) {
+            if (widgetIds.isNotEmpty()) Column(Modifier.cascade(content, 4)) {
                 SectionLabel(R.string.popup_section_widgets)
                 when (widgetIds.size) {
                     1 -> Box(Modifier.padding(horizontal = 8.dp)) { HostedWidget(widgetIds.single(), widgets) }
@@ -431,62 +416,19 @@ fun AppQuickPopup(
                 }
             }
         }
-        // Sopra tutto, senza prendere i tocchi: la pellicola e le gocce escono dai bordi del popup
-        Canvas(Modifier.fillMaxSize()) {
-            val state = bubble.state(enter.value, gather.value, pull, thresholdPx, burst.value) ?: return@Canvas
-            val center = Offset(bubble.left + state.center.x, bubble.top + state.center.y + pull * PULL_FOLLOW)
-            if (burst.value <= 0f) {
-                drawBubbleFilm(center, state.radius, state.filmAlpha, rimPx)
-            } else {
-                val rimFade = 1f - (burst.value / 0.3f).coerceIn(0f, 1f)
-                drawBubbleFilm(center, state.radius, rimFade * state.filmAlpha, rimPx)
-                drawBubbleBurst(center, state.radius, burst.value, droplets, dropletPx, rimPx, colors.accent)
-            }
-        }
     }
     }
 }
 
 /**
- * Dove sta la bolla rispetto al popup. La posizione si conosce solo misurando, così si aggiorna in
- * fase di layout e si legge disegnando.
+ * Entrata a cascata delle sezioni: ognuna parte un poco dopo la precedente, sale di 12dp e compare.
+ * Si legge nella fase di disegno, così l'animazione non ricompone il contenuto.
  */
-private class BubbleGeometry {
-    var left = 0f
-    var top = 0f
-    var width = 0f
-    var height = 0f
-    var originX = 0f
-    var originY = 0f
-
-    /** Lo stato da disegnare, o null se il popup è fermo e intero: niente ritaglio, niente lavoro in più. */
-    fun state(enter: Float, gather: Float, pull: Float, thresholdPx: Float, burst: Float): BubbleState? {
-        val pulled = (abs(pull) / thresholdPx * PULL_GATHER).coerceIn(0f, PULL_GATHER)
-        val closing = max(gather, pulled)
-        if (enter >= 0.995f && closing <= 0f && burst <= 0f) return null
-        val origin = Offset(originX, originY)
-        val covering = BubbleMotion.coveringRadius(width, height, originX, originY)
-        val middle = Offset(width / 2f, height / 2f)
-        if (closing > 0f || burst > 0f) {
-            // Si raccoglie al centro del popup, in modo continuo da dove si trovava il cerchio di apertura
-            val center = Offset(lerp(origin.x, middle.x, closing), lerp(origin.y, middle.y, closing))
-            // Se si chiude mentre si sta ancora aprendo, parte da quanto era già cresciuta
-            val reached = min(covering, BubbleMotion.openRadius(enter, min(width, height) * 0.12f, covering))
-            val radius = BubbleMotion.gatherRadius(closing, reached, min(reached, BubbleMotion.roundRadius(width, height)))
-            val hole = if (burst > 0f) puncturePoint(center, radius) else null
-            return BubbleState(center, radius, hole, BubbleMotion.holeRadius(burst, radius), closing.coerceIn(0f, 1f))
-        }
-        val start = min(width, height) * 0.12f
-        val radius = BubbleMotion.openRadius(enter, start, covering)
-        // Si vede la pellicola mentre si apre, poi il cerchio si scioglie nel popup
-        val film = (1f - enter / 0.85f).coerceIn(0f, 1f)
-        return BubbleState(origin, radius, null, 0f, film)
-    }
+private fun Modifier.cascade(progress: Animatable<Float, *>, index: Int): Modifier = graphicsLayer {
+    val p = ((progress.value - index * CASCADE_STEP) / (1f - CASCADE_STEP * CASCADE_SECTIONS)).coerceIn(0f, 1f)
+    alpha = p
+    translationY = (1f - p) * 12.dp.toPx()
 }
-
-private class BubbleState(val center: Offset, val radius: Float, val hole: Offset?, val holeRadius: Float, val filmAlpha: Float)
-
-private fun lerp(from: Float, to: Float, t: Float): Float = from + (to - from) * t
 
 /** Titolo di una sezione del popup, così si distingue cosa è l'app, cosa sono le notifiche e cosa le scorciatoie. */
 @Composable
@@ -522,14 +464,24 @@ private fun QuickAction(icon: ImageVector, description: String, onClick: () -> U
     }
 }
 
-/** Raccogliersi è rapido e scoppiare ancora di più: Material chiede uscite brevi (token Short3 e Medium2). */
-private const val GATHER_MILLIS = 150
-private const val BURST_MILLIS = 300
-private const val DROPLETS = 22
+/**
+ * Valori del movimento, dai token di Material 3: molla spaziale "default" dello schema Expressive
+ * (smorzamento 0,8, rigidità 380), molla degli effetti (1600), uscita Short4 (200 ms), contenuto Medium4 (400 ms).
+ */
+private const val SPATIAL_DAMPING = 0.8f
+private const val SPATIAL_STIFFNESS = 380f
+private const val EFFECTS_STIFFNESS = 1600f
+private const val EXIT_MILLIS = 200
+private const val CONTENT_MILLIS = 400
+private const val ENTER_SCALE = 0.8f
+private const val EXIT_SCALE = 0.9f
+private const val CASCADE_STEP = 0.08f
+private const val CASCADE_SECTIONS = 4
 
-/** Quanto il popup segue il dito quando lo si tira, e quanto si arrotonda al massimo prima di scoppiare. */
-private const val PULL_FOLLOW = 0.5f
-private const val PULL_GATHER = 0.55f
+/** Tirandolo: quanto segue il dito, quanto si rimpicciolisce e quanto si schiarisce al massimo. */
+private const val PULL_FOLLOW = 0.3f
+private const val PULL_SHRINK = 0.08f
+private const val PULL_FADE = 0.3f
 private val POPUP_CORNER = 28.dp
 
 /** Centro dell'icona rispetto al bordo sinistro della riga. */

@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Popup con il movimento di Material 3**: cresce dall'icona con una molla appena elastica, il contenuto entra a cascata, esce in 200 ms
+  rimpicciolendosi verso l'icona. Tirato oltre il bordo si rimpicciolisce come con il gesto Indietro. Via la bolla.
+- **Tocco sulla notifica**: l'anteprima sotto il nome apre la notifica (prima apriva il popup); il popup resta su swipe a destra e pressione lunga.
+- **Usage Breaker anche su notifiche e scorciatoie** aperte dal launcher, non solo sull'app.
+- **Build più veloci**: Gradle con cache e moduli in parallelo.
 - **Alfabeto, fondo dell'elenco**: il segno • in fondo all'alfabeto mostra per intero cartelle, installate di recente e impostazioni,
   senza dover scorrere. Mentre il dito è sull'alfabeto il pulsante di ricerca si fa da parte, così l'onda delle lettere non ci passa sopra.
 - **Material 3, tocco e leggibilità**: bersagli di almeno 48 dp, campioni di colore che vanno a capo e si leggono con TalkBack, accento più
