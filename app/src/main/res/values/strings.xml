@@ -409,4 +409,9 @@
     <string name="haptics_support_basic">Basic vibration only: the system default taps are used</string>
     <string name="haptics_support_unknown">This Android version cannot tell: the system default taps are used</string>
     <string name="haptics_support_none">This device has no vibration motor</string>
+    <string name="folder_icon">Folder icon</string>
+    <string name="folder_icon_auto">Automatic</string>
+    <string name="folder_icon_from_app">From an app in the folder</string>
+    <string name="folder_icon_symbols">Symbols</string>
+    <string name="folder_widget_height">Widget height</string>
 </resources>

@@ -13,6 +13,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
   (attivata e disattivata), pressione lunga, apertura del popup ed eliminazione delle notifiche. Usa le
   "vibrazioni leggere" del motore aptico quando ci sono (Android 11+), altrimenti i colpi di sistema;
   segue sempre il feedback al tocco di sistema. Nuova voce "Prova la vibrazione" nelle impostazioni.
+- Cartelle: icona personalizzabile (automatica, simbolo, icona di un'app della cartella o immagine);
+  più widget nella stessa cartella si sfogliano in un carosello orizzontale; altezza dei widget regolabile
+  dalle opzioni della cartella.
 
 ## [0.9.0]
 

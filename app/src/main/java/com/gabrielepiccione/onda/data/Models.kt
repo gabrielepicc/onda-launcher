@@ -133,6 +133,10 @@ data class Folder(
     val name: String,
     val apps: List<String> = emptyList(),
     val widgets: List<Int> = emptyList(),
+    /** Icona della cartella: "" = anteprima delle app, poi "app:<chiave>", "sym:<nome>" o "file:<percorso>" (vedi [FolderIcons]). */
+    val icon: String = "",
+    /** Altezza dei widget nella cartella (dp); null = la maggiore tra le altezze predefinite. */
+    val widgetHeightDp: Int? = null,
 )
 
 /** Prefisso delle icone da immagine in [Settings.iconOverrides]; segue il percorso del file. */

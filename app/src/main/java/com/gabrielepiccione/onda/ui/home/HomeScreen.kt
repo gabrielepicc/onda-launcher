@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.FolderIcons
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
 import com.gabrielepiccione.onda.ui.theme.*
@@ -198,6 +199,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     }
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
+    var folderIconFor by remember { mutableStateOf<String?>(null) }
     var moveFor by remember { mutableStateOf<AppInfo?>(null) }
     var homeMenu by remember { mutableStateOf(false) }
     var widgetPicker by remember { mutableStateOf(false) }
@@ -1145,7 +1147,25 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onRemoveWidget = { vm.removeFolderWidget(f.id, it) },
             onDelete = { vm.deleteFolder(f.id) },
             onDismiss = { folderSheet = null },
+            onChangeIcon = { folderIconFor = f.id },
+            onWidgetHeight = { vm.settingsRepo.setFolderWidgetHeight(f.id, it) },
         )
+    }
+
+    folderIconFor?.let { id ->
+        val folder = settings.folders[id]
+        if (folder == null) {
+            folderIconFor = null
+        } else {
+            FolderIconSheet(
+                folder = folder,
+                apps = state.folders.firstOrNull { it.folder.id == id }?.apps.orEmpty(),
+                themedIcons = settings.themedIcons,
+                onPick = { vm.settingsRepo.setFolderIcon(id, it) },
+                onPickImage = { callbacks.pickIconImage(FolderIcons.IMAGE_KEY_PREFIX + id) },
+                onDismiss = { folderIconFor = null },
+            )
+        }
     }
 
     if (homeMenu) {
