@@ -191,6 +191,19 @@ class MediaRepository(private val context: Context) {
         return runCatching { c.transportControls.playFromUri(android.net.Uri.parse(uri), Bundle()) }.isSuccess
     }
 
+    /**
+     * Riprende l'ultima sessione dell'app [pkg]: con la sua sessione, se c'è ancora, oppure con un tasto
+     * multimediale virtuale, che Android consegna all'ultima app che ha suonato.
+     */
+    fun resume(pkg: String) {
+        val session = currentSessions().firstOrNull { it.packageName == pkg }
+        if (session != null && runCatching { session.transportControls.play() }.isSuccess) return
+        val audio = context.getSystemService(android.media.AudioManager::class.java) ?: return
+        listOf(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.ACTION_UP).forEach { action ->
+            runCatching { audio.dispatchMediaKeyEvent(android.view.KeyEvent(action, android.view.KeyEvent.KEYCODE_MEDIA_PLAY)) }
+        }
+    }
+
     /** App installate che sanno far partire un brano da una ricerca. */
     fun playFromSearchApps(): List<String> = runCatching {
         context.packageManager.queryIntentActivities(Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH), 0)

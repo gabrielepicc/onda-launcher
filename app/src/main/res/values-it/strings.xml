@@ -752,4 +752,9 @@
     <string name="media_track">Brano</string>
     <string name="media_episode">Episodio</string>
     <string name="media_show">Podcast</string>
+    <string name="plug_play_device">Cuffie</string>
+    <string name="plug_play_device_any">Qualsiasi cuffia</string>
+    <string name="plug_play_device_hint">Quelle collegate adesso sono qui sopra. Oppure scrivi il nome come lo mostra il telefono.</string>
+    <string name="plug_play_resume">Riprendi la musica</string>
+    <string name="plug_play_resume_sub">Collegando queste cuffie, l\'app scelta (o l\'ultima che ha suonato) riparte. Mai durante una chiamata o se qualcosa sta già suonando.</string>
 </resources>

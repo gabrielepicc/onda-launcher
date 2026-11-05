@@ -174,6 +174,8 @@ fun SettingsScreen(
     widgets: WidgetManager,
     actions: SettingsActions,
     usageStats: UsageStatsRepository? = null,
+    /** Nomi delle cuffie collegate adesso, per scegliere quelle di Plug & Play. */
+    connectedHeadphones: Set<String> = emptySet(),
     activeProfile: ContextProfile? = null,
     contextEnvironment: ContextEnvironment? = null,
 ) {
@@ -188,6 +190,7 @@ fun SettingsScreen(
     var wifiConfirm by remember { mutableStateOf<String?>(null) }
     var restartConfirm by remember { mutableStateOf(false) }
     var musicAppPick by remember { mutableStateOf<List<String>?>(null) }
+    var deviceDialog by remember { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     // Dove salvare l'app scelta per un gesto; null = scelta chiusa
@@ -748,6 +751,13 @@ fun SettingsScreen(
             SettingsSupporting(stringResource(R.string.plug_play_sub))
             val current = allApps.firstOrNull { it.key == settings.plugPlayApp }
             ClickRow(stringResource(R.string.plug_play_choose), current?.label ?: stringResource(R.string.plug_play_none)) { plugDialog = true }
+            ClickRow(
+                stringResource(R.string.plug_play_device),
+                settings.plugPlayDevice.ifBlank { stringResource(R.string.plug_play_device_any) },
+            ) { deviceDialog = true }
+            SwitchRow(stringResource(R.string.plug_play_resume), stringResource(R.string.plug_play_resume_sub), settings.plugPlayResume) { v ->
+                onEdit { it.copy(plugPlayResume = v) }
+            }
         }
 
         if (page == SettingsPage.CONTEXTS && contextEnvironment != null) {
@@ -970,6 +980,35 @@ fun SettingsScreen(
                 }
             },
             dismissButton = { TextButton(onClick = { wifiConfirm = null }) { Text(stringResource(R.string.breaker_cancel)) } },
+        )
+    }
+
+    if (deviceDialog) {
+        val connected = connectedHeadphones
+        var typed by remember { mutableStateOf(settings.plugPlayDevice) }
+        AlertDialog(
+            onDismissRequest = { deviceDialog = false },
+            title = { Text(stringResource(R.string.plug_play_device)) },
+            text = {
+                Column {
+                    ChoiceRow(stringResource(R.string.plug_play_device_any), settings.plugPlayDevice.isBlank()) {
+                        onEdit { it.copy(plugPlayDevice = "") }
+                        deviceDialog = false
+                    }
+                    connected.forEach { name ->
+                        ChoiceRow(name, settings.plugPlayDevice.equals(name, ignoreCase = true)) {
+                            onEdit { it.copy(plugPlayDevice = name) }
+                            deviceDialog = false
+                        }
+                    }
+                    SettingsSupporting(stringResource(R.string.plug_play_device_hint))
+                    OutlinedTextField(typed, { typed = it }, singleLine = true, label = { Text(stringResource(R.string.ctx_bt_name)) }, modifier = Modifier.fillMaxWidth())
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { onEdit { it.copy(plugPlayDevice = typed.trim()) }; deviceDialog = false }) { Text(stringResource(R.string.wellbeing_limit_save)) }
+            },
+            dismissButton = { TextButton(onClick = { deviceDialog = false }) { Text(stringResource(R.string.breaker_cancel)) } },
         )
     }
 

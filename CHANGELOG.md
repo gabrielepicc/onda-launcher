@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Cuffie** (Musica, passo 5).
+  - Plug & Play può valere per cuffie precise, scelte per nome; Android lo dà senza permessi.
+  - Nuova opzione "Riprendi la musica", spenta di default: collegando le cuffie riparte l'app scelta, mai durante una chiamata o se qualcosa suona già.
 - **Playlist e brani come voci** (Musica, passo 4).
   - Incollando nella ricerca un link di Spotify (playlist, album, artista, brano, episodio, podcast) si aggiunge una voce ai preferiti.
   - Toccandola, il contenuto parte subito se Spotify ha già una sessione, altrimenti si apre la sua pagina.
