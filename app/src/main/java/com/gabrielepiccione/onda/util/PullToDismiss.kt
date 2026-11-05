@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.util
 
+import kotlin.math.abs
+
 import kotlinx.coroutines.coroutineScope
 
 /** Regole del popup che si chiude tirandolo oltre il bordo del contenuto. Testabile su JVM. */
