@@ -6,6 +6,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 ## [Non rilasciato]
 - **Alfabeto**: toccando il bordo sopra le lettere, la colonna sale incontro al dito e lo scorrimento parte da lì, invece di
   selezionare la stella. Alzando il dito torna al suo posto. La zona di tocco arriva quasi in cima allo schermo.
+- **Pulsante di ricerca**: nell'angolo in basso sotto l'alfabeto, a destra o a sinistra secondo la mano. Si può togliere
+  dalle impostazioni della ricerca.
 
 ## [0.10.0]
 - **Usage Breaker a promemoria**: per le app scelte, una notifica dopo 5–240 minuti di uso continuo chiede se vuoi

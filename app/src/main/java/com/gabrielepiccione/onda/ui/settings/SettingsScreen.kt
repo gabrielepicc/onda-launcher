@@ -474,6 +474,7 @@ fun SettingsScreen(
         }
 
         if (page == SettingsPage.SEARCH) Group(stringResource(R.string.section_search)) {
+            SwitchRow(stringResource(R.string.search_button), stringResource(R.string.search_button_sub), settings.showSearchButton) { v -> onEdit { it.copy(showSearchButton = v) } }
             Label(stringResource(R.string.search_engine))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
                 FilterChip(selected = settings.searchEngine == "SYSTEM", onClick = { onEdit { it.copy(searchEngine = "SYSTEM") } }, label = { Text(stringResource(R.string.engine_system)) })
