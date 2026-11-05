@@ -3,6 +3,9 @@
 package com.gabrielepiccione.onda.ui.drawer
 
 import com.gabrielepiccione.onda.data.ContactHit
+import com.gabrielepiccione.onda.data.OTHER_SECTION
+import com.gabrielepiccione.onda.data.PlainSectionIndex
+import com.gabrielepiccione.onda.data.SectionIndex
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -13,7 +16,26 @@ class SectionsTest {
     @Test
     fun contactsAddLettersInOrderWithHashFirst() {
         val sections = buildSections(emptyList(), contacts = listOf(contact(1, "Zoe"), contact(2, "Àlex"), contact(3, "3B")))
-        assertEquals(listOf('#', 'A', 'Z'), sections.map { it.letter })
+        assertEquals(listOf("#", "A", "Z"), sections.map { it.letter })
+    }
+
+    @Test
+    fun theAlphabetDecidesLettersAndTheirOrder() {
+        // Come in svedese: Å è una lettera a sé, dopo la Z
+        val swedish = object : SectionIndex {
+            override fun sectionOf(label: String) = label.take(1)
+            override fun rank(section: String) = listOf("A", "Z", "Å").indexOf(section)
+        }
+        val sections = buildSections(emptyList(), contacts = listOf(contact(1, "Åsa"), contact(2, "Zoe"), contact(3, "Anna")), alphabet = swedish)
+        assertEquals(listOf("A", "Z", "Å"), sections.map { it.letter })
+    }
+
+    @Test
+    fun plainAlphabetKeepsSymbolsFirstAndIgnoresAccents() {
+        assertEquals("A", PlainSectionIndex.sectionOf("Àlex"))
+        assertEquals(OTHER_SECTION, PlainSectionIndex.sectionOf("3B"))
+        assertEquals(OTHER_SECTION, PlainSectionIndex.sectionOf("   "))
+        assertEquals(true, PlainSectionIndex.rank(OTHER_SECTION) < PlainSectionIndex.rank("A"))
     }
 
     @Test

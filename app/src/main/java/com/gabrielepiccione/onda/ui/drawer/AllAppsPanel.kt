@@ -59,22 +59,23 @@ import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.ContactHit
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.NotificationItem
-import com.gabrielepiccione.onda.data.sectionOf
+import com.gabrielepiccione.onda.data.PlainSectionIndex
+import com.gabrielepiccione.onda.data.SectionIndex
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 data class AppSection(
-    val letter: Char,
+    val letter: String,
     val apps: List<AppInfo>,
     val firstIndex: Int,
     val contacts: List<ContactHit> = emptyList(),
 )
 
 /** Segno dell'alfabeto che porta in fondo all'elenco (cartelle e voci di Onda). */
-const val END_OF_LIST_MARK = '•'
+const val END_OF_LIST_MARK = "•"
 
 /** Segno in cima all'alfabeto che riporta ai preferiti. */
-const val FAVORITES_MARK = '★'
+const val FAVORITES_MARK = "★"
 
 /**
  * Posizione nell'elenco della prima voce dopo le lettere: tutte le sezioni (intestazione + righe)
@@ -94,12 +95,13 @@ fun buildSections(
     apps: List<AppInfo>,
     launchCounts: Map<String, Int> = emptyMap(),
     contacts: List<ContactHit> = emptyList(),
+    alphabet: SectionIndex = PlainSectionIndex,
 ): List<AppSection> {
-    val appsByLetter = apps.groupBy { it.section }
-    val contactsByLetter = contacts.groupBy { sectionOf(it.name) }
+    val appsByLetter = apps.groupBy { alphabet.sectionOf(it.label) }
+    val contactsByLetter = contacts.groupBy { alphabet.sectionOf(it.name) }
     var index = 0
     return (appsByLetter.keys + contactsByLetter.keys)
-        .sortedWith(compareBy<Char> { it != '#' }.thenBy { it })
+        .sortedWith(compareBy<String> { alphabet.rank(it) }.thenBy { it })
         .map { letter ->
             // sortedByDescending è stabile: a parità di conteggio resta l'ordine alfabetico
             val ordered = appsByLetter[letter].orEmpty().sortedByDescending { launchCounts[it.key] ?: 0 }
@@ -112,7 +114,7 @@ fun buildSections(
 fun AllAppsPanel(
     sections: List<AppSection>,
     listState: LazyListState,
-    activeLetter: Char?,
+    activeLetter: String?,
     notifications: Map<String, List<NotificationItem>>,
     showIcons: Boolean,
     themedIcons: Boolean,
@@ -148,7 +150,7 @@ fun AllAppsPanel(
                     label = "header",
                 )
                 Text(
-                    text = section.letter.toString(),
+                    text = section.letter,
                     color = color,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 4.dp),

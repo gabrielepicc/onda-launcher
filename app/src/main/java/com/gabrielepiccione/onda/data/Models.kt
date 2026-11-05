@@ -53,7 +53,6 @@ data class AppInfo(
     val installedAt: Long = 0L,
 ) {
     val packageName: String get() = component.packageName
-    val section: Char get() = sectionOf(label)
 }
 
 /** Riga di una conversazione (WhatsApp, Telegram, SMS…). */

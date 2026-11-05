@@ -123,6 +123,7 @@ import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.data.NotificationStore
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.service.OndaAccessibilityService
+import com.gabrielepiccione.onda.util.IcuSectionIndex
 import com.gabrielepiccione.onda.util.SystemActions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -227,8 +228,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val allAppsList = rememberLazyListState()
     val privateSpace by vm.appsRepo.privateSpace.collectAsStateWithLifecycle()
     val alphabetContacts by vm.alphabetContacts.collectAsStateWithLifecycle()
-    val sections = remember(state.allApps, settings.launchCounts, alphabetContacts) {
-        buildSections(state.allApps, settings.launchCounts, alphabetContacts)
+    // Alfabeto secondo le lingue del telefono, nel loro ordine
+    val phoneLocales = androidx.compose.ui.platform.LocalConfiguration.current.locales
+    val alphabet = remember(phoneLocales) { IcuSectionIndex.of(phoneLocales) }
+    val sections = remember(state.allApps, settings.launchCounts, alphabetContacts, alphabet) {
+        buildSections(state.allApps, settings.launchCounts, alphabetContacts, alphabet)
     }
     // Il segno finale porta a cartelle e voci di Onda in fondo all'elenco
     val letters = remember(sections) { listOf(FAVORITES_MARK) + sections.map { it.letter } + END_OF_LIST_MARK }
@@ -792,7 +796,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         // così la prima app è subito sotto il pollice; vicino agli estremi l'elenco si ferma da solo.
         val listTopPx = with(density) { (bars.calculateTopPadding() + 16.dp).toPx() }
         val headerHalfPx = with(density) { 24.dp.toPx() }
-        val onLetter: (Char, Float) -> Unit = onLetter@{ letter, fingerY ->
+        val onLetter: (String, Float) -> Unit = onLetter@{ letter, fingerY ->
             // La stella riporta ai preferiti; scendendo sulle lettere l'elenco torna subito
             if (letter == FAVORITES_MARK) {
                 overlay = Overlay.NONE
