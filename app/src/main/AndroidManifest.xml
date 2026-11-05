@@ -36,6 +36,11 @@
         <intent>
             <action android:name="android.intent.action.WEB_SEARCH" />
         </intent>
+        <!-- Musica: app che sanno far partire un brano da una ricerca, e Spotify per i suoi link -->
+        <intent>
+            <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+        </intent>
+        <package android:name="com.spotify.music" />
         <intent>
             <action android:name="org.adw.launcher.THEMES" />
         </intent>

@@ -401,6 +401,11 @@ data class Settings(
     val musicBackdropHome: Boolean = true,
     val musicBackdropList: Boolean = false,
     val musicBackdropSearch: Boolean = false,
+    /** Prefissi della ricerca, personalizzabili. */
+    val searchPrefixes: SearchPrefixSet = SearchPrefixSet(),
+    /** App musicale per "riproduci da ricerca"; vuoto = l'ultima che ha suonato ([lastMusicApp]). */
+    val musicApp: String = "",
+    val lastMusicApp: String = "",
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
     val breakerDay: String = "",
     /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */

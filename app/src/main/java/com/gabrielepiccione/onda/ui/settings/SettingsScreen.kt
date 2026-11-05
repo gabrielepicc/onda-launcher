@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.PrefixKind
+import com.gabrielepiccione.onda.data.SearchPrefixes
 import com.gabrielepiccione.onda.data.MusicBackdropMode
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -185,6 +187,7 @@ fun SettingsScreen(
     // Conferma del Wi-Fi di casa: null = chiusa, vuoto = Android non dice il nome
     var wifiConfirm by remember { mutableStateOf<String?>(null) }
     var restartConfirm by remember { mutableStateOf(false) }
+    var musicAppPick by remember { mutableStateOf<List<String>?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     // Dove salvare l'app scelta per un gesto; null = scelta chiusa
@@ -576,6 +579,34 @@ fun SettingsScreen(
             }
         }
 
+        if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_prefixes)) {
+            SettingsSupporting(stringResource(R.string.prefixes_sub))
+            PrefixKind.entries.forEach { kind ->
+                var text by remember(kind, settings.searchPrefixes) { mutableStateOf(settings.searchPrefixes.of(kind)) }
+                val candidate = settings.searchPrefixes.with(kind, text.trim())
+                val ok = SearchPrefixes.valid(candidate)
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { v ->
+                        text = v
+                        val next = settings.searchPrefixes.with(kind, v.trim())
+                        if (SearchPrefixes.valid(next)) onEdit { it.copy(searchPrefixes = next) }
+                    },
+                    singleLine = true,
+                    isError = !ok,
+                    label = { Text(stringResource(prefixLabel(kind))) },
+                    supportingText = { Text(stringResource(if (ok) prefixExample(kind) else R.string.prefix_invalid)) },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                )
+            }
+            val musicApps = mediaApps()
+            ClickRow(
+                stringResource(R.string.music_app),
+                settings.musicApp.takeIf { it.isNotBlank() }?.let { pkg -> allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
+                    ?: stringResource(R.string.music_app_last),
+            ) { musicAppPick = musicApps }
+        }
+
         if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_search)) {
             SwitchRow(stringResource(R.string.search_button), stringResource(R.string.search_button_sub), settings.showSearchButton) { v -> onEdit { it.copy(showSearchButton = v) } }
             if (settings.showSearchButton) {
@@ -942,6 +973,23 @@ fun SettingsScreen(
         )
     }
 
+    musicAppPick?.let { pkgs ->
+        AlertDialog(
+            onDismissRequest = { musicAppPick = null },
+            title = { Text(stringResource(R.string.music_app)) },
+            text = {
+                Column {
+                    ChoiceRow(stringResource(R.string.music_app_last), settings.musicApp.isBlank()) { onEdit { it.copy(musicApp = "") }; musicAppPick = null }
+                    pkgs.forEach { pkg ->
+                        val label = allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg
+                        ChoiceRow(label, settings.musicApp == pkg) { onEdit { it.copy(musicApp = pkg) }; musicAppPick = null }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { musicAppPick = null }) { Text(stringResource(R.string.close)) } },
+        )
+    }
+
     if (restartConfirm) {
         AlertDialog(
             onDismissRequest = { restartConfirm = false },
@@ -1038,6 +1086,8 @@ private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.search_button_color, SettingsPage.ALPHABET, R.string.kw_search),
     SettingEntry(R.string.search_button_icon, SettingsPage.ALPHABET, R.string.kw_search),
     SettingEntry(R.string.search_engine, SettingsPage.ALPHABET, R.string.kw_search),
+    SettingEntry(R.string.section_prefixes, SettingsPage.ALPHABET, R.string.kw_search),
+    SettingEntry(R.string.music_app, SettingsPage.ALPHABET, R.string.kw_music),
     SettingEntry(R.string.section_gestures_custom, SettingsPage.GESTURES, R.string.kw_gestures),
     SettingEntry(R.string.section_gestures_fixed, SettingsPage.GESTURES, R.string.kw_gestures),
     SettingEntry(R.string.open_animation, SettingsPage.GESTURES, R.string.kw_gestures),
@@ -1230,5 +1280,34 @@ private fun StatusLine(label: String, value: String, ok: Boolean) {
         Spacer(Modifier.width(8.dp))
         Text(label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         Text(value, color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+private fun prefixLabel(kind: PrefixKind): Int = when (kind) {
+    PrefixKind.CALC -> R.string.prefix_calc
+    PrefixKind.CONTACTS -> R.string.prefix_contacts
+    PrefixKind.SETTINGS -> R.string.prefix_settings
+    PrefixKind.PLAY -> R.string.prefix_play
+    PrefixKind.SPOTIFY -> R.string.prefix_spotify
+}
+
+private fun prefixExample(kind: PrefixKind): Int = when (kind) {
+    PrefixKind.CALC -> R.string.prefix_calc_example
+    PrefixKind.CONTACTS -> R.string.prefix_contacts_example
+    PrefixKind.SETTINGS -> R.string.prefix_settings_example
+    PrefixKind.PLAY -> R.string.prefix_play_example
+    PrefixKind.SPOTIFY -> R.string.prefix_spotify_example
+}
+
+/** App che sanno far partire un brano da una ricerca (letto qui per non passare il repository alla pagina). */
+@Composable
+private fun mediaApps(): List<String> {
+    val context = LocalContext.current
+    return remember {
+        runCatching {
+            context.packageManager.queryIntentActivities(android.content.Intent(android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH), 0)
+                .map { it.activityInfo.packageName }
+                .distinct()
+        }.getOrDefault(emptyList())
     }
 }

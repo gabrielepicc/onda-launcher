@@ -72,7 +72,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
   PR previste, in ordine:
   1. ✅ sfondo animato con i colori della copertina;
   2. ✅ mi piace e prossimo brano (cosa espone Spotify: da verificare sul telefono);
-  3. ⬜ riproduzione dalla ricerca (`p`, `sp`, prefissi personalizzabili);
+  3. ✅ riproduzione dalla ricerca (`p`, `sp`, prefissi personalizzabili);
   4. ⬜ playlist e brani come voci;
   5. ⬜ ripresa con le cuffie;
   6. ⬜ livello "a ritmo" (approvato, spento di default).

@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.SpotifyLinks
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.Switch
 import androidx.compose.ui.text.style.TextOverflow
@@ -1112,6 +1113,22 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         }
                     },
                     onRequestContacts = callbacks::requestContactsPermission,
+                    musicAppLabel = vm.musicApp().takeIf { it.isNotBlank() }?.let { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg },
+                    spotifyInstalled = state.allApps.any { it.packageName == SpotifyLinks.PACKAGE },
+                    onPlay = { text ->
+                        val pkg = vm.musicApp()
+                        if (!vm.media.playFromSearch(pkg, text)) {
+                            android.widget.Toast.makeText(context, R.string.music_play_unsupported, android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        scope.launch { delay(380); closeAll() }
+                    },
+                    onSpotifySearch = { text ->
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(SpotifyLinks.search(text)))
+                            .setPackage(SpotifyLinks.PACKAGE)
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        runCatching { context.startActivity(intent) }
+                        scope.launch { delay(380); closeAll() }
+                    },
                     onClose = { closeAll() },
                 )
             }
