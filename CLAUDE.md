@@ -102,5 +102,10 @@ Luci: `data/HomeLights` (Wi-Fi, buio, alba/tramonto NOAA, testati), `data/HomePr
 widget scelto con `WidgetTarget.HomeLights`, mostrato accanto all'orologio in HomeScreen. Pausa fuori dal launcher: `data/BreakerGate` +
 `OndaAccessibilityService` (solo pacchetto in primo piano) -> `MainActivity.EXTRA_PAUSE_PACKAGE` -> `vm.pauseRequests`.
 
+## Preferiti contestuali
+Motore puro in `data/ContextProfiles` (regole E/O, priorità, scelta a mano di un'ora, slot fissi, suggerimenti; testato),
+lettura del contesto in `data/ContextReader` (+ `BluetoothWatcher`, `LaunchLog`), profilo attivo in `LauncherViewModel.refreshContext`
+(ogni 30 s dalla home) che riordina `home` con `ContextProfiles.favorites`. Pagina `SettingsPage.CONTEXTS` in `ui/settings/ContextProfilesPage`.
+
 ## Stato e roadmap
 Vedi `docs/roadmap.md` (aggiornarlo a ogni passo concluso) e `CHANGELOG.md`.

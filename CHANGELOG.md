@@ -4,6 +4,13 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Preferiti contestuali** (Impostazioni → Preferiti contestuali):
+  - **Condizioni**: Wi-Fi, dispositivo Bluetooth, luogo approssimativo, fascia oraria, evento in calendario, carica, cuffie e Non disturbare, anche al contrario.
+  - **Regole**: E dentro un gruppo, O tra i gruppi. Tra più profili validi vince la priorità più alta, a parità il primo. Niente deduzioni nascoste.
+  - **Slot fissi**: i primi preferiti (2 di base) non cambiano mai; gli altri seguono il profilo.
+  - **Profilo da calendario pronto**: durante un evento con un link di Teams mostra Teams, OneNote e il registratore.
+  - **Cambio silenzioso**: al massimo cambia l'accento. Scorrendo di lato sull'orologio scegli il profilo a mano per un'ora, poi si torna all'automatico.
+  - **Regole proposte**: Onda nota le abitudini che si ripetono (stessa app, stesso giorno e ora, 3 settimane su 4) e propone una regola, senza crearla da solo.
 - **Luci di casa**: quando il telefono è sul Wi-Fi di casa e sta facendo buio (dal tramonto, calcolato sul telefono), accanto
   all'orologio compare il widget di Google Home scelto. Si attiva in Impostazioni → Home; chiede la posizione solo attivandolo.
 - **Pausa anche fuori dal launcher**: con l'accessibilità di Onda attiva, Usage Breaker e i limiti giornalieri mostrano la pausa anche
