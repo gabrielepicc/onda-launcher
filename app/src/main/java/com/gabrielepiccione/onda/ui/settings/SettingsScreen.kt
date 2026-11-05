@@ -28,6 +28,10 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import com.gabrielepiccione.onda.data.SettingsSearch
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.runtime.key
@@ -147,6 +151,7 @@ fun SettingsScreen(
     var plugDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
     var page by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
+    var query by rememberSaveable { mutableStateOf("") }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     // Dove salvare l'app scelta per un gesto; null = scelta chiusa
     var gestureAppPick by remember { mutableStateOf<((String) -> Unit)?>(null) }
@@ -224,7 +229,43 @@ fun SettingsScreen(
                 if (remindersUsed && !status.usageAccess) StatusRow(stringResource(R.string.usage_access), false, stringResource(R.string.usage_access_ok), stringResource(R.string.usage_access_ko)) { actions.usageAccess() }
                 if (remindersUsed && !status.postNotifications) StatusRow(stringResource(R.string.post_notifications), false, stringResource(R.string.post_notifications_ok), stringResource(R.string.post_notifications_ko)) { actions.postNotifications() }
             }
-            Group(stringResource(R.string.page_customize)) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.settings_search_hint)) },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { query = "" }) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.settings_search_clear)) }
+                    }
+                },
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            )
+            if (query.isNotBlank()) {
+                val found = SETTING_ENTRIES.filter { e ->
+                    SettingsSearch.matches(query, stringResource(e.titleRes), stringResource(e.page.titleRes), stringResource(e.keywordsRes))
+                }
+                Group(stringResource(R.string.settings_search_results)) {
+                    if (found.isEmpty()) {
+                        Text(stringResource(R.string.settings_search_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+                    }
+                    found.forEach { e ->
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable { page = e.page; query = "" }
+                                .padding(vertical = 10.dp),
+                        ) {
+                            Text(stringResource(e.titleRes), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(e.page.titleRes), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+            if (query.isBlank()) Group(stringResource(R.string.page_customize)) {
                 SettingsPage.entries.forEach { p ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -248,7 +289,7 @@ fun SettingsScreen(
                     }
                 }
             }
-            Text(
+            if (query.isBlank()) Text(
                 stringResource(R.string.version_line, com.gabrielepiccione.onda.BuildConfig.VERSION_NAME),
                 color = colors.onWallpaperMuted,
                 style = MaterialTheme.typography.labelMedium,
@@ -812,6 +853,58 @@ private enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val sub
 }
 
 private const val MIN_HEIGHT_FOR_PREVIEW = 600
+
+/** Una voce cercabile: il titolo, la pagina che la contiene e parole in più per trovarla. */
+private class SettingEntry(@StringRes val titleRes: Int, val page: SettingsPage, @StringRes val keywordsRes: Int)
+
+private val SETTING_ENTRIES = listOf(
+    SettingEntry(R.string.section_style, SettingsPage.STYLE, R.string.kw_style),
+    SettingEntry(R.string.dynamic_color, SettingsPage.STYLE, R.string.kw_style),
+    SettingEntry(R.string.accent_color, SettingsPage.STYLE, R.string.kw_style),
+    SettingEntry(R.string.clock_date, SettingsPage.CLOCK, R.string.kw_clock),
+    SettingEntry(R.string.clock_style_setting, SettingsPage.CLOCK, R.string.kw_clock),
+    SettingEntry(R.string.show_battery, SettingsPage.CLOCK, R.string.kw_clock),
+    SettingEntry(R.string.next_event, SettingsPage.CLOCK, R.string.kw_clock),
+    SettingEntry(R.string.font, SettingsPage.TEXT, R.string.kw_text),
+    SettingEntry(R.string.text_color, SettingsPage.TEXT, R.string.kw_text),
+    SettingEntry(R.string.list_alignment, SettingsPage.TEXT, R.string.kw_text),
+    SettingEntry(R.string.text_shadow, SettingsPage.TEXT, R.string.kw_text),
+    SettingEntry(R.string.custom_fonts, SettingsPage.TEXT, R.string.kw_text),
+    SettingEntry(R.string.show_icons, SettingsPage.ICONS, R.string.kw_icons),
+    SettingEntry(R.string.icon_style, SettingsPage.ICONS, R.string.kw_icons),
+    SettingEntry(R.string.icon_shape, SettingsPage.ICONS, R.string.kw_icons),
+    SettingEntry(R.string.themed_icons, SettingsPage.ICONS, R.string.kw_icons),
+    SettingEntry(R.string.icon_pack, SettingsPage.ICONS, R.string.kw_icons),
+    SettingEntry(R.string.home_position, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.music_player, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.agenda_title, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.summary_title, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.section_widgets, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.hide_fav_names, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.notif_images, SettingsPage.HOME, R.string.kw_notif),
+    SettingEntry(R.string.suggested_setting, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.layout_lock, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.hide_status_bar, SettingsPage.HOME, R.string.kw_home),
+    SettingEntry(R.string.alphabet_left, SettingsPage.ALPHABET, R.string.kw_alphabet),
+    SettingEntry(R.string.hide_alphabet, SettingsPage.ALPHABET, R.string.kw_alphabet),
+    SettingEntry(R.string.contacts_in_alphabet, SettingsPage.ALPHABET, R.string.kw_alphabet),
+    SettingEntry(R.string.search_button, SettingsPage.ALPHABET, R.string.kw_search),
+    SettingEntry(R.string.search_button_color, SettingsPage.ALPHABET, R.string.kw_search),
+    SettingEntry(R.string.search_button_icon, SettingsPage.ALPHABET, R.string.kw_search),
+    SettingEntry(R.string.search_engine, SettingsPage.ALPHABET, R.string.kw_search),
+    SettingEntry(R.string.section_gestures_custom, SettingsPage.GESTURES, R.string.kw_gestures),
+    SettingEntry(R.string.section_gestures_fixed, SettingsPage.GESTURES, R.string.kw_gestures),
+    SettingEntry(R.string.open_animation, SettingsPage.GESTURES, R.string.kw_gestures),
+    SettingEntry(R.string.haptics, SettingsPage.GESTURES, R.string.kw_haptics),
+    SettingEntry(R.string.section_plug_play, SettingsPage.APPS, R.string.kw_apps),
+    SettingEntry(R.string.section_breaker, SettingsPage.APPS, R.string.kw_apps),
+    SettingEntry(R.string.section_reminders, SettingsPage.APPS, R.string.kw_apps),
+    SettingEntry(R.string.private_space, SettingsPage.APPS, R.string.kw_apps),
+    SettingEntry(R.string.section_hidden, SettingsPage.APPS, R.string.kw_apps),
+    SettingEntry(R.string.protect_hidden, SettingsPage.APPS, R.string.kw_apps),
+    SettingEntry(R.string.section_backup, SettingsPage.BACKUP, R.string.kw_backup),
+    SettingEntry(R.string.auto_backup, SettingsPage.BACKUP, R.string.kw_backup),
+)
 
 /** Scelta in corso per un gesto: si apre in un dialogo con tutte le azioni in vista. */
 private class GesturePick(@StringRes val titleRes: Int, val current: GestureAction, val onPick: (GestureAction) -> Unit)

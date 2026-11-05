@@ -505,4 +505,20 @@
     <string name="search_button_long">Pressione lunga sul pulsante</string>
     <string name="search_button_swipe">Scorrimento in su sul pulsante</string>
     <string name="search_button_gesture_sub">Tocca per cambiare</string>
+    <string name="settings_search_hint">Cerca nelle impostazioni</string>
+    <string name="settings_search_clear">Cancella ricerca</string>
+    <string name="settings_search_results">Risultati</string>
+    <string name="settings_search_none">Nessun risultato. Prova con un\'altra parola.</string>
+    <string name="kw_style">tema scuro chiaro colore sfondo</string>
+    <string name="kw_clock">orologio data ora batteria calendario</string>
+    <string name="kw_text">testo carattere font colore ombra allineamento</string>
+    <string name="kw_icons">icone forma pacchetto monocromatiche</string>
+    <string name="kw_home">home blocchi widget preferiti suggerimenti blocca barra di stato</string>
+    <string name="kw_notif">notifica immagine gif sticker foto</string>
+    <string name="kw_alphabet">alfabeto lettere sinistra destra mano</string>
+    <string name="kw_search">cerca ricerca pulsante motore web</string>
+    <string name="kw_gestures">gesti scorrimento doppio tocco animazione</string>
+    <string name="kw_haptics">vibrazione feedback aptico</string>
+    <string name="kw_apps">app nascoste spazio privato limite promemoria cuffie</string>
+    <string name="kw_backup">backup ripristino esporta importa</string>
 </resources>
