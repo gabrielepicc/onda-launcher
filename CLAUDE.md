@@ -7,7 +7,7 @@ nomi, icone o grafica di Niagara.
 
 ## Regole non negoziabili
 - Niente Google Play Services, Firebase, analytics o pubblicità. Licenze delle dipendenze compatibili con GPLv3.
-- Privacy: nessun dato lascia il dispositivo (eccezione futura: meteo Open-Meteo, disattivabile).
+- Privacy: nessun dato lascia il dispositivo. Il meteo arriva dall'app Breezy Weather installata (provider locale), non da internet.
 - Permessi just-in-time, con spiegazione. Da Android 13 notifiche e accessibilità sono
   "impostazioni con limitazioni" per gli APK: mostrare la guida (`withRestrictedHelp` in HomeScreen).
 - Nessun testo scritto nel codice: `stringResource(R.string.…)`, inglese in `values/`, italiano in `values-it/`.
@@ -15,7 +15,7 @@ nomi, icone o grafica di Niagara.
 - Nuove impostazioni: campo con default in `Settings` (data/Models.kt). Se cambia il significato di un
   campo esistente: incrementa `Settings.CURRENT_SCHEMA` e aggiungi il passo in `SettingsCodec.migrate` + test.
 - Target touch ≥ 48dp, `contentDescription` sugli elementi senza testo.
-- Niente permesso `INTERNET` finché il proprietario non decide sul meteo (vedi roadmap).
+- Niente permesso `INTERNET` (decisione del proprietario; il meteo passa da Breezy Weather).
 
 ## Flusso di lavoro con git
 - **Mai push diretti su `main`.** Ogni blocco di lavoro su un branch `claude/<tema-breve>`, poi una PR
@@ -32,7 +32,8 @@ nomi, icone o grafica di Niagara.
 
 ## Come riprendere il lavoro
 1. Controllare le PR aperte (`gh api repos/gabrielepicc/onda-launcher/pulls --jq '.[] | "\(.number) \(.head.ref) -> \(.base.ref)"'`)
-   e unire quelle con CI verde, nell'ordine in cui dipendono l'una dall'altra.
+   e unire quelle con CI verde, nell'ordine in cui dipendono l'una dall'altra (il proprietario ha autorizzato l'unione).
+   Se due PR toccano gli stessi file, partire da `main` aggiornato e unirle una per volta, risolvendo i conflitti sul branch.
 2. Prendere la prossima voce da `docs/niagara-gap.md` ("Ordine proposto"): una voce = un branch = una PR.
 3. Le richieste dell'utente arrivano spesso con screenshot di Niagara: replicare il comportamento, mai la grafica.
 
