@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Aggiungi alla home dalle altre app**: quando Chrome, Maps, WhatsApp e altre app chiedono di aggiungere una
+  scorciatoia o un widget, Onda chiede conferma e lo mette in home. Le scorciatoie stanno tra i preferiti:
+  si riordinano e, con la pressione lunga, si tolgono.
 - Corretto: il titolo delle notifiche nel popup dell'app era nero su fondo scuro.
 - Il player compare solo quando qualcosa è in riproduzione; dopo una pausa resta un minuto, poi sparisce.
 - In fondo all'elenco delle app: le cartelle, poi "Installate di recente" e "Impostazioni di Onda";

@@ -330,7 +330,7 @@ class SettingsRepository(context: Context) {
 
     /** JSON delle impostazioni, senza i widget (gli id sono validi solo su questo dispositivo). */
     fun exportJson(): String = SettingsCodec.encode(
-        current.copy(
+        PinnedShortcuts.forBackup(current).copy(
             widgetIds = emptyList(),
             widgetStacks = emptyList(),
             autoBackupUri = "",
@@ -345,7 +345,7 @@ class SettingsRepository(context: Context) {
     fun importJson(json: String): Boolean {
         val parsed = runCatching { SettingsCodec.decode(json) }.getOrNull() ?: return false
         edit { now ->
-            parsed.copy(
+            PinnedShortcuts.forRestore(parsed, now).copy(
                 widgetIds = now.widgetIds,
                 widgetStacks = now.widgetStacks,
                 autoBackupUri = now.autoBackupUri,
