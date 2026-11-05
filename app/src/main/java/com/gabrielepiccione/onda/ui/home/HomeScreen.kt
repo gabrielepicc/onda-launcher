@@ -114,6 +114,7 @@ import com.gabrielepiccione.onda.data.AppInfo
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import com.gabrielepiccione.onda.data.AppPopups
 import com.gabrielepiccione.onda.data.CalendarEvent
 import com.gabrielepiccione.onda.data.FOLDER_PREFIX
 import com.gabrielepiccione.onda.data.HomeSuggestions
@@ -147,6 +148,8 @@ sealed interface WidgetTarget {
     data object ReplaceClock : WidgetTarget
     /** Nella pila [block], o in una pila nuova se [block] è un widget singolo. */
     data class ToStack(val block: String) : WidgetTarget
+    /** Nel popup dell'app [appKey]. */
+    data class ToPopup(val appKey: String) : WidgetTarget
 }
 
 /** Azioni che richiedono l'Activity (permessi, risultati di altre schermate). */
@@ -211,6 +214,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
     var shortcutMenu by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
+    var popupEditFor by remember { mutableStateOf<AppInfo?>(null) }
     var agendaOpen by remember { mutableStateOf(false) }
     var agendaWeek by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
     val weather by vm.weather.collectAsStateWithLifecycle()
@@ -1049,13 +1053,17 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     quickFor?.let { requested ->
         val app = state.app(requested.key) ?: requested
         val shortcuts = remember(app.key) { vm.shortcuts(app) }
+        val popup = AppPopups.of(settings, app.key)
         AppQuickPopup(
             app = app,
             anchor = quickAnchor,
-            shortcuts = shortcuts,
+            shortcuts = shortcuts.filterNot { it.id in popup.hiddenShortcuts },
             shortcutIcon = { vm.appsRepo.shortcutIcon(it) },
             notifications = state.notifications[app.packageName].orEmpty(),
-            widgetId = settings.appWidgets[app.key],
+            widgetIds = AppPopups.widgetsOf(settings, app.key),
+            relatedApps = popup.relatedApps.mapNotNull { state.app(it) },
+            onRelatedApp = { launchApp(it) },
+            onEdit = { popupEditFor = app },
             widgets = vm.widgets,
             themedIcons = settings.themedIcons,
             onOpenApp = { launchApp(app) },
@@ -1077,6 +1085,33 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 null
             },
             onDismiss = { quickFor = null },
+        )
+    }
+
+    popupEditFor?.let { requested ->
+        val app = state.app(requested.key) ?: requested
+        val shortcuts = remember(app.key) { vm.shortcuts(app) }
+        AppPopupEditSheet(
+            app = app,
+            popup = AppPopups.of(settings, app.key),
+            widgetIds = AppPopups.widgetsOf(settings, app.key),
+            canAddWidget = AppPopups.canAddWidget(settings, app.key),
+            widgetLabel = { id -> vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() } },
+            allApps = state.allApps,
+            appOf = { state.app(it) },
+            shortcuts = shortcuts,
+            themedIcons = settings.themedIcons,
+            actions = object : AppPopupEditActions {
+                override fun addRelated(key: String) = vm.updateSettings { AppPopups.addRelated(it, app.key, key) }
+                override fun removeRelated(key: String) = vm.updateSettings { AppPopups.removeRelated(it, app.key, key) }
+                override fun addWidget() {
+                    popupEditFor = null
+                    openWidgetPicker(null, WidgetTarget.ToPopup(app.key))
+                }
+                override fun removeWidget(id: Int) = vm.removePopupWidget(app, id)
+                override fun toggleShortcut(id: String) = vm.updateSettings { AppPopups.toggleShortcut(it, app.key, id) }
+            },
+            onDismiss = { popupEditFor = null },
         )
     }
 

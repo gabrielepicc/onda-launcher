@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.AppPopups
 import com.gabrielepiccione.onda.data.FolderIcons
 import android.Manifest
 import android.app.Activity
@@ -411,6 +412,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             }
             WidgetTarget.ReplaceClock -> vm.settingsRepo.replaceClockWithWidget(id)
             is WidgetTarget.ToStack -> vm.settingsRepo.addToStack(t.block, id)
+            is WidgetTarget.ToPopup -> vm.settingsRepo.edit { AppPopups.addWidget(it, t.appKey, id) }
             is WidgetTarget.ForApp -> {
                 vm.settingsRepo.current.appWidgets[t.appKey]?.let { old -> widgets.deleteId(old) }
                 vm.settingsRepo.setAppWidget(t.appKey, id)

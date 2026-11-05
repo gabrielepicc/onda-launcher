@@ -275,6 +275,8 @@ data class Settings(
     val folders: Map<String, Folder> = emptyMap(),
     /** Widget mostrato nel pannello dell'app (swipe sulla riga): chiave app -> id widget. */
     val appWidgets: Map<String, Int> = emptyMap(),
+    /** Personalizzazione dei popup: chiave app -> app correlate, widget, scorciatoie nascoste. */
+    val appPopups: Map<String, AppPopup> = emptyMap(),
     val launchCounts: Map<String, Int> = emptyMap(),
     /** Mostra sotto i preferiti le app usate spesso (vedi [HomeSuggestions]). */
     val suggestInHome: Boolean = false,

@@ -39,8 +39,8 @@ Stato: ⬜ manca · 🟡 c'è ma diverso o parziale · ✅ fatto (si sposta qui 
 
 | # | Comportamento di Niagara | Onda oggi | Priorità |
 |---|---|---|---|
-| 3.1 | **Popup dell'app personalizzabile come una cartella**: oltre a notifiche e scorciatoie, si possono aggiungere **altre app correlate**, **widget** e **pile di widget** (fino a 4). Si modifica con pressione lunga sul popup → "Modifica". | 🟡 c'è un solo widget per app; mancano app correlate e pile nel popup | P1 |
-| 3.2 | **Nascondere le singole scorciatoie** di un'app ("Modifica scorciatoie" dal popup, con caselle da spuntare). | ⬜ | P2 |
+| 3.1 | **Popup dell'app personalizzabile come una cartella**: oltre a notifiche e scorciatoie, si possono aggiungere **altre app correlate**, **widget** e **pile di widget** (fino a 4). Si modifica con pressione lunga sul popup → "Modifica". | ✅ 0.10 app correlate e fino a 4 widget sfogliabili; si modifica dall'azione "Modifica il popup" | P1 |
+| 3.2 | **Nascondere le singole scorciatoie** di un'app ("Modifica scorciatoie" dal popup, con caselle da spuntare). | ✅ 0.10 | P2 |
 | 3.3 | **Pile di widget dentro le cartelle popup** (es. una cartella "Casa" con i widget della domotica). | ✅ 0.10 carosello orizzontale con altezza regolabile; in più icona della cartella personalizzabile | P2 |
 | 3.4 | **Notifiche complete nel popup**: conversazione intera, più notifiche della stessa app impilate, azioni. | ✅ verificare solo l'impilamento di più notifiche della stessa app | — |
 

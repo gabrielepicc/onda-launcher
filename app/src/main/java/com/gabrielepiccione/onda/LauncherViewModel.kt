@@ -7,6 +7,7 @@ import android.content.pm.ShortcutInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.data.AppPopups
 import com.gabrielepiccione.onda.data.AppRepository
 import com.gabrielepiccione.onda.data.HomeSuggestions
 import com.gabrielepiccione.onda.data.PinnedShortcut
@@ -288,6 +289,10 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     fun removeFolderWidget(folderId: String, id: Int) {
         widgets.deleteId(id)
         settingsRepo.removeWidgetFromFolder(folderId, id)
+    }
+    fun removePopupWidget(app: AppInfo, id: Int) {
+        widgets.deleteId(id)
+        settingsRepo.edit { AppPopups.removeWidget(it, app.key, id) }
     }
     fun removeAppWidget(app: AppInfo) {
         settingsRepo.current.appWidgets[app.key]?.let { widgets.deleteId(it) }
