@@ -96,8 +96,12 @@ fun AlphabetWaveScroller(
     val measured = remember(letters, letterStyle) { letters.map { measurer.measure(it, letterStyle) } }
     val bubbleLayouts = remember(letters, bubbleStyle) { letters.map { measurer.measure(it, bubbleStyle) } }
 
+    // Di quanto la colonna è salita rispetto a dove riposa (px, negativo = verso l'alto)
+    val columnShift = remember { Animatable(0f) }
+
     // La zona di tocco è alta tutto il bordo: si può iniziare a scorrere ovunque. La colonna visibile
-    // resta alta quanto le lettere (passo massimo [MAX_LETTER_STEP]) e ancorata in basso, vicino al pollice.
+    // riposa in basso, alta quanto le lettere (passo massimo [MAX_LETTER_STEP]); toccando più in alto
+    // sale incontro al dito e torna giù quando lo si alza.
     Canvas(
         modifier
             .fillMaxHeight()
@@ -111,9 +115,17 @@ fun AlphabetWaveScroller(
                     currentOnStart()
                     scope.launch { intensity.animateTo(1f, spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMediumLow)) }
 
+                    // La colonna si fissa al primo tocco: la stella resta sopra il dito, che parte dalla prima lettera
+                    val zone = size.height.toFloat()
+                    val count = currentLetters.size
+                    val anchor = if (currentLetters.firstOrNull() == FAVORITES_MARK) 1 else 0
+                    val restTop = AlphabetLayout.top(zone, count, maxStepPx)
+                    val gestureTop = AlphabetLayout.anchoredTop(down.position.y, zone, count, maxStepPx, anchor)
+                    scope.launch { columnShift.animateTo(gestureTop - restTop, spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMedium)) }
+
                     fun update(y: Float) {
-                        touchY.floatValue = y.coerceIn(0f, size.height.toFloat())
-                        val idx = AlphabetLayout.indexAt(y, size.height.toFloat(), currentLetters.size, maxStepPx)
+                        touchY.floatValue = y.coerceIn(0f, zone)
+                        val idx = AlphabetLayout.indexAt(y, zone, currentLetters.size, maxStepPx, gestureTop)
                         if (idx != selected.intValue) {
                             selected.intValue = idx
                             ondaHaptics?.perform(if (idx == 0 || idx == currentLetters.lastIndex) HapticEvent.EDGE else HapticEvent.LETTER)
@@ -149,6 +161,7 @@ fun AlphabetWaveScroller(
                     } else {
                         lastTapUp[0] = 0L
                     }
+                    scope.launch { columnShift.animateTo(0f, tween(300, easing = Motion.Standard)) }
                     scope.launch {
                         intensity.animateTo(0f, tween(300, easing = Motion.Standard))
                         selected.intValue = -1
@@ -159,7 +172,7 @@ fun AlphabetWaveScroller(
         val n = letters.size
         val maxStepPx = MAX_LETTER_STEP.toPx()
         val step = AlphabetLayout.step(size.height, n, maxStepPx)
-        val columnTop = AlphabetLayout.top(size.height, n, maxStepPx)
+        val columnTop = AlphabetLayout.top(size.height, n, maxStepPx) + columnShift.value
         val k = intensity.value
         val center = (touchY.floatValue - columnTop) / step - 0.5f
         val maxShift = 52.dp.toPx()
