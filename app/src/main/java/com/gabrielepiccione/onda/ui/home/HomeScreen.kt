@@ -116,6 +116,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import com.gabrielepiccione.onda.data.CalendarEvent
 import com.gabrielepiccione.onda.data.FOLDER_PREFIX
+import com.gabrielepiccione.onda.data.HomeSuggestions
 import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
@@ -647,10 +648,44 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             }
                         }
                         homeEntries()
+                        if (state.homeSuggestions.isNotEmpty()) {
+                            item(key = "suggested_label") {
+                                Text(
+                                    stringResource(R.string.suggested_label),
+                                    color = colors.onWallpaperMuted,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier
+                                        .animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit())
+                                        .padding(start = 12.dp, top = 12.dp),
+                                )
+                            }
+                            items(state.homeSuggestions, key = { "suggested_" + it.key }) { app ->
+                                val rowId = "suggested_" + app.key
+                                FavoriteRow(
+                                    app = app,
+                                    swipeTarget = null,
+                                    notifications = state.notifications[app.packageName].orEmpty(),
+                                    showIcon = settings.showIcons,
+                                    themedIcons = settings.themedIcons,
+                                    hideName = settings.hideFavoriteNames,
+                                    iconScale = iconScale,
+                                    onClick = { launchApp(app) },
+                                    onLongClick = { openQuick(app, rowId) },
+                                    onSwipe = { openQuick(app, rowId) },
+                                    onOpenPanel = { openQuick(app, rowId) },
+                                    onSwipeLeft = { NotificationStore.dismissAll(app.packageName) },
+                                    onNotificationClick = { openQuick(app, rowId) },
+                                    onNotificationDismiss = { NotificationStore.dismiss(it) },
+                                    modifier = Modifier
+                                        .animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit())
+                                        .then(rowTracker(rowId)),
+                                )
+                            }
+                        }
                     }
                 }
             }
-            if (state.loaded && state.home.isEmpty()) {
+            if (state.loaded && state.home.isEmpty() && state.homeSuggestions.isEmpty()) {
                 item(key = "empty") {
                     Text(
                         stringResource(R.string.home_empty_hint),
@@ -1036,6 +1071,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onInfo = { vm.appsRepo.openAppInfo(app) },
             onUninstall = { SystemActions.uninstall(context, app) },
             onMoreOptions = { actionsFor = app },
+            onStopSuggesting = if (state.homeSuggestions.any { it.key == app.key }) {
+                { vm.updateSettings { HomeSuggestions.dismiss(it, app.key) } }
+            } else {
+                null
+            },
             onDismiss = { quickFor = null },
         )
     }

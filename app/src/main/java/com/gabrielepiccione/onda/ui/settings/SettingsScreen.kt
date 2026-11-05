@@ -86,6 +86,7 @@ import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.FontChoice
 import com.gabrielepiccione.onda.data.GestureAction
+import com.gabrielepiccione.onda.data.HomeSuggestions
 import com.gabrielepiccione.onda.core.icons.IconPacks
 import com.gabrielepiccione.onda.data.Settings
 import com.gabrielepiccione.onda.data.ThemeMode
@@ -373,6 +374,13 @@ fun SettingsScreen(
             SwitchRow(stringResource(R.string.music_player), stringResource(R.string.music_player_sub), settings.showMedia) { v -> onEdit { it.copy(showMedia = v) } }
             SwitchRow(stringResource(R.string.alphabet_left), stringResource(R.string.alphabet_left_sub), settings.leftHanded) { v -> onEdit { it.copy(leftHanded = v) } }
             SwitchRow(stringResource(R.string.hide_alphabet), stringResource(R.string.hide_alphabet_sub), settings.hideAlphabet) { v -> onEdit { it.copy(hideAlphabet = v) } }
+            SwitchRow(stringResource(R.string.suggested_setting), stringResource(R.string.suggested_setting_sub), settings.suggestInHome) { v -> onEdit { it.copy(suggestInHome = v) } }
+            allApps.filter { it.key in settings.suggestionsDismissed }.forEach { app ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(app.label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { onEdit { HomeSuggestions.restore(it, app.key) } }) { Text(stringResource(R.string.suggested_restore)) }
+                }
+            }
             SwitchRow(stringResource(R.string.contacts_in_alphabet), stringResource(R.string.contacts_in_alphabet_sub), settings.contactsInAlphabet) { v ->
                 onEdit { it.copy(contactsInAlphabet = v) }
                 if (v && !status.contactsPermission) actions.contactsPermission()

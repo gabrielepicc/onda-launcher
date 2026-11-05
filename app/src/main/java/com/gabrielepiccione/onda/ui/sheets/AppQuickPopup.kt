@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -133,6 +134,8 @@ fun AppQuickPopup(
     onUninstall: () -> Unit,
     onMoreOptions: () -> Unit,
     onDismiss: () -> Unit,
+    /** Solo per le app suggerite in home: non proporla più. */
+    onStopSuggesting: (() -> Unit)? = null,
 ) {
     val colors = LocalOndaColors.current
     val ondaHaptics = LocalOndaHaptics.current
@@ -235,6 +238,20 @@ fun AppQuickPopup(
                     }
                     Spacer(Modifier.width(14.dp))
                     Text((sc.shortLabel ?: sc.longLabel ?: "").toString(), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+
+            onStopSuggesting?.let { stop ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { stop(); onDismiss() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                ) {
+                    Icon(Icons.Filled.VisibilityOff, null, tint = colors.accent, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Text(stringResource(R.string.suggested_stop), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
                 }
             }
 

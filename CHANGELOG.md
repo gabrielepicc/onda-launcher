@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **App suggerite in home**: opzione per mostrare sotto i preferiti le app usate spesso. Con la pressione lunga,
+  "Smetti di suggerire"; dalle impostazioni si può tornare indietro.
 - **Alfabeto localizzato**: lettere e ordine seguono le lingue del telefono (per esempio Å Ä Ö in svedese, Ñ in spagnolo).
   I nomi in altri alfabeti vanno sotto la lettera giusta invece che sotto "#"; se la lingua non li copre, da Android 10
   vengono traslitterati.

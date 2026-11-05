@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.AppRepository
+import com.gabrielepiccione.onda.data.HomeSuggestions
 import com.gabrielepiccione.onda.data.PinnedShortcut
 import com.gabrielepiccione.onda.data.PinnedShortcuts
 import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
@@ -55,6 +56,7 @@ data class LauncherState(
     val privateApps: List<AppInfo> = emptyList(), // Spazio privato sbloccato, ordinate A-Z
     val favorites: List<AppInfo> = emptyList(),   // solo app preferite (fuori dalle cartelle), in ordine
     val home: List<HomeEntry> = emptyList(),      // app + cartelle, nell'ordine scelto
+    val homeSuggestions: List<AppInfo> = emptyList(), // usate spesso, sotto i preferiti
     val suggestions: List<AppInfo> = emptyList(), // app più usate
     val hiddenApps: List<AppInfo> = emptyList(),
     val folders: List<HomeEntry.Group> = emptyList(),      // tutte le cartelle, per il fondo dell'elenco
@@ -141,6 +143,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
             privateApps = all.filter { it.isPrivate },
             favorites = home.filterIsInstance<HomeEntry.App>().map { it.app },
             home = home,
+            homeSuggestions = HomeSuggestions.pick(settings, visible.map { it.key }.toSet()).mapNotNull { byKey[it] },
             suggestions = settings.launchCounts.entries
                 .sortedByDescending { it.value }
                 .mapNotNull { byKey[it.key]?.takeIf { a -> !a.isHidden && !a.isPrivate } }

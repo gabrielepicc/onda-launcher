@@ -393,6 +393,11 @@
     <string name="weather_feels">Percepita %1$s</string>
     <string name="weather_updated">Aggiornato alle %1$s</string>
     <string name="agenda_open_calendar">Apri il calendario</string>
+    <string name="suggested_label">Suggerite</string>
+    <string name="suggested_stop">Smetti di suggerire</string>
+    <string name="suggested_restore">Suggerisci di nuovo</string>
+    <string name="suggested_setting">Suggerisci app usate spesso</string>
+    <string name="suggested_setting_sub">Compaiono sotto i preferiti, al massimo 3. Il calcolo avviene solo sul telefono.</string>
     <string name="section_breaker">Usage Breaker</string>
     <string name="breaker_sub">Aggiunge una pausa prima di aprire le app che vuoi usare meno. Si attiva dalle opzioni dell\'app (pressione lunga).</string>
     <string name="breaker_seconds">Pausa: %1$d secondi</string>
