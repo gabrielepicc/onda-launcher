@@ -917,9 +917,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 onDoubleTap = lockFromAlphabet,
             )
             if (settings.showSearchButton) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    // Fluttua accanto alla colonna dell'alfabeto, staccato dai bordi e velato sullo sfondo
+                // Fluttua accanto alla colonna dell'alfabeto, staccato dai bordi e velato sullo sfondo
+                SearchButton(
+                    settings = settings,
+                    onAction = { action, appKey -> perform(action, appKey) },
                     modifier = Modifier
                         .align(if (settings.leftHanded) Alignment.BottomStart else Alignment.BottomEnd)
                         .zIndex(3f)
@@ -927,16 +928,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         .padding(
                             start = if (settings.leftHanded) letterSide + 4.dp else 0.dp,
                             end = if (settings.leftHanded) 0.dp else letterSide + 4.dp,
-                            bottom = bars.calculateBottomPadding() + 16.dp,
-                        )
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(colors.accentContainer.copy(alpha = 0.6f))
-                        .border(1.dp, colors.onWallpaper.copy(alpha = 0.15f), CircleShape)
-                        .clickable { overlay = Overlay.SEARCH },
-                ) {
-                    Icon(Icons.Filled.Search, stringResource(R.string.search), tint = colors.onAccentContainer)
-                }
+                            bottom = bars.calculateBottomPadding() + SEARCH_BUTTON_BOTTOM,
+                        ),
+                )
             }
         }
 

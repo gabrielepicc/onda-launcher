@@ -349,6 +349,17 @@ data class Settings(
     val searchEngine: String = "SYSTEM",
     /** Pulsante di ricerca nell'angolo in basso, dal lato dell'alfabeto. */
     val showSearchButton: Boolean = true,
+    /** Colore del pulsante (ARGB); 0 = quello del tema. */
+    val searchButtonColor: Long = 0,
+    /** Icona del pulsante (vedi [SearchButton.ICONS]). */
+    val searchButtonIcon: String = SearchButton.DEFAULT_ICON,
+    /** Azioni del pulsante: tocco, pressione lunga e scorrimento verso l'alto; con "Apri un'app" l'app sta nel campo accanto. */
+    val searchButtonTap: GestureAction = GestureAction.SEARCH,
+    val searchButtonTapApp: String = "",
+    val searchButtonLong: GestureAction = GestureAction.NONE,
+    val searchButtonLongApp: String = "",
+    val searchButtonSwipe: GestureAction = GestureAction.NONE,
+    val searchButtonSwipeApp: String = "",
     /** Plug & Play: app mostrata in cima quando si collegano cuffie o casse (chiave app, vuoto = off). */
     val plugPlayApp: String = "",
     /** App che richiedono lo sblocco (impronta, volto o PIN) prima di aprirsi. */

@@ -499,4 +499,10 @@
     <string name="notif_images_thumbnail">Miniatura</string>
     <string name="notif_images_popup">Solo nel popup</string>
     <string name="notif_images_off">Mai</string>
+    <string name="search_button_color">Colore del pulsante</string>
+    <string name="search_button_icon">Icona del pulsante</string>
+    <string name="search_button_tap">Tocco sul pulsante</string>
+    <string name="search_button_long">Pressione lunga sul pulsante</string>
+    <string name="search_button_swipe">Scorrimento in su sul pulsante</string>
+    <string name="search_button_gesture_sub">Tocca per cambiare</string>
 </resources>

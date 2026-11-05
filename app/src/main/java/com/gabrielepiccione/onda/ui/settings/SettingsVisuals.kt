@@ -2,6 +2,12 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.gabrielepiccione.onda.data.SearchButton
+import com.gabrielepiccione.onda.ui.home.searchButtonColors
+import com.gabrielepiccione.onda.ui.home.searchButtonIcon
+import com.gabrielepiccione.onda.ui.theme.AccentChoices
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -399,16 +405,17 @@ private fun PhoneMock(settings: Settings, emphasizeAlphabet: Boolean, onPosition
             )
         }
         if (settings.showSearchButton) {
+            val (container, content) = searchButtonColors(settings)
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .align(if (settings.leftHanded) Alignment.BottomStart else Alignment.BottomEnd)
-                    .padding(start = if (settings.leftHanded) 14.dp else 0.dp, end = if (settings.leftHanded) 0.dp else 14.dp, bottom = 6.dp)
+                    .padding(start = if (settings.leftHanded) 14.dp else 0.dp, end = if (settings.leftHanded) 0.dp else 14.dp, bottom = 14.dp)
                     .size(18.dp)
                     .clip(CircleShape)
-                    .background(if (emphasizeAlphabet) colors.accentContainer else colors.panelHigh),
+                    .background(container),
             ) {
-                Icon(Icons.Filled.Search, null, tint = colors.onWallpaper, modifier = Modifier.size(12.dp))
+                Icon(searchButtonIcon(settings.searchButtonIcon), null, tint = content, modifier = Modifier.size(12.dp))
             }
         }
     }
@@ -451,3 +458,45 @@ private const val TILE_CLOCK_SCALE = 0.42f
 private const val PREVIEW_TEMPERATURE = 21
 private val PHONE_HEIGHT = 216.dp
 private val PHONE_WIDTH = 106.dp
+
+/** Colore del pulsante: automatico (quello del tema) o uno a scelta. */
+@Composable
+internal fun SearchButtonColorChoices(selected: Long, onPick: (Long) -> Unit) {
+    val colors = LocalOndaColors.current
+    val choices = listOf(0L) + AccentChoices + listOf(0xFF1C1C1EL, 0xFFFFFFFFL)
+    TileGrid(choices, 5) { argb, modifier ->
+        val isSelected = selected == argb
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .heightIn(min = 48.dp)
+                .clip(CircleShape)
+                .border(if (isSelected) 3.dp else 1.dp, if (isSelected) colors.accent else colors.panelBorder, CircleShape)
+                .background(if (argb == 0L) colors.accentContainer.copy(alpha = 0.6f) else Color(argb), CircleShape)
+                .selectable(selected = isSelected, role = Role.RadioButton) { onPick(argb) },
+        ) {
+            if (argb == 0L) Text(stringResource(R.string.text_color_auto), color = colors.onAccentContainer, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+/** Icona del pulsante tra quelle disponibili. */
+@Composable
+internal fun SearchButtonIconChoices(selected: String, onPick: (String) -> Unit) {
+    val colors = LocalOndaColors.current
+    TileGrid(SearchButton.ICONS, 6) { name, modifier ->
+        val isSelected = SearchButton.iconOrDefault(selected) == name
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .heightIn(min = 48.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .border(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.accent else colors.panelBorder, RoundedCornerShape(16.dp))
+                .background(if (isSelected) colors.accentContainer.copy(alpha = 0.35f) else Color.Transparent)
+                .semantics { contentDescription = name }
+                .selectable(selected = isSelected, role = Role.RadioButton) { onPick(name) },
+        ) {
+            Icon(searchButtonIcon(name), contentDescription = null, tint = if (isSelected) colors.accent else colors.onWallpaper)
+        }
+    }
+}

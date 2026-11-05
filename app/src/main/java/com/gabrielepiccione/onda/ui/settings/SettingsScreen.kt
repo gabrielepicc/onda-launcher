@@ -465,6 +465,57 @@ fun SettingsScreen(
 
         if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_search)) {
             SwitchRow(stringResource(R.string.search_button), stringResource(R.string.search_button_sub), settings.showSearchButton) { v -> onEdit { it.copy(showSearchButton = v) } }
+            if (settings.showSearchButton) {
+                Label(stringResource(R.string.search_button_color))
+                SearchButtonColorChoices(settings.searchButtonColor) { c -> onEdit { it.copy(searchButtonColor = c) } }
+                Label(stringResource(R.string.search_button_icon))
+                SearchButtonIconChoices(settings.searchButtonIcon) { n -> onEdit { it.copy(searchButtonIcon = n) } }
+                GestureSetting(
+                    title = stringResource(R.string.search_button_tap),
+                    subtitle = stringResource(R.string.search_button_gesture_sub),
+                    action = settings.searchButtonTap,
+                    appKey = settings.searchButtonTapApp,
+                    allApps = allApps,
+                    accessibilityEnabled = status.accessibilityEnabled,
+                    onOpen = {
+                        gesturePick = GesturePick(R.string.search_button_tap, settings.searchButtonTap) { g ->
+                            onEdit { it.copy(searchButtonTap = g) }
+                            if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                        }
+                    },
+                    onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(searchButtonTapApp = key) } } },
+                )
+                GestureSetting(
+                    title = stringResource(R.string.search_button_long),
+                    subtitle = stringResource(R.string.search_button_gesture_sub),
+                    action = settings.searchButtonLong,
+                    appKey = settings.searchButtonLongApp,
+                    allApps = allApps,
+                    accessibilityEnabled = status.accessibilityEnabled,
+                    onOpen = {
+                        gesturePick = GesturePick(R.string.search_button_long, settings.searchButtonLong) { g ->
+                            onEdit { it.copy(searchButtonLong = g) }
+                            if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                        }
+                    },
+                    onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(searchButtonLongApp = key) } } },
+                )
+                GestureSetting(
+                    title = stringResource(R.string.search_button_swipe),
+                    subtitle = stringResource(R.string.search_button_gesture_sub),
+                    action = settings.searchButtonSwipe,
+                    appKey = settings.searchButtonSwipeApp,
+                    allApps = allApps,
+                    accessibilityEnabled = status.accessibilityEnabled,
+                    onOpen = {
+                        gesturePick = GesturePick(R.string.search_button_swipe, settings.searchButtonSwipe) { g ->
+                            onEdit { it.copy(searchButtonSwipe = g) }
+                            if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                        }
+                    },
+                    onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(searchButtonSwipeApp = key) } } },
+                )
+            }
             Label(stringResource(R.string.search_engine))
             TextChoices(
                 listOf(
