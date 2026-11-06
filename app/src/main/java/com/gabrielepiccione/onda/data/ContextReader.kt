@@ -130,21 +130,20 @@ class BluetoothWatcher(private val context: Context) {
 object LaunchLog {
     private const val PREFS = "launch_log"
     private const val KEY = "log"
-    private const val KEEP_DAYS = 35L
+    private const val KEEP_DAYS = 35L // abbastanza per i 28 giorni dei profili suggeriti
     private const val MAX_ENTRIES = 3000
 
     private fun prefs(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    fun record(context: Context, appKey: String, time: Long = System.currentTimeMillis()) {
-        val cutoff = time - KEEP_DAYS * 24 * 3_600_000L
-        val kept = read(context).filter { it.time >= cutoff }.takeLast(MAX_ENTRIES - 1) + LaunchRecord(appKey, time)
-        prefs(context).edit().putString(KEY, kept.joinToString("\n") { "${it.time}\t${it.appKey}" }).apply()
+    fun record(context: Context, record: LaunchRecord) {
+        val cutoff = record.time - KEEP_DAYS * 24 * 3_600_000L
+        val kept = read(context).filter { it.time >= cutoff }.takeLast(MAX_ENTRIES - 1) + record
+        prefs(context).edit().putString(KEY, kept.joinToString("\n") { LaunchLogFormat.encode(it) }).apply()
     }
 
+    fun record(context: Context, appKey: String, time: Long = System.currentTimeMillis()) = record(context, LaunchRecord(appKey, time))
+
     fun read(context: Context): List<LaunchRecord> =
-        prefs(context).getString(KEY, "").orEmpty().lineSequence().mapNotNull { line ->
-            val tab = line.indexOf('\t')
-            if (tab <= 0) null else line.substring(0, tab).toLongOrNull()?.let { LaunchRecord(line.substring(tab + 1), it) }
-        }.toList()
+        prefs(context).getString(KEY, "").orEmpty().lineSequence().mapNotNull { LaunchLogFormat.decode(it) }.toList()
 }

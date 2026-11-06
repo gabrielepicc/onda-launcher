@@ -810,4 +810,21 @@
     <string name="tip_grayscale_body">Onda può perdere i colori di sera, per aiutarti a lasciare il telefono.</string>
     <string name="tip_profiles_title">Preferiti che cambiano da soli</string>
     <string name="tip_profiles_body">Crea profili per il lavoro, l\'auto o le riunioni, e attiva il backup automatico.</string>
+    <string name="suggest_title">Suggerisci profili</string>
+    <string name="suggest_sub">Onda guarda quando apri le app e propone profili per le tue abitudini. Niente si attiva da solo: sei tu a decidere se crearli, modificarli o ignorarli.</string>
+    <string name="suggest_enable">Suggerisci profili</string>
+    <string name="suggest_wifi">Usa il Wi-Fi come segnale</string>
+    <string name="suggest_wifi_sub">Ricorda solo un codice del nome della rete, mai il nome né la posizione. Serve il permesso di posizione per leggere la rete.</string>
+    <string name="suggest_revoke">Accesso ai dati d\'uso</string>
+    <string name="suggest_revoke_sub">Concesso. Tocca per rivederlo o revocarlo nelle impostazioni di sistema.</string>
+    <string name="suggest_no_access">Non concesso: i suggerimenti usano solo ciò che Onda registra aprendo le app. Tocca per concederlo.</string>
+    <string name="suggest_explain_title">Consentire l\'accesso ai dati d\'uso?</string>
+    <string name="suggest_explain_body">Per suggerire profili, Onda legge quali app apri e quando, nelle ultime settimane. I dati restano elaborati solo sul tuo telefono e non lo lasciano mai. Android aprirà ora le sue impostazioni: attiva Onda lì. Puoi revocarlo quando vuoi.</string>
+    <string name="suggest_explain_go">Continua</string>
+    <string name="suggest_card_label">Profilo suggerito</string>
+    <string name="suggest_card_title">Ho notato un\'abitudine: «%1$s»</string>
+    <string name="suggest_card_body">In quella fascia apri spesso %1$s. Vuoi un profilo con queste app? Non parte mai da solo.</string>
+    <string name="suggest_create">Crea</string>
+    <string name="suggest_edit">Modifica</string>
+    <string name="suggest_ignore">Ignora</string>
 </resources>

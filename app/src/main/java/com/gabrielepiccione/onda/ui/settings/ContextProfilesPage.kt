@@ -108,10 +108,15 @@ internal fun ContextProfilesPage(
     active: ContextProfile?,
     env: ContextEnvironment,
     onEdit: ((Settings) -> Settings) -> Unit,
+    /** Profilo proposto da "Modifica": si apre già nell'editor. */
+    startWith: ContextProfile? = null,
+    usageAccess: Boolean = false,
+    onUsageAccess: () -> Unit = {},
 ) {
     val colors = LocalOndaColors.current
     val context = LocalContext.current
-    var editing by remember { mutableStateOf<ContextProfile?>(null) }
+    var editing by remember { mutableStateOf(startWith) }
+    var explain by remember { mutableStateOf(false) }
     val byKey = remember(allApps) { allApps.associateBy { it.key } }
     val newProfileName = stringResource(R.string.ctx_new_profile)
     val meetingName = stringResource(R.string.ctx_meeting_profile)
@@ -123,6 +128,40 @@ internal fun ContextProfilesPage(
             color = colors.accent,
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(top = 12.dp),
+        )
+    }
+
+    // Suggerisci profili: spento di default; il permesso si chiede qui, dopo la spiegazione, e si può revocare
+    Card(stringResource(R.string.suggest_title)) {
+        Text(stringResource(R.string.suggest_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+        SettingsSwitch(stringResource(R.string.suggest_enable), null, settings.profileSuggest.enabled) { on ->
+            if (on && !usageAccess) explain = true else onEdit { it.copy(profileSuggest = it.profileSuggest.copy(enabled = on)) }
+        }
+        if (settings.profileSuggest.enabled) {
+            SettingsSwitch(stringResource(R.string.suggest_wifi), stringResource(R.string.suggest_wifi_sub), settings.profileSuggest.useWifi) { on ->
+                onEdit { it.copy(profileSuggest = it.profileSuggest.copy(useWifi = on)) }
+            }
+            SettingsItem(
+                headline = stringResource(R.string.suggest_revoke),
+                supporting = stringResource(if (usageAccess) R.string.suggest_revoke_sub else R.string.suggest_no_access),
+                onClick = onUsageAccess,
+            )
+        }
+    }
+
+    if (explain) {
+        AlertDialog(
+            onDismissRequest = { explain = false },
+            title = { Text(stringResource(R.string.suggest_explain_title)) },
+            text = { Text(stringResource(R.string.suggest_explain_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    explain = false
+                    onEdit { it.copy(profileSuggest = it.profileSuggest.copy(enabled = true)) }
+                    onUsageAccess()
+                }) { Text(stringResource(R.string.suggest_explain_go)) }
+            },
+            dismissButton = { TextButton(onClick = { explain = false }) { Text(stringResource(R.string.breaker_cancel)) } },
         )
     }
 

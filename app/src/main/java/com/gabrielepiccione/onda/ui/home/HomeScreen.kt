@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.ContextProfile
+import com.gabrielepiccione.onda.data.ProfileSuggestion
+import com.gabrielepiccione.onda.data.UsageProfiles
+import com.gabrielepiccione.onda.service.UsageReader
 import com.gabrielepiccione.onda.data.DiscoveryTips
 import com.gabrielepiccione.onda.data.GrayscaleMode
 import com.gabrielepiccione.onda.data.TipSignals
@@ -242,6 +246,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val settings = state.settings
     val colors = LocalOndaColors.current
     val context = LocalContext.current
+    val usageReader = remember { UsageReader(context) }
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val haptics = LocalHapticFeedback.current
@@ -356,12 +361,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     // Impostazioni aperte su una voce precisa (da benvenuto, suggerimenti e ricerca)
     var settingsFocus by remember { mutableStateOf<SettingEntry?>(null) }
+    var profileToEdit by remember { mutableStateOf<ContextProfile?>(null) }
     fun openSettingsAt(entry: SettingEntry) {
         settingsFocus = entry
         vm.clearSearch()
         overlay = Overlay.SETTINGS
     }
-    LaunchedEffect(overlay) { if (overlay != Overlay.SETTINGS) settingsFocus = null }
+    LaunchedEffect(overlay) { if (overlay != Overlay.SETTINGS) { settingsFocus = null; profileToEdit = null } }
 
     fun openWidgetPicker(filter: String?, target: WidgetTarget) {
         widgetFilter = filter
@@ -620,6 +626,25 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         busy = overlay != Overlay.NONE || quickFor != null || panelFor != null || actionsFor != null || editing != null || reorderOpen || breakerFor != null,
     )
     val tip = if (state.loaded && settings.welcomeDone) DiscoveryTips.next(settings.tips, tipSignals) else null
+    // Profili proposti dall'uso: si ricalcolano quando la funzione è accesa, ogni volta che si torna in home
+    var suggestionPool by remember { mutableStateOf<List<ProfileSuggestion>>(emptyList()) }
+    val launchablePackages = remember(state.allApps) { state.allApps.map { it.packageName }.toSet() }
+    LaunchedEffect(settings.profileSuggest.enabled, settings.profileSuggest.useWifi, launchablePackages, overlay == Overlay.NONE) {
+        suggestionPool = if (settings.profileSuggest.enabled && state.loaded && overlay == Overlay.NONE) {
+            val fixed = settings.favorites.take(settings.fixedFavoriteSlots).toSet()
+            UsageProfiles.suggest(
+                events = usageReader.read(System.currentTimeMillis(), launchablePackages),
+                now = System.currentTimeMillis(),
+                zone = java.time.ZoneId.systemDefault(),
+                exclude = fixed.map { UsageReminders.packageOf(it) }.toSet() + context.packageName,
+                useWifi = settings.profileSuggest.useWifi,
+            )
+        } else {
+            emptyList()
+        }
+    }
+    val suggestion = if (tip == null && !tipSignals.busy && settings.welcomeDone) UsageProfiles.next(settings.profileSuggest, suggestionPool, today) else null
+    LaunchedEffect(suggestion?.key) { suggestion?.let { s -> vm.updateSettings { it.copy(profileSuggest = UsageProfiles.shown(it.profileSuggest, s, today)) } } }
     LaunchedEffect(state.loaded) {
         if (state.loaded && settings.tips.firstDay.isEmpty()) vm.updateSettings { it.copy(tips = it.tips.copy(firstDay = today)) }
     }
@@ -853,6 +878,36 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 onShowMe = { entry -> openSettingsAt(entry) },
                                 onNotNow = { tip?.let { t -> vm.updateSettings { it.copy(tips = DiscoveryTips.notNow(it.tips, t, today)) } } },
                                 onNever = { tip?.let { t -> vm.updateSettings { it.copy(tips = DiscoveryTips.never(it.tips, t)) } } },
+                                modifier = Modifier.animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit()),
+                            )
+                        }
+                        item(key = "profile_suggestion") {
+                            ProfileSuggestionCard(
+                                suggestion = suggestion,
+                                appLabels = { pkgs -> pkgs.joinToString(", ") { p -> state.allApps.firstOrNull { it.packageName == p }?.label ?: p } },
+                                onCreate = {
+                                    suggestion?.let { s ->
+                                        vm.updateSettings { st ->
+                                            // Le app del profilo si salvano come chiavi: la prima app con quel pacchetto
+                                            val profile = UsageProfiles.toProfile(s, java.util.UUID.randomUUID().toString())
+                                                .let { p -> p.copy(apps = p.apps.mapNotNull { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.key }) }
+                                            st.copy(
+                                                contextProfiles = st.contextProfiles + profile,
+                                                profileSuggest = UsageProfiles.accepted(st.profileSuggest, s, today),
+                                            )
+                                        }
+                                    }
+                                },
+                                onEdit = {
+                                    suggestion?.let { s ->
+                                        profileToEdit = UsageProfiles.toProfile(s, java.util.UUID.randomUUID().toString())
+                                            .let { p -> p.copy(apps = p.apps.mapNotNull { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.key }) }
+                                        vm.updateSettings { it.copy(profileSuggest = UsageProfiles.accepted(it.profileSuggest, s, today)) }
+                                        settingsFocus = null
+                                        overlay = Overlay.SETTINGS
+                                    }
+                                },
+                                onIgnore = { suggestion?.let { s -> vm.updateSettings { it.copy(profileSuggest = UsageProfiles.ignore(it.profileSuggest, s, today)) } } },
                                 modifier = Modifier.animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit()),
                             )
                         }
@@ -1261,6 +1316,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     widgets = vm.widgets,
                     usageStats = vm.usageStats,
                     focus = settingsFocus,
+                    suggestedProfile = profileToEdit,
                     connectedHeadphones = headphoneNames,
                     activeProfile = state.activeProfile,
                     contextEnvironment = object : ContextEnvironment {

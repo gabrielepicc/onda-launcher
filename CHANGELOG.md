@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Profili suggeriti dall'uso** (Preferiti contestuali → Suggerisci profili, spento di default):
+  - Onda guarda quando apri le app (ultime 4 settimane, almeno 14 giorni di storia, app presenti in almeno 5 giorni diversi) e propone un profilo per fascia (mattina, pomeriggio, sera, notte; feriali e weekend), con 3–6 app. Se ha il contesto, anche per cuffie e carica.
+  - Una scheda in home con Crea, Modifica e Ignora. Niente si attiva da solo. Dopo "Ignora" la proposta tace per 30 giorni; al massimo una proposta a settimana.
+  - Il permesso dei dati d'uso si chiede solo accendendo la funzione, dopo una spiegazione, e si revoca dalla stessa pagina. Tutto resta sul telefono.
+  - Il Wi-Fi come segnale è spento di default e ricorda solo un codice del nome della rete.
 - **Scoprire le funzioni**:
   - **Benvenuto nuovo** con otto punti (alfabeto, swipe, pressione lunga, ricerca, cartelle, profili, benessere digitale, privacy). Ogni punto ha "Mostrami", che apre le impostazioni sulla voce giusta e la fa lampeggiare.
   - **"Lo sapevi?"**: una scheda piccola in home, al massimo una al giorno, mai durante un gesto o un pannello, con "Mostrami", "Non ora" e "Non mostrare più". Compare quando serve: app aperta spesso fuori dai preferiti, prima notifica, elenco aperto senza alfabeto, prima musica, prime cuffie, la sera, dopo una settimana.
