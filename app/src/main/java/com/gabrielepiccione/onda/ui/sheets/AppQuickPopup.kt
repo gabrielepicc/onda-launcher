@@ -107,12 +107,16 @@ import com.gabrielepiccione.onda.ui.components.AppIcon
 import com.gabrielepiccione.onda.ui.components.HostedWidget
 import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
 
-/** Dove disegnare il popup, in pixel; [above] = sopra la riga da cui è stato aperto. */
-data class QuickPopupPlacement(val x: Int, val y: Int, val above: Boolean)
+/** Dove disegnare il popup, in pixel; [above] = sopra la riga, [centered] = in corrispondenza della riga. */
+data class QuickPopupPlacement(val x: Int, val y: Int, val above: Boolean, val centered: Boolean = false)
 
 /**
- * Sceglie la posizione del popup: sotto la riga se c'è spazio, altrimenti sopra, altrimenti dove
- * entra meglio; sempre dentro lo schermo. Senza riga di riferimento resta al centro.
+ * Sceglie la posizione del popup, sempre dentro lo schermo:
+ * 1. in corrispondenza della riga, centrato sulla sua altezza, se lo spazio sopra e sotto lo permette;
+ *    di lato, a destra o a sinistra del contenuto della riga ([contentLeft]..[contentRight]), per non coprirla
+ *    quando c'è posto; altrimenti allineato alla riga;
+ * 2. altrimenti sotto la riga, poi sopra, poi dove entra meglio.
+ * Senza riga di riferimento resta al centro dello schermo.
  */
 fun placeQuickPopup(
     anchorLeft: Int?,
@@ -125,6 +129,8 @@ fun placeQuickPopup(
     topLimit: Int,
     bottomLimit: Int,
     margin: Int,
+    contentLeft: Int? = null,
+    contentRight: Int? = null,
 ): QuickPopupPlacement {
     val maxX = (screenWidth - popupWidth - margin).coerceAtLeast(margin)
     val minY = topLimit + margin
@@ -133,12 +139,32 @@ fun placeQuickPopup(
         return QuickPopupPlacement((screenWidth - popupWidth) / 2, ((screenHeight - popupHeight) / 2).coerceIn(minY, maxY), above = false)
     }
     val x = anchorLeft.coerceIn(margin, maxX)
+    val centeredY = (anchorTop + anchorBottom) / 2 - popupHeight / 2
+    if (centeredY in minY..maxY) {
+        val side = sideOfContent(contentLeft, contentRight, popupWidth, screenWidth, margin)
+        return QuickPopupPlacement(side ?: x, centeredY, above = false, centered = true)
+    }
     val below = anchorBottom + margin
     val aboveY = anchorTop - margin - popupHeight
     return when {
         below <= maxY -> QuickPopupPlacement(x, below, above = false)
         aboveY >= minY -> QuickPopupPlacement(x, aboveY, above = true)
         else -> QuickPopupPlacement(x, maxY, above = true)
+    }
+}
+
+/** Ascissa di un popup accanto al contenuto della riga (dalla parte con più posto), o null se non c'è posto. */
+internal fun sideOfContent(contentLeft: Int?, contentRight: Int?, popupWidth: Int, screenWidth: Int, margin: Int): Int? {
+    if (contentLeft == null || contentRight == null) return null
+    val rightX = contentRight + margin
+    val leftX = contentLeft - margin - popupWidth
+    val rightFits = rightX + popupWidth <= screenWidth - margin
+    val leftFits = leftX >= margin
+    return when {
+        rightFits && leftFits -> if (screenWidth - contentRight >= contentLeft) rightX else leftX
+        rightFits -> rightX
+        leftFits -> leftX
+        else -> null
     }
 }
 
@@ -251,6 +277,12 @@ fun AppQuickPopup(
     val origin = remember(app.key) { floatArrayOf(0.15f, 0f) }
     val screenWidth = config.screenWidthDp.dp
     val popupWidth = min(320.dp, screenWidth - 32.dp)
+    // Quanto è larga la parte occupata dalla riga (icona e nome): il popup si mette di lato se c'è posto
+    val textMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
+    val labelStyle = MaterialTheme.typography.headlineSmall
+    val contentWidthPx = remember(app.label, density) {
+        with(density) { (ROW_PADDING_AND_ICON).toPx() } + textMeasurer.measure(app.label, labelStyle, maxLines = 1).size.width
+    }
     val maxHeight = config.screenHeightDp.dp * 0.7f
 
     // Tutto il testo del popup parte dal colore leggibile sul pannello, anche quello senza colore esplicito
@@ -278,6 +310,8 @@ fun AppQuickPopup(
                         topLimit = with(density) { bars.calculateTopPadding().roundToPx() },
                         bottomLimit = with(density) { bars.calculateBottomPadding().roundToPx() },
                         margin = with(density) { 8.dp.roundToPx() },
+                        contentLeft = anchor?.left?.toInt(),
+                        contentRight = anchor?.let { minOf(it.right, it.left + contentWidthPx).toInt() },
                     )
                     val iconX = anchor?.let { it.left + with(density) { ICON_CENTER.toPx() } } ?: (spot.x + placeable.width / 2f)
                     val iconY = anchor?.center?.y ?: (spot.y + placeable.height / 2f)
@@ -565,3 +599,6 @@ private val POPUP_CORNER = 28.dp
 
 /** Centro dell'icona rispetto al bordo sinistro della riga. */
 private val ICON_CENTER = 36.dp
+
+/** Margini, icona e spazio prima del nome in una riga di preferiti. */
+private val ROW_PADDING_AND_ICON = 12.dp + 44.dp + 18.dp + 12.dp
