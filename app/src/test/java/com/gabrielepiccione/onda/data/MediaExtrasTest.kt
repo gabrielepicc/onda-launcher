@@ -3,6 +3,7 @@
 package com.gabrielepiccione.onda.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -38,9 +39,9 @@ class MediaExtrasTest {
             MediaAction("repeat", "Ripeti", 3),
             MediaAction("radio", "Radio", 4),
         )
-        assertEquals(listOf("like"), MediaExtras.visibleActions(actions, compact = true).map { it.id })
-        // Senza "mi piace" la versione compatta salta comunque la ripetizione casuale
-        assertEquals(listOf("repeat"), MediaExtras.visibleActions(actions.filter { it.id != "like" }, compact = true).map { it.id })
+        // Nella versione compatta lo spazio va al testo: nessuna azione in più
+        assertEquals(emptyList<String>(), MediaExtras.visibleActions(actions, compact = true).map { it.id })
+        assertTrue(MediaExtras.isShuffle(actions.first { it.id == "shuffle" }))
         assertEquals(listOf("like", "shuffle", "repeat"), MediaExtras.visibleActions(actions, compact = false).map { it.id })
     }
 }

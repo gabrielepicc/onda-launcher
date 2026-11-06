@@ -45,13 +45,29 @@ class UsageProfilesTest {
 
     @Test
     fun tooShortAHistoryStaysSilent() {
-        assertTrue(UsageProfiles.suggest(routine(listOf("mail", "calendar", "teams"), 9, days = 10), now, zone).isEmpty())
+        assertTrue(UsageProfiles.suggest(routine(listOf("mail", "calendar", "teams"), 9, days = 4), now, zone).isEmpty())
     }
 
     @Test
-    fun fewerThanThreeAppsOrFewerThanFiveDaysIsNotEnough() {
+    fun tenDaysOfSystemHistoryAreEnoughRightAfterTheGrant() {
+        // Android conserva circa dieci giorni di aperture: il primo suggerimento non deve aspettare due settimane
+        assertEquals(1, UsageProfiles.suggest(routine(listOf("mail", "calendar", "teams"), 9, days = 10), now, zone).size)
+    }
+
+    @Test
+    fun notificationsAreAtMostOneAWeekAndOnlyWhenEnabled() {
+        val on = ProfileSuggestState(enabled = true)
+        assertTrue(UsageProfiles.shouldNotify(on, "2026-11-06"))
+        val after = UsageProfiles.notified(on, "2026-11-06")
+        assertFalse(UsageProfiles.shouldNotify(after, "2026-11-10"))
+        assertTrue(UsageProfiles.shouldNotify(after, "2026-11-13"))
+        assertFalse(UsageProfiles.shouldNotify(ProfileSuggestState(enabled = false), "2026-11-06"))
+    }
+
+    @Test
+    fun fewerThanThreeAppsOrFewerThanThreeDaysIsNotEnough() {
         assertTrue(UsageProfiles.suggest(routine(listOf("mail", "calendar"), 9), now, zone).isEmpty())
-        val rare = (listOf(26, 27, 28) + listOf(1, 2)).flatMap { d -> listOf("a", "b", "c").map { UsageEventCtx(it, at(d, 9)) } }
+        val rare = listOf(28, 2).flatMap { d -> listOf("a", "b", "c").map { UsageEventCtx(it, at(d, 9)) } }
         assertTrue(UsageProfiles.suggest(rare, now, zone).isEmpty())
     }
 

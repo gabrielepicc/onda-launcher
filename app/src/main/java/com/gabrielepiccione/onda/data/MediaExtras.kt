@@ -14,7 +14,7 @@ data class MediaAction(val id: String, val name: String, val iconRes: Int)
 /** Regole per azioni dell'app e prossimo brano, senza dipendenze Android (testabili su JVM). */
 object MediaExtras {
     /** Nel player compatto c'è posto per una sola azione, in quello esteso per tre. */
-    const val COMPACT_ACTIONS = 1
+    const val COMPACT_ACTIONS = 0
     const val FULL_ACTIONS = 3
 
     /** Il brano dopo quello attivo; null se la coda manca, se l'attivo non c'è o se è l'ultimo. */
