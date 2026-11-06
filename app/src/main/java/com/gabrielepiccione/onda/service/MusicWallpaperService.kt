@@ -57,7 +57,7 @@ class MusicWallpaperService : WallpaperService() {
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             super.onCreate(surfaceHolder)
-            app.media.onEach { media ->
+            app.media.media.onEach { media ->
                 playing = media?.playing == true
                 coverColors(media?.art).takeIf { it.isNotEmpty() }?.let { cover = it }
                 restart()
