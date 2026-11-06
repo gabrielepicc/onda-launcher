@@ -134,8 +134,6 @@ fun AppPopupEditSheet(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(
                         actionSummary(Actions.decode(encoded), allApps, ""),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
                     TextButton(onClick = { actions.removeAction(encoded) }) { Text(stringResource(R.string.remove)) }

@@ -436,7 +436,7 @@ fun AppQuickPopup(
                     ) {
                         Icon(actionIcon(Actions.decode(encoded).action), null, tint = colors.accent, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
