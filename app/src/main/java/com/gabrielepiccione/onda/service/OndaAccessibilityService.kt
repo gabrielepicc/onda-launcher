@@ -95,6 +95,13 @@ class OndaAccessibilityService : AccessibilityService() {
             return instance?.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN) ?: false
         }
 
+        fun screenshot(): Boolean {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+            return instance?.performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT) ?: false
+        }
+
+        fun recents(): Boolean = instance?.performGlobalAction(GLOBAL_ACTION_RECENTS) ?: false
+
         /** La pausa è stata superata da Onda: l'app che si apre ora non ne mostra un'altra. */
         fun allow(packageName: String) = gate.allow(packageName)
     }

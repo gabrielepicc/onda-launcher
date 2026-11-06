@@ -81,7 +81,14 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import android.content.pm.ShortcutInfo
+import androidx.compose.material.icons.filled.PlayArrow
+import com.gabrielepiccione.onda.data.ActionChoice
+import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
+import com.gabrielepiccione.onda.ui.components.SwipeActions
+import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.WidgetManager
@@ -102,6 +109,8 @@ fun FolderRow(
     modifier: Modifier = Modifier,
     /** Nasconde il nome; senza icone resta visibile, altrimenti la riga sarebbe vuota. */
     hideName: Boolean = false,
+    /** Esegue l'azione dello swipe a destra (formato di [Actions.encode]); se la cartella non ne ha una, lo swipe la apre o la chiude. */
+    onPerform: (String) -> Unit = {},
 ) {
     val nameHidden = hideName && showIcons
     val colors = LocalOndaColors.current
@@ -119,50 +128,56 @@ fun FolderRow(
             .background(if (open) colors.panel.copy(alpha = 0.85f) else androidx.compose.ui.graphics.Color.Transparent)
             .animateContentSize(Motion.bouncy())
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(28.dp))
-                .combinedClickable(
-                    onClick = { open = !open },
-                    onClickLabel = toggleLabel,
-                    onLongClick = {
-                        ondaHaptics?.perform(HapticEvent.LONG_PRESS)
-                        onLongClick()
-                    },
-                )
-                .padding(horizontal = 12.dp, vertical = 10.dp)
+        SwipeActions(
+            canDismiss = false,
+            onRight = { if (folder.swipe.isBlank()) open = !open else onPerform(folder.swipe) },
+            onLeft = {},
         ) {
-            // Icona scelta dall'utente, oppure le prime app sovrapposte
-            if (showIcons) {
-                FolderIcon(folder, apps, 44.dp * iconScale, themedIcons)
-                Spacer(Modifier.width(18.dp))
-            }
-            if (nameHidden) {
-                // Il nome resta disponibile per TalkBack
-                Spacer(Modifier.weight(1f).semantics { contentDescription = folder.name })
-            } else {
-                Text(
-                    folder.name,
-                    color = colors.onWallpaper,
-                    style = MaterialTheme.typography.headlineSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            if (unread > 0 && !open) {
-                Text(
-                    unread.toString(),
-                    color = colors.onAccentContainer,
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier
-                        .padding(end = 6.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(colors.accentContainer)
-                        .padding(horizontal = 8.dp, vertical = 2.dp),
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(28.dp))
+                    .combinedClickable(
+                        onClick = { open = !open },
+                        onClickLabel = toggleLabel,
+                        onLongClick = {
+                            ondaHaptics?.perform(HapticEvent.LONG_PRESS)
+                            onLongClick()
+                        },
+                    )
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+            ) {
+                // Icona scelta dall'utente, oppure le prime app sovrapposte
+                if (showIcons) {
+                    FolderIcon(folder, apps, 44.dp * iconScale, themedIcons)
+                    Spacer(Modifier.width(18.dp))
+                }
+                if (nameHidden) {
+                    // Il nome resta disponibile per TalkBack
+                    Spacer(Modifier.weight(1f).semantics { contentDescription = folder.name })
+                } else {
+                    Text(
+                        folder.name,
+                        color = colors.onWallpaper,
+                        style = MaterialTheme.typography.headlineSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (unread > 0 && !open) {
+                    Text(
+                        unread.toString(),
+                        color = colors.onAccentContainer,
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier
+                            .padding(end = 6.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(colors.accentContainer)
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
+                    )
+                }
             }
         }
 
@@ -224,10 +239,17 @@ fun FolderSheet(
     onDismiss: () -> Unit,
     onChangeIcon: () -> Unit = {},
     onWidgetHeight: (Int?) -> Unit = {},
+    allApps: List<AppInfo> = emptyList(),
+    shortcutsOf: (AppInfo) -> List<ShortcutInfo> = { emptyList() },
+    themedIcons: Boolean = false,
+    accessibilityEnabled: Boolean = true,
+    onAccessibility: () -> Unit = {},
+    onSwipe: (ActionChoice) -> Unit = {},
 ) {
     val colors = LocalOndaColors.current
     val density = LocalDensity.current
     var renaming by remember { mutableStateOf(false) }
+    var pickingSwipe by remember { mutableStateOf(false) }
     val pm = androidx.compose.ui.platform.LocalContext.current.packageManager
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -244,6 +266,10 @@ fun FolderSheet(
             Text(folder.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             SheetRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
             SheetRow(Icons.Filled.Palette, stringResource(R.string.folder_icon)) { onChangeIcon(); onDismiss() }
+            SheetRow(
+                Icons.Filled.PlayArrow,
+                stringResource(R.string.folder_swipe) + ": " + actionSummary(Actions.decode(folder.swipe), allApps, stringResource(R.string.folder_swipe_open)),
+            ) { pickingSwipe = true }
             if (canMoveUp) SheetRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { onMove(-1) }
             if (canMoveDown) SheetRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { onMove(1) }
             SheetRow(Icons.Filled.Add, stringResource(R.string.folder_add_widget)) { onAddWidget(); onDismiss() }
@@ -274,6 +300,20 @@ fun FolderSheet(
             }
             SheetRow(Icons.Filled.Delete, stringResource(R.string.folder_delete)) { onDelete(); onDismiss() }
         }
+    }
+    if (pickingSwipe) {
+        ActionPickerDialog(
+            title = stringResource(R.string.folder_swipe),
+            current = Actions.decode(folder.swipe),
+            allApps = allApps,
+            shortcutsOf = shortcutsOf,
+            themedIcons = themedIcons,
+            accessibilityEnabled = accessibilityEnabled,
+            onAccessibility = onAccessibility,
+            onPick = onSwipe,
+            onDismiss = { pickingSwipe = false },
+            noneLabel = stringResource(R.string.folder_swipe_open),
+        )
     }
     if (renaming) {
         NameDialog(stringResource(R.string.folder_rename), folder.name, onDismiss = { renaming = false }) { onRename(it); renaming = false }

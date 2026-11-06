@@ -434,10 +434,11 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     fun moveFavorite(app: AppInfo, delta: Int) = settingsRepo.moveFavorite(app.key, delta)
     fun setHidden(app: AppInfo, hidden: Boolean) = settingsRepo.setHidden(app.key, hidden)
     fun rename(app: AppInfo, label: String?) = settingsRepo.rename(app.key, label)
-    fun setSwipeAction(app: AppInfo, target: AppInfo?) = settingsRepo.setSwipeAction(app.key, target?.key)
+    fun setSwipeAction(app: AppInfo, encoded: String) = settingsRepo.setSwipeAction(app.key, encoded.ifBlank { null })
     fun toggleMuted(app: AppInfo) = settingsRepo.toggleMuted(app.packageName)
     fun shortcuts(app: AppInfo): List<ShortcutInfo> = appsRepo.shortcutsFor(app)
     fun startShortcut(s: ShortcutInfo) = appsRepo.startShortcut(s)
+    fun startShortcutById(packageName: String, shortcutId: String) = appsRepo.startShortcutById(packageName, shortcutId)
 
     /** Toglie la scorciatoia dalla home e dal sistema. */
     fun removePinnedShortcut(pinned: PinnedShortcut) {

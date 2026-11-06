@@ -27,6 +27,20 @@ object SystemActions {
         }
     }
 
+    /** Apre il pannello rapido delle impostazioni (stessa API non pubblica della tendina). */
+    @SuppressLint("WrongConstant", "PrivateApi")
+    fun expandQuickSettings(context: Context) {
+        runCatching {
+            val service = context.getSystemService("statusbar")
+            val clazz = Class.forName("android.app.StatusBarManager")
+            clazz.getMethod("expandSettingsPanel").invoke(service)
+        }
+    }
+
+    /** Schermata dove si concede l'accesso a "Non disturbare", necessario per il modo silenzioso. */
+    fun openPolicyAccessSettings(context: Context) =
+        start(context, Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+
     fun uninstall(context: Context, app: AppInfo) {
         val intent = Intent(Intent.ACTION_DELETE, Uri.parse("package:${app.packageName}"))
             .putExtra(Intent.EXTRA_USER, app.user)

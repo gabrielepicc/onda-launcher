@@ -12,14 +12,17 @@ data class AppPopup(
     val relatedApps: List<String> = emptyList(),
     val widgets: List<Int> = emptyList(),
     val hiddenShortcuts: Set<String> = emptySet(),
+    /** Azioni personalizzate in fondo al popup, nel formato di [Actions.encode]. */
+    val actions: List<String> = emptyList(),
 ) {
-    val isEmpty: Boolean get() = relatedApps.isEmpty() && widgets.isEmpty() && hiddenShortcuts.isEmpty()
+    val isEmpty: Boolean get() = relatedApps.isEmpty() && widgets.isEmpty() && hiddenShortcuts.isEmpty() && actions.isEmpty()
 }
 
 /** Operazioni sui popup delle app, senza dipendenze Android (testabili su JVM). */
 object AppPopups {
     const val MAX_WIDGETS = 4
     const val MAX_RELATED = 8
+    const val MAX_ACTIONS = 6
 
     fun of(s: Settings, appKey: String): AppPopup = s.appPopups[appKey] ?: AppPopup()
 
@@ -47,6 +50,15 @@ object AppPopups {
 
     fun removeRelated(s: Settings, appKey: String, related: String): Settings =
         update(s, appKey) { it.copy(relatedApps = it.relatedApps - related) }
+
+    fun addAction(s: Settings, appKey: String, encoded: String): Settings {
+        val current = of(s, appKey).actions
+        if (encoded.isBlank() || encoded in current || current.size >= MAX_ACTIONS) return s
+        return update(s, appKey) { it.copy(actions = it.actions + encoded) }
+    }
+
+    fun removeAction(s: Settings, appKey: String, encoded: String): Settings =
+        update(s, appKey) { it.copy(actions = it.actions - encoded) }
 
     fun toggleShortcut(s: Settings, appKey: String, shortcutId: String): Settings = update(s, appKey) {
         val hidden = it.hiddenShortcuts

@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -64,7 +65,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.SearchResults
+import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.data.GestureAction
+import com.gabrielepiccione.onda.ui.components.actionIcon
 import com.gabrielepiccione.onda.data.ContactHit
 
 @Composable
@@ -91,8 +95,17 @@ internal fun SearchPanel(
     onAddMedia: (SpotifyItem, String) -> Unit = { _, _ -> },
     onRequestContacts: () -> Unit,
     onClose: () -> Unit,
+    /** Un'azione del catalogo unico (torcia, silenzioso, schermata…) scelta dai risultati. */
+    onAction: (GestureAction) -> Unit = {},
 ) {
     val colors = LocalOndaColors.current
+    // Le azioni del catalogo si trovano anche dalla ricerca, per nome
+    val actionLabels = Actions.catalog.flatMap { it.second }.associateWith { stringResource(it.labelRes) }
+    val actionHits = if (results.mode == com.gabrielepiccione.onda.SearchMode.ALL) {
+        Actions.matching(results.query) { actionLabels.getValue(it) }
+    } else {
+        emptyList()
+    }
     // Con il prefisso delle impostazioni si cercano anche le voci di Onda, per nome e per sinonimi
     val ondaHits = if (results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS && results.term.isNotBlank()) {
         SETTING_ENTRIES.filter { e ->
@@ -180,6 +193,25 @@ internal fun SearchPanel(
                         onLongClick = { onAppLongClick(app) },
                         modifier = Modifier.animateItem(),
                     )
+                }
+            }
+            if (actionHits.isNotEmpty()) {
+                item(key = "actions_label") { SectionLabel(stringResource(R.string.search_actions_title)) }
+                items(actionHits, key = { "act_" + it.name }) { action ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .clip(RoundedCornerShape(28.dp))
+                            .clickable { onAction(action) }
+                            .padding(horizontal = 18.dp, vertical = 10.dp)
+                            .animateItem(),
+                    ) {
+                        Icon(actionIcon(action), contentDescription = null, tint = colors.accent)
+                        Spacer(Modifier.width(16.dp))
+                        Text(actionLabels.getValue(action), color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
             results.calc?.let { value ->

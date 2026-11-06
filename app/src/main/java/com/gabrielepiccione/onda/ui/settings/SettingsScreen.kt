@@ -116,7 +116,14 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
+import android.content.pm.ShortcutInfo
+import com.gabrielepiccione.onda.data.ActionArg
+import com.gabrielepiccione.onda.data.ActionChoice
+import com.gabrielepiccione.onda.data.ActionNeed
+import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.GestureAction
+import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
+import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.data.HomeSuggestions
 import com.gabrielepiccione.onda.data.UsageReminders
 import com.gabrielepiccione.onda.core.icons.IconPacks
@@ -159,6 +166,7 @@ interface SettingsActions {
     fun postNotifications()
     fun usageAccess()
     fun accessibility()
+    fun shortcutsOf(app: AppInfo): List<ShortcutInfo>
     fun addWidget()
     fun removeWidget(id: Int)
     fun unhide(app: AppInfo)
@@ -213,7 +221,7 @@ internal fun SettingsScreen(
     var query by rememberSaveable { mutableStateOf("") }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
     // Dove salvare l'app scelta per un gesto; null = scelta chiusa
-    var gestureAppPick by remember { mutableStateOf<((String) -> Unit)?>(null) }
+    var gestureAppPick by remember { mutableStateOf<ArgPick?>(null) }
     var gesturePick by remember { mutableStateOf<GesturePick?>(null) }
     val onEdit = actions::edit
     BackHandler(enabled = page != null) { page = null }
@@ -705,10 +713,10 @@ internal fun SettingsScreen(
                     onOpen = {
                         gesturePick = GesturePick(R.string.search_button_tap, settings.searchButtonTap) { g ->
                             onEdit { it.copy(searchButtonTap = g) }
-                            if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                            if (Actions.need(g) == ActionNeed.ACCESSIBILITY && !status.accessibilityEnabled) actions.accessibility()
                         }
                     },
-                    onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(searchButtonTapApp = key) } } },
+                    onChooseApp = { kind -> gestureAppPick = ArgPick(kind) { key -> onEdit { it.copy(searchButtonTapApp = key) } } },
                 )
                 GestureSetting(
                     title = stringResource(R.string.search_button_long),
@@ -720,10 +728,10 @@ internal fun SettingsScreen(
                     onOpen = {
                         gesturePick = GesturePick(R.string.search_button_long, settings.searchButtonLong) { g ->
                             onEdit { it.copy(searchButtonLong = g) }
-                            if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                            if (Actions.need(g) == ActionNeed.ACCESSIBILITY && !status.accessibilityEnabled) actions.accessibility()
                         }
                     },
-                    onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(searchButtonLongApp = key) } } },
+                    onChooseApp = { kind -> gestureAppPick = ArgPick(kind) { key -> onEdit { it.copy(searchButtonLongApp = key) } } },
                 )
                 GestureSetting(
                     title = stringResource(R.string.search_button_swipe),
@@ -735,10 +743,10 @@ internal fun SettingsScreen(
                     onOpen = {
                         gesturePick = GesturePick(R.string.search_button_swipe, settings.searchButtonSwipe) { g ->
                             onEdit { it.copy(searchButtonSwipe = g) }
-                            if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                            if (Actions.need(g) == ActionNeed.ACCESSIBILITY && !status.accessibilityEnabled) actions.accessibility()
                         }
                     },
-                    onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(searchButtonSwipeApp = key) } } },
+                    onChooseApp = { kind -> gestureAppPick = ArgPick(kind) { key -> onEdit { it.copy(searchButtonSwipeApp = key) } } },
                 )
             }
             Label(stringResource(R.string.search_engine))
@@ -763,10 +771,10 @@ internal fun SettingsScreen(
                 onOpen = {
                     gesturePick = GesturePick(R.string.swipe_up, settings.swipeUp) { g ->
                         onEdit { it.copy(swipeUp = g) }
-                        if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                        if (Actions.need(g) == ActionNeed.ACCESSIBILITY && !status.accessibilityEnabled) actions.accessibility()
                     }
                 },
-                onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(swipeUpApp = key) } } },
+                onChooseApp = { kind -> gestureAppPick = ArgPick(kind) { key -> onEdit { it.copy(swipeUpApp = key) } } },
             )
             GestureSetting(
                 title = stringResource(R.string.double_tap),
@@ -778,10 +786,10 @@ internal fun SettingsScreen(
                 onOpen = {
                     gesturePick = GesturePick(R.string.double_tap, settings.doubleTapAction) { g ->
                         onEdit { it.copy(doubleTapAction = g) }
-                        if (g == GestureAction.LOCK_SCREEN && !status.accessibilityEnabled) actions.accessibility()
+                        if (Actions.need(g) == ActionNeed.ACCESSIBILITY && !status.accessibilityEnabled) actions.accessibility()
                     }
                 },
-                onChooseApp = { gestureAppPick = { key -> onEdit { it.copy(doubleTapApp = key) } } },
+                onChooseApp = { kind -> gestureAppPick = ArgPick(kind) { key -> onEdit { it.copy(doubleTapApp = key) } } },
             )
         }
 
@@ -1023,10 +1031,23 @@ internal fun SettingsScreen(
             title = { Text(stringResource(pick.titleRes)) },
             text = {
                 Column {
-                    GestureAction.entries.forEach { g ->
-                        ChoiceRow(stringResource(g.labelRes), pick.current == g) {
-                            pick.onPick(g)
-                            gesturePick = null
+                    androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
+                        item {
+                            ChoiceRow(stringResource(GestureAction.NONE.labelRes), pick.current == GestureAction.NONE) {
+                                pick.onPick(GestureAction.NONE)
+                                gesturePick = null
+                            }
+                        }
+                        // Stesso catalogo di ogni altro ambito (vedi Actions)
+                        Actions.catalog.forEach { (group, list) ->
+                            item(key = "g_" + group.name) { Label(stringResource(group.labelRes)) }
+                            items(list.size, key = { list[it].name }) { i ->
+                                val g = list[i]
+                                ChoiceRow(stringResource(g.labelRes), pick.current == g) {
+                                    pick.onPick(g)
+                                    gesturePick = null
+                                }
+                            }
                         }
                     }
                 }
@@ -1039,22 +1060,18 @@ internal fun SettingsScreen(
         ConfirmDeleteWidgetDialog(onConfirm = { actions.removeWidget(id); widgetToRemove = null }, onDismiss = { widgetToRemove = null })
     }
 
-    gestureAppPick?.let { save ->
-        AlertDialog(
-            onDismissRequest = { gestureAppPick = null },
-            title = { Text(stringResource(R.string.gesture_choose_app)) },
-            text = {
-                androidx.compose.foundation.lazy.LazyColumn(Modifier.androidxHeightIn()) {
-                    items(allApps.size, key = { allApps[it].key }) { i ->
-                        val app = allApps[i]
-                        ChoiceRow(app.label, false) {
-                            save(app.key)
-                            gestureAppPick = null
-                        }
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { gestureAppPick = null }) { Text(stringResource(R.string.close)) } },
+    gestureAppPick?.let { pick ->
+        ActionPickerDialog(
+            title = stringResource(if (pick.kind == ActionArg.SHORTCUT) R.string.gesture_open_shortcut else R.string.gesture_choose_app),
+            current = ActionChoice(GestureAction.NONE),
+            allApps = allApps,
+            shortcutsOf = actions::shortcutsOf,
+            themedIcons = settings.themedIcons,
+            accessibilityEnabled = status.accessibilityEnabled,
+            onAccessibility = {},
+            onPick = { pick.save(it.arg) },
+            onDismiss = { gestureAppPick = null },
+            startAt = pick.kind,
         )
     }
 
@@ -1303,6 +1320,9 @@ internal val SETTING_ENTRIES = listOf(
 )
 
 /** Scelta in corso per un gesto: si apre in un dialogo con tutte le azioni in vista. */
+/** Scelta in corso dell'app o della scorciatoia di un gesto; [save] riceve l'argomento scelto. */
+private class ArgPick(val kind: ActionArg, val save: (String) -> Unit)
+
 private class GesturePick(@StringRes val titleRes: Int, val current: GestureAction, val onPick: (GestureAction) -> Unit)
 
 /** Azione di un gesto: dove si fa, cosa fa ora, e l'avviso sull'accessibilità quando serve. */
@@ -1315,7 +1335,7 @@ private fun GestureSetting(
     allApps: List<AppInfo>,
     accessibilityEnabled: Boolean,
     onOpen: () -> Unit,
-    onChooseApp: () -> Unit,
+    onChooseApp: (ActionArg) -> Unit,
 ) {
     val colors = LocalOndaColors.current
     Column(
@@ -1330,9 +1350,12 @@ private fun GestureSetting(
         Text(stringResource(action.labelRes), color = colors.accent, style = MaterialTheme.typography.bodyMedium)
     }
     if (action == GestureAction.OPEN_APP) {
-        ClickRow(stringResource(R.string.gesture_choose_app), allApps.firstOrNull { it.key == appKey }?.label ?: stringResource(R.string.gesture_app_none), onChooseApp)
+        ClickRow(stringResource(R.string.gesture_choose_app), allApps.firstOrNull { it.key == appKey }?.label ?: stringResource(R.string.gesture_app_none)) { onChooseApp(ActionArg.APP) }
     }
-    if (action == GestureAction.LOCK_SCREEN && !accessibilityEnabled) {
+    if (action == GestureAction.OPEN_SHORTCUT) {
+        ClickRow(stringResource(R.string.gesture_open_shortcut), actionSummary(ActionChoice(action, appKey), allApps, stringResource(R.string.gesture_app_none))) { onChooseApp(ActionArg.SHORTCUT) }
+    }
+    if (Actions.need(action) == ActionNeed.ACCESSIBILITY && !accessibilityEnabled) {
         SettingsSupporting(stringResource(R.string.double_tap_lock_off))
     }
 }
