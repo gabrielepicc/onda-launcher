@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Sfondo musicale di sistema** (live wallpaper «solo colori»): i colori della copertina e il carattere del brano anche fuori dalla home e nella schermata di blocco, senza microfono né permessi. Impostazioni → Sfondo musicale → «Usa come sfondo di sistema». Il disegno è condiviso con la home (`WaveBlobs`).
 - **Correzioni widget e cartelle**: nel carosello di widget lo scorrimento non apre più la modifica (la pressione lunga ferma resta); con l'orologio sostituito da un widget, le luci di casa compaiono comunque in cima alla home.
 - **Azioni personalizzate ovunque**: un solo catalogo (torcia, pannello rapido, silenzioso, blocco, screenshot, app recenti, app, scorciatoie delle app, ricerca, elenco app, impostazioni) per gesti, pulsante di ricerca, swipe delle app e delle cartelle, popup e ricerca. Permessi chiesti al momento, con la guida delle impostazioni con limitazioni.
 - **Popup in corrispondenza dell'app**: centrato sulla riga e, se c'è posto, di lato; altrimenti sotto o sopra.
