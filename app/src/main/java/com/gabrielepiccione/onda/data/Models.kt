@@ -451,6 +451,8 @@ data class Settings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val accent: Long = 0xFF7FE3D1,
+    /** Secondo colore del tema (accento); 0 = quello dei colori dinamici di sistema, o ricavato dal primo. */
+    val themeAccent: Long = 0,
     val font: FontChoice = FontChoice.SYSTEM,
     val iconPack: String = "",
     /** Forma delle icone adattive (nome di [com.gabrielepiccione.onda.core.icons.IconShape]). */
