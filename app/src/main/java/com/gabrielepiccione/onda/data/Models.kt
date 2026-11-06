@@ -408,6 +408,8 @@ data class Settings(
     val grayscaleProfile: String = "",
     /** Suggerimenti "Lo sapevi?": cosa è stato mostrato, scartato e già usato. */
     val tips: TipState = TipState(),
+    /** "Suggerisci profili": spento di default; rifiuti e ultimo suggerimento (vedi [UsageProfiles]). */
+    val profileSuggest: ProfileSuggestState = ProfileSuggestState(),
     /** Spazio tra i blocchi della home, in dp (griglia da 4: compatto 0 … ampio 32). */
     val homeBlockSpacing: Int = 8,
     /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */

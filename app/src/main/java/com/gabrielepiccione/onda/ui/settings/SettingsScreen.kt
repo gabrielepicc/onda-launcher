@@ -192,6 +192,8 @@ internal fun SettingsScreen(
     contextEnvironment: ContextEnvironment? = null,
     /** Voce da raggiungere subito: la pagina si apre su di lei e la voce lampeggia. */
     focus: SettingEntry? = null,
+    /** Profilo proposto, da modificare subito (da "Modifica" nella scheda di suggerimento). */
+    suggestedProfile: ContextProfile? = null,
 ) {
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -199,7 +201,7 @@ internal fun SettingsScreen(
     var iconPackDialog by remember { mutableStateOf(false) }
     var plugDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
-    var page by rememberSaveable { mutableStateOf(focus?.page) }
+    var page by rememberSaveable { mutableStateOf(focus?.page ?: if (suggestedProfile != null) SettingsPage.CONTEXTS else null) }
     var highlight by remember { mutableStateOf(focus) }
     // Conferma del Wi-Fi di casa: null = chiusa, vuoto = Android non dice il nome
     var wifiConfirm by remember { mutableStateOf<String?>(null) }
@@ -837,7 +839,7 @@ internal fun SettingsScreen(
         }
 
         if (page == SettingsPage.CONTEXTS && contextEnvironment != null) {
-            ContextProfilesPage(settings, allApps, activeProfile, contextEnvironment, onEdit)
+            ContextProfilesPage(settings, allApps, activeProfile, contextEnvironment, onEdit, suggestedProfile, status.usageAccess, actions::usageAccess)
         }
 
         if (page == SettingsPage.WELLBEING && usageStats != null) {
@@ -1289,6 +1291,7 @@ internal val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.section_reminders, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.page_wellbeing, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.page_contexts, SettingsPage.CONTEXTS, R.string.kw_contexts),
+    SettingEntry(R.string.suggest_enable, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.ctx_fixed_title, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.section_limits, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.section_grayscale, SettingsPage.WELLBEING, R.string.kw_wellbeing),
