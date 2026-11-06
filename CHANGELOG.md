@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Profili suggeriti, subito**: bastano 6 giorni di storia e 3 giorni di ricorrenza (prima 14 e 5), così con l'accesso ai dati d'uso appena concesso il primo suggerimento può comparire subito (Android conserva circa 10 giorni di aperture). La scheda si ricalcola appena si concede il permesso e, al massimo una volta a settimana, una notifica avvisa del profilo proposto (solo con «Suggerisci profili» acceso e notifiche consentite).
+- **Player compatto**: testo più grande, nessun pulsante in più (niente «aggiungi alla playlist» né ripetizione casuale).
 - **Notifiche leggibili e pannello Home**: card di notifica ad angoli retti con margini ≥16 dp; titoli su tutto lo spazio libero e su 2 righe prima di troncare; nel popup le notifiche si eliminano anche scorrendo a destra o a sinistra (vibrazione alla soglia e alla conferma, lista che si richiude senza salti); il pannello della pressione lunga in home ha tre azioni di pari larghezza (Widget, Sfondo, Impostazioni), senza «Cerca».
 - **Spazio dentro l'orologio**: slider in Impostazioni → Home (0–32 dp, passo 4, predefinito 8) per la distanza tra ora, data ed evento; tolti i margini fissi attorno a orologio e agenda, così la distanza tra i blocchi segue «Spazio tra i blocchi».
 - **Sfondo musicale di sistema** (live wallpaper «solo colori»): i colori della copertina e il carattere del brano anche fuori dalla home e nella schermata di blocco, senza microfono né permessi. Impostazioni → Sfondo musicale → «Usa come sfondo di sistema». Il disegno è condiviso con la home (`WaveBlobs`).

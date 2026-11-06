@@ -657,7 +657,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     // Profili proposti dall'uso: si ricalcolano quando la funzione è accesa, ogni volta che si torna in home
     var suggestionPool by remember { mutableStateOf<List<ProfileSuggestion>>(emptyList()) }
     val launchablePackages = remember(state.allApps) { state.allApps.map { it.packageName }.toSet() }
-    LaunchedEffect(settings.profileSuggest.enabled, settings.profileSuggest.useWifi, launchablePackages, overlay == Overlay.NONE) {
+    // Anche appena concesso l'accesso ai dati d'uso: il primo suggerimento non aspetta
+    LaunchedEffect(settings.profileSuggest.enabled, settings.profileSuggest.useWifi, launchablePackages, overlay == Overlay.NONE, status.usageAccess) {
         suggestionPool = if (settings.profileSuggest.enabled && state.loaded && overlay == Overlay.NONE) {
             val fixed = settings.favorites.take(settings.fixedFavoriteSlots).toSet()
             UsageProfiles.suggest(

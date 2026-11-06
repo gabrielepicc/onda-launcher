@@ -854,4 +854,6 @@
     <string name="music_wallpaper_set">Usa come sfondo di sistema</string>
     <string name="music_wallpaper_set_sub">Anche nella schermata di blocco. Solo colori e movimento, senza microfono. Sostituisce lo sfondo attuale.</string>
     <string name="clock_inner_spacing">Spazio dentro l\'orologio</string>
+    <string name="suggest_channel">Profili suggeriti</string>
+    <string name="suggest_notification_text">Apri Onda per crearlo, modificarlo o ignorarlo. Non parte mai da solo.</string>
 </resources>

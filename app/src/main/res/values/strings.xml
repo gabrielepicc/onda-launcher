@@ -854,4 +854,6 @@
     <string name="music_wallpaper_set">Use as system wallpaper</string>
     <string name="music_wallpaper_set_sub">Also on the lock screen. Colors and motion only, no microphone. It replaces your current wallpaper.</string>
     <string name="clock_inner_spacing">Space inside the clock</string>
+    <string name="suggest_channel">Suggested profiles</string>
+    <string name="suggest_notification_text">Open Onda to create, edit or ignore it. It never starts by itself.</string>
 </resources>

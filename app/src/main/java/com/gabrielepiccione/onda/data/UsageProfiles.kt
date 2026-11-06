@@ -68,16 +68,21 @@ data class ProfileSuggestState(
     val lastShownDay: String = "",
     /** Chiave dell'ultimo suggerimento mostrato (resta finché non lo si chiude). */
     val lastKey: String = "",
+    /** Giorno dell'ultima notifica che ha avvisato di un profilo suggerito (al massimo una a settimana). */
+    val lastNotifiedDay: String = "",
 )
 
 /** Ricava profili proposti dall'uso reale del telefono, senza dipendenze Android (testabile su JVM). */
 object UsageProfiles {
-    /** Servono almeno questi giorni di storia per proporre qualcosa. */
-    const val MIN_HISTORY_DAYS = 14
+    /**
+     * Servono almeno questi giorni di storia per proporre qualcosa. Android conserva le aperture per una decina
+     * di giorni: con il permesso appena concesso la storia c'è già, e il primo suggerimento può arrivare subito.
+     */
+    const val MIN_HISTORY_DAYS = 6
     const val WINDOW_DAYS = 28
 
     /** Giorni diversi in cui un'app deve comparire nella stessa fascia per entrare in un profilo. */
-    const val MIN_RECURRENCE_DAYS = 5
+    const val MIN_RECURRENCE_DAYS = 3
     const val MIN_APPS = 3
     const val MAX_APPS = 6
 
@@ -188,6 +193,12 @@ object UsageProfiles {
         if (state.lastShownDay.isNotEmpty() && daysBetween(state.lastShownDay, today) < DAYS_BETWEEN_SUGGESTIONS) return null
         return usable.firstOrNull()
     }
+
+    /** Una notifica per avvisare del profilo, al massimo ogni [DAYS_BETWEEN_SUGGESTIONS] giorni. */
+    fun shouldNotify(state: ProfileSuggestState, today: String): Boolean =
+        state.enabled && (state.lastNotifiedDay.isEmpty() || daysBetween(state.lastNotifiedDay, today) >= DAYS_BETWEEN_SUGGESTIONS)
+
+    fun notified(state: ProfileSuggestState, today: String): ProfileSuggestState = state.copy(lastNotifiedDay = today)
 
     fun shown(state: ProfileSuggestState, s: ProfileSuggestion, today: String): ProfileSuggestState =
         if (state.lastKey == s.key) state else state.copy(lastKey = s.key, lastShownDay = today)

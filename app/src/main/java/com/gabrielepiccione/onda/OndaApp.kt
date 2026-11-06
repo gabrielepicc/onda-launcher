@@ -9,6 +9,13 @@ import com.gabrielepiccione.onda.data.CalendarRepository
 import com.gabrielepiccione.onda.data.MediaRepository
 import com.gabrielepiccione.onda.data.SettingsRepository
 import com.gabrielepiccione.onda.data.WidgetManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import com.gabrielepiccione.onda.service.ProfileSuggestionWorker
 
 class OndaApp : Application() {
 
@@ -25,6 +32,8 @@ class OndaApp : Application() {
     lateinit var audio: com.gabrielepiccione.onda.data.AudioDevices
         private set
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     override fun onCreate() {
         super.onCreate()
         settings = SettingsRepository(this)
@@ -33,6 +42,10 @@ class OndaApp : Application() {
         media = MediaRepository(this)
         calendar = CalendarRepository(this)
         audio = com.gabrielepiccione.onda.data.AudioDevices(this)
+        // Il promemoria dei profili suggeriti esiste solo con "Suggerisci profili" acceso
+        scope.launch {
+            settings.settings.map { it.profileSuggest.enabled }.distinctUntilChanged().collect { ProfileSuggestionWorker.syncSchedule(this@OndaApp, it) }
+        }
         // Solo chi ha attivato il backup automatico ha un controllo periodico
         if (settings.current.autoBackupUri.isNotBlank()) Backups.syncSchedule(this, enabled = true)
     }

@@ -511,14 +511,14 @@ private fun CompactMediaCard(
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
             .padding(start = 8.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
     ) {
-        MediaArt(media, 40.dp, 12.dp)
+        MediaArt(media, 48.dp, 14.dp)
         Spacer(Modifier.width(12.dp))
         // Il testo prende tutto lo spazio che i comandi lasciano
         Column(Modifier.weight(1f).padding(end = 4.dp)) {
             Text(
                 media.title,
                 color = colors.onWallpaper,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 maxLines = 1,
                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
             )
@@ -526,7 +526,7 @@ private fun CompactMediaCard(
                 Text(
                     media.artist,
                     color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                 )
@@ -535,9 +535,6 @@ private fun CompactMediaCard(
         SmallMediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
         PlayButton(media.playing, onPlayPause, width = 40.dp, height = 40.dp)
         SmallMediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
-        MediaExtras.visibleActions(media.actions, compact = true).forEach { action ->
-            AppActionButton(media, action, onAction, iconSize = 20.dp, small = true)
-        }
     }
 }
 
