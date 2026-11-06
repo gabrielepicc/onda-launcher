@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Onda in bianco e nero** (Benessere digitale): a orario (per esempio 22:30–7:00, anche a cavallo della mezzanotte) oppure finché è attivo un profilo dei preferiti.
+  - Icone, copertine, widget e sfondo animato diventano in scala di grigi con un passaggio morbido di 1,5 secondi.
+  - Vale per Onda; per tutto il telefono, "Anche per tutto il telefono" apre la modalità riposo di sistema (o la correzione colori).
 - **Home più compatta e widget ridimensionabili**:
   - **Spazio tra i blocchi**: da 2 a 8 dp tra orologio, widget, player e app, su griglia da 4 dp. Nuovo slider in Impostazioni → Home (da compatto ad ampio), con ripristino; il telefono in miniatura lo segue.
   - **Data attaccata all'orologio**: le cifre non portano più lo spazio vuoto sopra e sotto. Anche i margini dell'orologio sono ridotti.

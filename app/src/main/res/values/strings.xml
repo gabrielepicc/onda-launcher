@@ -774,4 +774,14 @@
     <string name="spacing_compact">Compact</string>
     <string name="spacing_normal">Normal</string>
     <string name="spacing_wide">Wide</string>
+    <string name="section_grayscale">Onda in black and white</string>
+    <string name="grayscale_sub">Icons, covers, widgets and the animated background lose their colour, with a soft transition. It only works for Onda: the system wallpaper stays as it is.</string>
+    <string name="grayscale_off">Off</string>
+    <string name="grayscale_schedule">On a schedule</string>
+    <string name="grayscale_profile">With a profile</string>
+    <string name="grayscale_from">From</string>
+    <string name="grayscale_to">To</string>
+    <string name="grayscale_no_profiles">No profiles yet: create one in Contextual favorites.</string>
+    <string name="grayscale_system">Also for the whole phone</string>
+    <string name="grayscale_system_sub">Opens the system bedtime mode, or colour correction if your phone has no bedtime mode.</string>
 </resources>

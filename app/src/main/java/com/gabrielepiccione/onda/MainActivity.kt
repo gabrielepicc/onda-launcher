@@ -2,6 +2,17 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import com.gabrielepiccione.onda.ui.components.desaturate
+import com.gabrielepiccione.onda.data.GrayscaleSchedule
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.CompositionLocalProvider
 import com.gabrielepiccione.onda.data.WidgetSizing
 import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
@@ -310,7 +321,25 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
                         }
                     }
                 }
-                HomeScreen(vm = vm, callbacks = this, status = status)
+                // Bianco e nero a orario: tutto ciò che Onda disegna perde il colore con un passaggio morbido
+                // (lo sfondo di sistema resta com'è: per il resto del telefono c'è il link nelle impostazioni)
+                var minute by remember { mutableIntStateOf(currentMinute()) }
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        minute = currentMinute()
+                        delay(30_000L)
+                    }
+                }
+                val settings = state.settings
+                val gray = GrayscaleSchedule.active(settings.grayscaleMode, minute, settings.grayscaleStart, settings.grayscaleEnd, settings.grayscaleProfile, state.activeProfile?.id)
+                val grayProgress by animateFloatAsState(if (gray) 1f else 0f, tween(GRAYSCALE_MILLIS), label = "grayscale")
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .desaturate { GrayscaleSchedule.saturation(grayProgress) },
+                ) {
+                    HomeScreen(vm = vm, callbacks = this@MainActivity, status = status)
+                }
               }
             }
         }
@@ -380,6 +409,19 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         val restart = Intent.makeRestartActivityTask(ComponentName(this, MainActivity::class.java))
         startActivity(restart)
         Runtime.getRuntime().exit(0)
+    }
+
+    /** Bianco e nero per tutto il telefono: la modalità riposo di sistema, o la correzione colori se manca. */
+    override fun openSystemGrayscale() {
+        val tries = listOf(
+            "android.settings.BEDTIME_SETTINGS",
+            "com.android.settings.action.BEDTIME_SETTINGS",
+            "android.settings.COLOR_CORRECTION_SETTINGS",
+            android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS,
+        )
+        for (action in tries) {
+            if (runCatching { startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess) return
+        }
     }
 
     override fun requestMicrophonePermission() = microphoneLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
@@ -541,7 +583,11 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         }
     }
 
+    private fun currentMinute(): Int = java.time.LocalTime.now().let { it.hour * 60 + it.minute }
+
     companion object {
+        /** Passaggio da colori a bianco e nero e ritorno. */
+        const val GRAYSCALE_MILLIS = 1_500
         /** Pacchetto per cui mostrare la pausa (dal servizio di accessibilità). */
         const val EXTRA_PAUSE_PACKAGE = "onda.pause_package"
 

@@ -774,4 +774,14 @@
     <string name="spacing_compact">Compatto</string>
     <string name="spacing_normal">Normale</string>
     <string name="spacing_wide">Ampio</string>
+    <string name="section_grayscale">Onda in bianco e nero</string>
+    <string name="grayscale_sub">Icone, copertine, widget e sfondo animato perdono il colore, con un passaggio morbido. Vale solo per Onda: lo sfondo di sistema resta com\'è.</string>
+    <string name="grayscale_off">Spento</string>
+    <string name="grayscale_schedule">A orario</string>
+    <string name="grayscale_profile">Con un profilo</string>
+    <string name="grayscale_from">Dalle</string>
+    <string name="grayscale_to">Alle</string>
+    <string name="grayscale_no_profiles">Ancora nessun profilo: creane uno in Preferiti contestuali.</string>
+    <string name="grayscale_system">Anche per tutto il telefono</string>
+    <string name="grayscale_system_sub">Apre la modalità riposo di sistema, o la correzione colori se il telefono non ha la modalità riposo.</string>
 </resources>
