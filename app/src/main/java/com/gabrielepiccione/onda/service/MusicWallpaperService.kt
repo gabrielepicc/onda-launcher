@@ -24,7 +24,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -56,13 +57,11 @@ class MusicWallpaperService : WallpaperService() {
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             super.onCreate(surfaceHolder)
-            scope.launch {
-                app.media.collect { media ->
-                    playing = media?.playing == true
-                    coverColors(media?.art).takeIf { it.isNotEmpty() }?.let { cover = it }
-                    restart()
-                }
-            }
+            app.media.onEach { media ->
+                playing = media?.playing == true
+                coverColors(media?.art).takeIf { it.isNotEmpty() }?.let { cover = it }
+                restart()
+            }.launchIn(scope)
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, w: Int, h: Int) {
