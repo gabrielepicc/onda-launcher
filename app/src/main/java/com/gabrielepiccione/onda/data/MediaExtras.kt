@@ -27,8 +27,14 @@ object MediaExtras {
     /** Le azioni da mostrare, nell'ordine dato dall'app, senza doppioni e senza quelle senza icona. */
     fun visibleActions(actions: List<MediaAction>, compact: Boolean): List<MediaAction> =
         actions.filter { it.iconRes != 0 && it.id.isNotBlank() }
+            // Nella versione compatta lo spazio va al testo: niente ripetizione casuale
+            .filterNot { compact && isShuffle(it) }
             .distinctBy { it.id }
             .take(if (compact) COMPACT_ACTIONS else FULL_ACTIONS)
+
+    /** Azione "casuale" (shuffle), riconosciuta dall'id o dal nome dato dall'app. */
+    fun isShuffle(action: MediaAction): Boolean =
+        listOf(action.id, action.name).any { it.contains("shuffle", ignoreCase = true) || it.contains("casual", ignoreCase = true) || it.contains("random", ignoreCase = true) }
 
     /** Testo della riga "Dopo": titolo, e artista se c'è. */
     fun nextLine(next: QueueEntry): String =

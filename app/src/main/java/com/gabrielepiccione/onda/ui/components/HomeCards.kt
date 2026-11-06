@@ -513,11 +513,12 @@ private fun CompactMediaCard(
     ) {
         MediaArt(media, 40.dp, 12.dp)
         Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
+        // Il testo prende tutto lo spazio che i comandi lasciano
+        Column(Modifier.weight(1f).padding(end = 4.dp)) {
             Text(
                 media.title,
                 color = colors.onWallpaper,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
             )
@@ -525,7 +526,7 @@ private fun CompactMediaCard(
                 Text(
                     media.artist,
                     color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                 )

@@ -39,6 +39,8 @@ class MediaExtrasTest {
             MediaAction("radio", "Radio", 4),
         )
         assertEquals(listOf("like"), MediaExtras.visibleActions(actions, compact = true).map { it.id })
+        // Senza "mi piace" la versione compatta salta comunque la ripetizione casuale
+        assertEquals(listOf("repeat"), MediaExtras.visibleActions(actions.filter { it.id != "like" }, compact = true).map { it.id })
         assertEquals(listOf("like", "shuffle", "repeat"), MediaExtras.visibleActions(actions, compact = false).map { it.id })
     }
 }
