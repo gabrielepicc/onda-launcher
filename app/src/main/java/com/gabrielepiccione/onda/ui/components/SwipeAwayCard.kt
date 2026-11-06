@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.NotificationLayout
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
