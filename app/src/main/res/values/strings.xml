@@ -810,4 +810,21 @@
     <string name="tip_grayscale_body">Onda can lose its colours at night to help you put the phone down.</string>
     <string name="tip_profiles_title">Favorites that change by themselves</string>
     <string name="tip_profiles_body">Create profiles for work, the car or meetings, and set up automatic backup.</string>
+    <string name="suggest_title">Suggest profiles</string>
+    <string name="suggest_sub">Onda looks at when you open your apps and proposes profiles for your routines. Nothing is activated by itself: you decide whether to create, edit or ignore each one.</string>
+    <string name="suggest_enable">Suggest profiles</string>
+    <string name="suggest_wifi">Use Wi-Fi as a signal</string>
+    <string name="suggest_wifi_sub">Remembers only a code of the network name, never the name or your position. Needs the location permission to read the network.</string>
+    <string name="suggest_revoke">Usage access</string>
+    <string name="suggest_revoke_sub">Granted. Tap to review or revoke it in system settings.</string>
+    <string name="suggest_no_access">Not granted: suggestions use only what Onda records when it opens apps. Tap to grant it.</string>
+    <string name="suggest_explain_title">Allow usage access?</string>
+    <string name="suggest_explain_body">To suggest profiles, Onda reads which apps you open and when, for the last weeks. The data is processed only on your phone and never leaves it. Android will now open its settings: turn on Onda there. You can revoke it at any time.</string>
+    <string name="suggest_explain_go">Continue</string>
+    <string name="suggest_card_label">Profile suggestion</string>
+    <string name="suggest_card_title">I noticed a routine: «%1$s»</string>
+    <string name="suggest_card_body">In that time you often open %1$s. Want a profile with these apps? It never starts by itself.</string>
+    <string name="suggest_create">Create</string>
+    <string name="suggest_edit">Edit</string>
+    <string name="suggest_ignore">Ignore</string>
 </resources>

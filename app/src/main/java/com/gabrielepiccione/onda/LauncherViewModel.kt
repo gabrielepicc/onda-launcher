@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.LaunchLogFormat
+import com.gabrielepiccione.onda.data.LaunchRecord
+import com.gabrielepiccione.onda.data.HomePresence
 import com.gabrielepiccione.onda.data.PlugPlay
 import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcut
@@ -393,7 +396,19 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     // --- Azioni sulle app ---
     fun launch(app: AppInfo) {
         appsRepo.launch(app)
-        LaunchLog.record(getApplication(), app.key)
+        // Il contesto serve solo a proporre profili ("Suggerisci profili"): resta sul telefono, e il Wi-Fi solo come codice
+        val s = settingsRepo.current
+        val battery = getApplication<Application>().getSystemService(android.os.BatteryManager::class.java)
+        LaunchLog.record(
+            getApplication(),
+            LaunchRecord(
+                appKey = app.key,
+                time = System.currentTimeMillis(),
+                headphones = audio.headphonesConnected.value,
+                charging = battery?.isCharging == true,
+                wifiHash = if (s.profileSuggest.enabled && s.profileSuggest.useWifi) LaunchLogFormat.wifiCode(HomePresence.currentSsid(getApplication())) else null,
+            ),
+        )
         viewModelScope.launch { delay(600); settingsRepo.recordLaunch(app.key) }
     }
 

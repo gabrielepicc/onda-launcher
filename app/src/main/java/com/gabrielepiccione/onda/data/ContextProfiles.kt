@@ -84,7 +84,14 @@ data class RuleSuggestion(val appKey: String, val dayOfWeek: Int, val hour: Int,
 }
 
 /** Un'apertura di app dal launcher, per i suggerimenti. */
-data class LaunchRecord(val appKey: String, val time: Long)
+data class LaunchRecord(
+    val appKey: String,
+    val time: Long,
+    val headphones: Boolean = false,
+    val charging: Boolean = false,
+    /** Codice del Wi-Fi (mai il nome), solo se l'utente ha acceso il Wi-Fi come segnale. */
+    val wifiHash: String? = null,
+)
 
 /** Motore dei preferiti contestuali, senza dipendenze Android (testabile su JVM). */
 object ContextProfiles {
