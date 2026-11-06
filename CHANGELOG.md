@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Scoprire le funzioni**:
+  - **Benvenuto nuovo** con otto punti (alfabeto, swipe, pressione lunga, ricerca, cartelle, profili, benessere digitale, privacy). Ogni punto ha "Mostrami", che apre le impostazioni sulla voce giusta e la fa lampeggiare.
+  - **"Lo sapevi?"**: una scheda piccola in home, al massimo una al giorno, mai durante un gesto o un pannello, con "Mostrami", "Non ora" e "Non mostrare più". Compare quando serve: app aperta spesso fuori dai preferiti, prima notifica, elenco aperto senza alfabeto, prima musica, prime cuffie, la sera, dopo una settimana.
+  - **Ricerca delle impostazioni anche dalla barra del launcher** col prefisso `/`: trova le voci di Onda per nome e sinonimi, apre la pagina e la voce lampeggia.
+  - **Impostazioni → Suggerimenti**: li si può spegnere, riportare quelli scartati e rivedere il benvenuto.
 - **Onda in bianco e nero** (Benessere digitale): a orario (per esempio 22:30–7:00, anche a cavallo della mezzanotte) oppure finché è attivo un profilo dei preferiti.
   - Icone, copertine, widget e sfondo animato diventano in scala di grigi con un passaggio morbido di 1,5 secondi.
   - Vale per Onda; per tutto il telefono, "Anche per tutto il telefono" apre la modalità riposo di sistema (o la correzione colori).

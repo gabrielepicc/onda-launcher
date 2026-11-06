@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.gabrielepiccione.onda.data.DiscoveryTips
 import com.gabrielepiccione.onda.data.GrayscaleMode
 import com.gabrielepiccione.onda.data.GrayscaleSchedule
 import androidx.compose.foundation.selection.selectableGroup
@@ -188,8 +190,8 @@ internal fun SettingsScreen(
     connectedHeadphones: Set<String> = emptySet(),
     activeProfile: ContextProfile? = null,
     contextEnvironment: ContextEnvironment? = null,
-    /** Pagina da cui partire (per i test di screenshot); null = indice. */
-    initialPage: SettingsPage? = null,
+    /** Voce da raggiungere subito: la pagina si apre su di lei e la voce lampeggia. */
+    focus: SettingEntry? = null,
 ) {
     val colors = LocalOndaColors.current
     val context = LocalContext.current
@@ -197,7 +199,8 @@ internal fun SettingsScreen(
     var iconPackDialog by remember { mutableStateOf(false) }
     var plugDialog by remember { mutableStateOf(false) }
     var hiddenUnlocked by remember { mutableStateOf(false) }
-    var page by rememberSaveable { mutableStateOf(initialPage) }
+    var page by rememberSaveable { mutableStateOf(focus?.page) }
+    var highlight by remember { mutableStateOf(focus) }
     // Conferma del Wi-Fi di casa: null = chiusa, vuoto = Android non dice il nome
     var wifiConfirm by remember { mutableStateOf<String?>(null) }
     var restartConfirm by remember { mutableStateOf(false) }
@@ -213,12 +216,21 @@ internal fun SettingsScreen(
     val onEdit = actions::edit
     BackHandler(enabled = page != null) { page = null }
 
+    // La voce cercata lampeggia per qualche secondo, poi basta
+    LaunchedEffect(highlight) {
+        if (highlight != null) {
+            kotlinx.coroutines.delay(HIGHLIGHT_MS)
+            highlight = null
+        }
+    }
+    val highlightText = highlight?.takeIf { it.page == page }?.let { stringResource(it.titleRes) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     // Ogni pagina parte con la barra grande e il contenuto subito sotto, mai nascosto dietro la barra
     LaunchedEffect(page) {
         scrollBehavior.state.heightOffset = 0f
         scrollBehavior.state.contentOffset = 0f
     }
+    CompositionLocalProvider(LocalSettingsHighlight provides highlightText) {
     Column(Modifier.fillMaxSize().blockTouches().nestedScroll(scrollBehavior.nestedScrollConnection)) {
         LargeTopAppBar(
             title = { Text(stringResource(page?.titleRes ?: R.string.settings)) },
@@ -342,6 +354,18 @@ internal fun SettingsScreen(
                             SettingsSupporting(stringResource(p.subRes))
                         }
                     }
+                }
+            }
+            if (query.isBlank()) Group(stringResource(R.string.section_tips)) {
+                SwitchRow(stringResource(R.string.tips_enable), stringResource(R.string.tips_enable_sub), settings.tips.enabled) { v ->
+                    onEdit { it.copy(tips = it.tips.copy(enabled = v)) }
+                }
+                ClickRow(stringResource(R.string.tips_reset), stringResource(R.string.tips_reset_sub)) {
+                    onEdit { it.copy(tips = DiscoveryTips.reset(it.tips)) }
+                }
+                ClickRow(stringResource(R.string.welcome_again), stringResource(R.string.welcome_again_sub)) {
+                    onEdit { it.copy(welcomeDone = false) }
+                    actions.close()
                 }
             }
             if (query.isBlank()) Group(stringResource(R.string.section_app)) {
@@ -1054,6 +1078,7 @@ internal fun SettingsScreen(
             confirmButton = { TextButton(onClick = { plugDialog = false }) { Text(stringResource(R.string.close)) } },
         )
     }
+    }
 
     wifiConfirm?.let { ssid ->
         AlertDialog(
@@ -1207,13 +1232,14 @@ internal enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val su
     BACKUP(R.string.section_backup, R.string.page_backup_sub, Icons.Filled.Backup),
 }
 
+private const val HIGHLIGHT_MS = 4_000L
 private const val MIN_HEIGHT_FOR_PREVIEW = 720
 private const val MAX_FONT_FOR_FIXED_PREVIEW = 1.15f
 
 /** Una voce cercabile: il titolo, la pagina che la contiene e parole in più per trovarla. */
-private class SettingEntry(@StringRes val titleRes: Int, val page: SettingsPage, @StringRes val keywordsRes: Int)
+internal class SettingEntry(@StringRes val titleRes: Int, val page: SettingsPage, @StringRes val keywordsRes: Int)
 
-private val SETTING_ENTRIES = listOf(
+internal val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.section_style, SettingsPage.STYLE, R.string.kw_style),
     SettingEntry(R.string.section_music_backdrop, SettingsPage.STYLE, R.string.kw_music),
     SettingEntry(R.string.dynamic_color, SettingsPage.STYLE, R.string.kw_style),

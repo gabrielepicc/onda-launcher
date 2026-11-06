@@ -2,6 +2,16 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,6 +48,35 @@ import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
  * - spiegazioni: bodyMedium onSurfaceVariant; etichette dei controlli (cursori, riquadri): bodyLarge.
  */
 
+/** Titolo della voce da far lampeggiare (la cercata o quella mostrata da un suggerimento), o null. */
+internal val LocalSettingsHighlight = staticCompositionLocalOf<String?> { null }
+
+/**
+ * Se [text] è la voce cercata: la porta in vista e la fa lampeggiare tre volte con il colore d'accento.
+ * Altrimenti non cambia nulla.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun Modifier.flashIfTarget(text: String): Modifier {
+    if (LocalSettingsHighlight.current != text) return this
+    val requester = remember { BringIntoViewRequester() }
+    val alpha = remember { Animatable(0f) }
+    val accent = LocalOndaColors.current.accent
+    LaunchedEffect(Unit) {
+        requester.bringIntoView()
+        repeat(FLASHES) {
+            alpha.animateTo(FLASH_ALPHA, tween(300))
+            alpha.animateTo(0f, tween(300))
+        }
+    }
+    return this
+        .bringIntoViewRequester(requester)
+        .drawBehind { drawRoundRect(accent.copy(alpha = alpha.value), cornerRadius = CornerRadius(16.dp.toPx())) }
+}
+
+private const val FLASHES = 3
+private const val FLASH_ALPHA = 0.3f
+
 /** Sezione: titolo e contenitore con le sue voci. */
 @Composable
 internal fun SettingsSection(title: String?, content: @Composable ColumnScope.() -> Unit) {
@@ -47,7 +86,7 @@ internal fun SettingsSection(title: String?, content: @Composable ColumnScope.()
             title,
             color = colors.accent,
             style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
+            modifier = Modifier.flashIfTarget(title).padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
         )
     } else {
         Spacer(Modifier.size(16.dp))
@@ -77,6 +116,7 @@ internal fun SettingsItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            .flashIfTarget(headline)
             .heightIn(min = if (supporting == null) 56.dp else 72.dp)
             .clip(RoundedCornerShape(16.dp))
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
@@ -127,6 +167,6 @@ internal fun SettingsLabel(text: String) {
         text,
         color = LocalOndaColors.current.onWallpaper,
         style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
+        modifier = Modifier.flashIfTarget(text).padding(top = 12.dp, bottom = 8.dp),
     )
 }

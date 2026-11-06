@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.search
 
+import com.gabrielepiccione.onda.data.SettingsSearch
+import com.gabrielepiccione.onda.ui.settings.SETTING_ENTRIES
+import com.gabrielepiccione.onda.ui.settings.SettingEntry
 import com.gabrielepiccione.onda.data.MediaShortcuts
 import com.gabrielepiccione.onda.data.SpotifyItem
 import com.gabrielepiccione.onda.data.SpotifyType
@@ -65,7 +68,7 @@ import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.ContactHit
 
 @Composable
-fun SearchPanel(
+internal fun SearchPanel(
     results: SearchResults,
     suggestions: List<AppInfo>,
     showIcons: Boolean,
@@ -77,6 +80,8 @@ fun SearchPanel(
     onContact: (ContactHit) -> Unit,
     onWebSearch: (String) -> Unit,
     onSettingsShortcut: (com.gabrielepiccione.onda.util.SettingsShortcut) -> Unit = {},
+    /** Una voce delle impostazioni di Onda: si apre la sua pagina e la voce lampeggia. */
+    onOndaSetting: (SettingEntry) -> Unit = {},
     /** Nome dell'app musicale per "riproduci", null se non ce n'è una. */
     musicAppLabel: String? = null,
     spotifyInstalled: Boolean = false,
@@ -88,6 +93,14 @@ fun SearchPanel(
     onClose: () -> Unit,
 ) {
     val colors = LocalOndaColors.current
+    // Con il prefisso delle impostazioni si cercano anche le voci di Onda, per nome e per sinonimi
+    val ondaHits = if (results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS && results.term.isNotBlank()) {
+        SETTING_ENTRIES.filter { e ->
+            SettingsSearch.matches(results.term, stringResource(e.titleRes), stringResource(e.page.titleRes), stringResource(e.keywordsRes))
+        }.take(MAX_ONDA_HITS)
+    } else {
+        emptyList()
+    }
     val focus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     LaunchedEffect(Unit) {
@@ -134,6 +147,7 @@ fun SearchPanel(
                         when {
                             results.mode == com.gabrielepiccione.onda.SearchMode.PLAY -> if (results.term.isNotBlank() && musicAppLabel != null) onPlay(results.term)
                             results.mode == com.gabrielepiccione.onda.SearchMode.SPOTIFY -> if (results.term.isNotBlank() && spotifyInstalled) onSpotifySearch(results.term)
+                            results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS && ondaHits.isNotEmpty() -> onOndaSetting(ondaHits.first())
                             results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS -> results.settingsHits.firstOrNull()?.let(onSettingsShortcut)
                             results.mode == com.gabrielepiccione.onda.SearchMode.CONTACTS -> results.contacts.firstOrNull()?.let(onContact)
                             first != null -> onApp(first)
@@ -195,6 +209,16 @@ fun SearchPanel(
                     onClick = { onApp(app) },
                     onLongClick = { onAppLongClick(app) },
                 )
+            }
+            if (ondaHits.isNotEmpty()) {
+                item { SectionLabel(stringResource(R.string.app_name)) }
+                items(ondaHits.size) { i ->
+                    val e = ondaHits[i]
+                    SimpleRow(
+                        icon = { Icon(Icons.Filled.Settings, null, tint = colors.accent) },
+                        label = stringResource(e.titleRes) + " · " + stringResource(e.page.titleRes),
+                    ) { onOndaSetting(e) }
+                }
             }
             if (results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS) {
                 item { SectionLabel(stringResource(R.string.settings)) }
@@ -317,3 +341,5 @@ private fun spotifyTypeLabel(type: SpotifyType): Int = when (type) {
     SpotifyType.EPISODE -> R.string.media_episode
     SpotifyType.SHOW -> R.string.media_show
 }
+
+private const val MAX_ONDA_HITS = 6

@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.DiscoveryTips
+import com.gabrielepiccione.onda.data.GrayscaleMode
+import com.gabrielepiccione.onda.data.TipSignals
+import com.gabrielepiccione.onda.ui.settings.SettingEntry
 import com.gabrielepiccione.onda.data.WidgetSize
 import com.gabrielepiccione.onda.data.WidgetSizing
 import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
@@ -332,6 +336,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         if (app.key in vm.settingsRepo.current.protectedApps) callbacks.authenticate(app.label) { go() } else go()
     }
 
+    fun markSwiped() {
+        if (!vm.settingsRepo.current.tips.swiped) vm.updateSettings { it.copy(tips = it.tips.copy(swiped = true)) }
+    }
+
     fun launchApp(app: AppInfo) {
         // Usage Breaker: prima la pausa, poi l'eventuale sblocco
         guarded(app) { startApp(app) }
@@ -345,6 +353,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             scope.launch { delay(380); closeAll() }
         }
     }
+
+    // Impostazioni aperte su una voce precisa (da benvenuto, suggerimenti e ricerca)
+    var settingsFocus by remember { mutableStateOf<SettingEntry?>(null) }
+    fun openSettingsAt(entry: SettingEntry) {
+        settingsFocus = entry
+        vm.clearSearch()
+        overlay = Overlay.SETTINGS
+    }
+    LaunchedEffect(overlay) { if (overlay != Overlay.SETTINGS) settingsFocus = null }
 
     fun openWidgetPicker(filter: String?, target: WidgetTarget) {
         widgetFilter = filter
@@ -533,8 +550,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         onClick = { launchApp(app) },
                         onLongClick = { openQuick(app, "h_" + app.key) },
                         onSwipe = { openQuick(app, "h_" + app.key) },
-                        onOpenPanel = { openQuick(app, "h_" + app.key) },
-                        onSwipeLeft = { NotificationStore.dismissAll(app.packageName) },
+                        onOpenPanel = { markSwiped(); openQuick(app, "h_" + app.key) },
+                        onSwipeLeft = { markSwiped(); NotificationStore.dismissAll(app.packageName) },
                         onNotificationClick = { openNotification(it) },
                         onNotificationDismiss = { NotificationStore.dismiss(it) },
                         onNotificationReply = { n, text -> NotificationStore.reply(context, n, text) },
@@ -586,6 +603,29 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var undoLook by remember { mutableStateOf<Pair<com.gabrielepiccione.onda.data.LookTheme, String>?>(null) }
     var undoKeepsWallpaper by remember { mutableStateOf(false) }
     var reorderOpen by remember { mutableStateOf(false) }
+    // "Lo sapevi?": una scheda piccola al giorno, mai mentre c'è un pannello o una modifica in corso
+    val today = remember { java.time.LocalDate.now().toString() }
+    val minuteNow = java.time.LocalTime.now().let { it.hour * 60 + it.minute }
+    val inFolders = remember(settings.folders) { settings.folders.values.flatMap { it.apps }.toSet() }
+    val tipSignals = TipSignals(
+        today = today,
+        minuteOfDay = minuteNow,
+        daysSinceFirst = DiscoveryTips.daysBetween(settings.tips.firstDay, today),
+        oftenOpenedNotFavorite = settings.launchCounts.any { (k, c) -> c >= DiscoveryTips.OFTEN_OPENED && k !in settings.favorites && k !in inFolders },
+        hasNotifications = state.notifications.isNotEmpty(),
+        playerSeen = media != null,
+        headphonesSeen = headphones,
+        grayscaleOn = settings.grayscaleMode != GrayscaleMode.OFF,
+        hasProfiles = settings.contextProfiles.isNotEmpty(),
+        busy = overlay != Overlay.NONE || quickFor != null || panelFor != null || actionsFor != null || editing != null || reorderOpen || breakerFor != null,
+    )
+    val tip = if (state.loaded && settings.welcomeDone) DiscoveryTips.next(settings.tips, tipSignals) else null
+    LaunchedEffect(state.loaded) {
+        if (state.loaded && settings.tips.firstDay.isEmpty()) vm.updateSettings { it.copy(tips = it.tips.copy(firstDay = today)) }
+    }
+    LaunchedEffect(tip) { if (tip != null) vm.updateSettings { it.copy(tips = DiscoveryTips.shown(it.tips, tip, today)) } }
+    LaunchedEffect(overlay) { if (overlay == Overlay.ALL_APPS) vm.updateSettings { it.copy(tips = it.tips.copy(listOpens = it.tips.listOpens + 1)) } }
+
     var summaryOpen by remember { mutableStateOf(false) }
     val digest = remember(state.notifications) { com.gabrielepiccione.onda.data.NotificationDigest.of(state.notifications) }
     val packageLabel: (String) -> String = { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
@@ -807,6 +847,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         }
                     }
                     block == HomeBlocks.APPS -> {
+                        item(key = "tip") {
+                            TipCard(
+                                tip = tip,
+                                onShowMe = { entry -> openSettingsAt(entry) },
+                                onNotNow = { tip?.let { t -> vm.updateSettings { it.copy(tips = DiscoveryTips.notNow(it.tips, t, today)) } } },
+                                onNever = { tip?.let { t -> vm.updateSettings { it.copy(tips = DiscoveryTips.never(it.tips, t)) } } },
+                                modifier = Modifier.animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit()),
+                            )
+                        }
                         // Plug & Play: con cuffie o casse collegate, l'app scelta compare in cima
                         val plug = if (headphones && PlugPlay.matches(settings.plugPlayDevice, headphoneNames)) state.app(settings.plugPlayApp) else null
                         if (plug != null) {
@@ -1040,6 +1089,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         val listTopPx = with(density) { (bars.calculateTopPadding() + 16.dp).toPx() }
         val firstRowCenterPx = with(density) { FIRST_ROW_CENTER.toPx() }
         val onLetter: (String) -> Unit = onLetter@{ letter ->
+            if (!settings.tips.alphabetUsed) vm.updateSettings { it.copy(tips = it.tips.copy(alphabetUsed = true)) }
             // La stella riporta ai preferiti; scendendo sulle lettere l'elenco torna subito
             if (letter == FAVORITES_MARK) {
                 overlay = Overlay.NONE
@@ -1143,6 +1193,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     onAppLongClick = { openQuick(it) },
                     onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
                     onWebSearch = { SystemActions.webSearch(context, it, settings.searchEngine); scope.launch { delay(380); closeAll() } },
+                    onOndaSetting = { entry -> openSettingsAt(entry) },
                     onSettingsShortcut = { sc ->
                         if (sc.action == com.gabrielepiccione.onda.util.SettingsShortcuts.ONDA) {
                             vm.clearSearch(); overlay = Overlay.SETTINGS
@@ -1209,6 +1260,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     ),
                     widgets = vm.widgets,
                     usageStats = vm.usageStats,
+                    focus = settingsFocus,
                     connectedHeadphones = headphoneNames,
                     activeProfile = state.activeProfile,
                     contextEnvironment = object : ContextEnvironment {
@@ -1341,6 +1393,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             notificationAccess = status.notificationAccess,
             onRequestDefault = callbacks::requestDefaultLauncher,
             onNotificationAccess = { withRestrictedHelp(callbacks::openNotificationAccess) },
+            onShow = { entry ->
+                // "Mostrami": il benvenuto si chiude e le impostazioni si aprono sulla voce, che lampeggia
+                vm.updateSettings { it.copy(welcomeDone = true) }
+                openSettingsAt(entry)
+            },
             onDone = { vm.updateSettings { it.copy(welcomeDone = true) } },
         )
     }
