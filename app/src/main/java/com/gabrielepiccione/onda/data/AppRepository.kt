@@ -329,6 +329,21 @@ class AppRepository(
         launcherApps.getShortcutIconDrawable(shortcut, densityDpi)?.toBitmap(sizePx, sizePx)?.asImageBitmap()
     }.getOrNull()
 
+    /** Avvia una scorciatoia scelta in un'azione personalizzata (pacchetto e id, profilo principale). */
+    fun startShortcutById(packageName: String, shortcutId: String) {
+        runCatching {
+            val query = LauncherApps.ShortcutQuery()
+                .setPackage(packageName)
+                .setShortcutIds(listOf(shortcutId))
+                .setQueryFlags(
+                    LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or
+                        LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or
+                        LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED
+                )
+            launcherApps.getShortcuts(query, android.os.Process.myUserHandle())?.firstOrNull()?.let { startShortcut(it) }
+        }
+    }
+
     fun startShortcut(shortcut: ShortcutInfo) {
         runCatching { launcherApps.startShortcut(shortcut, null, null) }
     }

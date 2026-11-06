@@ -117,6 +117,13 @@ enum class GestureAction(@StringRes val labelRes: Int) {
     SETTINGS(R.string.settings),
     OPEN_APP(R.string.gesture_open_app),
     NONE(R.string.gesture_none),
+    // Aggiunte dal catalogo unico delle azioni (vedi [Actions]): in coda, per non cambiare i valori già salvati
+    QUICK_SETTINGS(R.string.gesture_quick_settings),
+    FLASHLIGHT(R.string.gesture_flashlight),
+    SILENT(R.string.gesture_silent),
+    SCREENSHOT(R.string.gesture_screenshot),
+    RECENTS(R.string.gesture_recents),
+    OPEN_SHORTCUT(R.string.gesture_open_shortcut),
 }
 
 /** Animazione con cui si aprono le app dal launcher. */
@@ -148,6 +155,8 @@ data class Folder(
     val icon: String = "",
     /** Altezza dei widget nella cartella (dp); null = la maggiore tra le altezze predefinite. */
     val widgetHeightDp: Int? = null,
+    /** Azione dello swipe a destra sulla riga, nel formato di [Actions.encode]; "" = apre/chiude la cartella. */
+    val swipe: String = "",
 )
 
 /** Prefisso delle icone da immagine in [Settings.iconOverrides]; segue il percorso del file. */

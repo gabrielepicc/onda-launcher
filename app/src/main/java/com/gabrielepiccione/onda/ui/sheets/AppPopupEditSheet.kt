@@ -39,7 +39,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
+import com.gabrielepiccione.onda.data.ActionChoice
+import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.data.GestureAction
+import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
+import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.data.AppPopup
 import com.gabrielepiccione.onda.data.AppPopups
 import com.gabrielepiccione.onda.ui.components.AppIcon
@@ -53,6 +58,8 @@ interface AppPopupEditActions {
     fun addWidget()
     fun removeWidget(id: Int)
     fun toggleShortcut(id: String)
+    fun addAction(encoded: String)
+    fun removeAction(encoded: String)
 }
 
 /** Sceglie cosa mostrare nel popup dell'app: altre app, widget e quali scorciatoie. */
@@ -69,7 +76,11 @@ fun AppPopupEditSheet(
     themedIcons: Boolean,
     actions: AppPopupEditActions,
     onDismiss: () -> Unit,
+    shortcutsOf: (AppInfo) -> List<ShortcutInfo> = { emptyList() },
+    accessibilityEnabled: Boolean = true,
+    onAccessibility: () -> Unit = {},
 ) {
+    var pickingAction by remember { mutableStateOf(false) }
     val colors = LocalOndaColors.current
     var picking by remember { mutableStateOf(false) }
     var widgetToRemove by remember { mutableStateOf<Int?>(null) }
@@ -118,6 +129,20 @@ fun AppPopupEditSheet(
                 TextButton(onClick = actions::addWidget) { Text(stringResource(R.string.add_widget)) }
             }
 
+            EditTitle(R.string.popup_actions)
+            popup.actions.forEach { encoded ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        actionSummary(Actions.decode(encoded), allApps, ""),
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { actions.removeAction(encoded) }) { Text(stringResource(R.string.remove)) }
+                }
+            }
+            if (popup.actions.size < AppPopups.MAX_ACTIONS) {
+                TextButton(onClick = { pickingAction = true }) { Text(stringResource(R.string.popup_action_add)) }
+            }
+
             if (shortcuts.isNotEmpty()) {
                 EditTitle(R.string.popup_shortcuts)
                 shortcuts.forEach { sc ->
@@ -144,6 +169,20 @@ fun AppPopupEditSheet(
                 widgetToRemove = null
             },
             onDismiss = { widgetToRemove = null },
+        )
+    }
+
+    if (pickingAction) {
+        ActionPickerDialog(
+            title = stringResource(R.string.popup_action_add),
+            current = ActionChoice(GestureAction.NONE),
+            allApps = allApps,
+            shortcutsOf = shortcutsOf,
+            themedIcons = themedIcons,
+            accessibilityEnabled = accessibilityEnabled,
+            onAccessibility = onAccessibility,
+            onPick = { actions.addAction(Actions.encode(it)) },
+            onDismiss = { pickingAction = false },
         )
     }
 

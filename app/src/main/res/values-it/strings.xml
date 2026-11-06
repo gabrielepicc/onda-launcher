@@ -827,4 +827,22 @@
     <string name="suggest_create">Crea</string>
     <string name="suggest_edit">Modifica</string>
     <string name="suggest_ignore">Ignora</string>
+    <string name="gesture_quick_settings">Pannello delle impostazioni rapide</string>
+    <string name="gesture_flashlight">Torcia</string>
+    <string name="gesture_silent">Modo silenzioso sì/no</string>
+    <string name="gesture_screenshot">Fai uno screenshot</string>
+    <string name="gesture_recents">App recenti</string>
+    <string name="gesture_open_shortcut">Apri una scorciatoia di un\'app</string>
+    <string name="action_group_launcher">Launcher</string>
+    <string name="action_group_system">Sistema</string>
+    <string name="action_group_open">Apri</string>
+    <string name="action_shortcut_none">Questa app non ha scorciatoie</string>
+    <string name="action_shortcut_of">Scorciatoia di %1$s</string>
+    <string name="action_swipe_title">Azione dello swipe</string>
+    <string name="action_default">Predefinita</string>
+    <string name="folder_swipe">Swipe a destra sulla cartella</string>
+    <string name="folder_swipe_open">Apri la cartella</string>
+    <string name="popup_actions">Azioni personalizzate</string>
+    <string name="popup_action_add">Aggiungi un\'azione</string>
+    <string name="search_actions_title">Azioni</string>
 </resources>

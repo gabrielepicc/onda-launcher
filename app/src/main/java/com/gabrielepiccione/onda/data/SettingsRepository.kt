@@ -216,6 +216,12 @@ class SettingsRepository(context: Context) {
         edit { FolderIcons.setIcon(it, id, spec) }
     }
 
+    /** Azione dello swipe a destra sulla cartella ([Actions.encode]); "" = apre la cartella. */
+    fun setFolderSwipe(id: String, encoded: String) = edit { s ->
+        val folder = s.folders[id] ?: return@edit s
+        s.copy(folders = s.folders + (id to folder.copy(swipe = encoded)))
+    }
+
     fun setFolderWidgetHeight(id: String, dp: Int?) = edit { FolderIcons.setWidgetHeight(it, id, dp) }
 
     /** Elimina la cartella; le app tornano tra i preferiti. Restituisce i widget da rilasciare. */

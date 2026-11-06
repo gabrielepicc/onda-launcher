@@ -827,4 +827,22 @@
     <string name="suggest_create">Create</string>
     <string name="suggest_edit">Edit</string>
     <string name="suggest_ignore">Ignore</string>
+    <string name="gesture_quick_settings">Quick settings panel</string>
+    <string name="gesture_flashlight">Flashlight</string>
+    <string name="gesture_silent">Silent mode on/off</string>
+    <string name="gesture_screenshot">Take a screenshot</string>
+    <string name="gesture_recents">Recent apps</string>
+    <string name="gesture_open_shortcut">Open an app shortcut</string>
+    <string name="action_group_launcher">Launcher</string>
+    <string name="action_group_system">System</string>
+    <string name="action_group_open">Open</string>
+    <string name="action_shortcut_none">This app has no shortcuts</string>
+    <string name="action_shortcut_of">Shortcut of %1$s</string>
+    <string name="action_swipe_title">Swipe action</string>
+    <string name="action_default">Default</string>
+    <string name="folder_swipe">Swipe right on the folder</string>
+    <string name="folder_swipe_open">Open the folder</string>
+    <string name="popup_actions">Custom actions</string>
+    <string name="popup_action_add">Add an action</string>
+    <string name="search_actions_title">Actions</string>
 </resources>

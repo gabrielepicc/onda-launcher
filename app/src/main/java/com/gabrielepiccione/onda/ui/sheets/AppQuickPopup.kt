@@ -98,7 +98,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.gabrielepiccione.onda.R
+import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.ui.components.actionIcon
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.ui.components.AppIcon
@@ -154,6 +156,9 @@ fun AppQuickPopup(
     widgetIds: List<Int>,
     relatedApps: List<AppInfo>,
     onRelatedApp: (AppInfo) -> Unit,
+    /** Azioni personalizzate del popup (catalogo unico): testo salvato e nome da mostrare. */
+    customActions: List<Pair<String, String>> = emptyList(),
+    onCustomAction: (String) -> Unit = {},
     onEdit: () -> Unit,
     widgets: WidgetManager,
     themedIcons: Boolean,
@@ -413,6 +418,25 @@ fun AppQuickPopup(
                                 modifier = Modifier.padding(top = 4.dp),
                             )
                         }
+                    }
+                }
+            }
+
+            if (customActions.isNotEmpty()) Column(Modifier.cascade(content, 3)) {
+                SectionLabel(R.string.popup_actions)
+                customActions.forEach { (encoded, label) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { onCustomAction(encoded); dismiss() }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        Icon(actionIcon(Actions.decode(encoded).action), null, tint = colors.accent, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }

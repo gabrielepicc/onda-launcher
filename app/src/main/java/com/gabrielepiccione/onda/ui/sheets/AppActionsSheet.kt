@@ -67,15 +67,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.gabrielepiccione.onda.data.ActionChoice
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
+import com.gabrielepiccione.onda.ui.components.actionSummary
 
 data class AppActions(
     val shortcuts: List<ShortcutInfo>,
     val shortcutIcon: (ShortcutInfo) -> androidx.compose.ui.graphics.ImageBitmap?,
-    val swipeTarget: AppInfo?,
+    /** Azione dello swipe a destra sulla riga (catalogo unico, vedi [Actions]); Nessuna = il pannello dell'app. */
+    val swipe: ActionChoice,
     val allApps: List<AppInfo>,
     val themedIcons: Boolean,
-    val onSetSwipe: (AppInfo?) -> Unit,
+    val onSetSwipe: (ActionChoice) -> Unit,
+    val shortcutsOf: (AppInfo) -> List<ShortcutInfo>,
+    val accessibilityEnabled: Boolean,
+    val onAccessibility: () -> Unit,
     val folderName: String?,
     val onChangeIcon: () -> Unit,
     val isProtected: Boolean = false,
@@ -164,6 +171,10 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
             ActionRow(Icons.Filled.Folder, actions.folderName?.let { stringResource(R.string.in_folder_move, it) } ?: stringResource(R.string.move_to_folder_ellipsis)) {
                 actions.onMoveToFolder(); onDismiss()
             }
+            ActionRow(
+                Icons.Filled.PlayArrow,
+                stringResource(R.string.action_swipe_title) + ": " + actionSummary(actions.swipe, actions.allApps, stringResource(R.string.action_default)),
+            ) { pickingSwipe = true }
             ActionRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
             ActionRow(Icons.Filled.Palette, stringResource(R.string.icon_change)) { actions.onChangeIcon(); onDismiss() }
             ActionRow(Icons.Filled.Lock, stringResource(if (actions.isProtected) R.string.protect_off else R.string.protect_on)) {
@@ -190,38 +201,17 @@ fun AppActionsSheet(app: AppInfo, actions: AppActions, onDismiss: () -> Unit) {
     }
 
     if (pickingSwipe) {
-        AlertDialog(
-            onDismissRequest = { pickingSwipe = false },
-            title = { Text(stringResource(R.string.swipe_dialog_title, app.label)) },
-            text = {
-                androidx.compose.foundation.lazy.LazyColumn(Modifier.heightIn(max = 420.dp)) {
-                    item {
-                        Text(
-                            stringResource(R.string.app_panel_default),
-                            color = colors.onWallpaperMuted,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { actions.onSetSwipe(null); pickingSwipe = false }
-                                .padding(vertical = 12.dp),
-                        )
-                    }
-                    items(actions.allApps.size, key = { actions.allApps[it].key }) { i ->
-                        val target = actions.allApps[i]
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { actions.onSetSwipe(target); pickingSwipe = false }
-                                .padding(vertical = 8.dp)
-                        ) {
-                            AppIcon(target, 30.dp, actions.themedIcons)
-                            Spacer(Modifier.width(12.dp))
-                            Text(target.label, style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { pickingSwipe = false }) { Text(stringResource(R.string.close)) } },
+        ActionPickerDialog(
+            title = stringResource(R.string.swipe_dialog_title, app.label),
+            current = actions.swipe,
+            allApps = actions.allApps,
+            shortcutsOf = actions.shortcutsOf,
+            themedIcons = actions.themedIcons,
+            accessibilityEnabled = actions.accessibilityEnabled,
+            onAccessibility = actions.onAccessibility,
+            onPick = actions.onSetSwipe,
+            onDismiss = { pickingSwipe = false },
+            noneLabel = stringResource(R.string.app_panel_default),
         )
     }
 

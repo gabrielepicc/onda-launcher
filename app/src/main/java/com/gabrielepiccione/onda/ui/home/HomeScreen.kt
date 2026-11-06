@@ -14,6 +14,8 @@ import com.gabrielepiccione.onda.data.TipSignals
 import com.gabrielepiccione.onda.ui.settings.SettingEntry
 import com.gabrielepiccione.onda.data.WidgetSize
 import com.gabrielepiccione.onda.data.WidgetSizing
+import com.gabrielepiccione.onda.ui.components.actionIcon
+import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
 import com.gabrielepiccione.onda.ui.components.LocalWidgetSizes
 import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
@@ -157,12 +159,14 @@ import com.gabrielepiccione.onda.data.UsageReminders
 import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
+import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.NotificationStore
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.service.OndaAccessibilityService
 import com.gabrielepiccione.onda.util.IcuSectionIndex
+import com.gabrielepiccione.onda.util.ActionRunner
 import com.gabrielepiccione.onda.util.SystemActions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -382,16 +386,27 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) restrictedHelp = open else open()
     }
 
-    fun perform(action: GestureAction, appKey: String = "") {
+    fun perform(action: GestureAction, arg: String = "") {
         when (action) {
             GestureAction.SEARCH -> overlay = Overlay.SEARCH
-            GestureAction.NOTIFICATIONS -> SystemActions.expandNotifications(context)
             GestureAction.ALL_APPS -> overlay = Overlay.ALL_APPS
-            GestureAction.LOCK_SCREEN -> if (!OndaAccessibilityService.lockScreen()) withRestrictedHelp(callbacks::openAccessibilitySettings)
             GestureAction.SETTINGS -> overlay = Overlay.SETTINGS
-            GestureAction.OPEN_APP -> state.app(appKey)?.let { launchApp(it) }
+            GestureAction.OPEN_APP -> state.app(arg)?.let { launchApp(it) }
+            GestureAction.OPEN_SHORTCUT -> Actions.parseShortcut(arg)?.let { (pkg, id) -> vm.startShortcutById(pkg, id) }
             GestureAction.NONE -> Unit
+            // Azioni di sistema del catalogo: il permesso mancante si chiede qui, con la guida
+            else -> when (ActionRunner.run(context, action)) {
+                ActionRunner.Outcome.NEEDS_ACCESSIBILITY -> withRestrictedHelp(callbacks::openAccessibilitySettings)
+                ActionRunner.Outcome.NEEDS_POLICY_ACCESS -> SystemActions.openPolicyAccessSettings(context)
+                else -> Unit
+            }
         }
+    }
+
+    /** Esegue un'azione salvata nel formato di [Actions.encode] (swipe, popup, cartelle, ricerca). */
+    fun performEncoded(encoded: String) {
+        val choice = Actions.decode(encoded)
+        perform(choice.action, choice.arg)
     }
 
     // Luci di casa: si controlla ogni minuto (e a ogni cambio di impostazione) se si è a casa e fa buio
@@ -556,7 +571,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         onClick = { launchApp(app) },
                         onLongClick = { openQuick(app, "h_" + app.key) },
                         onSwipe = { openQuick(app, "h_" + app.key) },
-                        onOpenPanel = { markSwiped(); openQuick(app, "h_" + app.key) },
+                        onOpenPanel = {
+                            markSwiped()
+                            // Azione scelta per lo swipe dell'app (catalogo unico); senza, il pannello
+                            if (app.swipeTarget.isNullOrBlank()) openQuick(app, "h_" + app.key) else performEncoded(app.swipeTarget)
+                        },
                         onSwipeLeft = { markSwiped(); NotificationStore.dismissAll(app.packageName) },
                         onNotificationClick = { openNotification(it) },
                         onNotificationDismiss = { NotificationStore.dismiss(it) },
@@ -577,6 +596,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     onAppLongClick = { openQuick(it, "g_" + entry.folder.id) },
                     onLongClick = { folderSheet = entry.folder },
                     hideName = settings.hideFavoriteNames,
+                    onPerform = { markSwiped(); performEncoded(it) },
                     modifier = itemMod.then(rowTracker("g_" + entry.folder.id)),
                 )
                 is HomeEntry.Media -> PinnedShortcutRow(
@@ -1031,15 +1051,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     .background(if (armed) colors.accent else colors.panelHigh)
             ) {
                 Icon(
-                    when (action) {
-                        GestureAction.SEARCH -> Icons.Filled.Search
-                        GestureAction.NOTIFICATIONS -> Icons.Filled.Notifications
-                        GestureAction.ALL_APPS -> Icons.Filled.List
-                        GestureAction.LOCK_SCREEN -> Icons.Filled.Lock
-                        GestureAction.SETTINGS -> Icons.Filled.Settings
-                        GestureAction.OPEN_APP -> Icons.Filled.Apps
-                        GestureAction.NONE -> Icons.Filled.Close
-                    },
+                    actionIcon(action),
                     null,
                     tint = if (armed) colors.onAccent else colors.onWallpaper,
                 )
@@ -1096,6 +1108,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         onApp = { launchApp(it) },
                         onAppLongClick = { openQuick(it, "fa_" + folder.id) },
                         onLongClick = { folderSheet = group.folder },
+                        onPerform = { performEncoded(it) },
                         modifier = rowTracker("fa_" + folder.id),
                     )
                 }
@@ -1264,6 +1277,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         }
                     },
                     onRequestContacts = callbacks::requestContactsPermission,
+                    onAction = { action ->
+                        // Le azioni che aprono schermate di Onda chiudono prima la ricerca
+                        vm.clearSearch()
+                        perform(action)
+                        if (action != GestureAction.ALL_APPS && action != GestureAction.SETTINGS && action != GestureAction.SEARCH) {
+                            scope.launch { delay(380); closeAll() }
+                        }
+                    },
                     musicAppLabel = vm.musicApp().takeIf { it.isNotBlank() }?.let { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg },
                     spotifyInstalled = state.allApps.any { it.packageName == SpotifyLinks.PACKAGE },
                     onPlay = { text ->
@@ -1366,6 +1387,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun postNotifications() = callbacks.requestPostNotifications()
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
+                        override fun shortcutsOf(app: AppInfo) = vm.shortcuts(app)
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
@@ -1479,6 +1501,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             widgetIds = AppPopups.widgetsOf(settings, app.key),
             relatedApps = popup.relatedApps.mapNotNull { state.app(it) },
             onRelatedApp = { launchApp(it) },
+            customActions = popup.actions.map { it to actionSummary(Actions.decode(it), state.allApps, "") },
+            onCustomAction = { performEncoded(it) },
             onEdit = { popupEditFor = app },
             widgets = vm.widgets,
             themedIcons = settings.themedIcons,
@@ -1526,8 +1550,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 }
                 override fun removeWidget(id: Int) = vm.removePopupWidget(app, id)
                 override fun toggleShortcut(id: String) = vm.updateSettings { AppPopups.toggleShortcut(it, app.key, id) }
+                override fun addAction(encoded: String) = vm.updateSettings { AppPopups.addAction(it, app.key, encoded) }
+                override fun removeAction(encoded: String) = vm.updateSettings { AppPopups.removeAction(it, app.key, encoded) }
             },
             onDismiss = { popupEditFor = null },
+            shortcutsOf = { vm.shortcuts(it) },
+            accessibilityEnabled = status.accessibilityEnabled,
+            onAccessibility = { withRestrictedHelp(callbacks::openAccessibilitySettings) },
         )
     }
 
@@ -1564,10 +1593,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             actions = AppActions(
                 shortcuts = shortcuts,
                 shortcutIcon = { vm.appsRepo.shortcutIcon(it) },
-                swipeTarget = state.app(app.swipeTarget),
+                swipe = Actions.decode(app.swipeTarget),
                 allApps = state.allApps.filter { it.key != app.key },
                 themedIcons = settings.themedIcons,
-                onSetSwipe = { vm.setSwipeAction(app, it) },
+                onSetSwipe = { vm.setSwipeAction(app, Actions.encode(it)) },
+                shortcutsOf = { vm.shortcuts(it) },
+                accessibilityEnabled = status.accessibilityEnabled,
+                onAccessibility = { withRestrictedHelp(callbacks::openAccessibilitySettings) },
                 folderName = inFolder?.name,
                 onMoveToFolder = { moveFor = app },
                 onChangeIcon = { iconPickerFor = app },
@@ -1793,6 +1825,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onDismiss = { folderSheet = null },
             onChangeIcon = { folderIconFor = f.id },
             onWidgetHeight = { vm.settingsRepo.setFolderWidgetHeight(f.id, it) },
+            allApps = state.allApps,
+            shortcutsOf = { vm.shortcuts(it) },
+            themedIcons = settings.themedIcons,
+            accessibilityEnabled = status.accessibilityEnabled,
+            onAccessibility = { withRestrictedHelp(callbacks::openAccessibilitySettings) },
+            onSwipe = { vm.settingsRepo.setFolderSwipe(f.id, Actions.encode(it)) },
         )
     }
 
