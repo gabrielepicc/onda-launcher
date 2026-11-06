@@ -83,7 +83,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 
 ## Gruppi di richieste concluse (novembre 2026)
 - ✅ Correzioni widget e cartelle (#64) · Azioni personalizzate ovunque (#65) · Popup in corrispondenza (#66) · Alfabeto e icone (#67) · Palette su due colori (#68).
-- ⬜ Sfondo musicale ovunque: live wallpaper «solo colori» (scelta del proprietario), rendering condiviso con la home, senza microfono.
+- ✅ Sfondo musicale ovunque (#70): live wallpaper «solo colori», disegno condiviso con la home, senza microfono. Da verificare sul telefono: batteria e comportamento nella schermata di blocco.
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
