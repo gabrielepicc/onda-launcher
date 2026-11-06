@@ -67,6 +67,8 @@ fun AlphabetWaveScroller(
     maxLetterStep: Dp = 19.dp,
     /** Dove riposa la colonna: 1 = in basso, 0 = in cima. */
     restFraction: Float = 1f,
+    /** Larghezza della zona che reagisce al tocco; le lettere restano sul bordo, la zona si allarga verso l'interno. */
+    hotAreaWidth: Dp = 0.dp,
     onTouchStart: () -> Unit = {},
     onLetter: (String) -> Unit,
     onTouchEnd: () -> Unit = {},
@@ -107,7 +109,7 @@ fun AlphabetWaveScroller(
     Canvas(
         modifier
             .fillMaxHeight()
-            .width(if (showLetters) 36.dp else 28.dp)
+            .width(maxOf(hotAreaWidth, if (showLetters) 36.dp else 28.dp))
             .pointerInput(letters.size, maxLetterStep) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
@@ -179,13 +181,16 @@ fun AlphabetWaveScroller(
         val maxShift = 52.dp.toPx()
         val sigma = 2.4f
         val dir = if (leftSide) 1f else -1f
+        // Le lettere restano sul bordo anche quando la zona di tocco è più larga
+        val columnWidth = (if (showLetters) 36.dp else 28.dp).toPx()
+        val edgeX = if (leftSide) columnWidth / 2f else size.width - columnWidth / 2f
 
         if (showLetters) {
             for (i in 0 until n) {
                 val d = i - center
                 val wave = if (k > 0f) exp(-(d * d) / (2 * sigma * sigma)) * k else 0f
                 val layout = measured[i]
-                val cx = size.width / 2f + dir * maxShift * wave
+                val cx = edgeX + dir * maxShift * wave
                 val cy = columnTop + i * step + step / 2f
                 val s = 1f + 1.15f * wave
                 scale(s, s, pivot = Offset(cx, cy)) {
@@ -202,7 +207,7 @@ fun AlphabetWaveScroller(
         val sel = selected.intValue
         if (sel in 0 until n && k > 0.02f) {
             val bubble = 64.dp.toPx() * (0.6f + 0.4f * k)
-            val bx = size.width / 2f + dir * (if (showLetters) 104.dp.toPx() else 88.dp.toPx())
+            val bx = edgeX + dir * (if (showLetters) 104.dp.toPx() else 88.dp.toPx())
             val by = touchY.floatValue
             drawRoundRect(
                 color = colors.accentContainer.copy(alpha = k.coerceIn(0f, 1f)),

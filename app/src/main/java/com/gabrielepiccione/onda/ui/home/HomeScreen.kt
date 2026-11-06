@@ -22,6 +22,9 @@ import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
 import com.gabrielepiccione.onda.data.PlugPlay
 import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcuts
+import android.content.ComponentName
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.material.icons.filled.Edit
 import com.gabrielepiccione.onda.data.SpotifyLinks
 import com.gabrielepiccione.onda.ui.components.OndaChip
@@ -271,6 +274,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
     var shortcutMenu by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
+    var shortcutIconFor by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
     var lightsEdit by remember { mutableStateOf(false) }
     // Widget delle luci accanto all'orologio: le sue misure come ogni altro widget; pressione lunga per cambiarle
     val lightsWidget: @Composable () -> Unit = {
@@ -1202,6 +1206,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 letterScale = settings.alphabetScale,
                 maxLetterStep = settings.alphabetStepDp.dp,
                 restFraction = settings.alphabetRest,
+                hotAreaWidth = settings.alphabetHotAreaDp.dp,
                 modifier = Modifier
                     .align(if (settings.leftHanded) Alignment.CenterStart else Alignment.CenterEnd)
                     .zIndex(2f)
@@ -1219,6 +1224,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 showLetters = false,
                 maxLetterStep = settings.alphabetStepDp.dp,
                 restFraction = settings.alphabetRest,
+                hotAreaWidth = settings.alphabetHotAreaDp.dp,
                 modifier = Modifier
                     .align(if (settings.leftHanded) Alignment.CenterEnd else Alignment.CenterStart)
                     .zIndex(2f)
@@ -1656,6 +1662,40 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         )
     }
 
+    // Icona di una scorciatoia o web app: stessa schermata e stessa logica delle app, con la chiave della scorciatoia
+    shortcutIconFor?.let { entry ->
+        val key = entry.pinned.key
+        val stand = remember(entry) {
+            AppInfo(
+                key = key,
+                component = ComponentName(entry.pinned.packageName, SHORTCUT_COMPONENT),
+                user = android.os.Process.myUserHandle(),
+                label = entry.info.label,
+                originalLabel = entry.info.label,
+                icon = entry.info.icon ?: ImageBitmap(ICON_FALLBACK_PX, ICON_FALLBACK_PX),
+                mono = null,
+                isWorkProfile = false,
+                isFavorite = true,
+                isHidden = false,
+                swipeTarget = null,
+            )
+        }
+        IconPickerSheet(
+            app = stand,
+            packs = vm.appsRepo.packs,
+            onPick = { pkg, name -> vm.settingsRepo.setIconOverride(key, pkg, name) },
+            onReset = {
+                vm.settingsRepo.setIconOverride(key, null, null)
+                vm.settingsRepo.setIconShape(key, null)
+            },
+            onDismiss = { shortcutIconFor = null },
+            currentShape = settings.iconShapeOverrides[key],
+            onShape = { vm.settingsRepo.setIconShape(key, it) },
+            onPickImage = { callbacks.pickIconImage(key) },
+            themedIcons = settings.themedIcons,
+        )
+    }
+
     if (reorderOpen) {
         HomeReorderSheet(
             blocks = blocks.map { block ->
@@ -1800,6 +1840,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 if (index > 0) SheetRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { vm.moveEntry(favoriteId, -1) }
                 if (index in 0 until settings.favorites.lastIndex) {
                     SheetRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { vm.moveEntry(favoriteId, 1) }
+                }
+                SheetRow(Icons.Filled.Palette, stringResource(R.string.icon_change)) {
+                    shortcutIconFor = entry
+                    shortcutMenu = null
                 }
                 SheetRow(Icons.Filled.Delete, stringResource(R.string.pin_remove)) {
                     vm.removePinnedShortcut(entry.pinned)
@@ -2023,6 +2067,12 @@ private val TOP_FADE = 40.dp
 
 /** Apertura in attesa della pausa di Usage Breaker: cosa fare quando l'utente conferma. */
 private class BreakerRequest(val app: AppInfo, val go: () -> Unit)
+
+/** Nome fittizio del componente di una scorciatoia nel selettore delle icone. */
+private const val SHORTCUT_COMPONENT = "shortcut"
+
+/** Lato dell'icona vuota quando il sistema non fornisce quella della scorciatoia. */
+private const val ICON_FALLBACK_PX = 96
 
 /** Altezza del widget delle luci accanto all'orologio. */
 private const val LIGHTS_HEIGHT = 120

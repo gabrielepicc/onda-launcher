@@ -101,4 +101,18 @@ class SettingsCodecTest {
         assertEquals(1, SettingsCodec.schemaOf(legacyBackup))
         assertTrue((SettingsCodec.schemaOf(SettingsCodec.encode(Settings())) ?: 0) >= 2)
     }
+
+    @Test
+    fun `le icone delle scorciatoie e la zona dell'alfabeto passano nel backup`() {
+        val key = "com.chrome|0|web-app-1"
+        val s = Settings(
+            iconOverrides = mapOf(key to "file:/files/icons/web.png"),
+            iconShapeOverrides = mapOf(key to "CIRCLE"),
+            alphabetHotAreaDp = 64,
+        )
+        val back = SettingsCodec.decode(SettingsCodec.encode(s))
+        assertEquals("file:/files/icons/web.png", back.iconOverrides[key])
+        assertEquals("CIRCLE", back.iconShapeOverrides[key])
+        assertEquals(64, back.alphabetHotAreaDp)
+    }
 }

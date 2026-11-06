@@ -662,6 +662,13 @@ internal fun SettingsScreen(
                 13f..24f,
                 steps = 10,
             ) { v -> onEdit { it.copy(alphabetStepDp = v.roundToInt()) } }
+            ValueSlider(
+                stringResource(R.string.alphabet_hot_area),
+                stringResource(R.string.value_dp, settings.alphabetHotAreaDp),
+                settings.alphabetHotAreaDp.toFloat(),
+                Settings().alphabetHotAreaDp.toFloat(),
+                28f..96f,
+            ) { v -> onEdit { it.copy(alphabetHotAreaDp = v.roundToInt()) } }
             SwitchRow(stringResource(R.string.contacts_in_alphabet), stringResource(R.string.contacts_in_alphabet_sub), settings.contactsInAlphabet) { v ->
                 onEdit { it.copy(contactsInAlphabet = v) }
                 if (v && !status.contactsPermission) actions.contactsPermission()
