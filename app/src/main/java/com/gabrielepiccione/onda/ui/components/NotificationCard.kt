@@ -70,6 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.NotificationItem
+import com.gabrielepiccione.onda.data.NotificationLayout
 import com.gabrielepiccione.onda.ui.theme.LocalHapticsEnabled
 import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
 import com.gabrielepiccione.onda.ui.theme.Motion
@@ -93,6 +94,7 @@ fun NotificationCard(
     val haptics = LocalHapticFeedback.current
     val ondaHaptics = LocalOndaHaptics.current
     val hapticsOn = LocalHapticsEnabled.current
+    val edge = NotificationLayout.horizontalPaddingDp(NotificationLayout.MIN_HORIZONTAL_PADDING_DP).dp
     var replying by rememberSaveable(item.key) { mutableStateOf(false) }
     var draft by rememberSaveable(item.key) { mutableStateOf("") }
 
@@ -113,10 +115,10 @@ fun NotificationCard(
         Column(
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                // Angoli retti e margini da 16 dp: il testo non tocca il bordo
                 .background(colors.panel.copy(alpha = 0.9f))
                 .clickable(onClick = onClick)
-                .padding(start = 14.dp, top = 10.dp, bottom = 8.dp, end = 4.dp)
+                .padding(start = edge, top = 10.dp, bottom = 8.dp, end = edge)
         ) {
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
@@ -125,7 +127,7 @@ fun NotificationCard(
                             item.title,
                             color = colors.onWallpaper,
                             style = MaterialTheme.typography.titleSmall,
-                            maxLines = 1,
+                            maxLines = NotificationLayout.TITLE_MAX_LINES,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
@@ -314,7 +316,6 @@ fun NotificationPreview(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
                 .clickable(onClick = onOpen)
                 .padding(vertical = 2.dp)
         ) {
@@ -324,9 +325,9 @@ fun NotificationPreview(
                         title,
                         color = colors.onWallpaper,
                         style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
+                        maxLines = NotificationLayout.TITLE_MAX_LINES,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
+                        modifier = Modifier.weight(1f),
                     )
                     Text(
                         "  " + relativeTime(shown.postTime),
