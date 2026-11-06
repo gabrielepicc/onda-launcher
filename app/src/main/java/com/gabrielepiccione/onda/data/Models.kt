@@ -423,6 +423,8 @@ data class Settings(
     val profileSuggest: ProfileSuggestState = ProfileSuggestState(),
     /** Spazio tra i blocchi della home, in dp (griglia da 4: compatto 0 … ampio 32). */
     val homeBlockSpacing: Int = 8,
+    /** Spazio dentro il blocco Orologio, tra ora, data ed evento (dp, passo 4, 0..32). */
+    val clockInnerSpacing: Int = 8,
     /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */
     val musicBackdrop: MusicBackdropMode = MusicBackdropMode.MOTION,
     val musicBackdropIntensity: Float = 0.7f,

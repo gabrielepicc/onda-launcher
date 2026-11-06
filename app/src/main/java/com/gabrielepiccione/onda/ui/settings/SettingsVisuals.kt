@@ -70,6 +70,7 @@ import com.gabrielepiccione.onda.core.icons.IconRenderer
 import com.gabrielepiccione.onda.core.icons.IconShape
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.CalendarEvent
+import com.gabrielepiccione.onda.data.ClockSpacing
 import com.gabrielepiccione.onda.data.ClockStyle
 import com.gabrielepiccione.onda.data.FontChoice
 import com.gabrielepiccione.onda.data.HAlign
@@ -405,6 +406,7 @@ private fun PreviewClock(settings: Settings) {
         align = settings.clockAlign,
         showBattery = settings.showBattery,
         temperature = PREVIEW_TEMPERATURE.takeIf { settings.showWeather },
+        innerSpacing = settings.clockInnerSpacing,
     )
 }
 
@@ -543,7 +545,7 @@ private fun MockBlock(block: String, settings: Settings) {
     }
     when {
         block == HomeBlocks.CLOCK && settings.showClock -> Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(ClockSpacing.previewDp(settings.clockInnerSpacing).dp),
             horizontalAlignment = when (settings.clockAlign) {
                 HAlign.START -> Alignment.Start
                 HAlign.CENTER -> Alignment.CenterHorizontally

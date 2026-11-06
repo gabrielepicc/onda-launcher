@@ -121,6 +121,7 @@ import com.gabrielepiccione.onda.data.ActionArg
 import com.gabrielepiccione.onda.data.ActionChoice
 import com.gabrielepiccione.onda.data.ActionNeed
 import com.gabrielepiccione.onda.data.Actions
+import com.gabrielepiccione.onda.data.ClockSpacing
 import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
 import com.gabrielepiccione.onda.ui.components.actionSummary
@@ -647,6 +648,14 @@ internal fun SettingsScreen(
                 0f..32f,
                 steps = 7,
             ) { v -> onEdit { it.copy(homeBlockSpacing = (v / 4f).roundToInt() * 4) } }
+            ValueSlider(
+                stringResource(R.string.clock_inner_spacing),
+                stringResource(R.string.value_dp, settings.clockInnerSpacing),
+                settings.clockInnerSpacing.toFloat(),
+                ClockSpacing.DEFAULT.toFloat(),
+                ClockSpacing.MIN.toFloat()..ClockSpacing.MAX.toFloat(),
+                steps = ClockSpacing.MAX / ClockSpacing.STEP - 1,
+            ) { v -> onEdit { it.copy(clockInnerSpacing = ClockSpacing.snap(v)) } }
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_layout)) {

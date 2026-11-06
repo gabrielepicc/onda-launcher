@@ -50,7 +50,9 @@ import com.gabrielepiccione.onda.data.HAlign
 import com.gabrielepiccione.onda.util.TimeInWords
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -80,6 +82,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gabrielepiccione.onda.data.CalendarEvent
+import com.gabrielepiccione.onda.data.ClockSpacing
 import com.gabrielepiccione.onda.data.MediaInfo
 import kotlinx.coroutines.delay
 import java.time.Instant
@@ -108,6 +111,8 @@ fun ClockHeader(
     showBattery: Boolean = false,
     /** Temperatura attuale accanto alla data; null = meteo spento o non disponibile. */
     temperature: Int? = null,
+    /** Distanza verticale tra ora e data e tra data ed evento, in dp. */
+    innerSpacing: Int = ClockSpacing.DEFAULT,
 ) {
     val colors = LocalOndaColors.current
     val shadow = LocalTextShadow.current
@@ -131,15 +136,18 @@ fun ClockHeader(
 
     Column(
         horizontalAlignment = horizontal,
+        // Distanza regolabile tra ora, data ed evento; lo spazio fuori dal blocco segue "spazio tra i blocchi"
+        verticalArrangement = Arrangement.spacedBy(ClockSpacing.coerce(innerSpacing).dp),
         modifier = modifier
             .fillMaxWidth()
             .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
             .clip(RoundedCornerShape(28.dp))
             .combinedClickable(onClick = onTime, onLongClick = onLongPress)
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp)
     ) {
         ClockFace(now, style, scale, textAlign)
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Bersaglio di tocco da 48 dp con altezza minima interna, senza margini esterni
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = 48.dp)) {
             Text(
                 now.format(DateTimeFormatter.ofPattern("EEEE d MMMM", locale)).replaceFirstChar { it.titlecase(locale) },
                 color = colors.onWallpaperMuted,
@@ -170,11 +178,10 @@ fun ClockHeader(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(top = 4.dp)
-                    .minimumInteractiveComponentSize()
                     .clip(RoundedCornerShape(50))
                     .background(colors.accentContainer)
                     .clickable { onEvent(event) }
+                    .heightIn(min = 48.dp)
                     .padding(horizontal = 14.dp, vertical = 8.dp)
             ) {
                 Icon(Icons.Filled.DateRange, null, tint = colors.onAccentContainer, modifier = Modifier.size(16.dp))

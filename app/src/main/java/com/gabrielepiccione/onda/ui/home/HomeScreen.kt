@@ -794,6 +794,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 highlighted = editing == HomeBlocks.CLOCK,
                                 onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.CLOCK },
                                 showBattery = settings.showBattery,
+                                innerSpacing = settings.clockInnerSpacing,
                                 modifier = if (lightsVisible) Modifier.weight(1f) else Modifier,
                             )
                             if (lightsVisible && settings.clockAlign != HAlign.END) {
@@ -824,7 +825,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             highlighted = editing == HomeBlocks.AGENDA,
                             onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.AGENDA },
                             onEmptyClick = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
-                            modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(vertical = 8.dp),
+                            modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
                         )
                     }
                     block == HomeBlocks.NOTIFICATIONS -> item(key = "notifications") {
