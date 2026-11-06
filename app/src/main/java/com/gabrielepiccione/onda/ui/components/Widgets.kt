@@ -176,6 +176,10 @@ fun WidgetStackCard(
     val height = stack.heightDp ?: defaultHeight
     val pager = rememberPagerState(pageCount = { stack.widgets.size })
     val position = stringResource(R.string.stack_page, pager.currentPage + 1, stack.widgets.size)
+    // Il gesto orizzontale del carosello ha la precedenza: mentre si sfoglia, la pressione lunga non modifica nulla
+    val guardedLongPress: (() -> Unit)? = onLongPress?.let { action ->
+        { if (!pager.isScrollInProgress && pager.currentPageOffsetFraction == 0f) action() }
+    }
     Column(modifier.semantics { stateDescription = position }) {
         HorizontalPager(
             state = pager,
@@ -184,7 +188,7 @@ fun WidgetStackCard(
         ) { page ->
             stack.widgets.getOrNull(page)?.let { id ->
                 androidx.compose.runtime.key(id) {
-                    HostedWidget(id, widgets, heightDp = height, highlighted = highlighted, onLongPress = onLongPress, size = size)
+                    HostedWidget(id, widgets, heightDp = height, highlighted = highlighted, onLongPress = guardedLongPress, size = size)
                 }
             }
         }

@@ -724,6 +724,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     )
                 }
         ) {
+            // Orologio sostituito da un widget: la regola delle luci di casa vale lo stesso, in cima alla home
+            if (!settings.showClock && lightsVisible) {
+                item(key = "lights_alone") {
+                    Box(Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(horizontal = 4.dp)) { lightsWidget() }
+                }
+            }
             // Blocchi della home nell'ordine scelto dall'utente (orologio, musica, widget, app)
             for (block in blocks) {
                 when {

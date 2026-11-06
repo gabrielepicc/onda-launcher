@@ -42,6 +42,19 @@ class OndaWidgetHostView(context: Context) : AppWidgetHostView(context) {
         }
     }
 
+    /**
+     * Vede tutti i tocchi consegnati al widget, anche quando un genitore (il carosello) li intercetta:
+     * appena il dito si muove oltre la soglia, o il gesto viene annullato, la pressione lunga non parte più.
+     */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_MOVE ->
+                if (abs(ev.x - downX) > touchSlop || abs(ev.y - downY) > touchSlop) removeCallbacks(longPressRunnable)
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> removeCallbacks(longPressRunnable)
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
