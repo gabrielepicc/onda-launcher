@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.components.RowSwipe
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -99,6 +100,10 @@ fun SearchButton(
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.92f else 1f, spring(dampingRatio = 0.6f, stiffness = 600f), label = "searchButtonPress")
+    // Mentre una riga si trascina il pulsante si rimpicciolisce e si fa tenue, così non copre il testo
+    val swiping = RowSwipe.active
+    val away by animateFloatAsState(if (swiping) 0.7f else 1f, spring(dampingRatio = 0.8f, stiffness = 500f), label = "searchButtonAway")
+    val awayAlpha by animateFloatAsState(if (swiping) 0.35f else 1f, spring(stiffness = 500f), label = "searchButtonFade")
     val swipeThreshold = with(LocalDensity.current) { SWIPE_DISTANCE.toPx() }
     var dragged by remember { mutableFloatStateOf(0f) }
     val description = stringResource(settings.searchButtonTap.labelRes)
@@ -106,7 +111,11 @@ fun SearchButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .graphicsLayer {
+                scaleX = scale * away
+                scaleY = scale * away
+                alpha = awayAlpha
+            }
             .size(56.dp)
             .clip(CircleShape)
             .background(container)

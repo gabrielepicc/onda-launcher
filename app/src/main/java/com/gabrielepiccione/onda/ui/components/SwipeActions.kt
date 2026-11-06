@@ -78,33 +78,13 @@ fun SwipeActions(
     val revealed by remember { derivedStateOf { abs(offsetX.value) > 1f } }
     val toRight by remember { derivedStateOf { offsetX.value > 0f } }
     Box(modifier.fillMaxWidth()) {
-        if (revealed) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = if (toRight) Arrangement.Start else Arrangement.End,
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(if (armed) colors.accentContainer else colors.panel)
-                    .padding(horizontal = 20.dp),
-            ) {
-                Box(
-                    Modifier.graphicsLayer {
-                        val p = (abs(offsetX.value) / triggerPx).coerceIn(0f, 1f)
-                        alpha = p
-                        scaleX = 0.6f + 0.4f * p
-                        scaleY = 0.6f + 0.4f * p
-                    },
-                ) {
-                    if (toRight) Icon(Icons.Filled.KeyboardArrowRight, null, tint = colors.onAccentContainer)
-                    else if (canDismiss) Icon(Icons.Filled.Close, null, tint = colors.onAccentContainer)
-                }
-            }
-        }
+        // Traccia dietro la riga: invisibile a riposo, si colora d'accento man mano che si trascina
+        if (revealed) SwipeTrack({ offsetX.value }, triggerPx, armed, canDismiss)
+        SwipeReporter(revealed)
         Box(
             Modifier
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                .then(if (revealed) Modifier.clip(RoundedCornerShape(28.dp)).background(colors.scrim) else Modifier)
+                .swipeVeil({ offsetX.value }, triggerPx)
                 .draggable(
                     enabled = enabled,
                     orientation = Orientation.Horizontal,
