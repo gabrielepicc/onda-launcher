@@ -166,9 +166,9 @@ cambierebbe la licenza di Onda.
 ## 13. Musica (Fase 8, area 5 — oltre Niagara)
 Specifiche in `docs/fase8.md`. Niagara ha già il player con la copertina; Onda aggiunge:
 - ✅ azioni dell'app nel player e prossimo brano;
-- ⬜ riproduzione dalla ricerca;
-- ⬜ playlist come voci;
-- ⬜ ripresa con le cuffie;
+- ✅ riproduzione dalla ricerca;
+- ✅ playlist come voci;
+- ✅ ripresa con le cuffie;
 - ✅ sfondo che si muove con la musica.
 
 ## Non da copiare (scelte di Niagara o incompatibili con le regole di Onda)

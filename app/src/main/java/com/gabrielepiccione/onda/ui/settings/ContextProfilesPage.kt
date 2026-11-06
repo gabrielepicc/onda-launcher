@@ -288,7 +288,7 @@ private fun daysText(days: Set<Int>): String =
 
 /** Modifica completa di un profilo, a schermo intero. */
 @Composable
-internal fun ProfileEditor(
+private fun ProfileEditor(
     initial: ContextProfile,
     isNew: Boolean,
     allApps: List<AppInfo>,

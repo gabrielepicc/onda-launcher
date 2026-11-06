@@ -2,6 +2,12 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.search
 
+import com.gabrielepiccione.onda.data.MediaShortcuts
+import com.gabrielepiccione.onda.data.SpotifyItem
+import com.gabrielepiccione.onda.data.SpotifyType
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlayArrow
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
 import com.gabrielepiccione.onda.ui.home.*
@@ -71,6 +77,13 @@ fun SearchPanel(
     onContact: (ContactHit) -> Unit,
     onWebSearch: (String) -> Unit,
     onSettingsShortcut: (com.gabrielepiccione.onda.util.SettingsShortcut) -> Unit = {},
+    /** Nome dell'app musicale per "riproduci", null se non ce n'è una. */
+    musicAppLabel: String? = null,
+    spotifyInstalled: Boolean = false,
+    onPlay: (String) -> Unit = {},
+    onSpotifySearch: (String) -> Unit = {},
+    /** Un link di Spotify incollato: aggiungilo ai preferiti con questo nome. */
+    onAddMedia: (SpotifyItem, String) -> Unit = { _, _ -> },
     onRequestContacts: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -119,6 +132,8 @@ fun SearchPanel(
                         // Invio: apre il primo risultato della modalità corrente
                         val first = results.apps.firstOrNull()
                         when {
+                            results.mode == com.gabrielepiccione.onda.SearchMode.PLAY -> if (results.term.isNotBlank() && musicAppLabel != null) onPlay(results.term)
+                            results.mode == com.gabrielepiccione.onda.SearchMode.SPOTIFY -> if (results.term.isNotBlank() && spotifyInstalled) onSpotifySearch(results.term)
                             results.mode == com.gabrielepiccione.onda.SearchMode.SETTINGS -> results.settingsHits.firstOrNull()?.let(onSettingsShortcut)
                             results.mode == com.gabrielepiccione.onda.SearchMode.CONTACTS -> results.contacts.firstOrNull()?.let(onContact)
                             first != null -> onApp(first)
@@ -198,7 +213,49 @@ fun SearchPanel(
                     )
                 }
             }
-            if (results.query.isNotBlank() && results.mode != com.gabrielepiccione.onda.SearchMode.SETTINGS) {
+            // Link di Spotify incollato: si può tenere come voce dei preferiti
+            val link = MediaShortcuts.parse(results.query)
+            if (link != null) {
+                item { SectionLabel(stringResource(R.string.music)) }
+                item {
+                    val name = stringResource(R.string.media_default_name, stringResource(spotifyTypeLabel(link.type)))
+                    SimpleRow(
+                        icon = { Icon(Icons.Filled.Add, null, tint = colors.accent) },
+                        label = stringResource(R.string.media_add, name),
+                    ) { onAddMedia(link, name) }
+                }
+            } else if (MediaShortcuts.isShortLink(results.query)) {
+                item {
+                    SimpleRow(icon = { Icon(Icons.Filled.MusicNote, null, tint = colors.onWallpaperMuted) }, label = stringResource(R.string.media_short_link), muted = true) {}
+                }
+            }
+            // Musica: "p testo" fa partire il brano, "sp testo" apre la ricerca di Spotify
+            if (results.mode == com.gabrielepiccione.onda.SearchMode.PLAY) {
+                item { SectionLabel(stringResource(R.string.music)) }
+                item {
+                    if (musicAppLabel == null) {
+                        SimpleRow(icon = { Icon(Icons.Filled.MusicNote, null, tint = colors.onWallpaperMuted) }, label = stringResource(R.string.music_no_app), muted = true) {}
+                    } else {
+                        SimpleRow(
+                            icon = { Icon(Icons.Filled.PlayArrow, null, tint = colors.accent) },
+                            label = stringResource(R.string.music_play_on, results.term.ifBlank { "…" }, musicAppLabel),
+                        ) { if (results.term.isNotBlank()) onPlay(results.term) }
+                    }
+                }
+            }
+            if (results.mode == com.gabrielepiccione.onda.SearchMode.SPOTIFY) {
+                item { SectionLabel(stringResource(R.string.music)) }
+                item {
+                    SimpleRow(
+                        icon = { Icon(Icons.Filled.MusicNote, null, tint = if (spotifyInstalled) colors.accent else colors.onWallpaperMuted) },
+                        label = if (spotifyInstalled) stringResource(R.string.music_spotify_search, results.term.ifBlank { "…" }) else stringResource(R.string.music_no_spotify),
+                        muted = !spotifyInstalled,
+                    ) { if (spotifyInstalled && results.term.isNotBlank()) onSpotifySearch(results.term) }
+                }
+            }
+            if (results.query.isNotBlank() && results.mode != com.gabrielepiccione.onda.SearchMode.SETTINGS &&
+                results.mode != com.gabrielepiccione.onda.SearchMode.PLAY && results.mode != com.gabrielepiccione.onda.SearchMode.SPOTIFY
+            ) {
                 if (results.contacts.isNotEmpty()) {
                     item { SectionLabel(stringResource(R.string.contacts)) }
                     items(results.contacts, key = { "c_${it.id}" }) { c ->
@@ -251,3 +308,12 @@ private fun SimpleRow(icon: @Composable () -> Unit, label: String, muted: Boolea
 
 /** Velatura sopra lo sfondo durante la ricerca (si somma a quella generale della home). */
 private const val SEARCH_TINT = 0.28f
+
+private fun spotifyTypeLabel(type: SpotifyType): Int = when (type) {
+    SpotifyType.PLAYLIST -> R.string.media_playlist
+    SpotifyType.ALBUM -> R.string.media_album
+    SpotifyType.ARTIST -> R.string.media_artist
+    SpotifyType.TRACK -> R.string.media_track
+    SpotifyType.EPISODE -> R.string.media_episode
+    SpotifyType.SHOW -> R.string.media_show
+}

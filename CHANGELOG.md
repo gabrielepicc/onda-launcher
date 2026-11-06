@@ -4,6 +4,21 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Sfondo "a ritmo di musica"** (Musica, passo 6, approvato).
+  - Con l'analizzatore audio di Android lo sfondo pulsa sui bassi (20–150 Hz) dell'audio in riproduzione.
+  - Spento di default; il permesso microfono si chiede solo scegliendolo, dopo una spiegazione.
+  - Legge solo l'intensità delle frequenze, mentre suona e Onda si vede: niente viene registrato o salvato.
+- **Cuffie** (Musica, passo 5).
+  - Plug & Play può valere per cuffie precise, scelte per nome; Android lo dà senza permessi.
+  - Nuova opzione "Riprendi la musica", spenta di default: collegando le cuffie riparte l'app scelta, mai durante una chiamata o se qualcosa suona già.
+- **Playlist e brani come voci** (Musica, passo 4).
+  - Incollando nella ricerca un link di Spotify (playlist, album, artista, brano, episodio, podcast) si aggiunge una voce ai preferiti.
+  - Toccandola, il contenuto parte subito se Spotify ha già una sessione, altrimenti si apre la sua pagina.
+  - Tenendola premuta si sposta, si rinomina o si toglie.
+- **Musica dalla ricerca** (Musica, passo 3).
+  - "p testo" fa partire brano, artista o playlist sull'app musicale scelta (o sull'ultima che ha suonato), con il "riproduci da ricerca" di Android.
+  - "sp testo" apre la ricerca dentro Spotify.
+  - Tutti i prefissi della ricerca (=, @, /, p, sp) si possono cambiare in Impostazioni → Alfabeto e ricerca.
 - **Revisione dell'interfaccia, parte 1**:
   - **Scelte**: non si troncano più. Fino a 3 opzioni corte sono chip che vanno a capo interi, altrimenti un elenco con pulsanti radio (es. "Immagini nelle notifiche", "Primo promemoria dopo").
   - **Etichette e titoli**: le etichette dei riquadri vanno su più righe; il titolo delle pagine non ha più "…".

@@ -403,6 +403,16 @@ data class Settings(
     val musicBackdropHome: Boolean = true,
     val musicBackdropList: Boolean = false,
     val musicBackdropSearch: Boolean = false,
+    /** Prefissi della ricerca, personalizzabili. */
+    val searchPrefixes: SearchPrefixSet = SearchPrefixSet(),
+    /** App musicale per "riproduci da ricerca"; vuoto = l'ultima che ha suonato ([lastMusicApp]). */
+    val musicApp: String = "",
+    val lastMusicApp: String = "",
+    /** Playlist, album, artisti e brani messi tra i preferiti come voci del launcher. */
+    val mediaShortcuts: List<MediaShortcut> = emptyList(),
+    /** Plug & Play: riprendi la musica collegando le cuffie (spento di default) e dispositivo preciso (vuoto = qualsiasi). */
+    val plugPlayResume: Boolean = false,
+    val plugPlayDevice: String = "",
     /** Giorno (AAAA-MM-GG) a cui si riferisce [breakerOpens]. */
     val breakerDay: String = "",
     /** Aperture di oggi delle app con Usage Breaker: chiave app -> numero. */

@@ -4,6 +4,11 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.PlugPlay
+import com.gabrielepiccione.onda.data.MEDIA_PREFIX
+import com.gabrielepiccione.onda.data.MediaShortcuts
+import androidx.compose.material.icons.filled.Edit
+import com.gabrielepiccione.onda.data.SpotifyLinks
 import com.gabrielepiccione.onda.ui.components.OndaChip
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.Switch
@@ -180,6 +185,7 @@ interface HomeCallbacks {
     fun requestWeatherPermission()
     fun requestLocationPermission()
     fun requestBluetoothPermission()
+    fun requestMicrophonePermission()
     fun restartLauncher()
     fun requestPostNotifications()
     fun openUsageAccess()
@@ -209,6 +215,7 @@ data class HomeStatus(
     val weatherInstalled: Boolean = false,
     val weatherPermission: Boolean = false,
     val locationPermission: Boolean = false,
+    val microphonePermission: Boolean = false,
     val usageAccess: Boolean = false,
     val postNotifications: Boolean = false,
 )
@@ -218,6 +225,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val state by vm.state.collectAsStateWithLifecycle()
     val search by vm.search.collectAsStateWithLifecycle()
     val media by vm.media.media.collectAsStateWithLifecycle()
+    val headphoneNames by vm.audio.connectedNames.collectAsStateWithLifecycle()
     val nextEvent by vm.nextEvent.collectAsStateWithLifecycle()
     val agenda by vm.agenda.collectAsStateWithLifecycle()
     val headphones by vm.audio.headphonesConnected.collectAsStateWithLifecycle()
@@ -244,6 +252,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var iconPickerFor by remember { mutableStateOf<AppInfo?>(null) }
     var folderSheet by remember { mutableStateOf<Folder?>(null) }
     var shortcutMenu by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
+    var mediaMenu by remember { mutableStateOf<HomeEntry.Media?>(null) }
+    var mediaRename by remember { mutableStateOf<HomeEntry.Media?>(null) }
     var popupEditFor by remember { mutableStateOf<AppInfo?>(null) }
     var agendaOpen by remember { mutableStateOf(false) }
     var agendaWeek by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
@@ -529,6 +539,16 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     hideName = settings.hideFavoriteNames,
                     modifier = itemMod.then(rowTracker("g_" + entry.folder.id)),
                 )
+                is HomeEntry.Media -> PinnedShortcutRow(
+                    label = entry.shortcut.name,
+                    icon = entry.app?.icon,
+                    showIcon = settings.showIcons,
+                    hideName = settings.hideFavoriteNames,
+                    iconScale = iconScale,
+                    onClick = { vm.openMediaShortcut(entry.shortcut) },
+                    onLongClick = { if (!settings.lockLayout) mediaMenu = entry },
+                    modifier = itemMod,
+                )
                 is HomeEntry.Shortcut -> PinnedShortcutRow(
                     label = entry.info.label,
                     icon = entry.info.icon,
@@ -572,6 +592,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 intensity = settings.musicBackdropIntensity,
                 dark = colors.dark,
                 modifier = Modifier.matchParentSize(),
+                beatAllowed = status.microphonePermission,
             )
         }
         Box(Modifier.matchParentSize().background(dimColor.copy(alpha = settings.wallpaperDim)))
@@ -769,7 +790,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     block == HomeBlocks.APPS -> {
                         item(key = "spacer") { Spacer(Modifier.size(12.dp)) }
                         // Plug & Play: con cuffie o casse collegate, l'app scelta compare in cima
-                        val plug = if (headphones) state.app(settings.plugPlayApp) else null
+                        val plug = if (headphones && PlugPlay.matches(settings.plugPlayDevice, headphoneNames)) state.app(settings.plugPlayApp) else null
                         if (plug != null) {
                             item(key = "plugplay") {
                                 Column(Modifier.animateItem(fadeInSpec = Motion.enter(), placementSpec = Motion.offsetEnter, fadeOutSpec = Motion.exit())) {
@@ -1113,6 +1134,27 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         }
                     },
                     onRequestContacts = callbacks::requestContactsPermission,
+                    musicAppLabel = vm.musicApp().takeIf { it.isNotBlank() }?.let { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg },
+                    spotifyInstalled = state.allApps.any { it.packageName == SpotifyLinks.PACKAGE },
+                    onPlay = { text ->
+                        val pkg = vm.musicApp()
+                        if (!vm.media.playFromSearch(pkg, text)) {
+                            android.widget.Toast.makeText(context, R.string.music_play_unsupported, android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        scope.launch { delay(380); closeAll() }
+                    },
+                    onAddMedia = { item, name ->
+                        vm.addMediaShortcut(item, name)
+                        android.widget.Toast.makeText(context, R.string.media_added, android.widget.Toast.LENGTH_SHORT).show()
+                        closeAll()
+                    },
+                    onSpotifySearch = { text ->
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(SpotifyLinks.search(text)))
+                            .setPackage(SpotifyLinks.PACKAGE)
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        runCatching { context.startActivity(intent) }
+                        scope.launch { delay(380); closeAll() }
+                    },
                     onClose = { closeAll() },
                 )
             }
@@ -1142,12 +1184,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         contactsPermission = status.contactsPermission,
                         weatherInstalled = status.weatherInstalled,
                         weatherPermission = status.weatherPermission,
+                        microphonePermission = status.microphonePermission,
                         locationPermission = status.locationPermission,
                         usageAccess = status.usageAccess,
                         postNotifications = status.postNotifications,
                     ),
                     widgets = vm.widgets,
                     usageStats = vm.usageStats,
+                    connectedHeadphones = headphoneNames,
                     activeProfile = state.activeProfile,
                     contextEnvironment = object : ContextEnvironment {
                         override fun currentWifi() = HomePresence.currentSsid(context)
@@ -1166,6 +1210,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun weatherPermission() = callbacks.requestWeatherPermission()
                         override fun locationPermission() = callbacks.requestLocationPermission()
                         override fun bluetoothPermission() = callbacks.requestBluetoothPermission()
+                        override fun microphonePermission() = callbacks.requestMicrophonePermission()
                         override fun pickLightsWidget() = openWidgetPicker(HomePresence.GOOGLE_HOME_PACKAGE, WidgetTarget.HomeLights)
                         override fun currentWifi(): String? = HomePresence.currentSsid(context)
                         override fun saveHome(ssid: String) {
@@ -1463,6 +1508,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     is HomeEntry.App -> entry.app.key to entry.app.label
                     is HomeEntry.Group -> (FOLDER_PREFIX + entry.folder.id) to entry.folder.name
                     is HomeEntry.Shortcut -> (SHORTCUT_PREFIX + entry.pinned.key) to entry.info.label
+                    is HomeEntry.Media -> (MEDIA_PREFIX + entry.shortcut.id) to entry.shortcut.name
                 }
             },
             onBlocks = { vm.settingsRepo.setHomeLayout(it) },
@@ -1509,6 +1555,37 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onOpenCalendar = { SystemActions.openCalendar(context) },
             onDismiss = { agendaOpen = false },
         )
+    }
+
+    // Voce multimediale (playlist, album…): sposta, rinomina, togli
+    mediaMenu?.let { entry ->
+        val favoriteId = MEDIA_PREFIX + entry.shortcut.id
+        val index = settings.favorites.indexOf(favoriteId)
+        ModalBottomSheet(
+            onDismissRequest = { mediaMenu = null },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = colors.panel,
+            contentColor = colors.onWallpaper,
+        ) {
+            Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+                Text(entry.shortcut.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
+                if (index > 0) SheetRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { vm.moveEntry(favoriteId, -1) }
+                if (index in 0 until settings.favorites.lastIndex) {
+                    SheetRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { vm.moveEntry(favoriteId, 1) }
+                }
+                SheetRow(Icons.Filled.Edit, stringResource(R.string.rename)) { mediaRename = entry; mediaMenu = null }
+                SheetRow(Icons.Filled.Delete, stringResource(R.string.pin_remove)) {
+                    vm.updateSettings { MediaShortcuts.remove(it, entry.shortcut.id) }
+                    mediaMenu = null
+                }
+            }
+        }
+    }
+    mediaRename?.let { entry ->
+        NameDialog(stringResource(R.string.rename), entry.shortcut.name, onDismiss = { mediaRename = null }) { name ->
+            vm.updateSettings { MediaShortcuts.rename(it, entry.shortcut.id, name) }
+            mediaRename = null
+        }
     }
 
     shortcutMenu?.let { entry ->
