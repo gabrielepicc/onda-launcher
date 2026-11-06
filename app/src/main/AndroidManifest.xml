@@ -66,6 +66,8 @@
         </intent>
     </queries>
 
+    <uses-feature android:name="android.software.live_wallpaper" android:required="false" />
+
     <application
         android:name=".OndaApp"
         android:allowBackup="true"
@@ -130,6 +132,19 @@
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.MusicWallpaperService"
+            android:exported="true"
+            android:label="@string/music_wallpaper_label"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/music_wallpaper" />
         </service>
 
         <service

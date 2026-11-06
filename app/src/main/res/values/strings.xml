@@ -849,4 +849,8 @@
     <string name="theme_accent_color">Accent color</string>
     <string name="theme_accent_auto">Automatic</string>
     <string name="theme_accent_sub">The theme uses two colors: the primary one (panels and surfaces) and the accent (highlights, switches, letters). Automatic follows the system colors.</string>
+    <string name="music_wallpaper_label">Onda Music Background</string>
+    <string name="music_wallpaper_description">Animated background with the colors of the album that is playing. It needs no permissions and never uses the microphone.</string>
+    <string name="music_wallpaper_set">Use as system wallpaper</string>
+    <string name="music_wallpaper_set_sub">Also on the lock screen. Colors and motion only, no microphone. It replaces your current wallpaper.</string>
 </resources>

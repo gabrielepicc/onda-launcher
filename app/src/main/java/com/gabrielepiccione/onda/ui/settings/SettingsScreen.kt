@@ -172,6 +172,7 @@ interface SettingsActions {
     fun unhide(app: AppInfo)
     fun authenticate(onSuccess: () -> Unit)
     fun wallpaper()
+    fun musicWallpaper()
     fun openStyles()
     /** Importa un font da file per la lista (`forClock = false`) o per l'orologio. */
     fun importFont(forClock: Boolean)
@@ -439,6 +440,7 @@ internal fun SettingsScreen(
                 SwitchRow(stringResource(R.string.music_backdrop_home), null, settings.musicBackdropHome) { v -> onEdit { it.copy(musicBackdropHome = v) } }
                 SwitchRow(stringResource(R.string.music_backdrop_list), null, settings.musicBackdropList) { v -> onEdit { it.copy(musicBackdropList = v) } }
                 SwitchRow(stringResource(R.string.music_backdrop_search), null, settings.musicBackdropSearch) { v -> onEdit { it.copy(musicBackdropSearch = v) } }
+                ClickRow(stringResource(R.string.music_wallpaper_set), stringResource(R.string.music_wallpaper_set_sub)) { actions.musicWallpaper() }
             }
         }
 

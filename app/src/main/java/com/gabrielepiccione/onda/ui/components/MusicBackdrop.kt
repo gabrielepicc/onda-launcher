@@ -38,6 +38,7 @@ import androidx.palette.graphics.Palette
 import com.gabrielepiccione.onda.data.MoodParams
 import com.gabrielepiccione.onda.data.MusicBackdropMode
 import com.gabrielepiccione.onda.data.MusicMood
+import com.gabrielepiccione.onda.data.WaveBlobs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -82,8 +83,7 @@ fun MusicBackdrop(
     LaunchedEffect(art) { coverColors(art).takeIf { it.isNotEmpty() }?.let { palette = it } }
     val mood = remember(palette) { MusicMood.from(palette) }
     val safe = remember(palette, dark) {
-        val base = palette.ifEmpty { listOf(0xFF3D5AFE.toInt(), 0xFF00BFA5.toInt(), 0xFF7C4DFF.toInt()) }
-        List(4) { i -> MusicMood.readable(base[i % base.size], dark) }
+        WaveBlobs.readableColors(palette, dark)
     }
     // Passaggio morbido di circa 1,5 secondi tra i colori di un brano e quelli del successivo
     val c0 by animateColorAsState(Color(safe[0]), tween(1500), label = "mb0")
@@ -144,9 +144,9 @@ fun MusicBackdrop(
             // Versione semplice: tre macchie di colore che girano lente su un fondo sfumato
             drawRect(Brush.verticalGradient(listOf(c0, c3)), alpha = alpha)
             listOf(c1, c2, c3).forEachIndexed { i, c ->
-                val a = time * (0.6f + 0.25f * i) + i * 2.1f
-                val center = Offset(size.width * (0.5f + 0.35f * cos(a)), size.height * (0.5f + 0.3f * sin(a * 0.8f)))
-                val r = size.maxDimension * (0.55f + 0.08f * beat)
+                val blob = WaveBlobs.blob(i, time, beat)
+                val center = Offset(size.width * blob.cx, size.height * blob.cy)
+                val r = size.maxDimension * blob.radius
                 drawCircle(Brush.radialGradient(listOf(c, Color.Transparent), center, r), r, center, alpha = alpha * 0.8f)
             }
         }

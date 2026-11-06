@@ -1399,6 +1399,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
                         override fun authenticate(onSuccess: () -> Unit) = callbacks.authenticate(context.getString(R.string.section_hidden), onSuccess)
                         override fun wallpaper() = SystemActions.openWallpaperPicker(context)
+                        override fun musicWallpaper() = SystemActions.openMusicWallpaper(context)
                         override fun openStyles() { overlay = Overlay.STYLES }
                         override fun importFont(forClock: Boolean) = callbacks.importFont(forClock)
                         override fun exportBackup() = callbacks.exportBackup()
