@@ -31,6 +31,10 @@ import com.gabrielepiccione.onda.ui.components.OndaChip
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.Switch
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import com.gabrielepiccione.onda.ui.settings.ContextEnvironment
@@ -1917,7 +1921,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     color = colors.onWallpaper,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                 )
-                // Le quattro azioni più usate, a portata di pollice
+                // Le tre azioni più usate, di pari larghezza su una riga (la ricerca ha il suo pulsante)
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MenuTile(Icons.Filled.Widgets, stringResource(R.string.home_menu_widget), Modifier.weight(1f), enabled = !settings.lockLayout) {
                         homeMenu = false
@@ -1927,7 +1931,6 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         homeMenu = false
                         SystemActions.openWallpaperPicker(context)
                     }
-                    MenuTile(Icons.Filled.Search, stringResource(R.string.search), Modifier.weight(1f)) { homeMenu = false; overlay = Overlay.SEARCH }
                     MenuTile(Icons.Filled.Settings, stringResource(R.string.settings), Modifier.weight(1f)) { homeMenu = false; overlay = Overlay.SETTINGS }
                 }
                 if (!settings.lockLayout) {
@@ -2082,17 +2085,22 @@ private const val LIGHTS_HEIGHT = 120
 @Composable
 private fun MenuTile(icon: ImageVector, label: String, modifier: Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     val colors = LocalOndaColors.current
+    val shape = RoundedCornerShape(24.dp)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
+            .heightIn(min = 88.dp)
+            .clip(shape)
             .background(colors.accentContainer.copy(alpha = if (enabled) 1f else 0.4f))
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(vertical = 16.dp, horizontal = 4.dp),
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = label }
+            .padding(vertical = 14.dp, horizontal = 8.dp),
     ) {
-        Icon(icon, null, tint = colors.onAccentContainer, modifier = Modifier.size(24.dp))
+        Icon(icon, null, tint = colors.onAccentContainer, modifier = Modifier.size(32.dp))
         Spacer(Modifier.size(8.dp))
-        Text(label, color = colors.onAccentContainer, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        // Etichetta intera su una riga: mai troncata
+        Text(label, color = colors.onAccentContainer, style = MaterialTheme.typography.labelLarge, softWrap = false, textAlign = TextAlign.Center)
     }
 }
 

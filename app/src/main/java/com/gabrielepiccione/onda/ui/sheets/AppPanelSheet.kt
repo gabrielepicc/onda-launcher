@@ -78,6 +78,8 @@ import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.NotificationItem
+import com.gabrielepiccione.onda.data.NotificationLayout
+import com.gabrielepiccione.onda.ui.components.SwipeAwayCard
 import com.gabrielepiccione.onda.data.WidgetManager
 import com.gabrielepiccione.onda.ui.components.AppIcon
 import com.gabrielepiccione.onda.ui.components.HostedWidget
@@ -374,33 +376,35 @@ internal fun CompactConversation(
     onDismiss: () -> Unit,
 ) {
     val colors = LocalOndaColors.current
+    val edge = NotificationLayout.horizontalPaddingDp(NotificationLayout.MIN_HORIZONTAL_PADDING_DP).dp
+    // Angoli retti e margini da 16 dp: il testo non tocca mai il bordo. Si elimina anche scorrendo di lato.
+    SwipeAwayCard(enabled = NotificationLayout.canSwipeAway(item.clearable), onDismiss = onDismiss) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
             .background(colors.panelHigh.copy(alpha = 0.5f))
             .clickable(onClick = onOpen)
-            .padding(start = 12.dp, top = 4.dp, end = 0.dp, bottom = 8.dp)
+            .padding(start = edge, top = 4.dp, end = edge, bottom = 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Avatar(item, 32.dp, compact = true)
             Spacer(Modifier.width(10.dp))
+            // Il titolo prende tutto lo spazio libero (solo ora e X restano fuori) e va a capo prima di troncare
             Text(
                 item.replyTo.ifBlank { item.title },
                 color = colors.onWallpaper,
                 style = MaterialTheme.typography.titleSmall,
-                maxLines = 1,
+                maxLines = NotificationLayout.TITLE_MAX_LINES,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
+                modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.width(6.dp))
             Text(relativeTime(item.postTime), style = MaterialTheme.typography.labelSmall, color = colors.onWallpaperMuted)
-            Spacer(Modifier.weight(1f))
             if (item.clearable) {
                 RoundAction(Icons.Filled.Clear, stringResource(R.string.cd_dismiss_notification), iconSize = 18.dp, onClick = onDismiss)
             }
         }
-        Column(Modifier.padding(end = 12.dp)) {
+        Column {
             val text = if (item.messages.isNotEmpty()) {
                 item.messages.takeLast(COMPACT_MESSAGES).joinToString("\n") { m ->
                     val showSender = m.sender.isNotBlank() && m.sender != item.title && m.sender != item.replyTo
@@ -426,6 +430,7 @@ internal fun CompactConversation(
                 }
             }
         }
+    }
     }
 }
 

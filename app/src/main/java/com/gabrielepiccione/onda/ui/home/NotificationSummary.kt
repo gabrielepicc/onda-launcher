@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.NotificationDigest
 import com.gabrielepiccione.onda.data.NotificationItem
+import androidx.compose.ui.graphics.RectangleShape
+import com.gabrielepiccione.onda.data.NotificationLayout
 import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
 
 /** Blocco della home: quante notifiche ci sono e di quali app. */
@@ -46,7 +48,8 @@ fun NotificationSummaryCard(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
-    val shape = RoundedCornerShape(28.dp)
+    // Angoli retti: il testo non viene tagliato dal raggio
+    val shape = RectangleShape
     Column(
         modifier
             .fillMaxWidth()
@@ -54,18 +57,21 @@ fun NotificationSummaryCard(
             .clip(shape)
             .background(colors.panel)
             .combinedClickable(onClick = onClick, onLongClick = onLongPress)
-            .padding(horizontal = 18.dp, vertical = 14.dp),
+            .padding(horizontal = NotificationLayout.horizontalPaddingDp(18).dp, vertical = 14.dp),
     ) {
         Text(
             stringResource(R.string.summary_count, digest.total, digest.packages.size),
             color = colors.onWallpaper,
             style = MaterialTheme.typography.titleMedium,
+            maxLines = NotificationLayout.TITLE_MAX_LINES,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth(),
         )
         Text(
             digest.packages.joinToString(", ", transform = appLabel),
             color = colors.onWallpaperMuted,
             style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
+            maxLines = NotificationLayout.TITLE_MAX_LINES,
             overflow = TextOverflow.Ellipsis,
         )
     }
@@ -115,7 +121,7 @@ fun NotificationSummarySheet(
                                 .clickable { onNotification(n) }
                                 .padding(vertical = 8.dp),
                         ) {
-                            if (n.title.isNotBlank()) Text(n.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            if (n.title.isNotBlank()) Text(n.title, style = MaterialTheme.typography.bodyLarge, maxLines = NotificationLayout.TITLE_MAX_LINES, overflow = TextOverflow.Ellipsis)
                             if (n.text.isNotBlank()) {
                                 Text(n.text, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             }

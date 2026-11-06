@@ -31,4 +31,10 @@ object SwipeFeedback {
     fun iconScale(progress: Float, armed: Boolean): Float = (0.8f + 0.2f * progress.coerceIn(0f, 1f)) * (if (armed) ARMED_SCALE else 1f)
 
     fun veilAlpha(progress: Float): Float = VEIL * progress.coerceIn(0f, 1f)
+
+    /** Oltre la soglia, da una parte o dall'altra, il gesto fa scattare l'azione. */
+    fun isArmed(offset: Float, trigger: Float): Boolean = trigger > 0f && abs(offset) >= trigger
+
+    /** Oltre la soglia il dito trascina meno: la card resiste. */
+    fun resistance(offset: Float, trigger: Float): Float = if (abs(offset) > trigger) 0.35f else 1f
 }

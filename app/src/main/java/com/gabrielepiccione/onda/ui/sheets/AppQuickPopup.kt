@@ -385,13 +385,16 @@ fun AppQuickPopup(
                 SectionLabel(R.string.popup_section_notifications)
                 Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     notifications.forEach { n ->
-                        CompactConversation(
-                            item = n,
-                            onOpen = { onNotification(n); dismiss() },
-                            onSelectReply = { onReply(n); dismiss() },
-                            onAction = { a -> onNotificationAction(n, a) },
-                            onDismiss = { onDismissNotification(n) },
-                        )
+                        // Con la chiave lo stato dello swipe segue la notifica, non la posizione
+                        androidx.compose.runtime.key(n.key) {
+                            CompactConversation(
+                                item = n,
+                                onOpen = { onNotification(n); dismiss() },
+                                onSelectReply = { onReply(n); dismiss() },
+                                onAction = { a -> onNotificationAction(n, a) },
+                                onDismiss = { onDismissNotification(n) },
+                            )
+                        }
                     }
                 }
             }
