@@ -452,6 +452,17 @@ internal fun SettingsScreen(
                 Label(stringResource(R.string.accent_color))
                 ColorSwatches(AccentChoices, settings.accent) { argb -> onEdit { it.copy(accent = argb) } }
             }
+            // Il secondo colore del tema: evidenzia interruttori, lettere e selezioni
+            Label(stringResource(R.string.theme_accent_color))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                FilterChip(
+                    selected = settings.themeAccent == 0L,
+                    onClick = { onEdit { it.copy(themeAccent = 0L) } },
+                    label = { Text(stringResource(R.string.theme_accent_auto)) },
+                )
+            }
+            ColorSwatches(AccentChoices + ACCENT_EXTRA, settings.themeAccent) { argb -> onEdit { it.copy(themeAccent = argb) } }
+            SettingsSupporting(stringResource(R.string.theme_accent_sub))
             ValueSlider(stringResource(R.string.wallpaper_dim), percentText(settings.wallpaperDim), settings.wallpaperDim, Settings().wallpaperDim, 0f..0.8f) { v -> onEdit { it.copy(wallpaperDim = v) } }
             TextButton(onClick = { actions.wallpaper() }) { Text(stringResource(R.string.change_wallpaper_ellipsis)) }
         }
@@ -1366,6 +1377,9 @@ private fun GestureSetting(
         SettingsSupporting(stringResource(R.string.double_tap_lock_off))
     }
 }
+
+/** Colori in più per l'accento, oltre a quelli del primario. */
+private val ACCENT_EXTRA = listOf(0xFFE57373, 0xFFF06292, 0xFF4DB6AC, 0xFF9575CD)
 
 private fun Modifier.androidxHeightIn(): Modifier = this.then(Modifier.heightIn(max = 420.dp))
 

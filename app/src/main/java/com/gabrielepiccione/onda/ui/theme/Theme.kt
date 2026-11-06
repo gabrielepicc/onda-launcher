@@ -35,7 +35,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -44,6 +43,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import com.gabrielepiccione.onda.data.FontChoice
+import com.gabrielepiccione.onda.data.PaletteRoles
+import com.gabrielepiccione.onda.data.ThemePalette
 import com.gabrielepiccione.onda.data.Settings
 import com.gabrielepiccione.onda.data.ThemeMode
 
@@ -119,8 +120,9 @@ object Motion {
 
 private fun colorsFrom(scheme: ColorScheme, dark: Boolean) = OndaColors(
     dark = dark,
-    accent = scheme.primary,
-    onAccent = scheme.onPrimary,
+    // L'accento è il secondo colore del tema; i contenitori sono quelli del primario
+    accent = scheme.secondary,
+    onAccent = scheme.onSecondary,
     accentContainer = scheme.primaryContainer,
     onAccentContainer = scheme.onPrimaryContainer,
     onWallpaper = scheme.onSurface,
@@ -139,14 +141,20 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
         ThemeMode.DARK -> true
     }
     val context = LocalContext.current
-    val scheme = when {
-        settings.dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
-            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        // Sotto Android 12: se i colori dinamici sono attivi, accento ricavato dallo sfondo
-        settings.dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 ->
-            staticScheme(rememberWallpaperAccent() ?: Color(settings.accent), dark)
-        else -> staticScheme(Color(settings.accent), dark)
-    }
+    // Due colori di partenza: primario e accento (di sistema, se i colori dinamici sono attivi e non c'è una scelta)
+    val system = if (settings.dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else null
+    // Sotto Android 12 i colori dinamici si ricavano dallo sfondo
+    val wallpaper = if (settings.dynamicColor && system == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) rememberWallpaperAccent() else null
+    val (primarySeed, accentSeed) = ThemePalette.resolveSeeds(
+        staticAccent = settings.accent,
+        dynamic = settings.dynamicColor,
+        chosenAccent = settings.themeAccent,
+        systemPrimary = system?.primary?.toArgb() ?: wallpaper?.toArgb(),
+        systemAccent = system?.tertiary?.toArgb(),
+    )
+    val scheme = remember(primarySeed, accentSeed, dark) { schemeFrom(ThemePalette.roles(primarySeed, accentSeed, dark), dark) }
     val family = fontFamilyOf(settings.font)
     val typography = remember(family) { typographyWith(family) }
     val base = LocalDensity.current
@@ -172,42 +180,36 @@ fun OndaTheme(settings: Settings, content: @Composable () -> Unit) {
     }
 }
 
-/** Schema statico costruito a partire dal colore d'accento (per Android < 12 o colori dinamici spenti). */
-internal fun staticScheme(accent: Color, dark: Boolean): ColorScheme {
-    fun mix(a: Color, b: Color, t: Float) = Color(
-        a.red + (b.red - a.red) * t, a.green + (b.green - a.green) * t, a.blue + (b.blue - a.blue) * t, 1f
-    )
+/** Schema dell'interfaccia dai colori del tema (vedi [ThemePalette]): primario, accento e superfici con contrasti forti. */
+internal fun schemeFrom(r: PaletteRoles, dark: Boolean): ColorScheme {
+    fun c(v: Int) = Color(v)
     return if (dark) {
-        val surface = mix(Color(0xFF101315), accent, 0.04f)
         darkColorScheme(
-            primary = accent,
-            onPrimary = if (accent.luminance() > 0.4f) Color(0xFF0B1A17) else Color.White,
-            primaryContainer = mix(Color(0xFF101315), accent, 0.35f),
-            onPrimaryContainer = mix(Color.White, accent, 0.2f),
-            secondary = accent,
-            surface = surface,
-            background = surface,
-            surfaceContainer = mix(surface, accent, 0.06f),
-            surfaceContainerHigh = mix(surface, accent, 0.1f),
-            onSurface = Color(0xFFE3E6E8),
-            onSurfaceVariant = Color(0xFFB9C0C4),
+            primary = c(r.primary), onPrimary = c(r.onPrimary),
+            primaryContainer = c(r.primaryContainer), onPrimaryContainer = c(r.onPrimaryContainer),
+            secondary = c(r.accent), onSecondary = c(r.onAccent),
+            secondaryContainer = c(r.accentContainer), onSecondaryContainer = c(r.onAccentContainer),
+            tertiary = c(r.accent), onTertiary = c(r.onAccent),
+            tertiaryContainer = c(r.accentContainer), onTertiaryContainer = c(r.onAccentContainer),
+            surface = c(r.surface), background = c(r.surface),
+            onSurface = c(r.onSurface), onBackground = c(r.onSurface),
+            surfaceContainer = c(r.surfaceContainer), surfaceContainerHigh = c(r.surfaceContainerHigh),
+            surfaceVariant = c(r.surfaceContainerHigh), onSurfaceVariant = c(r.onSurfaceVariant),
+            outline = c(r.outline), outlineVariant = c(r.outline).copy(alpha = 0.5f),
         )
     } else {
-        // Abbastanza scuro da leggersi come testo sui pannelli con ogni accento (vedi SchemeContrastTest)
-        val primary = mix(accent, Color.Black, 0.52f)
-        val surface = mix(Color(0xFFF8FAFB), accent, 0.04f)
         lightColorScheme(
-            primary = primary,
-            onPrimary = Color.White,
-            primaryContainer = mix(Color.White, accent, 0.45f),
-            onPrimaryContainer = mix(accent, Color.Black, 0.7f),
-            secondary = primary,
-            surface = surface,
-            background = surface,
-            surfaceContainer = mix(surface, accent, 0.08f),
-            surfaceContainerHigh = mix(surface, accent, 0.13f),
-            onSurface = Color(0xFF171C1F),
-            onSurfaceVariant = Color(0xFF42494D),
+            primary = c(r.primary), onPrimary = c(r.onPrimary),
+            primaryContainer = c(r.primaryContainer), onPrimaryContainer = c(r.onPrimaryContainer),
+            secondary = c(r.accent), onSecondary = c(r.onAccent),
+            secondaryContainer = c(r.accentContainer), onSecondaryContainer = c(r.onAccentContainer),
+            tertiary = c(r.accent), onTertiary = c(r.onAccent),
+            tertiaryContainer = c(r.accentContainer), onTertiaryContainer = c(r.onAccentContainer),
+            surface = c(r.surface), background = c(r.surface),
+            onSurface = c(r.onSurface), onBackground = c(r.onSurface),
+            surfaceContainer = c(r.surfaceContainer), surfaceContainerHigh = c(r.surfaceContainerHigh),
+            surfaceVariant = c(r.surfaceContainerHigh), onSurfaceVariant = c(r.onSurfaceVariant),
+            outline = c(r.outline), outlineVariant = c(r.outline).copy(alpha = 0.5f),
         )
     }
 }

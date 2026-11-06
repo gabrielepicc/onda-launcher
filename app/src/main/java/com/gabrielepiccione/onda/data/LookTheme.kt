@@ -29,6 +29,7 @@ data class LookTheme(
     val clockScale: Float = 1f,
     val clockAlign: HAlign = HAlign.START,
     val textColor: Long = 0,
+    val themeAccent: Long = 0,
     val listAlign: HAlign = HAlign.START,
     val listFontWeight: Int = 400,
     val listLetterSpacing: Float = 0f,
@@ -41,7 +42,7 @@ data class LookTheme(
 ) {
     /** Applica il tema alle impostazioni, lasciando intatti i dati personali. */
     fun applyTo(s: Settings): Settings = s.copy(
-        themeMode = themeMode, dynamicColor = dynamicColor, accent = accent, font = font,
+        themeMode = themeMode, dynamicColor = dynamicColor, accent = accent, themeAccent = themeAccent, font = font,
         iconPack = iconPack, iconShape = iconShape, iconStyle = iconStyle, themedIcons = themedIcons,
         iconSize = iconSize, showIcons = showIcons, clockStyle = clockStyle, clockScale = clockScale,
         clockAlign = clockAlign, textColor = textColor, listAlign = listAlign, listFontWeight = listFontWeight,
@@ -54,7 +55,7 @@ data class LookTheme(
     companion object {
         /** Cattura l'aspetto corrente come nuovo tema. */
         fun capture(s: Settings, id: String, name: String) = LookTheme(
-            id = id, name = name, themeMode = s.themeMode, dynamicColor = s.dynamicColor, accent = s.accent,
+            id = id, name = name, themeMode = s.themeMode, dynamicColor = s.dynamicColor, accent = s.accent, themeAccent = s.themeAccent,
             font = s.font, iconPack = s.iconPack, iconShape = s.iconShape, iconStyle = s.iconStyle,
             themedIcons = s.themedIcons, iconSize = s.iconSize, showIcons = s.showIcons, clockStyle = s.clockStyle,
             clockScale = s.clockScale, clockAlign = s.clockAlign, textColor = s.textColor, listAlign = s.listAlign,

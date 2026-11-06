@@ -846,4 +846,7 @@
     <string name="popup_action_add">Aggiungi un\'azione</string>
     <string name="search_actions_title">Azioni</string>
     <string name="alphabet_hot_area">Larghezza della zona di tocco</string>
+    <string name="theme_accent_color">Colore d\'accento</string>
+    <string name="theme_accent_auto">Automatico</string>
+    <string name="theme_accent_sub">Il tema usa due colori: il primario (pannelli e superfici) e l\'accento (evidenziazioni, interruttori, lettere). Automatico segue i colori di sistema.</string>
 </resources>
