@@ -313,6 +313,8 @@ data class Settings(
     val alphabetStepDp: Int = 19,
     /** Dove riposa la colonna dell'alfabeto: 1 = in basso, 0 = in cima. */
     val alphabetRest: Float = 1f,
+    /** Larghezza della zona di tocco dell'alfabeto, in dp (le lettere restano sul bordo). */
+    val alphabetHotAreaDp: Int = 48,
     /** Mostra i contatti nell'elenco alfabetico, insieme alle app. */
     val contactsInAlphabet: Boolean = false,
     val hideFavoriteNames: Boolean = false,

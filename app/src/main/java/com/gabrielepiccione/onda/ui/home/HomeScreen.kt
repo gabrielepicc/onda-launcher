@@ -1202,6 +1202,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 letterScale = settings.alphabetScale,
                 maxLetterStep = settings.alphabetStepDp.dp,
                 restFraction = settings.alphabetRest,
+                hotAreaWidth = settings.alphabetHotAreaDp.dp,
                 modifier = Modifier
                     .align(if (settings.leftHanded) Alignment.CenterStart else Alignment.CenterEnd)
                     .zIndex(2f)
@@ -1219,6 +1220,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 showLetters = false,
                 maxLetterStep = settings.alphabetStepDp.dp,
                 restFraction = settings.alphabetRest,
+                hotAreaWidth = settings.alphabetHotAreaDp.dp,
                 modifier = Modifier
                     .align(if (settings.leftHanded) Alignment.CenterEnd else Alignment.CenterStart)
                     .zIndex(2f)
