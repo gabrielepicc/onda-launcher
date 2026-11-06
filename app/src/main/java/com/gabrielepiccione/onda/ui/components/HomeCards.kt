@@ -136,7 +136,7 @@ fun ClockHeader(
             .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
             .clip(RoundedCornerShape(28.dp))
             .combinedClickable(onClick = onTime, onLongClick = onLongPress)
-            .padding(horizontal = 14.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         ClockFace(now, style, scale, textAlign)
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -183,6 +183,7 @@ fun ClockHeader(
                     "${eventWhen(event, locale, stringResource(R.string.today), stringResource(R.string.tomorrow_at, "%s"))} · ${event.title}",
                     color = colors.onAccentContainer,
                     style = MaterialTheme.typography.labelLarge,
+                    // troncamento voluto: il titolo dell'evento sta in una riga sotto l'orologio
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -276,7 +277,7 @@ private fun AnimatedDigits(text: String, style: androidx.compose.ui.text.TextSty
                         .using(SizeTransform(clip = false))
                 },
                 label = "digit$i",
-            ) { c -> Text(c.toString(), style = style) }
+            ) { c -> Text(c.toString(), style = style.tight()) }
         }
     }
 }
@@ -705,3 +706,15 @@ fun AgendaCard(
         }
     }
 }
+
+/**
+ * Cifre grandi dell'orologio senza lo spazio sopra e sotto del carattere: l'altezza è quella delle cifre,
+ * così la data sta subito sotto e non galleggia a metà.
+ */
+private fun androidx.compose.ui.text.TextStyle.tight(): androidx.compose.ui.text.TextStyle = copy(
+    lineHeight = fontSize,
+    lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
+        alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center,
+        trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.Both,
+    ),
+)

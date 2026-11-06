@@ -397,6 +397,10 @@ data class Settings(
     val dismissedSuggestions: Set<String> = emptySet(),
     /** Nel popup di un'app con notifiche, scorciatoie e widget restano piegati in fondo. */
     val hideShortcutsWithNotifications: Boolean = true,
+    /** Larghezza e "Automatica" dei widget (home, luci, pile, cartelle); vedi [WidgetSizing]. */
+    val widgetSizes: Map<String, WidgetSize> = emptyMap(),
+    /** Spazio tra i blocchi della home, in dp (griglia da 4: compatto 0 … ampio 32). */
+    val homeBlockSpacing: Int = 8,
     /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */
     val musicBackdrop: MusicBackdropMode = MusicBackdropMode.MOTION,
     val musicBackdropIntensity: Float = 0.7f,

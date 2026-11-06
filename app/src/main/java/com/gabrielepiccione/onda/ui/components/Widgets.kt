@@ -4,6 +4,12 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Switch
+import androidx.compose.ui.semantics.Role
+import com.gabrielepiccione.onda.data.WidgetSize
+import com.gabrielepiccione.onda.data.WidgetSizing
+import androidx.compose.foundation.layout.width
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.home.*
 import com.gabrielepiccione.onda.ui.drawer.*
@@ -82,27 +88,31 @@ fun HostedWidget(
     heightDp: Int? = null,
     highlighted: Boolean = false,
     onLongPress: (() -> Unit)? = null,
+    /** Larghezza scelta e "Automatica"; null = tutta la larghezza e altezza da [heightDp]. */
+    size: WidgetSize? = null,
 ) {
     val info = remember(id) { widgets.infoFor(id) } ?: return
     val density = LocalDensity.current
     val colors = LocalOndaColors.current
-    val defaultHeight = with(density) { info.minHeight.toDp() }.coerceIn(72.dp, 320.dp)
-    val target = heightDp?.dp ?: defaultHeight
-    // L'altezza cambia con una molla quando la si regola dal foglio di modifica
-    val animated by androidx.compose.animation.core.animateDpAsState(target, Motion.bouncy(), label = "widgetHeight")
+    val preferredWidth = with(density) { info.minWidth.toDp() }.value.toInt()
+    val preferredHeight = with(density) { info.minHeight.toDp() }.value.toInt().coerceIn(72, 320)
     val currentLongPress by androidx.compose.runtime.rememberUpdatedState(onLongPress)
 
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
             .then(
                 if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)).padding(2.dp)
                 else Modifier
             )
             .clip(RoundedCornerShape(28.dp))
     ) {
-        val widthDp = maxWidth
+        // Misure scelte (o automatiche), con una molla quando si regolano dal foglio di modifica
+        val box = WidgetSizing.resolve(size, heightDp, preferredWidth, preferredHeight, maxWidth.value.toInt())
+        val target = box.height.dp
+        val animated by androidx.compose.animation.core.animateDpAsState(target, Motion.bouncy(), label = "widgetHeight")
+        val widthDp = box.width?.dp ?: maxWidth
+        val animatedWidth by androidx.compose.animation.core.animateDpAsState(widthDp, Motion.bouncy(), label = "widgetWidth")
         AndroidView(
             factory = { ctx ->
                 (widgets.createView(ctx, id) ?: View(ctx)).also { v ->
@@ -121,7 +131,9 @@ fun HostedWidget(
                 }
             },
             modifier = Modifier
-                .fillMaxWidth()
+                .align(Alignment.Center)
+                .width(animatedWidth)
+                // altezza fissa voluta: è la misura del widget scelta dall'utente
                 .height(animated),
         )
     }
@@ -151,6 +163,7 @@ fun WidgetStackCard(
     highlighted: Boolean,
     onLongPress: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    size: WidgetSize? = null,
 ) {
     if (stack.widgets.isEmpty()) return
     val colors = LocalOndaColors.current
@@ -171,7 +184,7 @@ fun WidgetStackCard(
         ) { page ->
             stack.widgets.getOrNull(page)?.let { id ->
                 androidx.compose.runtime.key(id) {
-                    HostedWidget(id, widgets, heightDp = height, highlighted = highlighted, onLongPress = onLongPress)
+                    HostedWidget(id, widgets, heightDp = height, highlighted = highlighted, onLongPress = onLongPress, size = size)
                 }
             }
         }
@@ -292,3 +305,53 @@ fun WidgetPickerSheet(
         }
     }
 }
+
+/**
+ * Misure di un widget, uguali dappertutto: "Automatica" (misura preferita del widget), altezza e larghezza.
+ * La larghezza al massimo vale "tutta la larghezza".
+ */
+@Composable
+fun WidgetSizeControls(
+    size: WidgetSize,
+    height: Int,
+    defaultHeight: Int,
+    maxWidth: Int,
+    onSize: (WidgetSize) -> Unit,
+    onHeight: (Int?) -> Unit,
+) {
+    val colors = LocalOndaColors.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .toggleable(value = size.auto, role = Role.Switch) { onSize(size.copy(auto = it)) },
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.widget_size_auto), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.widget_size_auto_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+        }
+        Switch(checked = size.auto, onCheckedChange = null)
+    }
+    if (!size.auto) {
+        ValueSlider(
+            stringResource(R.string.edit_height),
+            stringResource(R.string.value_dp, height),
+            height.toFloat(),
+            defaultHeight.toFloat(),
+            WidgetSizing.MIN_HEIGHT.toFloat()..WidgetSizing.MAX_HEIGHT.toFloat(),
+        ) { v -> onHeight(v.toInt().takeIf { it != defaultHeight }) }
+        val width = if (size.widthDp <= 0) maxWidth else size.widthDp.coerceAtMost(maxWidth)
+        ValueSlider(
+            stringResource(R.string.edit_width),
+            if (width >= maxWidth) stringResource(R.string.widget_full_width) else stringResource(R.string.value_dp, width),
+            width.toFloat(),
+            maxWidth.toFloat(),
+            WidgetSizing.MIN_WIDTH.toFloat()..maxWidth.toFloat().coerceAtLeast(WidgetSizing.MIN_WIDTH + 1f),
+        ) { v -> onSize(size.copy(widthDp = if (v.toInt() >= maxWidth - 4) 0 else v.toInt())) }
+    }
+}
+
+/** Misure dei widget, per i componenti lontani dalle impostazioni (cartelle). */
+val LocalWidgetSizes = androidx.compose.runtime.staticCompositionLocalOf<Map<String, WidgetSize>> { emptyMap() }
+val LocalWidgetSizeSetter = androidx.compose.runtime.staticCompositionLocalOf<(String, WidgetSize) -> Unit> { { _, _ -> } }

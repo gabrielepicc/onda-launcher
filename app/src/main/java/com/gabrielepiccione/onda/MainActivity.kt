@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.gabrielepiccione.onda.data.WidgetSizing
+import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
+import com.gabrielepiccione.onda.ui.components.LocalWidgetSizes
 import com.gabrielepiccione.onda.data.MusicBackdropMode
 import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
@@ -288,6 +292,10 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             // Il profilo attivo può cambiare appena l'accento: l'unico segnale del cambio, niente popup
             val themed = state.activeProfile?.accent?.takeIf { it != 0L }?.let { state.settings.copy(accent = it, dynamicColor = false) } ?: state.settings
             OndaTheme(themed) {
+              CompositionLocalProvider(
+                LocalWidgetSizes provides state.settings.widgetSizes,
+                LocalWidgetSizeSetter provides { key, size -> vm.updateSettings { WidgetSizing.set(it, key, size) } },
+              ) {
                 val dark = LocalOndaColors.current.dark
                 val hideBar = state.settings.hideStatusBar
                 SideEffect {
@@ -303,6 +311,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
                     }
                 }
                 HomeScreen(vm = vm, callbacks = this, status = status)
+              }
             }
         }
     }

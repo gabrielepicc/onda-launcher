@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.WidgetSize
+import com.gabrielepiccione.onda.data.WidgetSizing
+import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -153,29 +157,30 @@ fun HomeEditSheet(
                 }
             }
 
+            val maxWidth = LocalConfiguration.current.screenWidthDp - 32
             if (widgetId != null) {
-                val current = settings.widgetHeights[widgetId] ?: defaultWidgetHeight(widgetId)
-                ValueSlider(
-                    stringResource(R.string.edit_height),
-                    stringResource(R.string.value_dp, current),
-                    current.toFloat(),
-                    defaultWidgetHeight(widgetId).toFloat(),
-                    64f..520f,
-                    accentLabel = true,
-                ) { v -> actions.setWidgetHeight(widgetId, v.roundToInt()) }
+                val key = WidgetSizing.widgetKey(widgetId)
+                WidgetSizeControls(
+                    size = settings.widgetSizes[key] ?: WidgetSize(),
+                    height = settings.widgetHeights[widgetId] ?: defaultWidgetHeight(widgetId),
+                    defaultHeight = defaultWidgetHeight(widgetId),
+                    maxWidth = maxWidth,
+                    onSize = { size -> actions.edit { WidgetSizing.set(it, key, size) } },
+                    onHeight = { h -> actions.setWidgetHeight(widgetId, h ?: defaultWidgetHeight(widgetId)) },
+                )
             }
 
             if (stack != null) {
                 val stackDefault = stack.widgets.maxOfOrNull { defaultWidgetHeight(it) } ?: 160
-                val current = stack.heightDp ?: stackDefault
-                ValueSlider(
-                    stringResource(R.string.edit_height),
-                    stringResource(R.string.value_dp, current),
-                    current.toFloat(),
-                    stackDefault.toFloat(),
-                    64f..520f,
-                    accentLabel = true,
-                ) { v -> actions.setStackHeight(stack.id, v.roundToInt()) }
+                val key = WidgetSizing.stackKey(stack.id)
+                WidgetSizeControls(
+                    size = settings.widgetSizes[key] ?: WidgetSize(),
+                    height = stack.heightDp ?: stackDefault,
+                    defaultHeight = stackDefault,
+                    maxWidth = maxWidth,
+                    onSize = { size -> actions.edit { WidgetSizing.set(it, key, size) } },
+                    onHeight = { h -> actions.setStackHeight(stack.id, h ?: stackDefault) },
+                )
                 SectionTitle(R.string.stack_widgets)
                 stack.widgets.forEach { id ->
                     val label = widgetLabel(id) ?: stringResource(R.string.widget_number, id)

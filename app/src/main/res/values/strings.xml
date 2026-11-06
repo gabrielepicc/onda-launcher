@@ -765,4 +765,13 @@
     <string name="section_notifications">Notifications</string>
     <string name="hide_shortcuts_with_notifications">Hide shortcuts when there are notifications</string>
     <string name="hide_shortcuts_with_notifications_sub">In an app\'s popup the notifications come first; shortcuts and the widget fold into a row at the bottom</string>
+    <string name="widget_size_auto">Automatic</string>
+    <string name="widget_size_auto_sub">The size the widget prefers</string>
+    <string name="edit_width">Width</string>
+    <string name="widget_full_width">Full width</string>
+    <string name="home_block_spacing">Space between blocks</string>
+    <string name="home_block_spacing_sub">Distance between clock, widgets, player and apps on home. The phone preview above follows it.</string>
+    <string name="spacing_compact">Compact</string>
+    <string name="spacing_normal">Normal</string>
+    <string name="spacing_wide">Wide</string>
 </resources>
