@@ -81,6 +81,10 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 13. ✅ Scoperta delle funzioni: benvenuto con "Mostrami", suggerimenti "Lo sapevi?", ricerca delle impostazioni dalla barra.
 14. ✅ Onda in bianco e nero a orario; swipe trasparente; home compatta e widget ridimensionabili.
 
+## Gruppi di richieste concluse (novembre 2026)
+- ✅ Correzioni widget e cartelle (#64) · Azioni personalizzate ovunque (#65) · Popup in corrispondenza (#66) · Alfabeto e icone (#67) · Palette su due colori (#68).
+- ⬜ Sfondo musicale ovunque: live wallpaper «solo colori» (scelta del proprietario), rendering condiviso con la home, senza microfono.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.
