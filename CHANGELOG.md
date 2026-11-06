@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Correzioni widget e cartelle**: nel carosello di widget lo scorrimento non apre più la modifica (la pressione lunga ferma resta); con l'orologio sostituito da un widget, le luci di casa compaiono comunque in cima alla home.
+- **Azioni personalizzate ovunque**: un solo catalogo (torcia, pannello rapido, silenzioso, blocco, screenshot, app recenti, app, scorciatoie delle app, ricerca, elenco app, impostazioni) per gesti, pulsante di ricerca, swipe delle app e delle cartelle, popup e ricerca. Permessi chiesti al momento, con la guida delle impostazioni con limitazioni.
+- **Popup in corrispondenza dell'app**: centrato sulla riga e, se c'è posto, di lato; altrimenti sotto o sopra.
+- **Alfabeto e icone**: zona di tocco dell'alfabeto più larga e regolabile; icone personalizzabili anche per scorciatoie e web app di Chrome (incluse nel backup).
+- **Palette più decisa**: il tema usa due colori, primario e accento (default: colori di sistema), con contrasti WCAG AA verificati da test.
 - **Profili suggeriti dall'uso** (Preferiti contestuali → Suggerisci profili, spento di default):
   - Onda guarda quando apri le app (ultime 4 settimane, almeno 14 giorni di storia, app presenti in almeno 5 giorni diversi) e propone un profilo per fascia (mattina, pomeriggio, sera, notte; feriali e weekend), con 3–6 app. Se ha il contesto, anche per cuffie e carica.
   - Una scheda in home con Crea, Modifica e Ignora. Niente si attiva da solo. Dopo "Ignora" la proposta tace per 30 giorni; al massimo una proposta a settimana.
