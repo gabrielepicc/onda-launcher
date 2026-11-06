@@ -77,6 +77,9 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
   5. ✅ ripresa con le cuffie;
   6. ✅ livello "a ritmo" (approvato, spento di default).
 
+13. ✅ Scoperta delle funzioni: benvenuto con "Mostrami", suggerimenti "Lo sapevi?", ricerca delle impostazioni dalla barra.
+14. ✅ Onda in bianco e nero a orario; swipe trasparente; home compatta e widget ridimensionabili.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.
