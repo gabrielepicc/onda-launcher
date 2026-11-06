@@ -849,4 +849,8 @@
     <string name="theme_accent_color">Colore d\'accento</string>
     <string name="theme_accent_auto">Automatico</string>
     <string name="theme_accent_sub">Il tema usa due colori: il primario (pannelli e superfici) e l\'accento (evidenziazioni, interruttori, lettere). Automatico segue i colori di sistema.</string>
+    <string name="music_wallpaper_label">Sfondo musicale di Onda</string>
+    <string name="music_wallpaper_description">Sfondo animato con i colori dell\'album in riproduzione. Non chiede permessi e non usa mai il microfono.</string>
+    <string name="music_wallpaper_set">Usa come sfondo di sistema</string>
+    <string name="music_wallpaper_set_sub">Anche nella schermata di blocco. Solo colori e movimento, senza microfono. Sostituisce lo sfondo attuale.</string>
 </resources>

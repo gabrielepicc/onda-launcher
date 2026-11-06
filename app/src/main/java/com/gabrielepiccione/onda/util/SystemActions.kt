@@ -6,6 +6,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.SearchManager
 import android.app.role.RoleManager
+import android.app.WallpaperManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,6 +16,7 @@ import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.Settings
 import com.gabrielepiccione.onda.data.AppInfo
+import com.gabrielepiccione.onda.service.MusicWallpaperService
 
 object SystemActions {
 
@@ -86,6 +89,14 @@ object SystemActions {
 
     fun openWallpaperPicker(context: Context) =
         start(context, Intent.createChooser(Intent(Intent.ACTION_SET_WALLPAPER), context.getString(com.gabrielepiccione.onda.R.string.wallpaper_chooser)))
+
+    /** Propone lo sfondo musicale di Onda come sfondo animato di sistema (anche per la schermata di blocco). */
+    fun openMusicWallpaper(context: Context) {
+        val component = ComponentName(context, MusicWallpaperService::class.java)
+        val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+            .putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, component)
+        start(context, intent)
+    }
 
     fun isDefaultLauncher(context: Context): Boolean {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
