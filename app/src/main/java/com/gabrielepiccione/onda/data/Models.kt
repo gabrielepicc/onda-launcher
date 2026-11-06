@@ -399,6 +399,13 @@ data class Settings(
     val hideShortcutsWithNotifications: Boolean = true,
     /** Larghezza e "Automatica" dei widget (home, luci, pile, cartelle); vedi [WidgetSizing]. */
     val widgetSizes: Map<String, WidgetSize> = emptyMap(),
+    /** Onda in bianco e nero: spenta, a orario o finché è attivo un profilo dei preferiti. */
+    val grayscaleMode: GrayscaleMode = GrayscaleMode.OFF,
+    /** Inizio e fine, in minuti dalla mezzanotte (anche a cavallo della mezzanotte). */
+    val grayscaleStart: Int = GrayscaleSchedule.DEFAULT_START,
+    val grayscaleEnd: Int = GrayscaleSchedule.DEFAULT_END,
+    /** Profilo che accende il bianco e nero con la modalità "profilo". */
+    val grayscaleProfile: String = "",
     /** Spazio tra i blocchi della home, in dp (griglia da 4: compatto 0 … ampio 32). */
     val homeBlockSpacing: Int = 8,
     /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */

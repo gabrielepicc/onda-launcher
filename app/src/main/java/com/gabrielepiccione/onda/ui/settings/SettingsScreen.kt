@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.GrayscaleMode
+import com.gabrielepiccione.onda.data.GrayscaleSchedule
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.filled.GraphicEq
 import com.gabrielepiccione.onda.data.PrefixKind
 import com.gabrielepiccione.onda.data.SearchPrefixes
@@ -142,6 +145,7 @@ interface SettingsActions {
     fun locationPermission()
     fun bluetoothPermission()
     fun microphonePermission()
+    fun systemGrayscale()
     /** Nome del Wi-Fi collegato adesso, o null se Android non lo dice. */
     fun currentWifi(): String?
     /** Salva [ssid] come Wi-Fi di casa e, se manca, la posizione approssimativa. */
@@ -844,6 +848,50 @@ internal fun SettingsScreen(
             }
         }
 
+        if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_grayscale)) {
+            SettingsSupporting(stringResource(R.string.grayscale_sub))
+            TextChoices(
+                listOf(
+                    GrayscaleMode.OFF to stringResource(R.string.grayscale_off),
+                    GrayscaleMode.SCHEDULE to stringResource(R.string.grayscale_schedule),
+                    GrayscaleMode.PROFILE to stringResource(R.string.grayscale_profile),
+                ),
+                settings.grayscaleMode,
+            ) { m -> onEdit { it.copy(grayscaleMode = m) } }
+            if (settings.grayscaleMode == GrayscaleMode.SCHEDULE) {
+                ValueSlider(
+                    stringResource(R.string.grayscale_from),
+                    minuteLabel(settings.grayscaleStart),
+                    settings.grayscaleStart.toFloat(),
+                    GrayscaleSchedule.DEFAULT_START.toFloat(),
+                    0f..1425f,
+                ) { v -> onEdit { it.copy(grayscaleStart = ((v / 15f).roundToInt() * 15).coerceIn(0, 1425)) } }
+                ValueSlider(
+                    stringResource(R.string.grayscale_to),
+                    minuteLabel(settings.grayscaleEnd),
+                    settings.grayscaleEnd.toFloat(),
+                    GrayscaleSchedule.DEFAULT_END.toFloat(),
+                    0f..1425f,
+                ) { v -> onEdit { it.copy(grayscaleEnd = ((v / 15f).roundToInt() * 15).coerceIn(0, 1425)) } }
+            }
+            if (settings.grayscaleMode == GrayscaleMode.PROFILE) {
+                if (settings.contextProfiles.isEmpty()) {
+                    SettingsSupporting(stringResource(R.string.grayscale_no_profiles))
+                } else {
+                    Column(Modifier.selectableGroup()) {
+                        settings.contextProfiles.forEach { p ->
+                            RadioItem(p.name, settings.grayscaleProfile == p.id) { onEdit { it.copy(grayscaleProfile = p.id) } }
+                        }
+                    }
+                }
+            }
+            SettingsItem(
+                headline = stringResource(R.string.grayscale_system),
+                supporting = stringResource(R.string.grayscale_system_sub),
+                onClick = { actions.systemGrayscale() },
+            )
+        }
+
         if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_breaker)) {
             SettingsSupporting(stringResource(R.string.breaker_sub))
             if ((settings.breakerApps.isNotEmpty() || settings.appLimits.isNotEmpty()) && !status.accessibilityEnabled) {
@@ -1217,6 +1265,7 @@ private val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.page_contexts, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.ctx_fixed_title, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.section_limits, SettingsPage.WELLBEING, R.string.kw_wellbeing),
+    SettingEntry(R.string.section_grayscale, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.private_space, SettingsPage.APPS, R.string.kw_apps),
     SettingEntry(R.string.section_hidden, SettingsPage.APPS, R.string.kw_apps),
     SettingEntry(R.string.protect_hidden, SettingsPage.APPS, R.string.kw_apps),
@@ -1418,3 +1467,6 @@ private fun mediaApps(): List<String> {
 }
 /** A quale elenco di Benessere digitale si aggiunge l'app scelta. */
 private enum class AppPickTarget { BREAKER, REMINDERS }
+
+/** Minuti dalla mezzanotte come "22:30". */
+private fun minuteLabel(minute: Int): String = "%d:%02d".format(minute / 60 % 24, minute % 60)

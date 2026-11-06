@@ -191,6 +191,7 @@ interface HomeCallbacks {
     fun requestLocationPermission()
     fun requestBluetoothPermission()
     fun requestMicrophonePermission()
+    fun openSystemGrayscale()
     fun restartLauncher()
     fun requestPostNotifications()
     fun openUsageAccess()
@@ -1228,6 +1229,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun locationPermission() = callbacks.requestLocationPermission()
                         override fun bluetoothPermission() = callbacks.requestBluetoothPermission()
                         override fun microphonePermission() = callbacks.requestMicrophonePermission()
+                        override fun systemGrayscale() = callbacks.openSystemGrayscale()
                         override fun pickLightsWidget() = openWidgetPicker(HomePresence.GOOGLE_HOME_PACKAGE, WidgetTarget.HomeLights)
                         override fun currentWifi(): String? = HomePresence.currentSsid(context)
                         override fun saveHome(ssid: String) {
