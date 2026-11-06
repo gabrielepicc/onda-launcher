@@ -845,4 +845,5 @@
     <string name="popup_actions">Custom actions</string>
     <string name="popup_action_add">Add an action</string>
     <string name="search_actions_title">Actions</string>
+    <string name="alphabet_hot_area">Touch area width</string>
 </resources>

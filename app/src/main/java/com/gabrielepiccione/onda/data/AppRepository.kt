@@ -86,7 +86,7 @@ class AppRepository(
                     result[entry.key] = PinnedInfo(
                         shortcut = info,
                         label = (info.shortLabel ?: info.longLabel)?.toString() ?: entry.label,
-                        icon = shortcutIcon(info, iconSizePx),
+                        icon = pinnedIcon(info, entry.key, settings.value),
                     )
                 }
             }
@@ -151,7 +151,7 @@ class AppRepository(
             settings.map { it.iconParams() }.distinctUntilChanged().drop(1).collect { reload() }
         }
         scope.launch {
-            settings.map { it.pinnedShortcuts }.distinctUntilChanged().collect { refreshPinned() }
+            settings.map { it.pinnedShortcuts to it.iconOverrides.filterKeys { k -> k.contains('|') } to it.iconShapeOverrides }.distinctUntilChanged().collect { refreshPinned() }
         }
     }
 
@@ -342,6 +342,30 @@ class AppRepository(
                 )
             launcherApps.getShortcuts(query, android.os.Process.myUserHandle())?.firstOrNull()?.let { startShortcut(it) }
         }
+    }
+
+    /**
+     * Icona di una scorciatoia fissata (anche le web app di Chrome): quella scelta a mano (immagine o pack),
+     * poi la forma scelta per lei, altrimenti l'icona originale. Stessa chiave e stesse impostazioni delle app.
+     */
+    private fun pinnedIcon(info: ShortcutInfo, key: String, s: Settings): ImageBitmap? {
+        val override = s.iconOverrides[key]
+        if (override != null) {
+            val custom = if (override.startsWith(ICON_FILE_PREFIX)) {
+                imageIcon(override.removePrefix(ICON_FILE_PREFIX))
+            } else {
+                override.split('|').takeIf { it.size == 2 }?.let { (pkg, name) ->
+                    packs.get(pkg)?.drawable(name, densityDpi)?.toBitmap(iconSizePx, iconSizePx)
+                }
+            }
+            if (custom != null) return custom.asImageBitmap()
+        }
+        val shape = s.iconShapeOverrides[key]?.let { runCatching { IconShape.valueOf(it) }.getOrNull() }
+        if (shape != null) {
+            val drawable = runCatching { launcherApps.getShortcutIconDrawable(info, densityDpi) }.getOrNull()
+            if (drawable != null) return IconRenderer.render(drawable, shape, iconSizePx).asImageBitmap()
+        }
+        return shortcutIcon(info, iconSizePx)
     }
 
     fun startShortcut(shortcut: ShortcutInfo) {

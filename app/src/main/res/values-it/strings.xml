@@ -845,4 +845,5 @@
     <string name="popup_actions">Azioni personalizzate</string>
     <string name="popup_action_add">Aggiungi un\'azione</string>
     <string name="search_actions_title">Azioni</string>
+    <string name="alphabet_hot_area">Larghezza della zona di tocco</string>
 </resources>
