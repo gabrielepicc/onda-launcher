@@ -1031,7 +1031,7 @@
     <string name="opt_folder_none">Not in a folder: tap to move it</string>
     <string name="opt_edit_popup">Customize the popup</string>
     <string name="opt_notifications_home">Notifications on home</string>
-    <string name="opt_notifications_home_sub">Shows this app's notifications under its row</string>
+    <string name="opt_notifications_home_sub">Shows this app\'s notifications under its row</string>
     <string name="opt_reminder">Usage reminder</string>
     <string name="opt_reminder_sub">A notification reminds you how long you have been using it continuously</string>
     <string name="opt_protect">Protect with unlock</string>
