@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.search
 
+import com.gabrielepiccione.onda.ui.components.TonalIcon
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.data.SettingsSearch
 import com.gabrielepiccione.onda.ui.settings.SETTING_ENTRIES
 import com.gabrielepiccione.onda.ui.settings.SettingEntry
@@ -136,8 +138,9 @@ internal fun SearchPanel(
             modifier = Modifier
                 .padding(top = 16.dp, bottom = 8.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(28.dp))
-                .background(colors.panelHigh)
+                .clip(LocalOndaTokens.current.shapes.large)
+                // Barra di ricerca di Material 3: superficie tonale alta
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .height(56.dp)
                 .padding(start = 18.dp, end = 6.dp)
         ) {
@@ -208,7 +211,7 @@ internal fun SearchPanel(
                             .padding(horizontal = 18.dp, vertical = 10.dp)
                             .animateItem(),
                     ) {
-                        Icon(actionIcon(action), contentDescription = null, tint = colors.accent)
+                        TonalIcon(actionIcon(action))
                         Spacer(Modifier.width(16.dp))
                         Text(actionLabels.getValue(action), color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium)
                     }
@@ -339,8 +342,8 @@ internal fun SearchPanel(
 private fun SectionLabel(text: String) {
     Text(
         text,
-        color = LocalOndaColors.current.onWallpaperMuted,
-        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
         modifier = Modifier.padding(start = 12.dp, top = 18.dp, bottom = 4.dp),
     )
 }
@@ -352,9 +355,10 @@ private fun SimpleRow(icon: @Composable () -> Unit, label: String, muted: Boolea
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .heightIn(min = 56.dp)
+            .clip(LocalOndaTokens.current.shapes.medium)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 12.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Box(Modifier.size(34.dp), contentAlignment = Alignment.Center) { icon() }
         Spacer(Modifier.width(14.dp))
