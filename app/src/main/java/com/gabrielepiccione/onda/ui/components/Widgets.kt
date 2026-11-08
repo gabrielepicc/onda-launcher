@@ -4,9 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.Switch
-import androidx.compose.ui.semantics.Role
+import kotlin.math.roundToInt
 import com.gabrielepiccione.onda.data.WidgetSize
 import com.gabrielepiccione.onda.data.WidgetSizing
 import androidx.compose.foundation.layout.width
@@ -205,39 +203,36 @@ fun WidgetSizeControls(
     onSize: (WidgetSize) -> Unit,
     onHeight: (Int?) -> Unit,
 ) {
-    val colors = LocalOndaColors.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .toggleable(value = size.auto, role = Role.Switch) { onSize(size.copy(auto = it)) },
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.widget_size_auto), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-            Text(stringResource(R.string.widget_size_auto_sub), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
-        }
-        Switch(checked = size.auto, onCheckedChange = null)
-    }
-    if (!size.auto) {
-        ValueSlider(
+    SwitchRow(stringResource(R.string.widget_size_auto), stringResource(R.string.widget_size_auto_sub), size.auto) { onSize(size.copy(auto = it)) }
+    if (size.auto) {
+        // Con «Automatico» le misure le decide il widget: gli slider restano nascosti, e si dice perché
+        Text(
+            stringResource(R.string.widget_size_auto_hint),
+            color = LocalOndaColors.current.onWallpaperMuted,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(vertical = 8.dp),
+        )
+    } else {
+        SliderRow(
             stringResource(R.string.edit_height),
             stringResource(R.string.value_dp, height),
             height.toFloat(),
             defaultHeight.toFloat(),
             WidgetSizing.MIN_HEIGHT.toFloat()..WidgetSizing.MAX_HEIGHT.toFloat(),
         ) { v -> onHeight(v.toInt().takeIf { it != defaultHeight }) }
-        val width = if (size.widthDp <= 0) maxWidth else size.widthDp.coerceAtMost(maxWidth)
-        ValueSlider(
+        // Larghezza a tacche: ½, ¾, piena
+        val step = WidgetSizing.widthStep(size.widthDp, maxWidth)
+        val labels = listOf(R.string.widget_width_half, R.string.widget_width_three_quarters, R.string.widget_full_width)
+        SliderRow(
             stringResource(R.string.edit_width),
-            if (width >= maxWidth) stringResource(R.string.widget_full_width) else stringResource(R.string.value_dp, width),
-            width.toFloat(),
-            maxWidth.toFloat(),
-            WidgetSizing.MIN_WIDTH.toFloat()..maxWidth.toFloat().coerceAtLeast(WidgetSizing.MIN_WIDTH + 1f),
-        ) { v -> onSize(size.copy(widthDp = if (v.toInt() >= maxWidth - 4) 0 else v.toInt())) }
+            stringResource(labels[step]),
+            step.toFloat(),
+            WidgetSizing.WIDTH_FRACTIONS.lastIndex.toFloat(),
+            0f..WidgetSizing.WIDTH_FRACTIONS.lastIndex.toFloat(),
+            step = 1f,
+        ) { v -> onSize(size.copy(widthDp = WidgetSizing.widthForStep(v.roundToInt(), maxWidth))) }
     }
 }
 
-/** Misure dei widget, per i componenti lontani dalle impostazioni (cartelle). */
 val LocalWidgetSizes = androidx.compose.runtime.staticCompositionLocalOf<Map<String, WidgetSize>> { emptyMap() }
 val LocalWidgetSizeSetter = androidx.compose.runtime.staticCompositionLocalOf<(String, WidgetSize) -> Unit> { { _, _ -> } }

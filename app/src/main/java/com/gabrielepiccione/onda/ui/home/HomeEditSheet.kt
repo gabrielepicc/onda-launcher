@@ -4,6 +4,15 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.components.LocalSliderDragging
+import com.gabrielepiccione.onda.ui.components.ChoiceRow
+import com.gabrielepiccione.onda.ui.components.ActionRow
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.animation.core.animateFloatAsState
 import com.gabrielepiccione.onda.data.WidgetSize
 import com.gabrielepiccione.onda.data.WidgetSizing
 import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
@@ -23,11 +32,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
 import com.gabrielepiccione.onda.ui.settings.AlignTiles
 import com.gabrielepiccione.onda.ui.settings.ClockStyleTiles
 import com.gabrielepiccione.onda.ui.settings.MediaStyleTiles
-import com.gabrielepiccione.onda.ui.settings.TextChoices
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -93,10 +100,14 @@ fun HomeEditSheet(
             onDismiss = { widgetToDelete = null },
         )
     }
+    // Mentre si trascina uno slider il foglio si fa traslucido: si vede il blocco cambiare dal vivo
+    val dragging = remember { mutableStateOf(false) }
+    val sheetAlpha by animateFloatAsState(if (dragging.value) DRAG_ALPHA else 1f, label = "editSheetAlpha")
+    CompositionLocalProvider(LocalSliderDragging provides dragging) {
     ModalBottomSheet(
         onDismissRequest = { actions.done() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = sheetAlpha),
         contentColor = colors.onWallpaper,
         scrimColor = Color.Transparent,
     ) {
@@ -111,7 +122,7 @@ fun HomeEditSheet(
             val widgetId = HomeBlocks.widgetId(block)
             val stack = settings.widgetStacks.firstOrNull { it.id == HomeBlocks.stackId(block) }
             Text(
-                stringResource(
+                if (widgetId != null) widgetLabel(widgetId) ?: stringResource(R.string.edit_widget) else stringResource(
                     when {
                         widgetId != null -> R.string.edit_widget
                         stack != null -> R.string.edit_stack
@@ -160,6 +171,7 @@ fun HomeEditSheet(
             val maxWidth = LocalConfiguration.current.screenWidthDp - 32
             if (widgetId != null) {
                 val key = WidgetSizing.widgetKey(widgetId)
+                SectionTitle(R.string.widget_group_size)
                 WidgetSizeControls(
                     size = settings.widgetSizes[key] ?: WidgetSize(),
                     height = settings.widgetHeights[widgetId] ?: defaultWidgetHeight(widgetId),
@@ -189,17 +201,19 @@ fun HomeEditSheet(
                 SheetRow(Icons.Filled.Add, stringResource(R.string.stack_add)) { actions.addToStack(block) }
             }
 
-            SectionTitle(R.string.edit_position)
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                FilledTonalIconButton(onClick = { actions.move(block, -1) }, enabled = index > 0) {
-                    Icon(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up))
+            // Posizione: un solo gruppo con l'ordine nella home e l'altezza sullo schermo
+            SectionTitle(R.string.edit_group_position)
+            Text(stringResource(R.string.edit_position), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                FilledTonalButton(onClick = { actions.move(block, -1) }, enabled = index > 0, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Icon(Icons.Filled.KeyboardArrowUp, null)
+                    Text(stringResource(R.string.move_up), modifier = Modifier.padding(start = 4.dp))
                 }
-                FilledTonalIconButton(onClick = { actions.move(block, 1) }, enabled = index in 0 until blocks.lastIndex) {
-                    Icon(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down))
+                FilledTonalButton(onClick = { actions.move(block, 1) }, enabled = index in 0 until blocks.lastIndex, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Icon(Icons.Filled.KeyboardArrowDown, null)
+                    Text(stringResource(R.string.move_down), modifier = Modifier.padding(start = 4.dp))
                 }
             }
-
-            SectionTitle(R.string.home_position)
             HomePositionControl(settings) { actions.edit(it) }
 
             if (block == HomeBlocks.CLOCK) {
@@ -228,9 +242,17 @@ fun HomeEditSheet(
                 }
             }
             if (widgetId != null) {
-                SheetRow(Icons.Filled.Add, stringResource(R.string.stack_make)) { actions.addToStack(block) }
-                SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_widget)) { actions.replaceWidget(widgetId) }
-                SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_delete_widget)) { widgetToDelete = widgetId }
+                SectionTitle(R.string.edit_group_actions)
+                ActionRow(Icons.Filled.Add, stringResource(R.string.stack_make)) { actions.addToStack(block) }
+                ActionRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_widget)) { actions.replaceWidget(widgetId) }
+                // Rimuovi: rosso, con la conferma già prevista
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable { widgetToDelete = widgetId },
+                ) {
+                    Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 8.dp))
+                    Text(stringResource(R.string.edit_delete_widget), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp))
+                }
             }
 
             Button(onClick = { actions.done() }, modifier = Modifier.padding(top = 8.dp).align(Alignment.End)) {
@@ -238,19 +260,22 @@ fun HomeEditSheet(
             }
         }
     }
+    }
 }
+
+private const val DRAG_ALPHA = 0.35f
 
 /**
  * Sceglie dove inizia il primo blocco della home: ancorato in basso (automatico) oppure in un
  * punto preciso dello schermo. I blocchi successivi, preferiti compresi, seguono il primo.
  */
 @Composable
-fun HomePositionControl(settings: Settings, edit: ((Settings) -> Settings) -> Unit) {
+fun HomePositionControl(settings: Settings, showLabel: Boolean = true, edit: ((Settings) -> Settings) -> Unit) {
     val manual = settings.homeTopFraction >= 0f
-    TextChoices(
+    ChoiceRow(
+        if (showLabel) stringResource(R.string.home_position) else null,
         listOf(false to stringResource(R.string.home_position_auto), true to stringResource(R.string.home_position_manual)),
         manual,
-        columns = 2,
     ) { wantManual ->
         if (wantManual) { if (!manual) edit { it.copy(homeTopFraction = DEFAULT_HOME_TOP) } } else edit { it.copy(homeTopFraction = -1f) }
     }
@@ -278,8 +303,8 @@ private fun pluralStringResourceCompat(days: Int): String = stringResource(R.str
 private fun SectionTitle(res: Int) {
     Text(
         stringResource(res),
-        color = LocalOndaColors.current.accent,
-        style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(top = 10.dp),
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
+        modifier = Modifier.padding(top = 16.dp),
     )
 }

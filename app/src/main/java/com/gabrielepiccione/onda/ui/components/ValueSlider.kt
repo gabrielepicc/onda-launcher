@@ -2,6 +2,14 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.gabrielepiccione.onda.ui.settings.flashIfTarget
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,8 +56,17 @@ fun ValueSlider(
             TextButton(onClick = { onChange(default) }) { Text(stringResource(R.string.slider_reset)) }
         }
     }
-    Slider(value = value, onValueChange = onChange, valueRange = range, steps = steps)
+    // Mentre si trascina, il foglio che lo contiene può farsi traslucido per vedere il cambio dal vivo
+    val interaction = remember { MutableInteractionSource() }
+    val dragged by interaction.collectIsDraggedAsState()
+    val pressed by interaction.collectIsPressedAsState()
+    val dragging = LocalSliderDragging.current
+    LaunchedEffect(dragged || pressed) { dragging?.value = dragged || pressed }
+    Slider(value = value, onValueChange = onChange, valueRange = range, steps = steps, interactionSource = interaction)
 }
+
+/** Se presente, diventa vero mentre l'utente trascina uno slider (lo usano i fogli che si fanno traslucidi). */
+val LocalSliderDragging = staticCompositionLocalOf<MutableState<Boolean>?> { null }
 
 /** Valore in percentuale (1.0 = 100%). */
 @Composable
