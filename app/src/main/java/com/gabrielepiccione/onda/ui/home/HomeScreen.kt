@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import com.gabrielepiccione.onda.data.ContextProfile
 import com.gabrielepiccione.onda.data.ProfileSuggestion
 import com.gabrielepiccione.onda.data.UsageProfiles
@@ -17,8 +19,6 @@ import com.gabrielepiccione.onda.data.WidgetSizing
 import com.gabrielepiccione.onda.ui.components.actionIcon
 import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
-import com.gabrielepiccione.onda.ui.components.LocalWidgetSizes
-import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
 import com.gabrielepiccione.onda.data.PlugPlay
 import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcuts
@@ -37,7 +37,6 @@ import com.gabrielepiccione.onda.data.SpotifyLinks
 import com.gabrielepiccione.onda.ui.components.OndaChip
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
 import androidx.compose.material3.Switch
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -74,13 +73,10 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
@@ -89,7 +85,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -97,7 +92,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -106,20 +100,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -129,24 +118,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -2192,14 +2177,7 @@ private fun MenuItem(icon: ImageVector, title: String, supporting: String?, trai
     ListItem(
         headlineContent = { Text(title, style = MaterialTheme.typography.bodyLarge) },
         supportingContent = supporting?.let { { Text(it, style = MaterialTheme.typography.bodyMedium) } },
-        leadingContent = {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(scheme.secondaryContainer),
-            ) {
-                Icon(icon, null, tint = scheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
-            }
-        },
+        leadingContent = { TonalIcon(icon) },
         trailingContent = trailing,
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent,

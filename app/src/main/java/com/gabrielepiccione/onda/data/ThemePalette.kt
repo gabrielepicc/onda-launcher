@@ -103,8 +103,10 @@ data class PaletteRoles(
     val accentContainer: Int,
     val onAccentContainer: Int,
     val surface: Int,
+    val surfaceContainerLow: Int,
     val surfaceContainer: Int,
     val surfaceContainerHigh: Int,
+    val surfaceContainerHighest: Int,
     val onSurface: Int,
     val onSurfaceVariant: Int,
     val outline: Int,
@@ -157,8 +159,10 @@ object ThemePalette {
         val sa = sat(sa0, 0.6, 0.95)
         val tint = if (sp0 < 0.08) 0.0 else 0.3
         val surface: Int
+        val low: Int
         val container: Int
         val high: Int
+        val highest: Int
         val onSurface0: Int
         val onVariant0: Int
         val primary0: Int
@@ -169,8 +173,10 @@ object ThemePalette {
         val onAccentContainer0: Int
         if (dark) {
             surface = Hsl.argb(hp, tint, 0.07)
+            low = Hsl.argb(hp, tint, 0.095)
             container = Hsl.argb(hp, tint, 0.12)
             high = Hsl.argb(hp, tint, 0.17)
+            highest = Hsl.argb(hp, tint, 0.22)
             onSurface0 = Hsl.argb(hp, tint / 2, 0.93)
             onVariant0 = Hsl.argb(hp, tint / 2, 0.76)
             primary0 = Hsl.argb(hp, sp, 0.72)
@@ -181,8 +187,10 @@ object ThemePalette {
             onAccentContainer0 = Hsl.argb(ha, sat(sa0, 0.5, 0.8), 0.92)
         } else {
             surface = Hsl.argb(hp, tint, 0.97)
+            low = Hsl.argb(hp, tint + 0.03, 0.945)
             container = Hsl.argb(hp, tint + 0.05, 0.92)
             high = Hsl.argb(hp, tint + 0.08, 0.87)
+            highest = Hsl.argb(hp, tint + 0.1, 0.82)
             onSurface0 = Hsl.argb(hp, tint, 0.09)
             onVariant0 = Hsl.argb(hp, tint / 2, 0.28)
             primary0 = Hsl.argb(hp, sp, 0.32)
@@ -195,7 +203,7 @@ object ThemePalette {
         // I contenitori si staccano dalla superficie (almeno 1,25:1) e il testo ci arriva ad AA
         val primaryContainer = Wcag.ensure(primaryContainer0, listOf(surface), CONTAINER_CONTRAST)
         val accentContainer = Wcag.ensure(accentContainer0, listOf(surface), CONTAINER_CONTRAST)
-        val panels = listOf(surface, container, high)
+        val panels = listOf(surface, low, container, high, highest)
         // Ogni testo arriva ad AA su tutti gli sfondi su cui può comparire
         val primary = Wcag.ensure(primary0, panels)
         val accent = Wcag.ensure(accent0, panels)
@@ -209,8 +217,10 @@ object ThemePalette {
             accentContainer = accentContainer,
             onAccentContainer = Wcag.ensure(onAccentContainer0, listOf(accentContainer)),
             surface = surface,
+            surfaceContainerLow = low,
             surfaceContainer = container,
             surfaceContainerHigh = high,
+            surfaceContainerHighest = highest,
             onSurface = Wcag.ensure(onSurface0, panels),
             onSurfaceVariant = Wcag.ensure(onVariant0, panels),
             outline = Wcag.ensure(Hsl.argb(hp, tint, if (dark) 0.5 else 0.45), listOf(surface), 3.0),

@@ -2,8 +2,11 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import android.content.pm.ShortcutInfo
 import androidx.compose.foundation.layout.Arrangement
+import com.gabrielepiccione.onda.ui.components.TonalIcon
 import com.gabrielepiccione.onda.ui.components.actionIcon
 import com.gabrielepiccione.onda.data.AutomationOverrides
 import androidx.compose.ui.window.DialogProperties
@@ -17,7 +20,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.imePadding
@@ -25,7 +27,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -45,10 +46,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -270,9 +269,7 @@ private fun AutomationEditor(
                         a.actions.forEach { encoded ->
                             val choice = Actions.decode(encoded)
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp).clip(CircleShape).background(scheme.secondaryContainer)) {
-                                    Icon(actionIcon(choice.action), null, tint = scheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
-                                }
+                                TonalIcon(actionIcon(choice.action))
                                 Text(
                                     actionSummary(choice, allApps, "", profileName),
                                     color = colors.onWallpaper,

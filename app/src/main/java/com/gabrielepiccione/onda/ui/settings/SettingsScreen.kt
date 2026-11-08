@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.CompositionLocalProvider
 import com.gabrielepiccione.onda.data.DiscoveryTips
 import com.gabrielepiccione.onda.data.GrayscaleMode
@@ -22,7 +24,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.ui.text.style.TextOverflow
 import com.gabrielepiccione.onda.data.HomeLights
 import com.gabrielepiccione.onda.data.HomePresence
 import androidx.compose.runtime.mutableIntStateOf
@@ -66,10 +67,8 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -85,8 +84,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -98,22 +95,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import kotlin.math.roundToInt
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.data.AppInfo
@@ -126,6 +118,7 @@ import com.gabrielepiccione.onda.data.ClockSpacing
 import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.data.MusicWallpaper
 import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
+import com.gabrielepiccione.onda.ui.components.TonalIcon
 import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.data.HomeSuggestions
 import com.gabrielepiccione.onda.data.UsageReminders
@@ -358,12 +351,7 @@ internal fun SettingsScreen(
                             .clickable { page = p }
                             .padding(vertical = 10.dp),
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.accentContainer),
-                        ) {
-                            Icon(p.icon, null, tint = colors.onAccentContainer, modifier = Modifier.size(22.dp))
-                        }
+                        TonalIcon(p.icon)
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
                             Text(stringResource(p.titleRes), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)

@@ -2,19 +2,16 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import android.content.pm.ShortcutInfo
 import androidx.compose.foundation.clickable
 import com.gabrielepiccione.onda.data.LauncherSetting
 import com.gabrielepiccione.onda.data.LauncherChange
 import com.gabrielepiccione.onda.data.AutomationOverrides
-import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Icon
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,10 +40,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -84,15 +79,6 @@ private fun PickRow(
             Text(label, color = if (selected) colors.accent else colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
             if (supporting != null) Text(supporting, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
         }
-    }
-}
-
-/** Icona di una voce nel selettore: dentro un cerchio tonale. */
-@Composable
-private fun PickIcon(icon: ImageVector) {
-    val scheme = MaterialTheme.colorScheme
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(36.dp).clip(CircleShape).background(scheme.secondaryContainer)) {
-        Icon(icon, null, tint = scheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
     }
 }
 
@@ -171,7 +157,7 @@ fun ActionPickerDialog(
                                     stringResource(action.labelRes),
                                     current.action == action,
                                     supporting = actionDescriptionRes(action)?.let { stringResource(it) },
-                                    content = { PickIcon(actionIcon(action)) },
+                                    content = { TonalIcon(size = 36.dp, icon = actionIcon(action)) },
                                 ) {
                                     when (Actions.argOf(action)) {
                                         ActionArg.NONE -> finish(ActionChoice(action))
@@ -185,7 +171,7 @@ fun ActionPickerDialog(
                             // Impostazioni di Onda: una voce per impostazione, poi il valore
                             if (GestureAction.LAUNCHER_SET in list) {
                                 items(LauncherSetting.entries.filter { it != LauncherSetting.PROFILE || profiles.isNotEmpty() }, key = { "ls_" + it.name }) { setting ->
-                                    PickRow(stringResource(setting.labelRes), content = { PickIcon(launcherSettingIcon(setting)) }) {
+                                    PickRow(stringResource(setting.labelRes), content = { TonalIcon(size = 36.dp, icon = launcherSettingIcon(setting)) }) {
                                         pendingSetting = setting
                                         step = ActionArg.LAUNCHER
                                     }
