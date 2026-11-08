@@ -66,7 +66,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 
 11. ✅ Luci di casa (Wi-Fi + tramonto) e pausa anche fuori dal launcher.
 12. ✅ Preferiti contestuali: profili con regole E/O, priorità, slot fissi, scelta a mano di un'ora, profilo riunioni Teams, regole proposte.
-    - ✅ Profili suggeriti dai dati d'uso ("Suggerisci profili"): scheda Crea/Modifica/Ignora, silenzio 30 giorni, una proposta a settimana, Wi-Fi come segnale spento di default.
+    - ✅ Profili suggeriti dai dati d'uso ("Suggerisci profili"): scheda Crea/Modifica/Ignora, silenzio 30 giorni, in home una scheda al massimo ogni 4 ore (elenco completo nelle impostazioni), Wi-Fi come segnale spento di default.
 
 ## Fase 8 (specifiche in `docs/fase8.md`)
 - Area 5 — Musica, per ogni app con sessione multimediale, senza internet. Decisioni prese: livello "a ritmo" sì, spento di default; sfondo solo nel launcher.

@@ -823,7 +823,6 @@
     <string name="suggest_explain_go">Continua</string>
     <string name="suggest_card_label">Profilo suggerito</string>
     <string name="suggest_card_title">Ho notato un\'abitudine: «%1$s»</string>
-    <string name="suggest_card_body">In quella fascia apri spesso %1$s. Vuoi un profilo con queste app? Non parte mai da solo.</string>
     <string name="suggest_create">Crea</string>
     <string name="suggest_edit">Modifica</string>
     <string name="suggest_ignore">Ignora</string>
@@ -859,7 +858,6 @@
     <string name="suggest_status_no_data">Onda non ha ancora visto aperture di app. Concedi l\'accesso ai dati d\'uso, oppure usa il telefono per un giorno.</string>
     <string name="suggest_status_history">Viste %1$d aperture in %2$d giorni. Servono ancora %3$d giorni di storia.</string>
     <string name="suggest_status_no_pattern">Viste %1$d aperture, ma nessuna abitudine abbastanza regolare: servono 3 app aperte in almeno 3 giorni nella stessa parte della giornata, più spesso lì che negli altri momenti.</string>
-    <string name="suggest_status_ready">%1$d proposta/e pronta/e: vedrai la scheda in home.</string>
     <string name="gesture_silent_on">Silenzioso</string>
     <string name="gesture_sound_on">Suoneria normale</string>
     <string name="page_automations">Automazioni</string>
@@ -998,4 +996,25 @@
     <string name="auto_group_time">Orario</string>
     <string name="auto_group_sun">Sole</string>
     <string name="auto_reminder_title">Promemoria</string>
+    <string name="suggest_why">Le hai usate insieme in %1$d degli ultimi %2$d giorni.</string>
+    <string name="suggest_slot_morning">Mattina</string>
+    <string name="suggest_slot_afternoon">Pomeriggio</string>
+    <string name="suggest_slot_evening">Sera</string>
+    <string name="suggest_slot_night">Notte</string>
+    <string name="suggest_days_weekdays">feriali</string>
+    <string name="suggest_days_weekend">weekend</string>
+    <string name="suggest_signal_headphones">Con le cuffie</string>
+    <string name="suggest_signal_charging">In carica</string>
+    <string name="suggest_signal_car">In auto</string>
+    <string name="suggest_signal_wifi">Su questo Wi-Fi</string>
+    <string name="suggest_list_count">Suggerimenti pronti: %1$d. Crea, modifica o ignora ciascuno.</string>
+    <string name="suggest_empty">Nessun suggerimento per ora. Onda ne propone quando nota abitudini ricorrenti. Ultima analisi: %1$s.</string>
+    <string name="suggest_empty_never">Nessun suggerimento per ora. Onda ne propone quando nota abitudini ricorrenti.</string>
+    <string name="suggest_list_off">Attiva «Suggerisci profili» per vedere qui i profili che Onda propone dalle tue abitudini.</string>
+    <string name="suggest_need_access">Manca l\'accesso ai dati d\'uso: senza, Onda vede solo le app aperte dal launcher.</string>
+    <string name="suggest_grant_access">Concedi l\'accesso ai dati d\'uso</string>
+    <string name="suggest_analyze_now">Analizza adesso</string>
+    <string name="suggest_analyze_wait">Potrai analizzare di nuovo tra qualche minuto (al massimo ogni 15 minuti).</string>
+    <string name="suggest_ignored">Ignorati (%1$d)</string>
+    <string name="suggest_restore">Ripristina</string>
 </resources>

@@ -71,6 +71,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import com.gabrielepiccione.onda.data.ProfileSuggestion
+import com.gabrielepiccione.onda.ui.home.ProfileSuggestionCard
+import com.gabrielepiccione.onda.ui.home.suggestionCondition
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.service.UsageReader
 import com.gabrielepiccione.onda.data.UsageReminders
@@ -123,14 +132,38 @@ internal fun ContextProfilesPage(
     var explain by remember { mutableStateOf(false) }
     // Cosa ha visto Onda finora: spiega perché una proposta c'è o non c'è ancora
     var diagnosis by remember { mutableStateOf<UsageProfiles.Diagnosis?>(null) }
-    LaunchedEffect(settings.profileSuggest.enabled, settings.profileSuggest.useWifi, usageAccess, allApps.size) {
-        diagnosis = if (settings.profileSuggest.enabled) {
+    // Tutti i suggerimenti, senza il limite della home; «Analizza adesso» rilancia il calcolo
+    var pool by remember { mutableStateOf<List<ProfileSuggestion>>(emptyList()) }
+    var analysisRun by remember { mutableIntStateOf(0) }
+    var removing by remember { mutableStateOf(emptySet<String>()) }
+    var ignoredOpen by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val today = java.time.LocalDate.now().toString()
+    LaunchedEffect(settings.profileSuggest.enabled, settings.profileSuggest.useWifi, usageAccess, allApps.size, analysisRun) {
+        if (settings.profileSuggest.enabled) {
             val now = System.currentTimeMillis()
+            val zone = java.time.ZoneId.systemDefault()
             val fixed = settings.favorites.take(settings.fixedFavoriteSlots).map { UsageReminders.packageOf(it) }.toSet() + context.packageName
             val events = UsageReader(context).read(now, allApps.map { it.packageName }.toSet())
-            UsageProfiles.diagnose(events, now, java.time.ZoneId.systemDefault(), fixed, settings.profileSuggest.useWifi)
+            diagnosis = UsageProfiles.diagnose(events, now, zone, fixed, settings.profileSuggest.useWifi)
+            pool = UsageProfiles.suggest(events, now, zone, fixed, settings.profileSuggest.useWifi)
+            onEdit { it.copy(profileSuggest = UsageProfiles.analyzed(it.profileSuggest, now)) }
         } else {
-            null
+            diagnosis = null
+            pool = emptyList()
+        }
+    }
+    /** Le app del suggerimento come chiavi: la prima app con quel pacchetto. */
+    fun profileFrom(s: ProfileSuggestion): ContextProfile =
+        UsageProfiles.toProfile(s, java.util.UUID.randomUUID().toString())
+            .let { p -> p.copy(apps = p.apps.mapNotNull { pkg -> allApps.firstOrNull { it.packageName == pkg }?.key }) }
+    /** La scheda esce con l'animazione, poi si applica la scelta (che la toglie anche dalla home). */
+    fun leave(s: ProfileSuggestion, change: (Settings) -> Settings) {
+        removing = removing + s.key
+        scope.launch {
+            delay(LEAVE_MS)
+            onEdit(change)
+            removing = removing - s.key
         }
     }
     val byKey = remember(allApps) { allApps.associateBy { it.key } }
@@ -153,23 +186,93 @@ internal fun ContextProfilesPage(
         SettingsSwitch(stringResource(R.string.suggest_enable), null, settings.profileSuggest.enabled) { on ->
             if (on && !usageAccess) explain = true else onEdit { it.copy(profileSuggest = it.profileSuggest.copy(enabled = on)) }
         }
+        if (!settings.profileSuggest.enabled) SettingsSupporting(stringResource(R.string.suggest_list_off))
         if (settings.profileSuggest.enabled) {
             SettingsSwitch(stringResource(R.string.suggest_wifi), stringResource(R.string.suggest_wifi_sub), settings.profileSuggest.useWifi) { on ->
                 onEdit { it.copy(profileSuggest = it.profileSuggest.copy(useWifi = on)) }
             }
-            diagnosis?.let { d ->
+            val visible = UsageProfiles.forSettings(settings.profileSuggest, pool, today)
+            if (!usageAccess) {
+                // Senza il permesso dei dati d'uso: invito ad attivarlo, non un elenco vuoto muto
+                Text(stringResource(R.string.suggest_need_access), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium)
+                FilledTonalButton(onClick = onUsageAccess, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.suggest_grant_access)) }
+            }
+            if (visible.isEmpty()) {
+                val last = settings.profileSuggest.lastAnalysisAt
                 Text(
-                    when {
-                        d.openings == 0 -> stringResource(R.string.suggest_status_no_data)
-                        d.historyDays < UsageProfiles.MIN_HISTORY_DAYS ->
-                            stringResource(R.string.suggest_status_history, d.openings, d.historyDays, UsageProfiles.MIN_HISTORY_DAYS - d.historyDays)
-                        d.candidates == 0 -> stringResource(R.string.suggest_status_no_pattern, d.openings)
-                        else -> stringResource(R.string.suggest_status_ready, d.candidates)
-                    },
-                    color = colors.accent,
+                    if (last > 0) stringResource(R.string.suggest_empty, analysisTime(last)) else stringResource(R.string.suggest_empty_never),
+                    color = colors.onWallpaper,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(vertical = 6.dp),
                 )
+                diagnosis?.let { d ->
+                    SettingsSupporting(
+                        when {
+                            d.openings == 0 -> stringResource(R.string.suggest_status_no_data)
+                            d.historyDays < UsageProfiles.MIN_HISTORY_DAYS ->
+                                stringResource(R.string.suggest_status_history, d.openings, d.historyDays, UsageProfiles.MIN_HISTORY_DAYS - d.historyDays)
+                            else -> stringResource(R.string.suggest_status_no_pattern, d.openings)
+                        },
+                    )
+                }
+            } else {
+                Text(
+                    stringResource(R.string.suggest_list_count, visible.size - removing.count { k -> visible.any { it.key == k } }),
+                    color = colors.onWallpaper,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+                visible.forEach { s ->
+                    key(s.key) {
+                        ProfileSuggestionCard(
+                            suggestion = if (s.key in removing) null else s,
+                            apps = s.apps.mapNotNull { p -> allApps.firstOrNull { it.packageName == p } },
+                            themedIcons = settings.themedIcons,
+                            onCreate = {
+                                val profile = profileFrom(s)
+                                leave(s) { st -> st.copy(contextProfiles = st.contextProfiles + profile, profileSuggest = UsageProfiles.accepted(st.profileSuggest, s, today)) }
+                            },
+                            onEdit = {
+                                onEdit { st -> st.copy(profileSuggest = UsageProfiles.accepted(st.profileSuggest, s, today)) }
+                                editing = profileFrom(s)
+                            },
+                            onIgnore = { leave(s) { st -> st.copy(profileSuggest = UsageProfiles.ignore(st.profileSuggest, s, today)) } },
+                            horizontalInset = 0.dp,
+                        )
+                    }
+                }
+            }
+            val canAnalyze = UsageProfiles.canAnalyzeNow(settings.profileSuggest, System.currentTimeMillis())
+            FilledTonalButton(onClick = { analysisRun++ }, enabled = canAnalyze, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.suggest_analyze_now))
+            }
+            if (!canAnalyze) SettingsSupporting(stringResource(R.string.suggest_analyze_wait))
+            // Ignorati: sezione compressa, solo se ce ne sono
+            val ignored = UsageProfiles.ignoredKeys(settings.profileSuggest, today)
+            if (ignored.isNotEmpty()) {
+                SettingsItem(
+                    headline = stringResource(R.string.suggest_ignored, ignored.size),
+                    onClick = { ignoredOpen = !ignoredOpen },
+                    trailing = { Icon(if (ignoredOpen) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, null) },
+                )
+                if (ignoredOpen) {
+                    ignored.forEach { (key, _) ->
+                        val parts = UsageProfiles.describe(key)
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                            Column(Modifier.weight(1f)) {
+                                Text(suggestionCondition(parts.days, parts.slot, parts.signal), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    parts.apps.joinToString(", ") { p -> allApps.firstOrNull { it.packageName == p }?.label ?: p },
+                                    color = colors.onWallpaperMuted,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
+                            TextButton(onClick = { onEdit { st -> st.copy(profileSuggest = UsageProfiles.restore(st.profileSuggest, key)) } }) {
+                                Text(stringResource(R.string.suggest_restore))
+                            }
+                        }
+                    }
+                }
             }
             SettingsItem(
                 headline = stringResource(R.string.suggest_revoke),
@@ -647,3 +750,11 @@ internal fun AppPicker(apps: List<AppInfo>, onPick: (AppInfo) -> Unit, onDismiss
 @Composable
 internal fun suggestionText(s: RuleSuggestion, appLabel: String): String =
     stringResource(R.string.ctx_suggestion, dayLong(s.dayOfWeek), s.hour, appLabel, s.weeks)
+
+/** Durata dell'uscita di una scheda prima di applicare Crea o Ignora. */
+private const val LEAVE_MS = 320L
+
+/** Data e ora dell'ultima analisi, nel formato breve della lingua del telefono. */
+private fun analysisTime(ms: Long): String =
+    java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault())
+        .format(java.time.format.DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.SHORT))

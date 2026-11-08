@@ -122,28 +122,86 @@ class UsageProfilesTest {
 
     @Test
     fun offByDefaultAndNothingWhenOff() {
-        assertNull(UsageProfiles.next(ProfileSuggestState(), listOf(suggestion), "2026-11-06"))
+        assertNull(UsageProfiles.next(ProfileSuggestState(), listOf(suggestion), "2026-11-06", NOW))
     }
 
     @Test
     fun ignoreSilencesThatProposalForThirtyDays() {
         var state = ProfileSuggestState(enabled = true)
         state = UsageProfiles.ignore(state, suggestion, "2026-11-06")
-        assertNull(UsageProfiles.next(state, listOf(suggestion), "2026-11-20"))
-        assertNull(UsageProfiles.next(state, listOf(suggestion), "2026-12-05"))
-        assertEquals(suggestion, UsageProfiles.next(state, listOf(suggestion), "2026-12-06"))
+        assertNull(UsageProfiles.next(state, listOf(suggestion), "2026-11-20", NOW))
+        assertNull(UsageProfiles.next(state, listOf(suggestion), "2026-12-05", NOW))
+        assertEquals(suggestion, UsageProfiles.next(state, listOf(suggestion), "2026-12-06", NOW))
     }
 
     @Test
-    fun atMostOneProposalPerWeek() {
+    fun theStrongestComesFirstAndStaysUntilADecision() {
         var state = ProfileSuggestState(enabled = true)
-        state = UsageProfiles.shown(state, suggestion, "2026-11-06")
-        // Finché non si decide, la stessa resta
-        assertEquals(suggestion, UsageProfiles.next(state, listOf(suggestion, other), "2026-11-08"))
-        state = UsageProfiles.accepted(state, suggestion, "2026-11-08")
-        // Una nuova non prima di sette giorni dalla prima
-        assertNull(UsageProfiles.next(state, listOf(suggestion, other), "2026-11-10"))
-        assertEquals(other, UsageProfiles.next(state, listOf(suggestion, other), "2026-11-13"))
+        // Più suggerimenti pronti: la home ne mostra uno, il più forte
+        assertEquals(suggestion, UsageProfiles.next(state, listOf(other, suggestion), DAY, NOW))
+        state = UsageProfiles.shown(state, suggestion, NOW)
+        // Finché non si decide resta la stessa, anche dopo ore
+        assertEquals(suggestion, UsageProfiles.next(state, listOf(suggestion, other), DAY, NOW + 10 * HOUR))
+    }
+
+    @Test
+    fun aNewOneWaitsFourHoursFromTheLastShown() {
+        var state = UsageProfiles.shown(ProfileSuggestState(enabled = true), suggestion, NOW)
+        state = UsageProfiles.accepted(state, suggestion, DAY)
+        // Intervallo non trascorso: nessuna nuova scheda
+        assertNull(UsageProfiles.next(state, listOf(suggestion, other), DAY, NOW + 3 * HOUR))
+        // Trascorso: arriva la successiva
+        assertEquals(other, UsageProfiles.next(state, listOf(suggestion, other), DAY, NOW + 4 * HOUR))
+        assertEquals(4 * HOUR, UsageProfiles.SUGGESTION_MIN_GAP_MS)
+    }
+
+    @Test
+    fun afterIgnoreTheNextComesAtOnceIfTheGapHasPassed() {
+        var state = UsageProfiles.shown(ProfileSuggestState(enabled = true), suggestion, NOW)
+        // L'utente decide dopo 5 ore: l'intervallo è già trascorso, la successiva compare subito
+        state = UsageProfiles.ignore(state, suggestion, DAY)
+        assertEquals(other, UsageProfiles.next(state, listOf(suggestion, other), DAY, NOW + 5 * HOUR))
+        // Quella ignorata non torna per 30 giorni
+        assertEquals(listOf(other), UsageProfiles.forSettings(state, listOf(suggestion, other), DAY))
+    }
+
+    @Test
+    fun settingsShowEverythingNotIgnoredWithoutLimits() {
+        val third = ProfileSuggestion("Weekend", listOf("a", "b", "c"), DayKind.WEEKEND, DaySlot.MORNING, null, 80)
+        val state = UsageProfiles.shown(ProfileSuggestState(enabled = true), suggestion, NOW)
+        assertEquals(listOf(third, suggestion, other), UsageProfiles.forSettings(state, listOf(suggestion, other, third), DAY))
+    }
+
+    @Test
+    fun ignoredCanBeListedDescribedAndRestored() {
+        var state = UsageProfiles.ignore(ProfileSuggestState(enabled = true), suggestion, "2026-11-06")
+        state = UsageProfiles.ignore(state, other, "2026-11-07")
+        val ignored = UsageProfiles.ignoredKeys(state, "2026-11-08")
+        assertEquals(listOf(other.key, suggestion.key), ignored.map { it.first })
+        val parts = UsageProfiles.describe(suggestion.key)
+        assertEquals(DayKind.WEEKDAYS, parts.days)
+        assertEquals(DaySlot.MORNING, parts.slot)
+        assertEquals(setOf("mail", "calendar", "teams"), parts.apps.toSet())
+        state = UsageProfiles.restore(state, suggestion.key)
+        assertEquals(suggestion, UsageProfiles.next(state, listOf(suggestion), "2026-11-08", NOW))
+        // Dopo 30 giorni non è più tra gli ignorati
+        assertTrue(UsageProfiles.ignoredKeys(state, "2026-12-08").isEmpty())
+    }
+
+    @Test
+    fun analyzeNowAtMostEveryFifteenMinutes() {
+        val state = UsageProfiles.analyzed(ProfileSuggestState(enabled = true), NOW)
+        assertFalse(UsageProfiles.canAnalyzeNow(state, NOW + 14 * 60_000L))
+        assertTrue(UsageProfiles.canAnalyzeNow(state, NOW + 15 * 60_000L))
+        assertTrue(UsageProfiles.canAnalyzeNow(ProfileSuggestState(), NOW))
+    }
+
+    @Test
+    fun theWhyCountsDaysTogetherOverTheHistory() {
+        val s = UsageProfiles.suggest(routine(listOf("mail", "calendar", "teams"), 9, days = 14), now, zone).single()
+        // Giorni feriali negli ultimi 14: tutti con le tre app insieme
+        assertEquals(10, s.togetherDays)
+        assertEquals(14, s.historyDays)
     }
 
     @Test
@@ -186,5 +244,11 @@ class UsageProfilesTest {
         assertTrue(d.openings > 0)
         assertEquals(10, d.historyDays)
         assertEquals(1, d.candidates)
+    }
+
+    private companion object {
+        const val HOUR = 3_600_000L
+        const val NOW = 1_800_000_000_000L
+        const val DAY = "2026-11-06"
     }
 }
