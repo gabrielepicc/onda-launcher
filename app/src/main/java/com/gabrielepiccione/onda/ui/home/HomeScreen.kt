@@ -24,6 +24,13 @@ import com.gabrielepiccione.onda.data.MEDIA_PREFIX
 import com.gabrielepiccione.onda.data.MediaShortcuts
 import android.content.ComponentName
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.foundation.indication
+import androidx.compose.material3.ripple
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.animation.core.Spring
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.material.icons.filled.Edit
 import com.gabrielepiccione.onda.data.SpotifyLinks
@@ -2133,57 +2140,75 @@ private const val LIGHTS_HEIGHT = 120
 @Composable
 private fun MenuTile(icon: ImageVector, label: String, modifier: Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     val colors = LocalOndaColors.current
-    val shape = RoundedCornerShape(24.dp)
+    val scheme = MaterialTheme.colorScheme
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    // Molla breve sull'indicatore quando lo si preme
+    val scale by animateFloatAsState(if (pressed) PRESSED_SCALE else 1f, spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMedium), label = "menuTile")
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
-            .heightIn(min = 88.dp)
-            .clip(shape)
-            .background(colors.accentContainer.copy(alpha = if (enabled) 1f else 0.4f))
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .heightIn(min = 72.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(interactionSource = interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = label }
-            .padding(vertical = 14.dp, horizontal = 8.dp),
+            .graphicsLayer { alpha = if (enabled) 1f else DISABLED_ALPHA }
+            .padding(vertical = 8.dp),
     ) {
-        Icon(icon, null, tint = colors.onAccentContainer, modifier = Modifier.size(32.dp))
-        Spacer(Modifier.size(8.dp))
+        // Indicatore a pillola di Material 3: 64×40, colore secondario tonale
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(width = 64.dp, height = 40.dp)
+                .graphicsLayer { scaleX = scale; scaleY = scale }
+                .clip(CircleShape)
+                .background(scheme.secondaryContainer)
+                .indication(interaction, ripple()),
+        ) {
+            Icon(icon, null, tint = scheme.onSecondaryContainer, modifier = Modifier.size(24.dp))
+        }
         // Etichetta intera su una riga: mai troncata
-        Text(label, color = colors.onAccentContainer, style = MaterialTheme.typography.labelLarge, softWrap = false, textAlign = TextAlign.Center)
+        Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.labelLarge, softWrap = false, textAlign = TextAlign.Center)
     }
 }
 
-/** Titolo di una sezione del pannello. */
+/** Titolo di una sezione del pannello: etichetta grande nel colore primario. */
 @Composable
 private fun MenuSection(title: String) {
     Text(
         title,
-        color = LocalOndaColors.current.accent,
-        style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 4.dp),
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 4.dp),
     )
 }
 
-/** Voce del pannello: icona, titolo, supporto e, se serve, un controllo in fondo. */
+/** Voce del pannello (ListItem di Material 3): icona in un cerchio tonale da 40dp, titolo, descrizione e controllo. */
 @Composable
 private fun MenuItem(icon: ImageVector, title: String, supporting: String?, trailing: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
     val colors = LocalOndaColors.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = if (supporting == null) 56.dp else 72.dp)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 8.dp),
-    ) {
-        Icon(icon, null, tint = colors.onWallpaperMuted, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(16.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = colors.onWallpaper)
-            if (supporting != null) Text(supporting, style = MaterialTheme.typography.bodyMedium, color = colors.onWallpaperMuted)
-        }
-        if (trailing != null) {
-            Spacer(Modifier.width(16.dp))
-            trailing()
-        }
-    }
+    val scheme = MaterialTheme.colorScheme
+    ListItem(
+        headlineContent = { Text(title, style = MaterialTheme.typography.bodyLarge) },
+        supportingContent = supporting?.let { { Text(it, style = MaterialTheme.typography.bodyMedium) } },
+        leadingContent = {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(scheme.secondaryContainer),
+            ) {
+                Icon(icon, null, tint = scheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
+            }
+        },
+        trailingContent = trailing,
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent,
+            headlineColor = colors.onWallpaper,
+            supportingColor = colors.onWallpaperMuted,
+        ),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 8.dp),
+    )
 }
+
+private const val PRESSED_SCALE = 0.92f
+private const val DISABLED_ALPHA = 0.38f
