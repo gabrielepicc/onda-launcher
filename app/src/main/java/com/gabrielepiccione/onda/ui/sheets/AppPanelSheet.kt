@@ -382,7 +382,8 @@ internal fun CompactConversation(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(colors.panelHigh.copy(alpha = 0.5f))
+            // Superficie tonale alta, angoli retti (il testo non tocca il bordo)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .clickable(onClick = onOpen)
             .padding(start = edge, top = 4.dp, end = edge, bottom = 8.dp)
     ) {

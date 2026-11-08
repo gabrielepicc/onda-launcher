@@ -55,7 +55,7 @@ fun NotificationSummaryCard(
             .fillMaxWidth()
             .then(if (highlighted) Modifier.border(2.dp, colors.accent, shape) else Modifier)
             .clip(shape)
-            .background(colors.panel)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .combinedClickable(onClick = onClick, onLongClick = onLongPress)
             .padding(horizontal = NotificationLayout.horizontalPaddingDp(18).dp, vertical = 14.dp),
     ) {
@@ -108,8 +108,8 @@ fun NotificationSummarySheet(
                     item(key = "app_$pkg") {
                         Text(
                             appLabel(pkg),
-                            color = colors.accent,
-                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(top = 14.dp, bottom = 4.dp),
                         )
                     }
