@@ -22,10 +22,12 @@ Regole per l'aspetto, da applicare con i componenti comuni (mai copie locali). O
 - Voci: titolo bodyLarge, supporto bodyMedium in `onSurfaceVariant`. Etichette di pulsanti e chip: labelLarge.
 - Niente troncamenti nelle impostazioni (vedi `UiRulesTest`); dove serve una riga sola: ellissi e descrizione sotto.
 
-## Componenti comuni
-- `SettingsSection`, `SettingsItem`, `SettingsSwitch`, `SettingsSupporting`, `SettingsLabel` (ui/settings/SettingsKit.kt).
-- `TonalIcon` (icona in cerchio tonale 40 dp), `OndaChip`, `ValueSlider`, `RadioItem`, `ActionPickerDialog`.
-- Interruttori `Switch` e cursori `Slider` di Material 3, sempre con l'intera riga toccabile.
+## Componenti comuni (`ui/components/DesignKit.kt` e vicini)
+- `SheetScaffold` (maniglia, intestazione fissa icona+nome, corpo che scorre, max 90%), `GroupCard` (scheda tonale, titolo labelLarge primary).
+- `SwitchRow`, `SliderRow` (= `ValueSlider`: etichetta, valore, Ripristina, tacche), `ChoiceRow` (segmentati fino a 4, poi elenco),
+  `ActionRow` (icona tonale 40 dp, titolo su una riga, supporto, freccia), `DestructiveRow` (colore errore, conferma), `TonalIcon`.
+- Ordine dei gruppi in ogni menu: Identità → Azioni frequenti → Aspetto/Dimensioni → Comportamento → Avanzate → Pericolo.
+- Le impostazioni usano gli stessi componenti (`SettingsSection` = `GroupCard`, `SettingsSwitch` = `SwitchRow`).
 
 ## Movimento
 - Molle brevi (`spring`, smorzamento 0,6–0,85) per pressioni e cambi di misura; dissolvenze 150–400 ms (`Motion`).

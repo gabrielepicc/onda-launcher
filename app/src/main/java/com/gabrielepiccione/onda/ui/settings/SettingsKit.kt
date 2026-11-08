@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,23 +21,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.gabrielepiccione.onda.ui.components.SwitchRow
+import com.gabrielepiccione.onda.ui.components.GroupCard
 import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
-import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.ui.components.TonalIcon
 
 /*
@@ -79,30 +74,10 @@ internal fun Modifier.flashIfTarget(text: String): Modifier {
 private const val FLASHES = 3
 private const val FLASH_ALPHA = 0.3f
 
-/** Sezione: titolo e contenitore con le sue voci. */
+/** Sezione: è la [GroupCard] comune, con il titolo che lampeggia quando è la voce cercata. */
 @Composable
-internal fun SettingsSection(title: String?, content: @Composable ColumnScope.() -> Unit) {
-    if (title != null) {
-        // Titolo di sezione: etichetta grande nel colore primario
-        Text(
-            title,
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.flashIfTarget(title).padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
-        )
-    } else {
-        Spacer(Modifier.size(16.dp))
-    }
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(LocalOndaTokens.current.shapes.large)
-            // Superficie tonale bassa: le sezioni si staccano dallo sfondo senza riquadri tutti uguali
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        content = content,
-    )
-}
+internal fun SettingsSection(title: String?, content: @Composable ColumnScope.() -> Unit) =
+    GroupCard(title = title, titleModifier = if (title != null) Modifier.flashIfTarget(title) else Modifier, content = content)
 
 /** Voce di elenco: titolo, supporto facoltativo, icona iniziale e controllo finale. */
 @Composable
@@ -140,17 +115,10 @@ internal fun SettingsItem(
     }
 }
 
-/** Voce con interruttore: si tocca tutta la riga, e per TalkBack è un interruttore. */
+/** Voce con interruttore: è lo [SwitchRow] comune, che lampeggia quando è la voce cercata. */
 @Composable
-internal fun SettingsSwitch(headline: String, supporting: String?, checked: Boolean, icon: ImageVector? = null, onChange: (Boolean) -> Unit) {
-    SettingsItem(
-        headline = headline,
-        supporting = supporting,
-        icon = icon,
-        modifier = Modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onChange),
-        trailing = { Switch(checked = checked, onCheckedChange = null) },
-    )
-}
+internal fun SettingsSwitch(headline: String, supporting: String?, checked: Boolean, icon: ImageVector? = null, onChange: (Boolean) -> Unit) =
+    SwitchRow(headline, supporting, checked, Modifier.flashIfTarget(headline), icon, onChange)
 
 /** Spiegazione dentro una sezione. */
 @Composable
