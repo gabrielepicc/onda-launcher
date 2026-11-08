@@ -568,6 +568,8 @@ internal fun SettingsScreen(
                     TextButton(onClick = { onEdit { HomeSuggestions.restore(it, app.key) } }) { Text(stringResource(R.string.suggested_restore)) }
                 }
             }
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.home_position)) {
+            HomePositionControl(settings, showLabel = false) { onEdit(it) }
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_blocks)) {

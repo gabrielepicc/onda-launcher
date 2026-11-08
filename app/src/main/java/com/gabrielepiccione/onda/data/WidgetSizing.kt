@@ -43,4 +43,20 @@ object WidgetSizing {
 
     fun set(s: Settings, key: String, size: WidgetSize): Settings =
         s.copy(widgetSizes = if (size == WidgetSize()) s.widgetSizes - key else s.widgetSizes + (key to size))
+
+    /** Larghezze a tacche: metà, tre quarti, piena. */
+    val WIDTH_FRACTIONS = listOf(0.5f, 0.75f, 1f)
+
+    /** Tacca più vicina alla larghezza scelta (0 = piena). */
+    fun widthStep(widthDp: Int, maxWidth: Int): Int {
+        if (widthDp <= 0 || maxWidth <= 0 || widthDp >= maxWidth) return WIDTH_FRACTIONS.lastIndex
+        val f = widthDp.toFloat() / maxWidth
+        return WIDTH_FRACTIONS.indices.minByOrNull { kotlin.math.abs(WIDTH_FRACTIONS[it] - f) } ?: WIDTH_FRACTIONS.lastIndex
+    }
+
+    /** Larghezza da salvare per una tacca: 0 vuol dire «tutta la larghezza». */
+    fun widthForStep(step: Int, maxWidth: Int): Int {
+        val f = WIDTH_FRACTIONS.getOrElse(step) { 1f }
+        return if (f >= 1f) 0 else (maxWidth * f).toInt().coerceAtLeast(MIN_WIDTH)
+    }
 }
