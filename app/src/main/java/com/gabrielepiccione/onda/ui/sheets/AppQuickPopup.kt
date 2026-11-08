@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.sheets
 
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.filled.MoreHoriz
+import com.gabrielepiccione.onda.data.PopupLayout
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -25,8 +28,6 @@ import android.content.pm.ShortcutInfo
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.Animatable
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.animation.core.animate
 import androidx.compose.runtime.getValue
@@ -64,16 +65,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.material.icons.filled.Edit
 import com.gabrielepiccione.onda.data.WidgetStack
 import com.gabrielepiccione.onda.ui.components.WidgetStackCard
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -343,9 +340,7 @@ fun AppQuickPopup(
                 .verticalScroll(rememberScrollState())
                 .padding(top = 8.dp, bottom = 12.dp),
         ) {
-            var menu by remember(app.key) { mutableStateOf(false) }
-
-            // Intestazione: l'app (si apre toccandola) e, in alto a destra, il menu con le altre azioni
+            // Intestazione: l'app, che si apre toccandola
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.cascade(content, 0).fillMaxWidth().padding(start = 8.dp, end = 4.dp),
@@ -365,22 +360,23 @@ fun AppQuickPopup(
                         Text(stringResource(R.string.popup_open_app), color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelSmall)
                     }
                 }
-                Box {
-                    QuickAction(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { menu = true }
-                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                        MenuEntry(
-                            if (app.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
-                            stringResource(if (app.isFavorite) R.string.favorite_remove else R.string.favorite_add),
-                        ) { menu = false; onToggleFavorite(); dismiss() }
-                        MenuEntry(Icons.Filled.Info, stringResource(R.string.app_info)) { menu = false; onInfo(); dismiss() }
-                        MenuEntry(Icons.Filled.Edit, stringResource(R.string.popup_edit)) { menu = false; onEdit(); dismiss() }
-                        onStopSuggesting?.let { stop ->
-                            MenuEntry(Icons.Filled.VisibilityOff, stringResource(R.string.suggested_stop)) { menu = false; stop(); dismiss() }
-                        }
-                        MenuEntry(Icons.Filled.Delete, stringResource(R.string.uninstall)) { menu = false; onUninstall(); dismiss() }
-                        MenuEntry(Icons.Filled.MoreVert, stringResource(R.string.more_options)) { menu = false; onMoreOptions(); dismiss() }
-                    }
-                }
+            }
+
+            // Tre azioni tonali con etichetta, al posto del menu a tendina che copriva le scorciatoie
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.cascade(content, 0).fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            ) {
+                PopupAction(
+                    if (app.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                    stringResource(if (app.isFavorite) R.string.popup_favorite_on else R.string.popup_favorite_off),
+                    Modifier.weight(1f),
+                ) { onToggleFavorite(); dismiss() }
+                PopupAction(Icons.Filled.Info, stringResource(R.string.app_info), Modifier.weight(1f)) { onInfo(); dismiss() }
+                PopupAction(Icons.Filled.MoreHoriz, stringResource(R.string.popup_more), Modifier.weight(1f)) { onMoreOptions(); dismiss() }
+            }
+            onStopSuggesting?.let { stop ->
+                TextButton(onClick = { stop(); dismiss() }, modifier = Modifier.padding(horizontal = 12.dp)) { Text(stringResource(R.string.suggested_stop)) }
             }
 
             if (notifications.isNotEmpty()) Column(Modifier.cascade(content, 1)) {
@@ -402,13 +398,16 @@ fun AppQuickPopup(
             }
 
             // Con notifiche (e l'opzione attiva) le scorciatoie e il widget restano piegati in fondo
-            val folded = collapseExtras && notifications.isNotEmpty() && (shortcuts.isNotEmpty() || widgetIds.isNotEmpty())
+            // Con notifiche il popup mostra solo quelle; le scorciatoie tornano quando non ce ne sono
+            val shortcutsShown = PopupLayout.showShortcuts(notifications.isNotEmpty(), collapseExtras)
+            val folded = collapseExtras && notifications.isNotEmpty() && widgetIds.isNotEmpty()
+            var moreShortcuts by remember(app.key) { mutableStateOf(false) }
             var extrasOpen by remember(app.key) { mutableStateOf(false) }
             val shortcutsBlock: @Composable () -> Unit = {
-            if (shortcuts.isNotEmpty()) Column(Modifier.cascade(content, 2)) {
+            if (shortcutsShown && shortcuts.isNotEmpty()) Column(Modifier.cascade(content, 2)) {
                 SectionLabel(R.string.popup_section_shortcuts)
                 Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(LocalOndaTokens.current.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
-                    shortcuts.forEach { sc ->
+                    shortcuts.take(PopupLayout.visibleShortcuts(shortcuts.size, moreShortcuts)).forEach { sc ->
                         val icon = remember(sc.id) { shortcutIcon(sc) }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -425,6 +424,11 @@ fun AppQuickPopup(
                             }
                             Spacer(Modifier.width(12.dp))
                             Text((sc.shortLabel ?: sc.longLabel ?: "").toString(), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                    if (PopupLayout.hasMoreShortcuts(shortcuts.size, moreShortcuts)) {
+                        TextButton(onClick = { moreShortcuts = true }, modifier = Modifier.padding(horizontal = 4.dp)) {
+                            Text(stringResource(R.string.popup_more_shortcuts, shortcuts.size - PopupLayout.MAX_SHORTCUTS))
                         }
                     }
                 }
@@ -559,26 +563,24 @@ private fun SectionLabel(@StringRes res: Int) {
     )
 }
 
+/** Azione del popup: icona in un contenitore tonale a pillola, etichetta sotto su una riga, area ≥48 dp. */
 @Composable
-private fun MenuEntry(icon: ImageVector, text: String, onClick: () -> Unit) {
-    DropdownMenuItem(
-        text = { Text(text) },
-        leadingIcon = { Icon(icon, null) },
-        onClick = onClick,
-    )
-}
-
-@Composable
-private fun QuickAction(icon: ImageVector, description: String, onClick: () -> Unit) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(48.dp)
-            .clip(CircleShape)
-            .semantics { contentDescription = description }
-            .clickable(onClick = onClick),
+private fun PopupAction(icon: ImageVector, label: String, modifier: Modifier, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .heightIn(min = 64.dp)
+            .clip(LocalOndaTokens.current.shapes.medium)
+            .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = label }
+            .padding(vertical = 6.dp),
     ) {
-        Icon(icon, null, tint = LocalOndaColors.current.onWallpaper)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(width = 56.dp, height = 32.dp).clip(CircleShape).background(scheme.secondaryContainer),
+        ) { Icon(icon, null, tint = scheme.onSecondaryContainer, modifier = Modifier.size(20.dp)) }
+        Text(label, color = LocalOndaColors.current.onWallpaper, style = MaterialTheme.typography.labelMedium, softWrap = false, modifier = Modifier.padding(top = 4.dp))
     }
 }
 
