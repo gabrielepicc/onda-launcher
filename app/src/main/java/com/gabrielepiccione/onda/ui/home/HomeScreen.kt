@@ -6,6 +6,7 @@ package com.gabrielepiccione.onda.ui.home
 
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import com.gabrielepiccione.onda.data.WidgetCatalog
 import com.gabrielepiccione.onda.data.ContextProfile
 import com.gabrielepiccione.onda.data.ProfileSuggestion
 import com.gabrielepiccione.onda.data.UsageProfiles
@@ -2095,8 +2096,15 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         WidgetPickerSheet(
             widgets = vm.widgets,
             packageFilter = widgetFilter,
-            onPick = { p -> widgetPicker = false; callbacks.pickWidget(p, widgetTarget) },
+            onPick = { p ->
+                widgetPicker = false
+                // Ricorda la scelta per «Usati di recente»
+                vm.updateSettings { it.copy(recentWidgets = WidgetCatalog.rememberPick(it.recentWidgets, widgetKey(p))) }
+                callbacks.pickWidget(p, widgetTarget)
+            },
             onDismiss = { widgetPicker = false },
+            recentKeys = settings.recentWidgets,
+            favoritePackages = settings.favorites.map { UsageReminders.packageOf(it) },
         )
     }
 }

@@ -84,11 +84,11 @@ fun WidgetPickerSheet(
     val density = LocalDensity.current
     var providers by remember(packageFilter) { mutableStateOf(emptyList<WidgetManager.Provider>()) }
     LaunchedEffect(packageFilter) { providers = withContext(Dispatchers.IO) { widgets.providers(packageFilter) } }
-    val byKey = remember(providers) { providers.associateBy { keyOf(it) } }
+    val byKey = remember(providers) { providers.associateBy { widgetKey(it) } }
     val entries = remember(providers) {
         providers.map { p ->
             with(density) {
-                WidgetEntry(keyOf(p), p.label, p.appLabel, p.packageName, p.info.minWidth.toDp().value.toInt(), p.info.minHeight.toDp().value.toInt())
+                WidgetEntry(widgetKey(p), p.label, p.appLabel, p.packageName, p.info.minWidth.toDp().value.toInt(), p.info.minHeight.toDp().value.toInt())
             }
         }
     }
@@ -173,7 +173,8 @@ fun WidgetPickerSheet(
     }
 }
 
-private fun keyOf(p: WidgetManager.Provider): String = p.info.provider.flattenToString() + "#" + p.info.profile.hashCode()
+/** Chiave stabile di un provider (componente e profilo), usata anche per «Usati di recente». */
+fun widgetKey(p: WidgetManager.Provider): String = p.info.provider.flattenToString() + "#" + p.info.profile.hashCode()
 
 @Composable
 private fun PickerLabel(text: String) {

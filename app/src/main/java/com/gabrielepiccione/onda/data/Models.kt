@@ -498,6 +498,8 @@ data class Settings(
     val openAnimation: OpenAnimation = OpenAnimation.SYSTEM,
     val haptics: Boolean = true,
     val widgetIds: List<Int> = emptyList(),
+    /** Widget scelti di recente nel selettore (chiavi del provider), per «Usati di recente». */
+    val recentWidgets: List<String> = emptyList(),
     /** Scorciatoie aggiunte alla home dalle altre app; il loro posto è in [favorites]. */
     val pinnedShortcuts: List<PinnedShortcut> = emptyList(),
     /** Pile di widget in home; i loro widget non compaiono in [widgetIds]. */

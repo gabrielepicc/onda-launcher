@@ -1017,4 +1017,8 @@
     <string name="suggest_analyze_wait">You can analyze again in a few minutes (at most every 15 minutes).</string>
     <string name="suggest_ignored">Ignored (%1$d)</string>
     <string name="suggest_restore">Restore</string>
+    <string name="widget_recent">Recently used</string>
+    <string name="widget_suggested">Suggested from your favorites</string>
+    <string name="widget_no_results_query">No widget or app matches “%1$s”.</string>
+    <string name="widget_details">%1$s · size %2$s (at least %3$d × %4$d dp). Tap Add to place it.</string>
 </resources>
