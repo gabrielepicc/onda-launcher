@@ -856,4 +856,8 @@
     <string name="clock_inner_spacing">Spazio dentro l\'orologio</string>
     <string name="suggest_channel">Profili suggeriti</string>
     <string name="suggest_notification_text">Apri Onda per crearlo, modificarlo o ignorarlo. Non parte mai da solo.</string>
+    <string name="suggest_status_no_data">Onda non ha ancora visto aperture di app. Concedi l\'accesso ai dati d\'uso, oppure usa il telefono per un giorno.</string>
+    <string name="suggest_status_history">Viste %1$d aperture in %2$d giorni. Servono ancora %3$d giorni di storia.</string>
+    <string name="suggest_status_no_pattern">Viste %1$d aperture, ma nessuna abitudine abbastanza regolare: servono 3 app aperte in almeno 3 giorni nella stessa parte della giornata, più spesso lì che negli altri momenti.</string>
+    <string name="suggest_status_ready">%1$d proposta/e pronta/e: vedrai la scheda in home.</string>
 </resources>

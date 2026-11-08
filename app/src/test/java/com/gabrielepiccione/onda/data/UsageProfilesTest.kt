@@ -157,4 +157,34 @@ class UsageProfilesTest {
         // Non esiste attivazione automatica: l'uso resta quello dei profili, con le sue regole
         assertTrue(profile.enabled)
     }
+
+    @Test
+    fun appsUsedEverywhereDoNotDefineASlot() {
+        // Mattina: tre app della routine più "chat", che si apre anche a ogni altra ora; la routine serale è un'altra
+        val chat = (1..28).flatMap { d -> listOf(8, 13, 17, 20).map { h -> UsageEventCtx("chat", at(d, h, 30)) } }
+        val morning = routine(listOf("news", "mail", "calendar"), 9, weekdaysOnly = false)
+        val evening = routine(listOf("tv", "video", "recipes"), 20, weekdaysOnly = false)
+        val morningProfile = UsageProfiles.suggest(morning + evening + chat, now, zone).first { it.slot == DaySlot.MORNING }
+        assertFalse("chat" in morningProfile.apps)
+        assertEquals(setOf("news", "mail", "calendar"), morningProfile.apps.toSet())
+    }
+
+    @Test
+    fun concentrationComparesTheSlotWithTheRestOfTheDay() {
+        val inSlot = listOf(UsageEventCtx("a", at(1, 9)), UsageEventCtx("a", at(2, 9)))
+        val all = inSlot + listOf(UsageEventCtx("a", at(3, 20)), UsageEventCtx("b", at(3, 21)), UsageEventCtx("b", at(4, 21)), UsageEventCtx("b", at(5, 21)))
+        // Dei 6 eventi 2 sono nella fascia (un terzo), e 2 aperture di "a" su 3 cadono lì: 0,67 / 0,33 = 2
+        assertEquals(2.0, UsageProfiles.concentration("a", inSlot, all), 0.001)
+    }
+
+    @Test
+    fun diagnosisExplainsWhatOndaSaw() {
+        val none = UsageProfiles.diagnose(emptyList(), now, zone)
+        assertEquals(0, none.openings)
+        assertEquals(0, none.candidates)
+        val d = UsageProfiles.diagnose(routine(listOf("mail", "calendar", "teams"), 9, days = 10), now, zone)
+        assertTrue(d.openings > 0)
+        assertEquals(10, d.historyDays)
+        assertEquals(1, d.candidates)
+    }
 }

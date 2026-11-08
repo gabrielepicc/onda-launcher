@@ -653,7 +653,6 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         hasProfiles = settings.contextProfiles.isNotEmpty(),
         busy = overlay != Overlay.NONE || quickFor != null || panelFor != null || actionsFor != null || editing != null || reorderOpen || breakerFor != null,
     )
-    val tip = if (state.loaded && settings.welcomeDone) DiscoveryTips.next(settings.tips, tipSignals) else null
     // Profili proposti dall'uso: si ricalcolano quando la funzione è accesa, ogni volta che si torna in home
     var suggestionPool by remember { mutableStateOf<List<ProfileSuggestion>>(emptyList()) }
     val launchablePackages = remember(state.allApps) { state.allApps.map { it.packageName }.toSet() }
@@ -672,7 +671,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             emptyList()
         }
     }
-    val suggestion = if (tip == null && !tipSignals.busy && settings.welcomeDone) UsageProfiles.next(settings.profileSuggest, suggestionPool, today) else null
+    // Il profilo proposto ha la precedenza su "Lo sapevi?": è la cosa più utile da vedere
+    val suggestion = if (!tipSignals.busy && settings.welcomeDone) UsageProfiles.next(settings.profileSuggest, suggestionPool, today) else null
+    val tip = if (state.loaded && settings.welcomeDone && suggestion == null) DiscoveryTips.next(settings.tips, tipSignals) else null
     LaunchedEffect(suggestion?.key) { suggestion?.let { s -> vm.updateSettings { it.copy(profileSuggest = UsageProfiles.shown(it.profileSuggest, s, today)) } } }
     LaunchedEffect(state.loaded) {
         if (state.loaded && settings.tips.firstDay.isEmpty()) vm.updateSettings { it.copy(tips = it.tips.copy(firstDay = today)) }

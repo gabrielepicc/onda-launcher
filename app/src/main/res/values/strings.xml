@@ -856,4 +856,8 @@
     <string name="clock_inner_spacing">Space inside the clock</string>
     <string name="suggest_channel">Suggested profiles</string>
     <string name="suggest_notification_text">Open Onda to create, edit or ignore it. It never starts by itself.</string>
+    <string name="suggest_status_no_data">Onda has not seen any app openings yet. Grant usage access, or just use your phone for a day.</string>
+    <string name="suggest_status_history">Seen %1$d openings over %2$d days. Needs %3$d more days of history.</string>
+    <string name="suggest_status_no_pattern">Seen %1$d openings, but no routine regular enough yet: it needs 3 apps opened on at least 3 days in the same part of the day, more often there than at other times.</string>
+    <string name="suggest_status_ready">%1$d suggestion(s) ready: you will see the card on home.</string>
 </resources>

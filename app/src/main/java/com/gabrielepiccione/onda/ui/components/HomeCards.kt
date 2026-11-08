@@ -518,7 +518,7 @@ private fun CompactMediaCard(
             Text(
                 media.title,
                 color = colors.onWallpaper,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 19.sp),
                 maxLines = 1,
                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
             )
@@ -526,7 +526,7 @@ private fun CompactMediaCard(
                 Text(
                     media.artist,
                     color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
                     maxLines = 1,
                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
                 )

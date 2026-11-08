@@ -72,6 +72,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.gabrielepiccione.onda.R
+import com.gabrielepiccione.onda.service.UsageReader
+import com.gabrielepiccione.onda.data.UsageReminders
+import com.gabrielepiccione.onda.data.UsageProfiles
+import androidx.compose.runtime.LaunchedEffect
 import com.gabrielepiccione.onda.data.AppInfo
 import com.gabrielepiccione.onda.data.ContextProfile
 import com.gabrielepiccione.onda.data.ContextProfiles
@@ -117,6 +121,18 @@ internal fun ContextProfilesPage(
     val context = LocalContext.current
     var editing by remember { mutableStateOf(startWith) }
     var explain by remember { mutableStateOf(false) }
+    // Cosa ha visto Onda finora: spiega perché una proposta c'è o non c'è ancora
+    var diagnosis by remember { mutableStateOf<UsageProfiles.Diagnosis?>(null) }
+    LaunchedEffect(settings.profileSuggest.enabled, settings.profileSuggest.useWifi, usageAccess, allApps.size) {
+        diagnosis = if (settings.profileSuggest.enabled) {
+            val now = System.currentTimeMillis()
+            val fixed = settings.favorites.take(settings.fixedFavoriteSlots).map { UsageReminders.packageOf(it) }.toSet() + context.packageName
+            val events = UsageReader(context).read(now, allApps.map { it.packageName }.toSet())
+            UsageProfiles.diagnose(events, now, java.time.ZoneId.systemDefault(), fixed, settings.profileSuggest.useWifi)
+        } else {
+            null
+        }
+    }
     val byKey = remember(allApps) { allApps.associateBy { it.key } }
     val newProfileName = stringResource(R.string.ctx_new_profile)
     val meetingName = stringResource(R.string.ctx_meeting_profile)
@@ -140,6 +156,20 @@ internal fun ContextProfilesPage(
         if (settings.profileSuggest.enabled) {
             SettingsSwitch(stringResource(R.string.suggest_wifi), stringResource(R.string.suggest_wifi_sub), settings.profileSuggest.useWifi) { on ->
                 onEdit { it.copy(profileSuggest = it.profileSuggest.copy(useWifi = on)) }
+            }
+            diagnosis?.let { d ->
+                Text(
+                    when {
+                        d.openings == 0 -> stringResource(R.string.suggest_status_no_data)
+                        d.historyDays < UsageProfiles.MIN_HISTORY_DAYS ->
+                            stringResource(R.string.suggest_status_history, d.openings, d.historyDays, UsageProfiles.MIN_HISTORY_DAYS - d.historyDays)
+                        d.candidates == 0 -> stringResource(R.string.suggest_status_no_pattern, d.openings)
+                        else -> stringResource(R.string.suggest_status_ready, d.candidates)
+                    },
+                    color = colors.accent,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 6.dp),
+                )
             }
             SettingsItem(
                 headline = stringResource(R.string.suggest_revoke),

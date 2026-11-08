@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Profili suggeriti più pertinenti**: un'app entra in un profilo solo se in quella fascia si apre almeno il 20% più spesso che nel resto dei giorni lavorativi o del weekend (le app usate sempre, come messaggi e browser, non definiscono più una fascia). La proposta ha la precedenza su «Lo sapevi?». In Impostazioni → Preferiti contestuali una riga spiega cosa ha visto Onda e perché una proposta non c'è ancora.
+- **Player compatto**: font un po' più piccolo (19 sp il titolo, 15 sp l'artista).
 - **Profili suggeriti, subito**: bastano 6 giorni di storia e 3 giorni di ricorrenza (prima 14 e 5), così con l'accesso ai dati d'uso appena concesso il primo suggerimento può comparire subito (Android conserva circa 10 giorni di aperture). La scheda si ricalcola appena si concede il permesso e, al massimo una volta a settimana, una notifica avvisa del profilo proposto (solo con «Suggerisci profili» acceso e notifiche consentite).
 - **Player compatto**: testo più grande, nessun pulsante in più (niente «aggiungi alla playlist» né ripetizione casuale).
 - **Notifiche leggibili e pannello Home**: card di notifica ad angoli retti con margini ≥16 dp; titoli su tutto lo spazio libero e su 2 righe prima di troncare; nel popup le notifiche si eliminano anche scorrendo a destra o a sinistra (vibrazione alla soglia e alla conferma, lista che si richiude senza salti); il pannello della pressione lunga in home ha tre azioni di pari larghezza (Widget, Sfondo, Impostazioni), senza «Cerca».
