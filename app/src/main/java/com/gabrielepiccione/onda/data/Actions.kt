@@ -34,6 +34,8 @@ object Actions {
             GestureAction.QUICK_SETTINGS,
             GestureAction.FLASHLIGHT,
             GestureAction.SILENT,
+            GestureAction.SILENT_ON,
+            GestureAction.SOUND_ON,
             GestureAction.LOCK_SCREEN,
             GestureAction.SCREENSHOT,
             GestureAction.RECENTS,
@@ -43,9 +45,13 @@ object Actions {
 
     fun need(action: GestureAction): ActionNeed = when (action) {
         GestureAction.LOCK_SCREEN, GestureAction.SCREENSHOT, GestureAction.RECENTS -> ActionNeed.ACCESSIBILITY
-        GestureAction.SILENT -> ActionNeed.POLICY_ACCESS
+        GestureAction.SILENT, GestureAction.SILENT_ON, GestureAction.SOUND_ON -> ActionNeed.POLICY_ACCESS
         else -> ActionNeed.NONE
     }
+
+    /** Azioni che si possono eseguire senza schermate: le automazioni girano anche a launcher chiuso. */
+    fun isAutomatable(action: GestureAction): Boolean =
+        action != GestureAction.SEARCH && action != GestureAction.ALL_APPS && action != GestureAction.SETTINGS && action != GestureAction.NONE
 
     fun argOf(action: GestureAction): ActionArg = when (action) {
         GestureAction.OPEN_APP -> ActionArg.APP

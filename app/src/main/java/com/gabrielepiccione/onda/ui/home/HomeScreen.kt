@@ -1401,6 +1401,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
                         override fun shortcutsOf(app: AppInfo) = vm.shortcuts(app)
+                        override fun connectedDevices() = vm.audio.connectedNames.value
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)
                         override fun removeWidget(id: Int) = vm.removeWidget(id)
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
