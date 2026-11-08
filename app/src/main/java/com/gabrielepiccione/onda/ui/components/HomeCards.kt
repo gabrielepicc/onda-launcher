@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.data.MediaAction
 import com.gabrielepiccione.onda.data.MediaExtras
 import androidx.compose.ui.graphics.ColorFilter
@@ -140,8 +141,8 @@ fun ClockHeader(
         verticalArrangement = Arrangement.spacedBy(ClockSpacing.coerce(innerSpacing).dp),
         modifier = modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
-            .clip(RoundedCornerShape(28.dp))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, LocalOndaTokens.current.shapes.large) else Modifier)
+            .clip(LocalOndaTokens.current.shapes.large)
             .combinedClickable(onClick = onTime, onLongClick = onLongPress)
             .padding(horizontal = 16.dp)
     ) {
@@ -395,9 +396,9 @@ private fun FullMediaCard(
     Column(
         modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
-            .clip(RoundedCornerShape(28.dp))
-            .background(colors.panel.copy(alpha = 0.92f))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, LocalOndaTokens.current.shapes.large) else Modifier)
+            .clip(LocalOndaTokens.current.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.92f))
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
             // Stesso margine su ogni lato: la copertina ha angoli concentrici con il contenitore
             .padding(PlayerLayout.FULL_PADDING.dp)
@@ -508,9 +509,9 @@ private fun CompactMediaCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
-            .clip(RoundedCornerShape(28.dp))
-            .background(colors.panel.copy(alpha = 0.9f))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, LocalOndaTokens.current.shapes.large) else Modifier)
+            .clip(LocalOndaTokens.current.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.9f))
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
             .padding(start = PlayerLayout.COMPACT_PADDING.dp, end = 4.dp, top = PlayerLayout.COMPACT_PADDING.dp, bottom = PlayerLayout.COMPACT_PADDING.dp)
     ) {
@@ -673,9 +674,9 @@ fun AgendaCard(
     Column(
         modifier
             .fillMaxWidth()
-            .then(if (highlighted) Modifier.border(2.dp, colors.accent, RoundedCornerShape(28.dp)) else Modifier)
-            .clip(RoundedCornerShape(28.dp))
-            .background(colors.panel.copy(alpha = 0.85f))
+            .then(if (highlighted) Modifier.border(2.dp, colors.accent, LocalOndaTokens.current.shapes.large) else Modifier)
+            .clip(LocalOndaTokens.current.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.85f))
             .combinedClickable(onClick = onEmptyClick, onLongClick = onLongPress)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {

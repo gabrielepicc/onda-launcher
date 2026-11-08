@@ -91,7 +91,7 @@ fun NotificationSummarySheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = colors.panel,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = colors.onWallpaper,
     ) {
         Column(Modifier.navigationBarsPadding().padding(horizontal = 24.dp).padding(bottom = 12.dp)) {

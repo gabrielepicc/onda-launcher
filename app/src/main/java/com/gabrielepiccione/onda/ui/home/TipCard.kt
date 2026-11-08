@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.Tip
 import com.gabrielepiccione.onda.ui.components.OndaChip
@@ -70,7 +71,7 @@ internal fun TipCard(
         Column(
             Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .clip(LocalOndaTokens.current.shapes.large)
                 .background(colors.accentContainer.copy(alpha = 0.55f))
                 .padding(16.dp),
         ) {

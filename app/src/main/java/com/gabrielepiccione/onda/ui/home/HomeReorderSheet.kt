@@ -67,7 +67,7 @@ fun HomeReorderSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = colors.panel,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = colors.onWallpaper,
     ) {
         Column(
