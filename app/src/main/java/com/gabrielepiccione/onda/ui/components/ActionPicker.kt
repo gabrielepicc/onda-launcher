@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -94,6 +95,8 @@ fun ActionPickerDialog(
 ) {
     var step by remember { mutableStateOf(startAt) }
     var shortcutApp by remember { mutableStateOf<AppInfo?>(null) }
+    // L'azione che attende un'app (aprire, bloccare, sbloccare)
+    var pendingAction by remember { mutableStateOf<GestureAction?>(null) }
     val shortcuts = remember(shortcutApp) { shortcutApp?.let(shortcutsOf).orEmpty() }
     fun finish(choice: ActionChoice) {
         // Permesso just-in-time: l'azione si salva comunque, e si apre la guida per concederlo
@@ -113,7 +116,7 @@ fun ActionPickerDialog(
                             item { PickRow(noneLabel, current.action == GestureAction.NONE) { finish(ActionChoice(GestureAction.NONE)) } }
                         }
                         Actions.catalog.forEach { (group, all) ->
-                            val list = all.filter { !automatable || Actions.isAutomatable(it) }
+                            val list = all.filter { if (automatable) Actions.isAutomatable(it) else !Actions.isAutomationOnly(it) }
                             item(key = "g_" + group.name) {
                                 Text(
                                     stringResource(group.labelRes),
@@ -126,7 +129,10 @@ fun ActionPickerDialog(
                                 PickRow(stringResource(action.labelRes), current.action == action) {
                                     when (Actions.argOf(action)) {
                                         ActionArg.NONE -> finish(ActionChoice(action))
-                                        else -> step = Actions.argOf(action)
+                                        else -> {
+                                            pendingAction = action
+                                            step = Actions.argOf(action)
+                                        }
                                     }
                                 }
                             }
@@ -135,7 +141,7 @@ fun ActionPickerDialog(
                     kind == ActionArg.APP || (kind == ActionArg.SHORTCUT && shortcutApp == null) -> {
                         items(allApps, key = { it.key }) { app ->
                             PickRow(app.label, content = { AppIcon(app, 30.dp, themedIcons) }) {
-                                if (kind == ActionArg.APP) finish(ActionChoice(GestureAction.OPEN_APP, app.key))
+                                if (kind == ActionArg.APP) finish(ActionChoice(pendingAction ?: GestureAction.OPEN_APP, app.key))
                                 else shortcutApp = app
                             }
                         }
@@ -175,6 +181,8 @@ fun ActionPickerDialog(
 fun actionSummary(choice: ActionChoice, allApps: List<AppInfo>, noneLabel: String): String = when (choice.action) {
     GestureAction.NONE -> noneLabel
     GestureAction.OPEN_APP -> allApps.firstOrNull { it.key == choice.arg }?.label ?: stringResource(choice.action.labelRes)
+    GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP ->
+        stringResource(choice.action.labelRes) + ": " + (allApps.firstOrNull { it.key == choice.arg }?.label ?: "…")
     GestureAction.OPEN_SHORTCUT -> {
         val pkg = Actions.parseShortcut(choice.arg)?.first
         val app = allApps.firstOrNull { it.packageName == pkg }?.label
@@ -191,6 +199,8 @@ fun actionIcon(action: GestureAction): ImageVector = when (action) {
     GestureAction.LOCK_SCREEN -> Icons.Filled.Lock
     GestureAction.SETTINGS, GestureAction.QUICK_SETTINGS -> Icons.Filled.Settings
     GestureAction.OPEN_APP -> Icons.Filled.Apps
+    GestureAction.BLOCK_APP -> Icons.Filled.Lock
+    GestureAction.UNBLOCK_APP -> Icons.Filled.LockOpen
     GestureAction.FLASHLIGHT -> Icons.Filled.FlashOn
     GestureAction.SILENT, GestureAction.SILENT_ON -> Icons.Filled.NotificationsOff
     GestureAction.SOUND_ON -> Icons.Filled.Notifications

@@ -923,4 +923,32 @@
     <string name="auto_summary">%1$s · %2$d azione/i</string>
     <string name="auto_hour">Ora</string>
     <string name="auto_minute">Minuti</string>
+    <string name="gesture_block_app">Blocca un\'app</string>
+    <string name="gesture_unblock_app">Sblocca un\'app</string>
+    <string name="kw_blocks">blocco bloccare app lucchetto fasce orarie giorni festivo festività calendario social concentrazione studio notte</string>
+    <string name="block_title">App bloccata</string>
+    <string name="block_until">%1$s è bloccata fino alle %3$s (regola «%2$s»).</string>
+    <string name="block_all_day">%1$s è bloccata oggi (regola «%2$s»).</string>
+    <string name="block_manual">%1$s è bloccata. L\'hai bloccata tu o un\'automazione: si sblocca da Impostazioni → Benessere digitale → Blocchi delle app.</string>
+    <string name="blocks_title">Blocchi delle app</string>
+    <string name="blocks_intro">Scegli le app che non si possono aprire in certi orari e giorni, per esempio i social di notte o nei giorni di lavoro. Ogni regola può spegnersi da sola nei giorni festivi.</string>
+    <string name="blocks_manual">Bloccate a mano o da un\'automazione</string>
+    <string name="blocks_unblock">Sblocca</string>
+    <string name="blocks_new_name">Nuovo blocco</string>
+    <string name="blocks_add">Aggiungi un blocco</string>
+    <string name="blocks_summary">%1$s–%2$s · %3$d app</string>
+    <string name="blocks_holidays_calendar">I giorni festivi vengono dal calendario Google «Festività in Italia» di questo telefono.</string>
+    <string name="blocks_holidays_builtin">Calendario «Festività in Italia» non trovato (o permesso del calendario mancante): uso l\'elenco interno delle festività nazionali italiane, Pasquetta compresa.</string>
+    <string name="blocks_edit_title">Blocco delle app</string>
+    <string name="blocks_apps">App (%1$d)</string>
+    <string name="blocks_apps_none">Scegli le app da bloccare</string>
+    <string name="blocks_pick_apps">App da bloccare</string>
+    <string name="blocks_days">Giorni</string>
+    <string name="blocks_days_hint">Nessuno selezionato = ogni giorno.</string>
+    <string name="blocks_from">Dalle</string>
+    <string name="blocks_to">Fino alle</string>
+    <string name="blocks_all_day">Inizio e fine uguali: bloccata tutto il giorno.</string>
+    <string name="blocks_overnight_hint">Se la fine precede l\'inizio, il blocco passa la mezzanotte e vale per il giorno in cui è iniziato.</string>
+    <string name="blocks_skip_holidays">Spento nei giorni festivi</string>
+    <string name="blocks_skip_holidays_sub">Usa il calendario Google «Festività in Italia»; può chiedere il permesso del calendario.</string>
 </resources>

@@ -387,6 +387,10 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         if (intent.action == Intent.ACTION_MAIN) vm.onHomePressed()
         // App aperta fuori dal launcher che ha bisogno della pausa di Usage Breaker
         intent.getStringExtra(EXTRA_PAUSE_PACKAGE)?.let { vm.requestPause(it) }
+        // App bloccata aperta fuori dal launcher: si spiega il blocco
+        intent.getStringExtra(EXTRA_BLOCK_PACKAGE)?.let { pkg ->
+            vm.requestBlock(BlockNotice(pkg, intent.getStringExtra(EXTRA_BLOCK_NAME).orEmpty(), intent.getIntExtra(EXTRA_BLOCK_UNTIL, -1).takeIf { it >= 0 }))
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -590,6 +594,9 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         const val GRAYSCALE_MILLIS = 1_500
         /** Pacchetto per cui mostrare la pausa (dal servizio di accessibilità). */
         const val EXTRA_PAUSE_PACKAGE = "onda.pause_package"
+        const val EXTRA_BLOCK_PACKAGE = "onda.block_package"
+        const val EXTRA_BLOCK_NAME = "onda.block_name"
+        const val EXTRA_BLOCK_UNTIL = "onda.block_until"
 
         const val REQ_BIND = 4101
         const val REQ_CONFIGURE = 4102

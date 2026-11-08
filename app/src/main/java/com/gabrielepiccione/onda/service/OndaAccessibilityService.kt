@@ -9,7 +9,11 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
 import com.gabrielepiccione.onda.MainActivity
 import com.gabrielepiccione.onda.OndaApp
+import com.gabrielepiccione.onda.data.AppBlocks
+import com.gabrielepiccione.onda.data.BlockHit
 import com.gabrielepiccione.onda.data.BreakerGate
+import com.gabrielepiccione.onda.data.HolidayRepository
+import com.gabrielepiccione.onda.data.Holidays
 import com.gabrielepiccione.onda.data.UsageReminders
 import com.gabrielepiccione.onda.data.UsageStatsMath
 import com.gabrielepiccione.onda.data.UsageStatsRepository
@@ -18,6 +22,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * Servizio di accessibilità di Onda, usato per due cose:
@@ -31,6 +37,7 @@ class OndaAccessibilityService : AccessibilityService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val usage by lazy { UsageStatsRepository(this) }
+    private val holidayRepo by lazy { HolidayRepository(this) }
 
     override fun onServiceConnected() {
         instance = this
@@ -47,6 +54,14 @@ class OndaAccessibilityService : AccessibilityService() {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
         val settings = (applicationContext as OndaApp).settings.current
+        // Blocchi a fasce orarie o a mano: l'app si ferma e Onda mostra perché
+        if (AppBlocks.any(settings) && pkg != packageName && pkg !in SYSTEM_OVERLAYS) {
+            scope.launch {
+                val holidays = holidayRepo.around(LocalDate.now())
+                val hit = AppBlocks.hitForPackage(settings, pkg, LocalDateTime.now()) { Holidays.isHoliday(it, holidays) }
+                if (hit != null) showBlock(pkg, hit)
+            }
+        }
         val breaker = settings.breakerApps.map(UsageReminders::packageOf).toSet()
         val limits = settings.appLimits.filterValues { it > 0 }
         if (breaker.isEmpty() && limits.isEmpty()) return
@@ -68,6 +83,16 @@ class OndaAccessibilityService : AccessibilityService() {
         val intent = Intent(this, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra(MainActivity.EXTRA_PAUSE_PACKAGE, pkg)
+        runCatching { startActivity(intent) }
+    }
+
+    /** Porta in primo piano Onda con l'avviso del blocco; l'app bloccata resta sotto e non si usa. */
+    private fun showBlock(pkg: String, hit: BlockHit) {
+        val intent = Intent(this, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(MainActivity.EXTRA_BLOCK_PACKAGE, pkg)
+            .putExtra(MainActivity.EXTRA_BLOCK_NAME, hit.name)
+            .putExtra(MainActivity.EXTRA_BLOCK_UNTIL, hit.until ?: -1)
         runCatching { startActivity(intent) }
     }
 

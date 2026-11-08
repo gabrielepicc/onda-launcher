@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Blocchi delle app** (Benessere digitale → Blocchi delle app): scegli le app, i giorni e la fascia oraria (anche oltre la mezzanotte) in cui non si aprono; ogni regola può spegnersi nei giorni festivi, riconosciuti dal calendario Google «Festività in Italia» (con l'elenco delle festività nazionali, Pasquetta compresa, se il calendario non c'è). Il blocco vale dal launcher e da fuori (notifiche, recenti, link), tramite l'accessibilità.
+- **Azioni «Blocca un'app» e «Sblocca un'app»** nelle automazioni: per esempio «Buonanotte» blocca i social, «Buongiorno» li sblocca. Le app bloccate a mano si sbloccano dallo stesso elenco.
 - **Automazioni «se… allora»** (Impostazioni → Automazioni): un evento e cosa fare, tutto sul telefono.
   - Eventi: arrivo o uscita da casa (Wi-Fi di casa), cuffie, caricatore, un dispositivo che si collega o scollega (per esempio il Bluetooth dell'auto), un orario (con giorni), alba e tramonto.
   - Azioni: tutte quelle del catalogo senza schermate (torcia, silenzioso, suoneria attiva, app, scorciatoie come le scene di Google Home o Home Assistant), il passaggio a un profilo per un'ora e un promemoria in notifica.

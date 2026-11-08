@@ -898,6 +898,10 @@ internal fun SettingsScreen(
             )
         }
 
+        if (page == SettingsPage.WELLBEING) {
+            AppBlocksSection(settings, allApps, status.calendarPermission, actions::calendarPermission, onEdit)
+        }
+
         if (page == SettingsPage.WELLBEING) Group(stringResource(R.string.section_limits)) {
             SettingsSupporting(stringResource(R.string.limits_sub))
             if (settings.appLimits.isNotEmpty() && !status.postNotifications) {
@@ -1345,6 +1349,7 @@ internal val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.page_wellbeing, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.page_contexts, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.page_automations, SettingsPage.AUTOMATIONS, R.string.kw_automations),
+    SettingEntry(R.string.blocks_title, SettingsPage.WELLBEING, R.string.kw_blocks),
     SettingEntry(R.string.suggest_enable, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.ctx_fixed_title, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.section_limits, SettingsPage.WELLBEING, R.string.kw_wellbeing),
