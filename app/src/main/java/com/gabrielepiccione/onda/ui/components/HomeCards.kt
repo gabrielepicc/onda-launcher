@@ -29,7 +29,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.height
@@ -83,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gabrielepiccione.onda.data.CalendarEvent
 import com.gabrielepiccione.onda.data.ClockSpacing
+import com.gabrielepiccione.onda.data.PlayerLayout
 import com.gabrielepiccione.onda.data.MediaInfo
 import kotlinx.coroutines.delay
 import java.time.Instant
@@ -399,10 +399,11 @@ private fun FullMediaCard(
             .clip(RoundedCornerShape(28.dp))
             .background(colors.panel.copy(alpha = 0.92f))
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
-            .padding(horizontal = 16.dp, vertical = 14.dp)
+            // Stesso margine su ogni lato: la copertina ha angoli concentrici con il contenitore
+            .padding(PlayerLayout.FULL_PADDING.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            MediaArt(media, 56.dp, 16.dp)
+            MediaArt(media, 56.dp, PlayerLayout.concentricRadius(PlayerLayout.CONTAINER_RADIUS, PlayerLayout.FULL_PADDING).dp)
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(
@@ -410,7 +411,8 @@ private fun FullMediaCard(
                     color = colors.onWallpaper,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 if (media.artist.isNotBlank()) {
                     Text(
@@ -418,7 +420,8 @@ private fun FullMediaCard(
                         color = colors.onWallpaperMuted,
                         style = MaterialTheme.typography.bodyLarge,
                         maxLines = 1,
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
                 // Prossimo brano: solo se l'app espone la coda
@@ -509,18 +512,24 @@ private fun CompactMediaCard(
             .clip(RoundedCornerShape(28.dp))
             .background(colors.panel.copy(alpha = 0.9f))
             .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
-            .padding(start = 8.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
+            .padding(start = PlayerLayout.COMPACT_PADDING.dp, end = 4.dp, top = PlayerLayout.COMPACT_PADDING.dp, bottom = PlayerLayout.COMPACT_PADDING.dp)
     ) {
-        MediaArt(media, 48.dp, 14.dp)
+        // Copertina alta quanto la riga meno i margini, angoli concentrici con il contenitore
+        MediaArt(
+            media,
+            PlayerLayout.artSize(PlayerLayout.COMPACT_HEIGHT, PlayerLayout.COMPACT_PADDING).dp,
+            PlayerLayout.concentricRadius(PlayerLayout.CONTAINER_RADIUS, PlayerLayout.COMPACT_PADDING).dp,
+        )
         Spacer(Modifier.width(12.dp))
-        // Il testo prende tutto lo spazio che i comandi lasciano
-        Column(Modifier.weight(1f).padding(end = 4.dp)) {
+        // Titolo e artista nella stessa colonna, allineati a sinistra, con lo stesso spazio
+        Column(Modifier.weight(1f).padding(end = 4.dp), horizontalAlignment = Alignment.Start) {
             Text(
                 media.title,
                 color = colors.onWallpaper,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 19.sp),
                 maxLines = 1,
-                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 2000),
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
             )
             if (media.artist.isNotBlank()) {
                 Text(
@@ -528,7 +537,8 @@ private fun CompactMediaCard(
                     color = colors.onWallpaperMuted,
                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 3000),
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
