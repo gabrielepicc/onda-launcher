@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.drawer
 
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
+import com.gabrielepiccione.onda.ui.components.TonalIcon
 import com.gabrielepiccione.onda.data.ConversationSummary
 import com.gabrielepiccione.onda.ui.theme.*
 import com.gabrielepiccione.onda.ui.components.*
@@ -12,6 +14,7 @@ import com.gabrielepiccione.onda.ui.sheets.*
 
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -149,13 +152,14 @@ fun AllAppsPanel(
         sections.forEach { section ->
             item(key = "h_${section.letter}", contentType = "header") {
                 val color by animateColorAsState(
-                    if (section.letter == activeLetter) colors.accent else colors.onWallpaperMuted,
+                    if (section.letter == activeLetter) MaterialTheme.colorScheme.primary else colors.onWallpaperMuted,
                     label = "header",
                 )
+                // Intestazione di lettera come i sottotitoli delle liste di Material 3
                 Text(
                     text = section.letter,
                     color = color,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 4.dp),
                 )
             }
@@ -192,8 +196,8 @@ fun AllAppsPanel(
                 ) {
                     Text(
                         stringResource(R.string.private_space),
-                        color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.weight(1f),
                     )
                     TextButton(onClick = onTogglePrivateLock) {
@@ -238,8 +242,8 @@ fun AllAppsPanel(
 private fun EndSectionHeader(text: String) {
     Text(
         text,
-        color = LocalOndaColors.current.onWallpaperMuted,
-        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
         modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 4.dp),
     )
 }
@@ -252,16 +256,12 @@ private fun LauncherEntryRow(icon: ImageVector, label: String, onClick: () -> Un
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
+            .heightIn(min = 56.dp)
+            .clip(LocalOndaTokens.current.shapes.large)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(colors.accentContainer),
-        ) {
-            Icon(icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(22.dp))
-        }
+        TonalIcon(icon)
         Spacer(Modifier.width(16.dp))
         Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium)
     }

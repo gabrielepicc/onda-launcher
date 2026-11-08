@@ -4,11 +4,14 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
+import com.gabrielepiccione.onda.ui.components.TonalIcon
 import com.gabrielepiccione.onda.data.WidgetSize
 import com.gabrielepiccione.onda.data.WidgetSizing
 import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
 import com.gabrielepiccione.onda.ui.components.LocalWidgetSizes
 import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.ui.platform.LocalDensity
@@ -124,8 +127,9 @@ fun FolderRow(
     Column(
         modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(if (open) colors.panel.copy(alpha = 0.85f) else androidx.compose.ui.graphics.Color.Transparent)
+            .clip(LocalOndaTokens.current.shapes.large)
+            // Aperta: superficie tonale alta, come una scheda sopra la home
+            .background(if (open) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = OPEN_ALPHA) else Color.Transparent)
             .animateContentSize(Motion.bouncy())
     ) {
         SwipeActions(
@@ -375,7 +379,8 @@ private fun DialogChoice(label: String, selected: Boolean, onClick: () -> Unit) 
         color = if (selected) colors.accent else colors.onWallpaper,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .heightIn(min = 48.dp)
+            .clip(LocalOndaTokens.current.shapes.small)
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 12.dp),
     )
@@ -388,11 +393,15 @@ fun SheetRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: Strin
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = 56.dp)
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 14.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
     ) {
-        Icon(icon, null, tint = colors.accent, modifier = Modifier.size(22.dp))
-        Spacer(Modifier.width(18.dp))
+        TonalIcon(icon)
+        Spacer(Modifier.width(16.dp))
         Text(label, style = MaterialTheme.typography.bodyLarge, color = colors.onWallpaper)
     }
 }
+
+/** Opacità della scheda di una cartella aperta, per lasciar intravedere lo sfondo. */
+private const val OPEN_ALPHA = 0.92f
