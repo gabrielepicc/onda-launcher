@@ -687,9 +687,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         }
     }
     // Il profilo proposto ha la precedenza su "Lo sapevi?": è la cosa più utile da vedere
-    val suggestion = if (!tipSignals.busy && settings.welcomeDone) UsageProfiles.next(settings.profileSuggest, suggestionPool, today) else null
+    val suggestion = if (!tipSignals.busy && settings.welcomeDone) UsageProfiles.next(settings.profileSuggest, suggestionPool, today, System.currentTimeMillis()) else null
     val tip = if (state.loaded && settings.welcomeDone && suggestion == null) DiscoveryTips.next(settings.tips, tipSignals) else null
-    LaunchedEffect(suggestion?.key) { suggestion?.let { s -> vm.updateSettings { it.copy(profileSuggest = UsageProfiles.shown(it.profileSuggest, s, today)) } } }
+    LaunchedEffect(suggestion?.key) { suggestion?.let { s -> vm.updateSettings { it.copy(profileSuggest = UsageProfiles.shown(it.profileSuggest, s, System.currentTimeMillis())) } } }
     LaunchedEffect(state.loaded) {
         if (state.loaded && settings.tips.firstDay.isEmpty()) vm.updateSettings { it.copy(tips = it.tips.copy(firstDay = today)) }
     }
@@ -936,7 +936,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         item(key = "profile_suggestion") {
                             ProfileSuggestionCard(
                                 suggestion = suggestion,
-                                appLabels = { pkgs -> pkgs.joinToString(", ") { p -> state.allApps.firstOrNull { it.packageName == p }?.label ?: p } },
+                                apps = suggestion?.apps.orEmpty().mapNotNull { p -> state.allApps.firstOrNull { it.packageName == p } },
+                                themedIcons = settings.themedIcons,
                                 onCreate = {
                                     suggestion?.let { s ->
                                         vm.updateSettings { st ->

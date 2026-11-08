@@ -49,6 +49,10 @@ data class ProfileSuggestion(
     val strength: Int,
     /** Codice del Wi-Fi, solo per il segnale WIFI. */
     val wifiHash: String? = null,
+    /** In quanti giorni almeno tre di queste app si sono usate insieme in quella fascia o condizione. */
+    val togetherDays: Int = 0,
+    /** Su quanti giorni di storia (al massimo [UsageProfiles.WINDOW_DAYS]). */
+    val historyDays: Int = 0,
 ) {
     /** Identifica la proposta per ricordare un rifiuto: fascia, segnale e app. */
     val key: String
@@ -64,12 +68,16 @@ data class ProfileSuggestState(
     val useWifi: Boolean = false,
     /** Proposte ignorate: chiave -> giorno ("AAAA-MM-GG") dell'ultimo "Ignora". */
     val ignored: Map<String, String> = emptyMap(),
-    /** Giorno dell'ultimo suggerimento mostrato, per mostrarne al massimo uno a settimana. */
+    /** Non più usato (la regola ora è [lastShownAt]); resta per leggere i vecchi file. */
     val lastShownDay: String = "",
     /** Chiave dell'ultimo suggerimento mostrato (resta finché non lo si chiude). */
     val lastKey: String = "",
     /** Giorno dell'ultima notifica che ha avvisato di un profilo suggerito (al massimo una a settimana). */
     val lastNotifiedDay: String = "",
+    /** Momento (ms) in cui la scheda in home è stata mostrata l'ultima volta: la prossima dopo [UsageProfiles.SUGGESTION_MIN_GAP_MS]. */
+    val lastShownAt: Long = 0L,
+    /** Momento (ms) dell'ultima analisi dell'uso, mostrato nelle impostazioni. */
+    val lastAnalysisAt: Long = 0L,
 )
 
 /** Ricava profili proposti dall'uso reale del telefono, senza dipendenze Android (testabile su JVM). */
@@ -94,7 +102,17 @@ object UsageProfiles {
 
     /** Dopo "Ignora" la stessa proposta tace per 30 giorni; in generale al massimo una proposta a settimana. */
     const val SILENCE_DAYS = 30
+    /** Notifiche dei profili suggeriti: al massimo una ogni sette giorni. */
     const val DAYS_BETWEEN_SUGGESTIONS = 7
+
+    /** In home la scheda di un nuovo suggerimento compare al massimo una volta ogni 4 ore. */
+    const val SUGGESTION_MIN_GAP_MS = 4 * 3_600_000L
+
+    /** «Analizza adesso» nelle impostazioni: al massimo una volta ogni 15 minuti. */
+    const val ANALYZE_MIN_GAP_MS = 15 * 60_000L
+
+    /** Quante app devono comparire nello stesso giorno per dire che si sono usate «insieme». */
+    private const val TOGETHER_APPS = 3
 
     /** Due aperture della stessa app a meno di così sono la stessa. */
     private const val DEDUP_MS = 2 * 60_000L
@@ -124,24 +142,25 @@ object UsageProfiles {
             val inKind = recent.filter { e -> DaySlot.entries.any { belongs(e, kind, it, zone) } }
             for (slot in DaySlot.entries) {
                 val inSlot = inKind.filter { belongs(it, kind, slot, zone) }
-                pick(inSlot, inKind, zone)?.let { (apps, strength) -> out += ProfileSuggestion(slotName(kind, slot), apps, kind, slot, null, strength) }
+                pick(inSlot, inKind, zone)?.let { p -> out += ProfileSuggestion(slotName(kind, slot), p.apps, kind, slot, null, p.strength, togetherDays = p.together) }
             }
         }
         // Per segnale, in qualsiasi ora
         fun bySignal(signal: SuggestedSignal, name: String, filter: (UsageEventCtx) -> Boolean) {
-            pick(recent.filter(filter), recent, zone)?.let { (apps, strength) -> out += ProfileSuggestion(name, apps, null, null, signal, strength) }
+            pick(recent.filter(filter), recent, zone)?.let { p -> out += ProfileSuggestion(name, p.apps, null, null, signal, p.strength, togetherDays = p.together) }
         }
         bySignal(SuggestedSignal.HEADPHONES, "Con le cuffie") { it.headphones }
         bySignal(SuggestedSignal.CHARGING, "In carica") { it.charging }
         bySignal(SuggestedSignal.CAR, "In auto") { it.car }
         if (useWifi) {
             recent.mapNotNull { it.wifiHash }.distinct().forEach { hash ->
-                pick(recent.filter { it.wifiHash == hash }, recent, zone)?.let { (apps, strength) ->
-                    out += ProfileSuggestion("Su questo Wi-Fi", apps, null, null, SuggestedSignal.WIFI, strength, wifiHash = hash)
+                pick(recent.filter { it.wifiHash == hash }, recent, zone)?.let { p ->
+                    out += ProfileSuggestion("Su questo Wi-Fi", p.apps, null, null, SuggestedSignal.WIFI, p.strength, wifiHash = hash, togetherDays = p.together)
                 }
             }
         }
-        return out.sortedByDescending { it.strength }.distinctBy { it.apps.toSet() }
+        val history = (day(now, zone).toEpochDay() - firstDay.toEpochDay()).toInt().coerceAtMost(WINDOW_DAYS)
+        return out.sortedByDescending { it.strength }.distinctBy { it.apps.toSet() }.map { it.copy(historyDays = history) }
     }
 
     /**
@@ -149,7 +168,7 @@ object UsageProfiles {
      * Le app usate dappertutto (messaggi, browser) non dicono nulla di una fascia: [all] serve a tenere solo quelle
      * che in questa fascia si usano più che nel resto della giornata ([MIN_CONCENTRATION]).
      */
-    private fun pick(events: List<UsageEventCtx>, all: List<UsageEventCtx>, zone: ZoneId): Pair<List<String>, Int>? {
+    private fun pick(events: List<UsageEventCtx>, all: List<UsageEventCtx>, zone: ZoneId): Picked? {
         if (events.isEmpty()) return null
         val daysByApp = events.groupBy { it.packageName }.mapValues { (_, list) -> list.map { day(it.time, zone) }.toSet().size }
         val apps = daysByApp.filterValues { it >= MIN_RECURRENCE_DAYS }.entries
@@ -157,7 +176,18 @@ object UsageProfiles {
             .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
             .take(MAX_APPS)
         if (apps.size < MIN_APPS) return null
-        return apps.map { it.key } to apps.sumOf { it.value }
+        val chosen = apps.map { it.key }
+        return Picked(chosen, apps.sumOf { it.value }, togetherDays(events, chosen, zone))
+    }
+
+    private data class Picked(val apps: List<String>, val strength: Int, val together: Int)
+
+    /** Giorni in cui almeno [TOGETHER_APPS] delle app scelte compaiono negli stessi eventi (fascia o condizione). */
+    private fun togetherDays(events: List<UsageEventCtx>, apps: List<String>, zone: ZoneId): Int {
+        val need = minOf(TOGETHER_APPS, apps.size)
+        return events.filter { it.packageName in apps }
+            .groupBy { day(it.time, zone) }
+            .count { (_, list) -> list.map { it.packageName }.toSet().size >= need }
     }
 
     /** Quanto più spesso un'app si apre in questa fascia rispetto al resto: 1 = uguale, 2 = il doppio. */
@@ -229,16 +259,47 @@ object UsageProfiles {
     }
 
     /**
-     * La proposta da mostrare oggi, o null: spenta, già una nei sette giorni, oppure tutte ignorate di recente.
+     * La proposta da mostrare in home, o null: spenta, un'altra mostrata meno di 4 ore fa, oppure tutte ignorate di recente.
      * Quella già mostrata (e non chiusa) resta finché non si decide.
      */
-    fun next(state: ProfileSuggestState, candidates: List<ProfileSuggestion>, today: String): ProfileSuggestion? {
+    fun next(state: ProfileSuggestState, candidates: List<ProfileSuggestion>, today: String, now: Long): ProfileSuggestion? {
         if (!state.enabled) return null
-        val usable = candidates.filterNot { silenced(state, it.key, today) }
+        val usable = forSettings(state, candidates, today)
+        // Quella già mostrata (e non chiusa) resta finché non si decide
         state.lastKey.takeIf { it.isNotEmpty() }?.let { key -> usable.firstOrNull { it.key == key }?.let { return it } }
-        if (state.lastShownDay.isNotEmpty() && daysBetween(state.lastShownDay, today) < DAYS_BETWEEN_SUGGESTIONS) return null
+        // Una nuova al massimo ogni 4 ore dall'ultima mostrata; poi la più forte
+        if (state.lastShownAt > 0 && now - state.lastShownAt < SUGGESTION_MIN_GAP_MS) return null
         return usable.firstOrNull()
     }
+
+    /** L'elenco completo per le impostazioni: tutte le proposte non ignorate, dalla più solida. Nessun limite. */
+    fun forSettings(state: ProfileSuggestState, candidates: List<ProfileSuggestion>, today: String): List<ProfileSuggestion> =
+        candidates.filterNot { silenced(state, it.key, today) }.sortedByDescending { it.strength }
+
+    /** Le proposte ignorate ancora in silenzio, dalla più recente: chiave e giorno. */
+    fun ignoredKeys(state: ProfileSuggestState, today: String): List<Pair<String, String>> =
+        state.ignored.filter { (key, _) -> silenced(state, key, today) }.toList().sortedByDescending { it.second }
+
+    /** «Ripristina» un suggerimento ignorato: torna a poter comparire. */
+    fun restore(state: ProfileSuggestState, key: String): ProfileSuggestState = state.copy(ignored = state.ignored - key)
+
+    /** Le parti di una chiave, per descrivere un suggerimento ignorato senza ricalcolarlo. */
+    data class KeyParts(val days: DayKind?, val slot: DaySlot?, val signal: SuggestedSignal?, val apps: List<String>)
+
+    fun describe(key: String): KeyParts {
+        val parts = key.split('|')
+        return KeyParts(
+            days = DayKind.entries.firstOrNull { it.name == parts.getOrNull(0) },
+            slot = DaySlot.entries.firstOrNull { it.name == parts.getOrNull(1) },
+            signal = SuggestedSignal.entries.firstOrNull { it.name == parts.getOrNull(2) },
+            apps = parts.getOrNull(3).orEmpty().split(',').filter { it.isNotBlank() },
+        )
+    }
+
+    fun canAnalyzeNow(state: ProfileSuggestState, now: Long): Boolean =
+        state.lastAnalysisAt <= 0 || now - state.lastAnalysisAt >= ANALYZE_MIN_GAP_MS
+
+    fun analyzed(state: ProfileSuggestState, now: Long): ProfileSuggestState = state.copy(lastAnalysisAt = now)
 
     /** Una notifica per avvisare del profilo, al massimo ogni [DAYS_BETWEEN_SUGGESTIONS] giorni. */
     fun shouldNotify(state: ProfileSuggestState, today: String): Boolean =
@@ -246,8 +307,8 @@ object UsageProfiles {
 
     fun notified(state: ProfileSuggestState, today: String): ProfileSuggestState = state.copy(lastNotifiedDay = today)
 
-    fun shown(state: ProfileSuggestState, s: ProfileSuggestion, today: String): ProfileSuggestState =
-        if (state.lastKey == s.key) state else state.copy(lastKey = s.key, lastShownDay = today)
+    fun shown(state: ProfileSuggestState, s: ProfileSuggestion, now: Long): ProfileSuggestState =
+        if (state.lastKey == s.key) state else state.copy(lastKey = s.key, lastShownAt = now)
 
     fun ignore(state: ProfileSuggestState, s: ProfileSuggestion, today: String): ProfileSuggestState =
         state.copy(ignored = state.ignored + (s.key to today), lastKey = "")

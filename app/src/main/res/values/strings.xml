@@ -823,7 +823,6 @@
     <string name="suggest_explain_go">Continue</string>
     <string name="suggest_card_label">Profile suggestion</string>
     <string name="suggest_card_title">I noticed a routine: «%1$s»</string>
-    <string name="suggest_card_body">In that time you often open %1$s. Want a profile with these apps? It never starts by itself.</string>
     <string name="suggest_create">Create</string>
     <string name="suggest_edit">Edit</string>
     <string name="suggest_ignore">Ignore</string>
@@ -859,7 +858,6 @@
     <string name="suggest_status_no_data">Onda has not seen any app openings yet. Grant usage access, or just use your phone for a day.</string>
     <string name="suggest_status_history">Seen %1$d openings over %2$d days. Needs %3$d more days of history.</string>
     <string name="suggest_status_no_pattern">Seen %1$d openings, but no routine regular enough yet: it needs 3 apps opened on at least 3 days in the same part of the day, more often there than at other times.</string>
-    <string name="suggest_status_ready">%1$d suggestion(s) ready: you will see the card on home.</string>
     <string name="gesture_silent_on">Silent</string>
     <string name="gesture_sound_on">Sound on</string>
     <string name="page_automations">Automations</string>
@@ -998,4 +996,25 @@
     <string name="auto_group_time">Time</string>
     <string name="auto_group_sun">Sun</string>
     <string name="auto_reminder_title">Reminder</string>
+    <string name="suggest_why">You used them together on %1$d of the last %2$d days.</string>
+    <string name="suggest_slot_morning">Morning</string>
+    <string name="suggest_slot_afternoon">Afternoon</string>
+    <string name="suggest_slot_evening">Evening</string>
+    <string name="suggest_slot_night">Night</string>
+    <string name="suggest_days_weekdays">weekdays</string>
+    <string name="suggest_days_weekend">weekend</string>
+    <string name="suggest_signal_headphones">With headphones</string>
+    <string name="suggest_signal_charging">While charging</string>
+    <string name="suggest_signal_car">In the car</string>
+    <string name="suggest_signal_wifi">On this Wi-Fi</string>
+    <string name="suggest_list_count">Suggestions ready: %1$d. Create, edit or ignore each one.</string>
+    <string name="suggest_empty">No suggestions for now. Onda proposes them when it notices recurring habits. Last analysis: %1$s.</string>
+    <string name="suggest_empty_never">No suggestions for now. Onda proposes them when it notices recurring habits.</string>
+    <string name="suggest_list_off">Turn on “Suggest profiles” to see here the profiles Onda proposes from your habits.</string>
+    <string name="suggest_need_access">Usage access is missing: without it Onda only sees the apps opened from the launcher.</string>
+    <string name="suggest_grant_access">Grant usage access</string>
+    <string name="suggest_analyze_now">Analyze now</string>
+    <string name="suggest_analyze_wait">You can analyze again in a few minutes (at most every 15 minutes).</string>
+    <string name="suggest_ignored">Ignored (%1$d)</string>
+    <string name="suggest_restore">Restore</string>
 </resources>

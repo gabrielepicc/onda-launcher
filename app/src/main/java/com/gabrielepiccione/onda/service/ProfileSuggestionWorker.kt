@@ -43,7 +43,7 @@ class ProfileSuggestionWorker(context: Context, params: WorkerParameters) : Coro
         val launchable = app.apps.apps.value.map { it.component.packageName }.toSet()
         val fixed = settings.favorites.take(settings.fixedFavoriteSlots).map { UsageReminders.packageOf(it) }.toSet() + app.packageName
         val pool = UsageProfiles.suggest(UsageReader(app).read(now, launchable), now, ZoneId.systemDefault(), fixed, state.useWifi)
-        val candidate = UsageProfiles.next(state, pool, today) ?: return Result.success()
+        val candidate = UsageProfiles.next(state, pool, today, now) ?: return Result.success()
 
         val manager = NotificationManagerCompat.from(app)
         manager.createNotificationChannel(
