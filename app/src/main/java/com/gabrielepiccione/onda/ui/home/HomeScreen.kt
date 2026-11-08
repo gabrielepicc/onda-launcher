@@ -159,6 +159,7 @@ import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.Actions
+import com.gabrielepiccione.onda.data.HomeCarousel
 import com.gabrielepiccione.onda.data.Holidays
 import com.gabrielepiccione.onda.data.HolidayRepository
 import com.gabrielepiccione.onda.data.BlockHit
@@ -698,7 +699,19 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     var summaryOpen by remember { mutableStateOf(false) }
     val digest = remember(state.notifications) { com.gabrielepiccione.onda.data.NotificationDigest.of(state.notifications) }
-    val packageLabel: (String) -> String = { pkg -> state.allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
+    // Nome dell'app, mai il pacchetto quando il sistema conosce un nome (es. Servizi Google Play)
+    val packageLabel = rememberAppLabel { pkg -> state.allApps.firstOrNull { it.packageName == pkg } }
+    val cardsCallbacks = CardsCallbacks(
+        onMediaOpen = { vm.media.open() },
+        onPlayPause = { vm.media.playPause() },
+        onPrev = { vm.media.previous() },
+        onNext = { vm.media.next() },
+        onMediaAction = { vm.media.customAction(it) },
+        onEvent = { vm.calendar.open(it) },
+        onAgendaEmpty = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
+        onSummary = { summaryOpen = true },
+        onLongPress = { block -> if (!settings.lockLayout) editing = block },
+    )
     // Il blocco in modifica può sparire (es. una pila ridotta a un solo widget)
     LaunchedEffect(blocks, editing) { if (editing != null && editing !in blocks) editing = null }
 
@@ -837,6 +850,23 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 )
                             }
                             }
+                        }
+                    }
+                    // Player, agenda e riepilogo in un solo carosello, al posto del primo dei tre blocchi
+                    settings.cardsCarousel && block in HomeCarousel.CARD_BLOCKS -> if (block == HomeCarousel.anchorBlock(blocks)) {
+                        item(key = "cards") {
+                            HomeCardsCarousel(
+                                pages = HomeCarousel.pages(blocks, hasMedia = settings.showMedia && media != null, hasAgenda = true, hasNotifications = digest.total > 0),
+                                media = media,
+                                events = agenda,
+                                digest = digest,
+                                appOf = { pkg -> state.allApps.firstOrNull { it.packageName == pkg } },
+                                labelOf = packageLabel,
+                                themedIcons = settings.themedIcons,
+                                highlighted = editing,
+                                callbacks = cardsCallbacks,
+                                modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
+                            )
                         }
                     }
                     block == HomeBlocks.AGENDA -> item(key = "agenda") {

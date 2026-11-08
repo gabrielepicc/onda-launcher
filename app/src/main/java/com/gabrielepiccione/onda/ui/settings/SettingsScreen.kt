@@ -652,6 +652,7 @@ internal fun SettingsScreen(
                 0f..32f,
                 steps = 7,
             ) { v -> onEdit { it.copy(homeBlockSpacing = (v / 4f).roundToInt() * 4) } }
+            SwitchRow(stringResource(R.string.cards_carousel), stringResource(R.string.cards_carousel_sub), settings.cardsCarousel) { v -> onEdit { it.copy(cardsCarousel = v) } }
             ValueSlider(
                 stringResource(R.string.clock_inner_spacing),
                 stringResource(R.string.value_dp, settings.clockInnerSpacing),

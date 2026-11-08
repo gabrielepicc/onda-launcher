@@ -1052,4 +1052,13 @@
     <string name="widget_width_three_quarters">¾</string>
     <string name="edit_group_position">Posizione</string>
     <string name="edit_group_actions">Azioni</string>
+    <string name="cards_agenda_empty_title">Nessun evento</string>
+    <string name="cards_agenda_empty_sub">Tocca per aprire il calendario</string>
+    <string name="cards_agenda_all_day">Tutto il giorno</string>
+    <string name="cards_carousel">Schede in carosello</string>
+    <string name="cards_carousel_sub">Player, agenda e riepilogo delle notifiche in un solo blocco da scorrere di lato. Spento: tre righe separate.</string>
+    <plurals name="cards_notifications">
+        <item quantity="one">%d notifica</item>
+        <item quantity="other">%d notifiche</item>
+    </plurals>
 </resources>
