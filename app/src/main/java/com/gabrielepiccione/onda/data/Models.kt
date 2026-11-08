@@ -124,6 +124,8 @@ enum class GestureAction(@StringRes val labelRes: Int) {
     SCREENSHOT(R.string.gesture_screenshot),
     RECENTS(R.string.gesture_recents),
     OPEN_SHORTCUT(R.string.gesture_open_shortcut),
+    SILENT_ON(R.string.gesture_silent_on),
+    SOUND_ON(R.string.gesture_sound_on),
 }
 
 /** Animazione con cui si aprono le app dal launcher. */
@@ -400,6 +402,8 @@ data class Settings(
     val homeLightsWidget: Int = 0,
     /** Preferiti contestuali: profili con le loro regole, in ordine (a parità di priorità vince il primo). */
     val contextProfiles: List<ContextProfile> = emptyList(),
+    /** Automazioni «se… allora» (vedi [Automations]). */
+    val automations: List<Automation> = emptyList(),
     /** Quanti dei primi preferiti non cambiano mai con i profili (memoria muscolare). */
     val fixedFavoriteSlots: Int = 2,
     /** Profilo scelto a mano dall'orologio, valido per un'ora. */

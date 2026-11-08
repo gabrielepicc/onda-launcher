@@ -4,6 +4,12 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Automazioni «se… allora»** (Impostazioni → Automazioni): un evento e cosa fare, tutto sul telefono.
+  - Eventi: arrivo o uscita da casa (Wi-Fi di casa), cuffie, caricatore, un dispositivo che si collega o scollega (per esempio il Bluetooth dell'auto), un orario (con giorni), alba e tramonto.
+  - Azioni: tutte quelle del catalogo senza schermate (torcia, silenzioso, suoneria attiva, app, scorciatoie come le scene di Google Home o Home Assistant), il passaggio a un profilo per un'ora e un promemoria in notifica.
+  - Dieci esempi pronti: arrivo a casa, uscita di casa, buonanotte, buongiorno, modalità auto, cuffie → musica, staccato dal caricatore, tramonto, alba, promemoria a casa.
+  - Nuove azioni nel catalogo: «Silenzioso (attiva)» e «Suoneria attiva».
+  - Limiti: girano finché Onda è viva in background; Android può impedire di aprire app dallo sfondo.
 - **Profili suggeriti più pertinenti**: un'app entra in un profilo solo se in quella fascia si apre almeno il 20% più spesso che nel resto dei giorni lavorativi o del weekend (le app usate sempre, come messaggi e browser, non definiscono più una fascia). La proposta ha la precedenza su «Lo sapevi?». In Impostazioni → Preferiti contestuali una riga spiega cosa ha visto Onda e perché una proposta non c'è ancora.
 - **Player compatto**: font un po' più piccolo (19 sp il titolo, 15 sp l'artista).
 - **Profili suggeriti, subito**: bastano 6 giorni di storia e 3 giorni di ricorrenza (prima 14 e 5), così con l'accesso ai dati d'uso appena concesso il primo suggerimento può comparire subito (Android conserva circa 10 giorni di aperture). La scheda si ricalcola appena si concede il permesso e, al massimo una volta a settimana, una notifica avvisa del profilo proposto (solo con «Suggerisci profili» acceso e notifiche consentite).

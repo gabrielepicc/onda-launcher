@@ -87,6 +87,8 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 
 - ✅ Notifiche leggibili e pannello Home (#72) · Spazio dentro l'orologio (#73).
 
+- ✅ Automazioni «se… allora» (motore, pagina, dieci esempi). Da fare dopo: tag NFC come evento, azione «imposta profilo» nel catalogo, notifica per i permessi mancanti.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.

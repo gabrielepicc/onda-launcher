@@ -287,6 +287,12 @@ class AppRepository(
         runCatching { launcherApps.startMainActivity(app.component, app.user, bounds, openOptions()) }
     }
 
+    /** Apre un'app da una chiave, per le automazioni (Android può limitare l'apertura di schermate dallo sfondo). */
+    fun launchByKey(key: String) {
+        val raw = _apps.value.firstOrNull { it.key == key } ?: return
+        runCatching { launcherApps.startMainActivity(raw.component, raw.user, null, null) }
+    }
+
     /** Animazione di apertura scelta dall'utente; null = quella di sistema. */
     private fun openOptions(): android.os.Bundle? {
         val enter = when (settings.value.openAnimation) {

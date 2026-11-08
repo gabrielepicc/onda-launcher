@@ -73,4 +73,14 @@ class ActionsTest {
         assertTrue(Actions.matching("t", label).isEmpty())
         assertFalse(GestureAction.OPEN_APP in Actions.matching("apri", label))
     }
+
+    @Test
+    fun launcherScreensAreNotAutomatable() {
+        assertFalse(Actions.isAutomatable(GestureAction.SEARCH))
+        assertFalse(Actions.isAutomatable(GestureAction.ALL_APPS))
+        assertFalse(Actions.isAutomatable(GestureAction.SETTINGS))
+        assertTrue(Actions.isAutomatable(GestureAction.SILENT_ON))
+        assertTrue(Actions.isAutomatable(GestureAction.OPEN_SHORTCUT))
+        assertEquals(ActionNeed.POLICY_ACCESS, Actions.need(GestureAction.SOUND_ON))
+    }
 }

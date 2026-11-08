@@ -89,6 +89,8 @@ fun ActionPickerDialog(
     noneLabel: String? = null,
     /** Parte direttamente dalla scelta dell'app o della scorciatoia (quando l'azione è già decisa). */
     startAt: ActionArg? = null,
+    /** Solo azioni eseguibili senza schermate (per le automazioni). */
+    automatable: Boolean = false,
 ) {
     var step by remember { mutableStateOf(startAt) }
     var shortcutApp by remember { mutableStateOf<AppInfo?>(null) }
@@ -110,7 +112,8 @@ fun ActionPickerDialog(
                         if (noneLabel != null) {
                             item { PickRow(noneLabel, current.action == GestureAction.NONE) { finish(ActionChoice(GestureAction.NONE)) } }
                         }
-                        Actions.catalog.forEach { (group, list) ->
+                        Actions.catalog.forEach { (group, all) ->
+                            val list = all.filter { !automatable || Actions.isAutomatable(it) }
                             item(key = "g_" + group.name) {
                                 Text(
                                     stringResource(group.labelRes),
@@ -189,7 +192,8 @@ fun actionIcon(action: GestureAction): ImageVector = when (action) {
     GestureAction.SETTINGS, GestureAction.QUICK_SETTINGS -> Icons.Filled.Settings
     GestureAction.OPEN_APP -> Icons.Filled.Apps
     GestureAction.FLASHLIGHT -> Icons.Filled.FlashOn
-    GestureAction.SILENT -> Icons.Filled.NotificationsOff
+    GestureAction.SILENT, GestureAction.SILENT_ON -> Icons.Filled.NotificationsOff
+    GestureAction.SOUND_ON -> Icons.Filled.Notifications
     GestureAction.SCREENSHOT -> Icons.Filled.PhotoCamera
     GestureAction.RECENTS -> Icons.Filled.History
     GestureAction.OPEN_SHORTCUT -> Icons.Filled.Star

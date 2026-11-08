@@ -15,6 +15,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import com.gabrielepiccione.onda.service.AutomationEngine
 import com.gabrielepiccione.onda.service.ProfileSuggestionWorker
 
 class OndaApp : Application() {
@@ -42,6 +43,8 @@ class OndaApp : Application() {
         media = MediaRepository(this)
         calendar = CalendarRepository(this)
         audio = com.gabrielepiccione.onda.data.AudioDevices(this)
+        // Automazioni «se… allora»: girano solo se ce n'è una accesa
+        AutomationEngine(this).start()
         // Il promemoria dei profili suggeriti esiste solo con "Suggerisci profili" acceso
         scope.launch {
             settings.settings.map { it.profileSuggest.enabled }.distinctUntilChanged().collect { ProfileSuggestionWorker.syncSchedule(this@OndaApp, it) }

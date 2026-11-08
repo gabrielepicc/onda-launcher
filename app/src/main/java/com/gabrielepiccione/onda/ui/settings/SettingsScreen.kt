@@ -12,6 +12,7 @@ import com.gabrielepiccione.onda.data.PrefixKind
 import com.gabrielepiccione.onda.data.SearchPrefixes
 import com.gabrielepiccione.onda.ui.components.OndaChip
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.foundation.layout.imePadding
 import com.gabrielepiccione.onda.data.MusicBackdropMode
 import com.gabrielepiccione.onda.ui.components.MusicBackdrop
@@ -168,6 +169,7 @@ interface SettingsActions {
     fun usageAccess()
     fun accessibility()
     fun shortcutsOf(app: AppInfo): List<ShortcutInfo>
+    fun connectedDevices(): Set<String>
     fun addWidget()
     fun removeWidget(id: Int)
     fun unhide(app: AppInfo)
@@ -879,6 +881,10 @@ internal fun SettingsScreen(
             ContextProfilesPage(settings, allApps, activeProfile, contextEnvironment, onEdit, suggestedProfile, status.usageAccess, actions::usageAccess)
         }
 
+        if (page == SettingsPage.AUTOMATIONS) {
+            AutomationsPage(settings, allApps, actions::connectedDevices, actions::shortcutsOf, status.accessibilityEnabled, actions::accessibility, onEdit)
+        }
+
         if (page == SettingsPage.WELLBEING && usageStats != null) {
             WellbeingDashboard(
                 repo = usageStats,
@@ -1275,6 +1281,7 @@ internal enum class SettingsPage(@StringRes val titleRes: Int, @StringRes val su
     ALPHABET(R.string.page_alphabet, R.string.page_alphabet_sub, Icons.Filled.Search),
     GESTURES(R.string.section_gestures, R.string.page_gestures_sub, Icons.Filled.TouchApp),
     CONTEXTS(R.string.page_contexts, R.string.page_contexts_sub, Icons.Filled.AutoAwesome),
+    AUTOMATIONS(R.string.page_automations, R.string.page_automations_sub, Icons.Filled.Bolt),
     WELLBEING(R.string.page_wellbeing, R.string.page_wellbeing_sub, Icons.Filled.HourglassEmpty),
     APPS(R.string.page_apps, R.string.page_apps_sub, Icons.Filled.Apps),
     BACKUP(R.string.section_backup, R.string.page_backup_sub, Icons.Filled.Backup),
@@ -1337,6 +1344,7 @@ internal val SETTING_ENTRIES = listOf(
     SettingEntry(R.string.section_reminders, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.page_wellbeing, SettingsPage.WELLBEING, R.string.kw_wellbeing),
     SettingEntry(R.string.page_contexts, SettingsPage.CONTEXTS, R.string.kw_contexts),
+    SettingEntry(R.string.page_automations, SettingsPage.AUTOMATIONS, R.string.kw_automations),
     SettingEntry(R.string.suggest_enable, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.ctx_fixed_title, SettingsPage.CONTEXTS, R.string.kw_contexts),
     SettingEntry(R.string.section_limits, SettingsPage.WELLBEING, R.string.kw_wellbeing),

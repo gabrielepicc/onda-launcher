@@ -24,6 +24,8 @@ object ActionRunner {
         GestureAction.QUICK_SETTINGS -> done { SystemActions.expandQuickSettings(context) }
         GestureAction.FLASHLIGHT -> done { toggleTorch(context) }
         GestureAction.SILENT -> toggleSilent(context)
+        GestureAction.SILENT_ON -> setRinger(context, AudioManager.RINGER_MODE_SILENT)
+        GestureAction.SOUND_ON -> setRinger(context, AudioManager.RINGER_MODE_NORMAL)
         GestureAction.LOCK_SCREEN -> accessibility(OndaAccessibilityService.lockScreen())
         GestureAction.SCREENSHOT -> accessibility(OndaAccessibilityService.screenshot())
         GestureAction.RECENTS -> accessibility(OndaAccessibilityService.recents())
@@ -46,6 +48,14 @@ object ActionRunner {
             torchOn = !torchOn
             cameras.setTorchMode(id, torchOn)
         }
+    }
+
+    /** Imposta la suoneria (silenzioso o normale), se Android ha concesso l'accesso a "Non disturbare". */
+    private fun setRinger(context: Context, mode: Int): Outcome {
+        val notifications = context.getSystemService(NotificationManager::class.java)
+        if (!notifications.isNotificationPolicyAccessGranted) return Outcome.NEEDS_POLICY_ACCESS
+        context.getSystemService(AudioManager::class.java).ringerMode = mode
+        return Outcome.DONE
     }
 
     /** Suoneria normale ↔ silenzioso; per impostare il silenzioso Android chiede l'accesso a "Non disturbare". */
