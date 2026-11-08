@@ -398,7 +398,6 @@ internal fun SettingsScreen(
                     MusicBackdropMode.BEAT to stringResource(R.string.music_backdrop_beat),
                 ),
                 settings.musicBackdrop,
-                columns = 2,
             ) { m ->
                 // "A ritmo" chiede il microfono: prima si spiega perché, poi si chiede
                 if (m == MusicBackdropMode.BEAT && !status.microphonePermission) beatExplain = true else onEdit { it.copy(musicBackdrop = m) }

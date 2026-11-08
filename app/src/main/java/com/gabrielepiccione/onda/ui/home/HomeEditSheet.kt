@@ -250,7 +250,6 @@ fun HomePositionControl(settings: Settings, edit: ((Settings) -> Settings) -> Un
     TextChoices(
         listOf(false to stringResource(R.string.home_position_auto), true to stringResource(R.string.home_position_manual)),
         manual,
-        columns = 2,
     ) { wantManual ->
         if (wantManual) { if (!manual) edit { it.copy(homeTopFraction = DEFAULT_HOME_TOP) } } else edit { it.copy(homeTopFraction = -1f) }
     }
