@@ -559,8 +559,15 @@ internal fun SettingsScreen(
             }
         }
 
-        if (page == SettingsPage.HOME) Group(stringResource(R.string.home_position)) {
-            HomePositionControl(settings) { onEdit(it) }
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_favorites)) {
+            SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
+            SwitchRow(stringResource(R.string.suggested_setting), stringResource(R.string.suggested_setting_sub), settings.suggestInHome) { v -> onEdit { it.copy(suggestInHome = v) } }
+            allApps.filter { it.key in settings.suggestionsDismissed }.forEach { app ->
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(app.label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { onEdit { HomeSuggestions.restore(it, app.key) } }) { Text(stringResource(R.string.suggested_restore)) }
+                }
+            }
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_blocks)) {
@@ -573,6 +580,42 @@ internal fun SettingsScreen(
                 onEdit { it.copy(showNotificationSummary = v) }
                 if (v && !status.notificationAccess) actions.notificationAccess()
             }
+        }
+
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_layout)) {
+            SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
+            SwitchRow(stringResource(R.string.hide_status_bar), null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
+        }
+
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.home_block_spacing)) {
+            SettingsSupporting(stringResource(R.string.home_block_spacing_sub))
+            ValueSlider(
+                stringResource(R.string.home_block_spacing),
+                stringResource(
+                    when {
+                        settings.homeBlockSpacing <= 4 -> R.string.spacing_compact
+                        settings.homeBlockSpacing >= 24 -> R.string.spacing_wide
+                        else -> R.string.spacing_normal
+                    },
+                ) + " · " + stringResource(R.string.value_dp, settings.homeBlockSpacing),
+                settings.homeBlockSpacing.toFloat(),
+                Settings().homeBlockSpacing.toFloat(),
+                0f..32f,
+                steps = 7,
+            ) { v -> onEdit { it.copy(homeBlockSpacing = (v / 4f).roundToInt() * 4) } }
+            SwitchRow(stringResource(R.string.cards_carousel), stringResource(R.string.cards_carousel_sub), settings.cardsCarousel) { v -> onEdit { it.copy(cardsCarousel = v) } }
+            ValueSlider(
+                stringResource(R.string.clock_inner_spacing),
+                stringResource(R.string.value_dp, settings.clockInnerSpacing),
+                settings.clockInnerSpacing.toFloat(),
+                ClockSpacing.DEFAULT.toFloat(),
+                ClockSpacing.MIN.toFloat()..ClockSpacing.MAX.toFloat(),
+                steps = ClockSpacing.MAX / ClockSpacing.STEP - 1,
+            ) { v -> onEdit { it.copy(clockInnerSpacing = ClockSpacing.snap(v)) } }
+        }
+
+        if (page == SettingsPage.HOME) Group(stringResource(R.string.home_position)) {
+            HomePositionControl(settings) { onEdit(it) }
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_widgets)) {
@@ -603,17 +646,6 @@ internal fun SettingsScreen(
             SettingsSupporting(stringResource(R.string.notif_images_sub))
         }
 
-        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_favorites)) {
-            SwitchRow(stringResource(R.string.hide_fav_names), stringResource(R.string.hide_fav_names_sub), settings.hideFavoriteNames) { v -> onEdit { it.copy(hideFavoriteNames = v) } }
-            SwitchRow(stringResource(R.string.suggested_setting), stringResource(R.string.suggested_setting_sub), settings.suggestInHome) { v -> onEdit { it.copy(suggestInHome = v) } }
-            allApps.filter { it.key in settings.suggestionsDismissed }.forEach { app ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(app.label, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { onEdit { HomeSuggestions.restore(it, app.key) } }) { Text(stringResource(R.string.suggested_restore)) }
-                }
-            }
-        }
-
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_lights)) {
             SettingsSupporting(stringResource(R.string.lights_sub))
             SwitchRow(stringResource(R.string.lights_enable), null, settings.homeLights) { v ->
@@ -634,38 +666,6 @@ internal fun SettingsScreen(
                 ) { actions.pickLightsWidget() }
                 LightsStatus(settings, status.locationPermission, onLocate = { actions.locateHome() })
             }
-        }
-
-        if (page == SettingsPage.HOME) Group(stringResource(R.string.home_block_spacing)) {
-            SettingsSupporting(stringResource(R.string.home_block_spacing_sub))
-            ValueSlider(
-                stringResource(R.string.home_block_spacing),
-                stringResource(
-                    when {
-                        settings.homeBlockSpacing <= 4 -> R.string.spacing_compact
-                        settings.homeBlockSpacing >= 24 -> R.string.spacing_wide
-                        else -> R.string.spacing_normal
-                    },
-                ) + " · " + stringResource(R.string.value_dp, settings.homeBlockSpacing),
-                settings.homeBlockSpacing.toFloat(),
-                Settings().homeBlockSpacing.toFloat(),
-                0f..32f,
-                steps = 7,
-            ) { v -> onEdit { it.copy(homeBlockSpacing = (v / 4f).roundToInt() * 4) } }
-            SwitchRow(stringResource(R.string.cards_carousel), stringResource(R.string.cards_carousel_sub), settings.cardsCarousel) { v -> onEdit { it.copy(cardsCarousel = v) } }
-            ValueSlider(
-                stringResource(R.string.clock_inner_spacing),
-                stringResource(R.string.value_dp, settings.clockInnerSpacing),
-                settings.clockInnerSpacing.toFloat(),
-                ClockSpacing.DEFAULT.toFloat(),
-                ClockSpacing.MIN.toFloat()..ClockSpacing.MAX.toFloat(),
-                steps = ClockSpacing.MAX / ClockSpacing.STEP - 1,
-            ) { v -> onEdit { it.copy(clockInnerSpacing = ClockSpacing.snap(v)) } }
-        }
-
-        if (page == SettingsPage.HOME) Group(stringResource(R.string.section_layout)) {
-            SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
-            SwitchRow(stringResource(R.string.hide_status_bar), null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
         }
 
         if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_alphabet)) {
