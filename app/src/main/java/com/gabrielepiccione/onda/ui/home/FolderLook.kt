@@ -374,8 +374,8 @@ fun FolderIconSheet(
 private fun SectionLabel(text: String) {
     Text(
         text,
-        color = LocalOndaColors.current.accent,
-        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
     )
 }

@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Material You – Elenco app e cartelle**: intestazioni delle lettere e delle sezioni in labelLarge (primario sulla lettera attiva), voci del launcher e del foglio della cartella con icone tonali, cartella aperta su superficie tonale alta, forme dai token.
 - **Material You – Impostazioni**: sezioni su superficie tonale bassa con titoli in labelLarge nel colore primario, icone delle voci in cerchi tonali, scala delle forme 12/16/28/32; nuove superfici tonali (bassa e più alta) nel tema con contrasto AA verificato. Regole in `docs/design-material-you.md`.
 - **Sfondo musicale di sistema senza grigio**: a musica spenta si vede l'immagine di base scelta dall'utente (selettore foto, nessun permesso, inclusa nel backup), ritagliata come lo sfondo normale; con la musica i colori dell'album entrano ed escono in dissolvenza. Senza immagine di base: gradiente dai colori Material You e invito a sceglierla. In impostazioni è spiegato come averlo anche sulla schermata di blocco secondo la versione di Android.
 - **Pannello Home in stile Material You**: Widget, Sfondo e Impostazioni con l'indicatore a pillola di Material 3 (64×40, colore secondario tonale, molla alla pressione), etichetta su una riga; voci dell'elenco come ListItem con icona in un cerchio tonale e titoli di sezione nel colore primario.
