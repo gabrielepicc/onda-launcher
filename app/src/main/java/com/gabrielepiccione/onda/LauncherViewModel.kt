@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.AutomationOverrides
 import com.gabrielepiccione.onda.data.LaunchLogFormat
 import com.gabrielepiccione.onda.data.LaunchRecord
 import com.gabrielepiccione.onda.data.HomePresence
@@ -41,6 +42,7 @@ import com.gabrielepiccione.onda.data.normalizedForSearch
 import com.gabrielepiccione.onda.util.Calculator
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -176,7 +178,7 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     /** Rilegge il contesto e sceglie il profilo; senza profili non legge nulla. */
     fun refreshContext() {
         viewModelScope.launch {
-            val s = settingsRepo.current
+            val s = AutomationOverrides.effective(settingsRepo.current)
             if (s.contextProfiles.none { it.enabled }) {
                 activeProfileFlow.value = null
                 return@launch
@@ -200,7 +202,8 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     val state: StateFlow<LauncherState> = combine(
         appsRepo.apps,
-        settingsRepo.settings,
+        // Impostazioni in uso: le salvate con sopra le sostituzioni attive delle automazioni
+        settingsRepo.settings.map { AutomationOverrides.effective(it) },
         NotificationStore.byPackage,
         appsRepo.pinned,
         activeProfileFlow,

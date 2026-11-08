@@ -13,11 +13,13 @@ import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.AppBlocks
 import com.gabrielepiccione.onda.data.Automation
+import com.gabrielepiccione.onda.data.AutomationOverrides
 import com.gabrielepiccione.onda.data.Automations
 import com.gabrielepiccione.onda.data.EnvSnapshot
 import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.data.HomeLights
 import com.gabrielepiccione.onda.data.HomePresence
+import com.gabrielepiccione.onda.data.LauncherChange
 import com.gabrielepiccione.onda.data.ProfileOverride
 import com.gabrielepiccione.onda.data.Settings
 import com.gabrielepiccione.onda.util.ActionRunner
@@ -54,6 +56,8 @@ class AutomationEngine(private val app: OndaApp) {
             .onEach { on ->
                 loop?.cancel()
                 loop = if (on) scope.launch { watch() } else null
+                // Nessuna automazione accesa: le loro sostituzioni cadono
+                if (!on) app.settings.edit { AutomationOverrides.prune(it, null, System.currentTimeMillis()) }
             }
             .launchIn(scope)
     }
@@ -63,6 +67,8 @@ class AutomationEngine(private val app: OndaApp) {
         while (scope.isActive) {
             val settings = app.settings.current
             val now = snapshot(settings)
+            // Le sostituzioni con «ripristina» cadono quando la condizione non vale più (anche dopo un riavvio)
+            app.settings.edit { AutomationOverrides.prune(it, now, System.currentTimeMillis()) }
             Automations.fired(settings.automations, previous, now).forEach { run(it) }
             previous = now
             delay(POLL_MS)
@@ -92,6 +98,12 @@ class AutomationEngine(private val app: OndaApp) {
             val choice = Actions.decode(encoded)
             when (choice.action) {
                 GestureAction.OPEN_APP -> app.apps.launchByKey(choice.arg)
+                GestureAction.LAUNCHER_SET -> LauncherChange.decode(choice.arg)?.let { change ->
+                    val now = System.currentTimeMillis()
+                    // Per gli orari «ripristina» vuol dire: fino a mezzanotte
+                    val until = if (change.restore && a.trigger.isTimed) nextMidnight() else 0L
+                    app.settings.edit { AutomationOverrides.start(it, a, change, now, until) }
+                }
                 GestureAction.BLOCK_APP -> app.settings.edit { AppBlocks.block(it, choice.arg) }
                 GestureAction.UNBLOCK_APP -> app.settings.edit { AppBlocks.unblock(it, choice.arg) }
                 GestureAction.OPEN_SHORTCUT -> Actions.parseShortcut(choice.arg)?.let { (pkg, id) -> app.apps.startShortcutById(pkg, id) }
@@ -103,6 +115,9 @@ class AutomationEngine(private val app: OndaApp) {
         }
         if (a.reminder.isNotBlank()) remind(a)
     }
+
+    private fun nextMidnight(): Long =
+        LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
     @SuppressLint("MissingPermission")
     private fun remind(a: Automation) {

@@ -1092,7 +1092,9 @@ internal fun SettingsScreen(
                             }
                         }
                         // Stesso catalogo di ogni altro ambito (vedi Actions)
-                        Actions.catalog.forEach { (group, list) ->
+                        Actions.catalog.forEach { (group, all) ->
+                            // Le azioni delle sole automazioni (blocchi, impostazioni di Onda) non sono gesti
+                            val list = all.filterNot { Actions.isAutomationOnly(it) }
                             item(key = "g_" + group.name) { Label(stringResource(group.labelRes)) }
                             items(list.size, key = { list[it].name }) { i ->
                                 val g = list[i]
