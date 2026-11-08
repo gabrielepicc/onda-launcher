@@ -73,6 +73,8 @@ class AutomationTemplate(
     val days: Set<Int> = emptySet(),
     val actions: List<GestureAction> = emptyList(),
     @StringRes val reminderRes: Int? = null,
+    /** Azioni con argomento già pronte (es. impostazioni di Onda), nel formato di [Actions.encode]. */
+    val encoded: List<String> = emptyList(),
 )
 
 /** Motore delle automazioni e modelli, senza dipendenze Android (testabile su JVM). */
@@ -135,7 +137,7 @@ object Automations {
         trigger = t.trigger,
         minute = t.minute,
         days = t.days,
-        actions = t.actions.map { Actions.encode(ActionChoice(it)) },
+        actions = t.actions.map { Actions.encode(ActionChoice(it)) } + t.encoded,
         reminder = reminder,
     )
 
@@ -145,7 +147,16 @@ object Automations {
         AutomationTemplate(R.string.auto_tpl_leave, R.string.auto_tpl_leave_sub, AutomationTrigger.HOME_LEAVE, reminderRes = R.string.auto_tpl_leave_text),
         AutomationTemplate(R.string.auto_tpl_goodnight, R.string.auto_tpl_goodnight_sub, AutomationTrigger.TIME, minute = 23 * 60, actions = listOf(GestureAction.SILENT_ON)),
         AutomationTemplate(R.string.auto_tpl_morning, R.string.auto_tpl_morning_sub, AutomationTrigger.TIME, minute = 7 * 60, days = WEEKDAYS, actions = listOf(GestureAction.SOUND_ON)),
-        AutomationTemplate(R.string.auto_tpl_car, R.string.auto_tpl_car_sub, AutomationTrigger.DEVICE_ON, actions = listOf(GestureAction.SOUND_ON)),
+        AutomationTemplate(
+            R.string.auto_tpl_car,
+            R.string.auto_tpl_car_sub,
+            AutomationTrigger.DEVICE_ON,
+            // Modalità auto: icone e testo grandi, che tornano come prima quando l'auto si scollega
+            encoded = listOf(
+                launcherAction(LauncherChange(LauncherSetting.ICON_SIZE, "1.45", restore = true)),
+                launcherAction(LauncherChange(LauncherSetting.TEXT_SIZE, "1.3", restore = true)),
+            ),
+        ),
         AutomationTemplate(R.string.auto_tpl_headphones, R.string.auto_tpl_headphones_sub, AutomationTrigger.HEADPHONES_ON),
         AutomationTemplate(R.string.auto_tpl_charge_full, R.string.auto_tpl_charge_full_sub, AutomationTrigger.CHARGING_OFF, reminderRes = R.string.auto_tpl_charge_full_text),
         AutomationTemplate(R.string.auto_tpl_sunset, R.string.auto_tpl_sunset_sub, AutomationTrigger.SUNSET),
@@ -154,4 +165,6 @@ object Automations {
     )
 
     private const val MINUTES_PER_DAY = 24 * 60
+
+    private fun launcherAction(change: LauncherChange): String = Actions.encode(ActionChoice(GestureAction.LAUNCHER_SET, change.encode()))
 }

@@ -123,4 +123,13 @@ class AutomationsTest {
         assertEquals(listOf("SILENT_ON"), a.actions)
         assertTrue(a.isUsable)
     }
+
+    @Test
+    fun carModeTemplateEnlargesIconsAndTextUntilDisconnection() {
+        val t = Automations.TEMPLATES.first { it.trigger == AutomationTrigger.DEVICE_ON }
+        val a = Automations.fromTemplate(t, "car", "Auto", "")
+        val changes = a.actions.map { Actions.decode(it) }.filter { it.action == GestureAction.LAUNCHER_SET }.mapNotNull { LauncherChange.decode(it.arg) }
+        assertEquals(setOf(LauncherSetting.ICON_SIZE, LauncherSetting.TEXT_SIZE), changes.map { it.setting }.toSet())
+        assertTrue(changes.all { it.restore })
+    }
 }

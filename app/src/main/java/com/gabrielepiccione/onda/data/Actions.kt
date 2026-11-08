@@ -9,13 +9,14 @@ import com.gabrielepiccione.onda.R
 enum class ActionNeed { NONE, ACCESSIBILITY, POLICY_ACCESS }
 
 /** Che cosa va scelto insieme all'azione. */
-enum class ActionArg { NONE, APP, SHORTCUT }
+enum class ActionArg { NONE, APP, SHORTCUT, LAUNCHER }
 
 /** Gruppi del catalogo, nell'ordine in cui compaiono. */
 enum class ActionGroup(@StringRes val labelRes: Int) {
     LAUNCHER(R.string.action_group_launcher),
     SYSTEM(R.string.action_group_system),
-    OPEN(R.string.action_group_open),
+    APPS(R.string.action_group_apps),
+    SHORTCUTS(R.string.action_group_shortcuts),
 }
 
 /** Un'azione scelta dall'utente: la voce del catalogo e, se serve, l'app o la scorciatoia. */
@@ -28,7 +29,7 @@ data class ActionChoice(val action: GestureAction, val arg: String = "")
 object Actions {
     /** Voci del catalogo per gruppo, nell'ordine di visualizzazione ([GestureAction.NONE] resta fuori: la gestisce chi chiama). */
     val catalog: List<Pair<ActionGroup, List<GestureAction>>> = listOf(
-        ActionGroup.LAUNCHER to listOf(GestureAction.SEARCH, GestureAction.ALL_APPS, GestureAction.SETTINGS),
+        ActionGroup.LAUNCHER to listOf(GestureAction.SEARCH, GestureAction.ALL_APPS, GestureAction.SETTINGS, GestureAction.LAUNCHER_SET),
         ActionGroup.SYSTEM to listOf(
             GestureAction.NOTIFICATIONS,
             GestureAction.QUICK_SETTINGS,
@@ -40,7 +41,8 @@ object Actions {
             GestureAction.SCREENSHOT,
             GestureAction.RECENTS,
         ),
-        ActionGroup.OPEN to listOf(GestureAction.OPEN_APP, GestureAction.OPEN_SHORTCUT, GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP),
+        ActionGroup.APPS to listOf(GestureAction.OPEN_APP, GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP),
+        ActionGroup.SHORTCUTS to listOf(GestureAction.OPEN_SHORTCUT),
     )
 
     fun need(action: GestureAction): ActionNeed = when (action) {
@@ -54,11 +56,13 @@ object Actions {
         action != GestureAction.SEARCH && action != GestureAction.ALL_APPS && action != GestureAction.SETTINGS && action != GestureAction.NONE
 
     /** Azioni che hanno senso solo dentro un'automazione (bloccare e sbloccare un'app). */
-    fun isAutomationOnly(action: GestureAction): Boolean = action == GestureAction.BLOCK_APP || action == GestureAction.UNBLOCK_APP
+    fun isAutomationOnly(action: GestureAction): Boolean =
+        action == GestureAction.BLOCK_APP || action == GestureAction.UNBLOCK_APP || action == GestureAction.LAUNCHER_SET
 
     fun argOf(action: GestureAction): ActionArg = when (action) {
         GestureAction.OPEN_APP, GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP -> ActionArg.APP
         GestureAction.OPEN_SHORTCUT -> ActionArg.SHORTCUT
+        GestureAction.LAUNCHER_SET -> ActionArg.LAUNCHER
         else -> ActionArg.NONE
     }
 

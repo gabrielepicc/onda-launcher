@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 /** Quando Onda diventa in bianco e nero. */
 @Serializable
-enum class GrayscaleMode { OFF, SCHEDULE, PROFILE }
+enum class GrayscaleMode { OFF, SCHEDULE, PROFILE, ALWAYS }
 
 /** Regole del bianco e nero a orario, senza dipendenze Android (testabili su JVM). */
 object GrayscaleSchedule {
@@ -38,6 +38,8 @@ object GrayscaleSchedule {
         GrayscaleMode.OFF -> false
         GrayscaleMode.SCHEDULE -> inside(minute, start, end)
         GrayscaleMode.PROFILE -> profileId.isNotEmpty() && profileId == activeProfileId
+        // Solo da un'automazione: bianco e nero finché la sostituzione è attiva
+        GrayscaleMode.ALWAYS -> true
     }
 
     /** Saturazione da dare ai colori: 1 = a colori, 0 = bianco e nero. [progress] va da 0 a 1 col passaggio morbido. */
