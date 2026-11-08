@@ -92,7 +92,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - ✅ Blocchi delle app a fasce orarie con sospensione nei festivi + azioni «Blocca/Sblocca un\'app» nelle automazioni.
 
 - ✅ Sfondo musicale con immagine di base (#80) · Player coerente (#81) · Pannello Home M3 (#82) · Azioni Launcher nelle automazioni con sostituzioni attive (#83).
-- 🟡 Passata Material You per area (regole in `docs/design-material-you.md`): Impostazioni ✅ (#84), Elenco app e cartelle in corso; poi Popup e notifiche, Ricerca, Home.
+- 🟡 Passata Material You per area (regole in `docs/design-material-you.md`): Impostazioni ✅ (#84), Elenco app e cartelle ✅ (#85), Popup e notifiche in corso; poi Ricerca, Home.
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".

@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.rememberCoroutineScope
+import com.gabrielepiccione.onda.ui.components.TonalIcon
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.ui.theme.Motion
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.CompositionLocalProvider
@@ -405,7 +407,7 @@ fun AppQuickPopup(
             val shortcutsBlock: @Composable () -> Unit = {
             if (shortcuts.isNotEmpty()) Column(Modifier.cascade(content, 2)) {
                 SectionLabel(R.string.popup_section_shortcuts)
-                Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.panelHigh.copy(alpha = 0.5f))) {
+                Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(LocalOndaTokens.current.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
                     shortcuts.forEach { sc ->
                         val icon = remember(sc.id) { shortcutIcon(sc) }
                         Row(
@@ -535,11 +537,11 @@ private fun FoldedExtras(open: Boolean, onToggle: () -> Unit) {
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .clip(RoundedCornerShape(20.dp))
+            .clip(LocalOndaTokens.current.shapes.medium)
             .clickable(onClick = onToggle)
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
-        Icon(Icons.Filled.Bolt, null, tint = colors.accent, modifier = Modifier.size(20.dp))
+        TonalIcon(Icons.Filled.Bolt, size = 32.dp)
         Spacer(Modifier.width(12.dp))
         Text(stringResource(R.string.popup_section_shortcuts), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         Icon(Icons.Filled.KeyboardArrowDown, null, tint = colors.onWallpaperMuted, modifier = Modifier.graphicsLayer { rotationZ = turn })
@@ -551,8 +553,8 @@ private fun FoldedExtras(open: Boolean, onToggle: () -> Unit) {
 private fun SectionLabel(@StringRes res: Int) {
     Text(
         stringResource(res),
-        color = LocalOndaColors.current.accent,
-        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
         modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp),
     )
 }

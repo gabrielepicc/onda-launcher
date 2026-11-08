@@ -116,7 +116,7 @@ fun NotificationCard(
             Modifier
                 .fillMaxWidth()
                 // Angoli retti e margini da 16 dp: il testo non tocca il bordo
-                .background(colors.panel.copy(alpha = 0.9f))
+                .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.95f))
                 .clickable(onClick = onClick)
                 .padding(start = edge, top = 10.dp, bottom = 8.dp, end = edge)
         ) {
