@@ -838,7 +838,7 @@ internal fun SettingsScreen(
 
         if (page == SettingsPage.GESTURES) Group(stringResource(R.string.section_feedback)) {
             Label(stringResource(R.string.open_animation))
-            TextChoices(com.gabrielepiccione.onda.data.OpenAnimation.entries.map { it to stringResource(it.labelRes) }, settings.openAnimation, columns = 2) { a ->
+            TextChoices(com.gabrielepiccione.onda.data.OpenAnimation.entries.map { it to stringResource(it.labelRes) }, settings.openAnimation) { a ->
                 onEdit { it.copy(openAnimation = a) }
             }
             SwitchRow(stringResource(R.string.haptics), stringResource(R.string.haptics_sub), settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
