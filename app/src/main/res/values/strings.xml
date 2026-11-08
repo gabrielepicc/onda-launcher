@@ -1017,4 +1017,13 @@
     <string name="suggest_analyze_wait">You can analyze again in a few minutes (at most every 15 minutes).</string>
     <string name="suggest_ignored">Ignored (%1$d)</string>
     <string name="suggest_restore">Restore</string>
+    <string name="cards_agenda_empty_title">No events</string>
+    <string name="cards_agenda_empty_sub">Tap to open the calendar</string>
+    <string name="cards_agenda_all_day">All day</string>
+    <string name="cards_carousel">Cards in a carousel</string>
+    <string name="cards_carousel_sub">Player, agenda and notification summary in one block you swipe sideways. Off: three separate rows.</string>
+    <plurals name="cards_notifications">
+        <item quantity="one">%d notification</item>
+        <item quantity="other">%d notifications</item>
+    </plurals>
 </resources>

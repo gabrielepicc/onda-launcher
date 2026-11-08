@@ -436,6 +436,8 @@ data class Settings(
     val profileSuggest: ProfileSuggestState = ProfileSuggestState(),
     /** Spazio tra i blocchi della home, in dp (griglia da 4: compatto 0 … ampio 32). */
     val homeBlockSpacing: Int = 8,
+    /** Player, agenda e riepilogo delle notifiche in un solo carosello di schede (spento = tre righe). */
+    val cardsCarousel: Boolean = true,
     /** Spazio dentro il blocco Orologio, tra ora, data ed evento (dp, passo 4, 0..32). */
     val clockInnerSpacing: Int = 8,
     /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */
