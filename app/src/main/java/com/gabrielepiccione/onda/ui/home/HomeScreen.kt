@@ -1709,6 +1709,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 onAddWidget = { openWidgetPicker(app.packageName, WidgetTarget.Home) },
                 onInfo = { vm.appsRepo.openAppInfo(app) },
                 onUninstall = { SystemActions.uninstall(context, app) },
+                onEditPopup = { popupEditFor = app },
+                onPinShortcut = { vm.pinToHome(it) },
             ),
             onDismiss = { actionsFor = null },
         )
@@ -1928,6 +1930,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         val idx = settings.favorites.indexOf(FOLDER_PREFIX + f.id)
         FolderSheet(
             folder = live,
+            apps = live.apps.mapNotNull { state.app(it) },
             widgets = vm.widgets,
             canMoveUp = idx > 0,
             canMoveDown = idx in 0 until settings.favorites.lastIndex,
