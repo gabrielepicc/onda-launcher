@@ -126,6 +126,8 @@ enum class GestureAction(@StringRes val labelRes: Int) {
     OPEN_SHORTCUT(R.string.gesture_open_shortcut),
     SILENT_ON(R.string.gesture_silent_on),
     SOUND_ON(R.string.gesture_sound_on),
+    BLOCK_APP(R.string.gesture_block_app),
+    UNBLOCK_APP(R.string.gesture_unblock_app),
 }
 
 /** Animazione con cui si aprono le app dal launcher. */
@@ -404,6 +406,10 @@ data class Settings(
     val contextProfiles: List<ContextProfile> = emptyList(),
     /** Automazioni «se… allora» (vedi [Automations]). */
     val automations: List<Automation> = emptyList(),
+    /** Blocchi delle app a fasce orarie (vedi [AppBlocks]). */
+    val appBlocks: List<AppBlock> = emptyList(),
+    /** App bloccate a mano o da un'automazione, finché non si sbloccano (chiavi). */
+    val manualBlocks: Set<String> = emptySet(),
     /** Quanti dei primi preferiti non cambiano mai con i profili (memoria muscolare). */
     val fixedFavoriteSlots: Int = 2,
     /** Profilo scelto a mano dall'orologio, valido per un'ora. */

@@ -167,6 +167,10 @@ import com.gabrielepiccione.onda.data.SHORTCUT_PREFIX
 import com.gabrielepiccione.onda.data.HomeBlocks
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.Actions
+import com.gabrielepiccione.onda.data.Holidays
+import com.gabrielepiccione.onda.data.HolidayRepository
+import com.gabrielepiccione.onda.data.BlockHit
+import com.gabrielepiccione.onda.data.AppBlocks
 import com.gabrielepiccione.onda.data.GestureAction
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.NotificationStore
@@ -329,9 +333,19 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     // Usage Breaker: qualunque cosa apra l'app (riga, notifica, scorciatoia, gesto) passa da qui
     var breakerFor by remember { mutableStateOf<BreakerRequest?>(null) }
+    // Blocchi delle app: i giorni festivi vengono dal calendario «Festività in Italia» (o dall'elenco interno)
+    val holidayRepo = remember { HolidayRepository(context) }
+    var holidays by remember { mutableStateOf<Set<java.time.LocalDate>?>(null) }
+    LaunchedEffect(status.calendarPermission) { holidays = holidayRepo.around(java.time.LocalDate.now()) }
+    var blockedNotice by remember { mutableStateOf<Pair<String, BlockHit>?>(null) }
     fun guarded(app: AppInfo?, go: () -> Unit) {
         if (app == null) return go()
         val current = vm.settingsRepo.current
+        // Un blocco (a fascia oraria o a mano) vale prima di ogni pausa
+        AppBlocks.hit(current, app.key, java.time.LocalDateTime.now()) { Holidays.isHoliday(it, holidays) }?.let { hit ->
+            blockedNotice = app.label to hit
+            return
+        }
         val limit = current.appLimits[app.packageName] ?: 0
         when {
             app.key in current.breakerApps -> breakerFor = BreakerRequest(app, go)
@@ -451,6 +465,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     LaunchedEffect(settings.showWeather, status.weatherPermission, status.weatherInstalled) { vm.refreshWeather(force = true) }
 
     // Pausa chiesta dal servizio di accessibilità: l'app si stava aprendo da fuori (tendina, recenti)
+    LaunchedEffect(Unit) {
+        vm.blockRequests.collect { notice ->
+            val label = state.allApps.firstOrNull { it.packageName == notice.packageName }?.label ?: notice.packageName
+            blockedNotice = label to BlockHit(notice.name, notice.until)
+        }
+    }
+
     LaunchedEffect(Unit) {
         vm.pauseRequests.collect { pkg ->
             val app = state.allApps.firstOrNull { it.packageName == pkg } ?: return@collect
@@ -2037,6 +2058,23 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 request.go()
             },
             onDismiss = { breakerFor = null },
+        )
+    }
+
+    blockedNotice?.let { (label, hit) ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { blockedNotice = null },
+            title = { Text(stringResource(R.string.block_title)) },
+            text = {
+                Text(
+                    when {
+                        hit.until != null -> stringResource(R.string.block_until, label, hit.name, AppBlocks.timeText(hit.until))
+                        hit.name.isNotBlank() -> stringResource(R.string.block_all_day, label, hit.name)
+                        else -> stringResource(R.string.block_manual, label)
+                    },
+                )
+            },
+            confirmButton = { androidx.compose.material3.TextButton(onClick = { blockedNotice = null }) { Text(stringResource(R.string.ok)) } },
         )
     }
 

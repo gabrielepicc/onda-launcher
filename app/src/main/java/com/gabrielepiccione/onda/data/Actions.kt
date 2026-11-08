@@ -40,7 +40,7 @@ object Actions {
             GestureAction.SCREENSHOT,
             GestureAction.RECENTS,
         ),
-        ActionGroup.OPEN to listOf(GestureAction.OPEN_APP, GestureAction.OPEN_SHORTCUT),
+        ActionGroup.OPEN to listOf(GestureAction.OPEN_APP, GestureAction.OPEN_SHORTCUT, GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP),
     )
 
     fun need(action: GestureAction): ActionNeed = when (action) {
@@ -53,8 +53,11 @@ object Actions {
     fun isAutomatable(action: GestureAction): Boolean =
         action != GestureAction.SEARCH && action != GestureAction.ALL_APPS && action != GestureAction.SETTINGS && action != GestureAction.NONE
 
+    /** Azioni che hanno senso solo dentro un'automazione (bloccare e sbloccare un'app). */
+    fun isAutomationOnly(action: GestureAction): Boolean = action == GestureAction.BLOCK_APP || action == GestureAction.UNBLOCK_APP
+
     fun argOf(action: GestureAction): ActionArg = when (action) {
-        GestureAction.OPEN_APP -> ActionArg.APP
+        GestureAction.OPEN_APP, GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP -> ActionArg.APP
         GestureAction.OPEN_SHORTCUT -> ActionArg.SHORTCUT
         else -> ActionArg.NONE
     }

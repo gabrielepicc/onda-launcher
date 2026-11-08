@@ -326,6 +326,11 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val pauseRequests: SharedFlow<String> = _pauseRequests
     fun requestPause(packageName: String) { _pauseRequests.tryEmit(packageName) }
 
+    private val _blockRequests = MutableSharedFlow<BlockNotice>(extraBufferCapacity = 1)
+    /** App bloccate aperte fuori dal launcher: si mostra perché non si aprono. */
+    val blockRequests: SharedFlow<BlockNotice> = _blockRequests
+    fun requestBlock(notice: BlockNotice) { _blockRequests.tryEmit(notice) }
+
     // --- Ricerca ---
     private val _search = MutableStateFlow(SearchResults())
     val search: StateFlow<SearchResults> = _search.asStateFlow()
@@ -465,3 +470,6 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 }
+
+/** Un'app bloccata: pacchetto, nome della regola (vuoto = bloccata a mano) e minuto di fine, se c'è. */
+data class BlockNotice(val packageName: String, val name: String, val until: Int?)

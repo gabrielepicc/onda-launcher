@@ -923,4 +923,32 @@
     <string name="auto_summary">%1$s · %2$d action(s)</string>
     <string name="auto_hour">Hour</string>
     <string name="auto_minute">Minutes</string>
+    <string name="gesture_block_app">Block an app</string>
+    <string name="gesture_unblock_app">Unblock an app</string>
+    <string name="kw_blocks">block app lock schedule time days holiday festività calendar social focus study night</string>
+    <string name="block_title">App blocked</string>
+    <string name="block_until">%1$s is blocked until %3$s (rule “%2$s”).</string>
+    <string name="block_all_day">%1$s is blocked today (rule “%2$s”).</string>
+    <string name="block_manual">%1$s is blocked. An automation or you blocked it; unblock it in Settings → Digital wellbeing → App blocks.</string>
+    <string name="blocks_title">App blocks</string>
+    <string name="blocks_intro">Pick apps that cannot be opened in certain hours and days, for example social apps at night or on work days. Each rule can switch itself off on public holidays.</string>
+    <string name="blocks_manual">Blocked by hand or by an automation</string>
+    <string name="blocks_unblock">Unblock</string>
+    <string name="blocks_new_name">New block</string>
+    <string name="blocks_add">Add a block</string>
+    <string name="blocks_summary">%1$s–%2$s · %3$d app(s)</string>
+    <string name="blocks_holidays_calendar">Holidays come from the Google calendar “Holidays in Italy” on this phone.</string>
+    <string name="blocks_holidays_builtin">Calendar “Holidays in Italy” not found (or calendar permission missing): using the built-in list of Italian national holidays, Easter Monday included.</string>
+    <string name="blocks_edit_title">App block</string>
+    <string name="blocks_apps">Apps (%1$d)</string>
+    <string name="blocks_apps_none">Choose the apps to block</string>
+    <string name="blocks_pick_apps">Apps to block</string>
+    <string name="blocks_days">Days</string>
+    <string name="blocks_days_hint">None selected = every day.</string>
+    <string name="blocks_from">From</string>
+    <string name="blocks_to">Until</string>
+    <string name="blocks_all_day">Same start and end: blocked all day.</string>
+    <string name="blocks_overnight_hint">If the end is before the start, the block runs past midnight and counts for the day it started.</string>
+    <string name="blocks_skip_holidays">Off on public holidays</string>
+    <string name="blocks_skip_holidays_sub">Uses the Google calendar “Holidays in Italy”; it may ask for the calendar permission.</string>
 </resources>

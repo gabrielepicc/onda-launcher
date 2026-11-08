@@ -89,6 +89,8 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 
 - ✅ Automazioni «se… allora» (motore, pagina, dieci esempi). Da fare dopo: tag NFC come evento, azione «imposta profilo» nel catalogo, notifica per i permessi mancanti.
 
+- ✅ Blocchi delle app a fasce orarie con sospensione nei festivi + azioni «Blocca/Sblocca un\'app» nelle automazioni.
+
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".
 - Swipe giù sempre sulla tendina di sistema (come richiesto), non configurabile.

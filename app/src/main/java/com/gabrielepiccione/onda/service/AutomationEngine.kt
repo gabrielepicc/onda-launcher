@@ -11,6 +11,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.gabrielepiccione.onda.OndaApp
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.Actions
+import com.gabrielepiccione.onda.data.AppBlocks
 import com.gabrielepiccione.onda.data.Automation
 import com.gabrielepiccione.onda.data.Automations
 import com.gabrielepiccione.onda.data.EnvSnapshot
@@ -91,6 +92,8 @@ class AutomationEngine(private val app: OndaApp) {
             val choice = Actions.decode(encoded)
             when (choice.action) {
                 GestureAction.OPEN_APP -> app.apps.launchByKey(choice.arg)
+                GestureAction.BLOCK_APP -> app.settings.edit { AppBlocks.block(it, choice.arg) }
+                GestureAction.UNBLOCK_APP -> app.settings.edit { AppBlocks.unblock(it, choice.arg) }
                 GestureAction.OPEN_SHORTCUT -> Actions.parseShortcut(choice.arg)?.let { (pkg, id) -> app.apps.startShortcutById(pkg, id) }
                 else -> if (Actions.isAutomatable(choice.action)) ActionRunner.run(app, choice.action)
             }
