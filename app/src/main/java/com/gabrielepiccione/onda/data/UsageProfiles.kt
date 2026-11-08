@@ -84,6 +84,12 @@ object UsageProfiles {
     /** Giorni diversi in cui un'app deve comparire nella stessa fascia per entrare in un profilo. */
     const val MIN_RECURRENCE_DAYS = 3
     const val MIN_APPS = 3
+
+    /** Un'app entra in un profilo solo se in quella fascia si apre almeno il 20% più spesso che nel resto. */
+    const val MIN_CONCENTRATION = 1.2
+
+    /** Oltre questa quota di tutta l'attività la fascia non si confronta con il resto. */
+    const val COMPARISON_LIMIT = 0.8
     const val MAX_APPS = 6
 
     /** Dopo "Ignora" la stessa proposta tace per 30 giorni; in generale al massimo una proposta a settimana. */
@@ -113,20 +119,24 @@ object UsageProfiles {
 
         val out = mutableListOf<ProfileSuggestion>()
         // Per fascia: lavorativi e fine settimana, mattina/pomeriggio/sera/notte
-        for (kind in DayKind.entries) for (slot in DaySlot.entries) {
-            val inSlot = recent.filter { belongs(it, kind, slot, zone) }
-            pick(inSlot, zone)?.let { (apps, strength) -> out += ProfileSuggestion(slotName(kind, slot), apps, kind, slot, null, strength) }
+        for (kind in DayKind.entries) {
+            // Il confronto è con gli stessi giorni (lavorativi o weekend), non con tutta la settimana
+            val inKind = recent.filter { e -> DaySlot.entries.any { belongs(e, kind, it, zone) } }
+            for (slot in DaySlot.entries) {
+                val inSlot = inKind.filter { belongs(it, kind, slot, zone) }
+                pick(inSlot, inKind, zone)?.let { (apps, strength) -> out += ProfileSuggestion(slotName(kind, slot), apps, kind, slot, null, strength) }
+            }
         }
         // Per segnale, in qualsiasi ora
         fun bySignal(signal: SuggestedSignal, name: String, filter: (UsageEventCtx) -> Boolean) {
-            pick(recent.filter(filter), zone)?.let { (apps, strength) -> out += ProfileSuggestion(name, apps, null, null, signal, strength) }
+            pick(recent.filter(filter), recent, zone)?.let { (apps, strength) -> out += ProfileSuggestion(name, apps, null, null, signal, strength) }
         }
         bySignal(SuggestedSignal.HEADPHONES, "Con le cuffie") { it.headphones }
         bySignal(SuggestedSignal.CHARGING, "In carica") { it.charging }
         bySignal(SuggestedSignal.CAR, "In auto") { it.car }
         if (useWifi) {
             recent.mapNotNull { it.wifiHash }.distinct().forEach { hash ->
-                pick(recent.filter { it.wifiHash == hash }, zone)?.let { (apps, strength) ->
+                pick(recent.filter { it.wifiHash == hash }, recent, zone)?.let { (apps, strength) ->
                     out += ProfileSuggestion("Su questo Wi-Fi", apps, null, null, SuggestedSignal.WIFI, strength, wifiHash = hash)
                 }
             }
@@ -134,14 +144,34 @@ object UsageProfiles {
         return out.sortedByDescending { it.strength }.distinctBy { it.apps.toSet() }
     }
 
-    /** Le app che ricorrono in [events] in almeno [MIN_RECURRENCE_DAYS] giorni diversi, se sono abbastanza. */
-    private fun pick(events: List<UsageEventCtx>, zone: ZoneId): Pair<List<String>, Int>? {
+    /**
+     * Le app che ricorrono in [events] in almeno [MIN_RECURRENCE_DAYS] giorni diversi, se sono abbastanza.
+     * Le app usate dappertutto (messaggi, browser) non dicono nulla di una fascia: [all] serve a tenere solo quelle
+     * che in questa fascia si usano più che nel resto della giornata ([MIN_CONCENTRATION]).
+     */
+    private fun pick(events: List<UsageEventCtx>, all: List<UsageEventCtx>, zone: ZoneId): Pair<List<String>, Int>? {
+        if (events.isEmpty()) return null
         val daysByApp = events.groupBy { it.packageName }.mapValues { (_, list) -> list.map { day(it.time, zone) }.toSet().size }
         val apps = daysByApp.filterValues { it >= MIN_RECURRENCE_DAYS }.entries
+            .filter { distinctive(it.key, events, all) }
             .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
             .take(MAX_APPS)
         if (apps.size < MIN_APPS) return null
         return apps.map { it.key } to apps.sumOf { it.value }
+    }
+
+    /** Quanto più spesso un'app si apre in questa fascia rispetto al resto: 1 = uguale, 2 = il doppio. */
+    internal fun concentration(pkg: String, events: List<UsageEventCtx>, all: List<UsageEventCtx>): Double {
+        val total = all.count { it.packageName == pkg }
+        if (total == 0 || all.isEmpty()) return 0.0
+        val slotShare = events.size.toDouble() / all.size
+        return (events.count { it.packageName == pkg }.toDouble() / total) / slotShare
+    }
+
+    private fun distinctive(pkg: String, events: List<UsageEventCtx>, all: List<UsageEventCtx>): Boolean {
+        // Se la fascia contiene quasi tutta l'attività non c'è nulla con cui confrontarla
+        if (events.size.toDouble() / all.size >= COMPARISON_LIMIT) return true
+        return concentration(pkg, events, all) >= MIN_CONCENTRATION
     }
 
     internal fun belongs(e: UsageEventCtx, kind: DayKind, slot: DaySlot, zone: ZoneId): Boolean {
@@ -172,6 +202,22 @@ object UsageProfiles {
             DaySlot.NIGHT -> "Notte"
         }
         return "$s $w"
+    }
+
+    /** Cosa ha visto Onda finora, per spiegare perché una proposta non c'è. */
+    data class Diagnosis(val openings: Int, val historyDays: Int, val candidates: Int)
+
+    fun diagnose(
+        events: List<UsageEventCtx>,
+        now: Long,
+        zone: ZoneId,
+        exclude: Set<String> = emptySet(),
+        useWifi: Boolean = false,
+    ): Diagnosis {
+        val windowStart = now - WINDOW_DAYS * DAY_MS
+        val recent = events.filter { it.time in windowStart..now && it.packageName !in exclude }
+        val history = if (recent.isEmpty()) 0 else (day(now, zone).toEpochDay() - recent.minOf { day(it.time, zone) }.toEpochDay()).toInt()
+        return Diagnosis(recent.size, history, suggest(events, now, zone, exclude, useWifi).size)
     }
 
     // --- Quando proporre ---
