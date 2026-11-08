@@ -95,6 +95,12 @@ class AppRepository(
     }
 
     /** Toglie la scorciatoia dal sistema: [remainingIds] sono quelle da tenere per quell'app. */
+    /** Fissa una scorciatoia sulla home: il sistema vuole tutti gli id fissati dell'app insieme. */
+    fun pinShortcut(shortcut: ShortcutInfo, alreadyPinned: List<String>): Long? = runCatching {
+        launcherApps.pinShortcuts(shortcut.`package`, (alreadyPinned + shortcut.id).distinct(), shortcut.userHandle)
+        userManager.getSerialNumberForUser(shortcut.userHandle)
+    }.getOrNull()
+
     fun unpinShortcut(packageName: String, userSerial: Long, remainingIds: List<String>) {
         val user = runCatching { userManager.getUserForSerialNumber(userSerial) }.getOrNull() ?: return
         runCatching { launcherApps.pinShortcuts(packageName, remainingIds, user) }

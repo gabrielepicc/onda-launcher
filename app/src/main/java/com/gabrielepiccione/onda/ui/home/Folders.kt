@@ -6,16 +6,9 @@ package com.gabrielepiccione.onda.ui.home
 
 import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.ui.components.TonalIcon
-import com.gabrielepiccione.onda.data.WidgetSize
 import com.gabrielepiccione.onda.data.WidgetSizing
-import com.gabrielepiccione.onda.ui.components.WidgetSizeControls
 import com.gabrielepiccione.onda.ui.components.LocalWidgetSizes
-import com.gabrielepiccione.onda.ui.components.LocalWidgetSizeSetter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.ui.platform.LocalDensity
-import com.gabrielepiccione.onda.data.FolderIcons
 import com.gabrielepiccione.onda.data.WidgetStack
 import com.gabrielepiccione.onda.util.HapticEvent
 import com.gabrielepiccione.onda.util.LocalOndaHaptics
@@ -39,36 +32,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,20 +57,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import android.content.pm.ShortcutInfo
-import androidx.compose.material.icons.filled.PlayArrow
-import com.gabrielepiccione.onda.data.ActionChoice
 import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.AppInfo
-import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
 import com.gabrielepiccione.onda.ui.components.SwipeActions
-import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.data.Folder
 import com.gabrielepiccione.onda.data.NotificationItem
 import com.gabrielepiccione.onda.data.WidgetManager
@@ -225,102 +198,6 @@ fun FolderRow(
                 }
             }
         }
-    }
-}
-
-/** Opzioni della cartella: rinomina, sposta, aggiungi/rimuovi widget, elimina. */
-@Composable
-fun FolderSheet(
-    folder: Folder,
-    widgets: WidgetManager,
-    canMoveUp: Boolean,
-    canMoveDown: Boolean,
-    onRename: (String) -> Unit,
-    onMove: (Int) -> Unit,
-    onAddWidget: () -> Unit,
-    onRemoveWidget: (Int) -> Unit,
-    onDelete: () -> Unit,
-    onDismiss: () -> Unit,
-    onChangeIcon: () -> Unit = {},
-    onWidgetHeight: (Int?) -> Unit = {},
-    allApps: List<AppInfo> = emptyList(),
-    shortcutsOf: (AppInfo) -> List<ShortcutInfo> = { emptyList() },
-    themedIcons: Boolean = false,
-    accessibilityEnabled: Boolean = true,
-    onAccessibility: () -> Unit = {},
-    onSwipe: (ActionChoice) -> Unit = {},
-) {
-    val colors = LocalOndaColors.current
-    val density = LocalDensity.current
-    var renaming by remember { mutableStateOf(false) }
-    var pickingSwipe by remember { mutableStateOf(false) }
-    val pm = androidx.compose.ui.platform.LocalContext.current.packageManager
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        contentColor = colors.onWallpaper,
-    ) {
-        Column(
-            Modifier
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .padding(bottom = 12.dp)
-        ) {
-            Text(folder.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
-            SheetRow(Icons.Filled.Edit, stringResource(R.string.rename)) { renaming = true }
-            SheetRow(Icons.Filled.Palette, stringResource(R.string.folder_icon)) { onChangeIcon(); onDismiss() }
-            SheetRow(
-                Icons.Filled.PlayArrow,
-                stringResource(R.string.folder_swipe) + ": " + actionSummary(Actions.decode(folder.swipe), allApps, stringResource(R.string.folder_swipe_open)),
-            ) { pickingSwipe = true }
-            if (canMoveUp) SheetRow(Icons.Filled.KeyboardArrowUp, stringResource(R.string.move_up)) { onMove(-1) }
-            if (canMoveDown) SheetRow(Icons.Filled.KeyboardArrowDown, stringResource(R.string.move_down)) { onMove(1) }
-            SheetRow(Icons.Filled.Add, stringResource(R.string.folder_add_widget)) { onAddWidget(); onDismiss() }
-            if (folder.widgets.isNotEmpty()) {
-                // Altezza dei widget nella cartella, dal vivo; il predefinito è la più alta tra quelle dei widget
-                val defaultHeight = remember(folder.widgets) {
-                    folder.widgets.mapNotNull { widgets.infoFor(it) }
-                        .maxOfOrNull { with(density) { it.minHeight.toDp().value.toInt() } }
-                        ?.coerceIn(FolderIcons.HEIGHT_RANGE.first, FolderIcons.HEIGHT_RANGE.last) ?: 160
-                }
-                val current = folder.widgetHeightDp ?: defaultHeight
-                Column(Modifier.padding(horizontal = 24.dp)) {
-                    val key = WidgetSizing.folderKey(folder.id)
-                    val setSize = LocalWidgetSizeSetter.current
-                    WidgetSizeControls(
-                        size = LocalWidgetSizes.current[key] ?: WidgetSize(),
-                        height = current,
-                        defaultHeight = defaultHeight,
-                        maxWidth = LocalConfiguration.current.screenWidthDp - 48,
-                        onSize = { size -> setSize(key, size) },
-                        onHeight = { h -> onWidgetHeight(h) },
-                    )
-                }
-            }
-            folder.widgets.forEach { id ->
-                val label = widgets.infoFor(id)?.let { runCatching { it.loadLabel(pm) }.getOrNull() } ?: stringResource(R.string.section_widgets)
-                SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { onRemoveWidget(id) }
-            }
-            SheetRow(Icons.Filled.Delete, stringResource(R.string.folder_delete)) { onDelete(); onDismiss() }
-        }
-    }
-    if (pickingSwipe) {
-        ActionPickerDialog(
-            title = stringResource(R.string.folder_swipe),
-            current = Actions.decode(folder.swipe),
-            allApps = allApps,
-            shortcutsOf = shortcutsOf,
-            themedIcons = themedIcons,
-            accessibilityEnabled = accessibilityEnabled,
-            onAccessibility = onAccessibility,
-            onPick = onSwipe,
-            onDismiss = { pickingSwipe = false },
-            noneLabel = stringResource(R.string.folder_swipe_open),
-        )
-    }
-    if (renaming) {
-        NameDialog(stringResource(R.string.folder_rename), folder.name, onDismiss = { renaming = false }) { onRename(it); renaming = false }
     }
 }
 

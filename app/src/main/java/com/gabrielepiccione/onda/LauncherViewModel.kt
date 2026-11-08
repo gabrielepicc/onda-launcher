@@ -446,6 +446,15 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     fun toggleMuted(app: AppInfo) = settingsRepo.toggleMuted(app.packageName)
     fun shortcuts(app: AppInfo): List<ShortcutInfo> = appsRepo.shortcutsFor(app)
     fun startShortcut(s: ShortcutInfo) = appsRepo.startShortcut(s)
+
+    /** Fissa una scorciatoia dell'app sulla home (come «Aggiungi alla schermata Home» di un'altra app). */
+    fun pinToHome(s: ShortcutInfo) {
+        val current = settingsRepo.current
+        val serialGuess = current.pinnedShortcuts.firstOrNull { it.packageName == s.`package` }?.userSerial ?: 0L
+        val serial = appsRepo.pinShortcut(s, PinnedShortcuts.idsFor(current, s.`package`, serialGuess)) ?: return
+        val label = (s.shortLabel ?: s.longLabel)?.toString().orEmpty()
+        settingsRepo.edit { PinnedShortcuts.add(it, PinnedShortcut(s.`package`, s.id, serial, label)) }
+    }
     fun startShortcutById(packageName: String, shortcutId: String) = appsRepo.startShortcutById(packageName, shortcutId)
 
     /** Toglie la scorciatoia dalla home e dal sistema. */
