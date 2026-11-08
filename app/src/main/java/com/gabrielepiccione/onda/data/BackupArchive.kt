@@ -22,7 +22,7 @@ object BackupArchive {
     private const val ROOT_TOKEN = "onda-files:"
 
     /** Le uniche cartelle che un backup può scrivere. */
-    val RESOURCE_DIRS = setOf("icons", "fonts")
+    val RESOURCE_DIRS = setOf("icons", "fonts", MusicWallpaper.DIR)
 
     private const val MAX_ENTRY_BYTES = 64L * 1024 * 1024
 

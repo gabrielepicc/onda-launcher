@@ -951,4 +951,9 @@
     <string name="blocks_overnight_hint">Se la fine precede l\'inizio, il blocco passa la mezzanotte e vale per il giorno in cui è iniziato.</string>
     <string name="blocks_skip_holidays">Spento nei giorni festivi</string>
     <string name="blocks_skip_holidays_sub">Usa il calendario Google «Festività in Italia»; può chiedere il permesso del calendario.</string>
+    <string name="music_wallpaper_base">Immagine di base</string>
+    <string name="music_wallpaper_base_none">Non scelta: senza musica vedresti i colori del tema. Tocca per scegliere una foto.</string>
+    <string name="music_wallpaper_base_set">Scelta: si vede quando non c\'è musica. Tocca per cambiarla.</string>
+    <string name="music_wallpaper_lock_14">Da Android 14: nell\'anteprima di sistema scegli «Schermata Home e di blocco» per vederlo anche sul blocco.</string>
+    <string name="music_wallpaper_lock_old">Su questa versione di Android lo sfondo animato vale anche sulla schermata di blocco, a meno che tu non abbia un\'immagine di blocco separata.</string>
 </resources>

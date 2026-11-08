@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Sfondo musicale di sistema senza grigio**: a musica spenta si vede l'immagine di base scelta dall'utente (selettore foto, nessun permesso, inclusa nel backup), ritagliata come lo sfondo normale; con la musica i colori dell'album entrano ed escono in dissolvenza. Senza immagine di base: gradiente dai colori Material You e invito a sceglierla. In impostazioni è spiegato come averlo anche sulla schermata di blocco secondo la versione di Android.
 - **Blocchi delle app** (Benessere digitale → Blocchi delle app): scegli le app, i giorni e la fascia oraria (anche oltre la mezzanotte) in cui non si aprono; ogni regola può spegnersi nei giorni festivi, riconosciuti dal calendario Google «Festività in Italia» (con l'elenco delle festività nazionali, Pasquetta compresa, se il calendario non c'è). Il blocco vale dal launcher e da fuori (notifiche, recenti, link), tramite l'accessibilità.
 - **Azioni «Blocca un'app» e «Sblocca un'app»** nelle automazioni: per esempio «Buonanotte» blocca i social, «Buongiorno» li sblocca. Le app bloccate a mano si sbloccano dallo stesso elenco.
 - **Automazioni «se… allora»** (Impostazioni → Automazioni): un evento e cosa fare, tutto sul telefono.

@@ -124,6 +124,7 @@ import com.gabrielepiccione.onda.data.ActionNeed
 import com.gabrielepiccione.onda.data.Actions
 import com.gabrielepiccione.onda.data.ClockSpacing
 import com.gabrielepiccione.onda.data.GestureAction
+import com.gabrielepiccione.onda.data.MusicWallpaper
 import com.gabrielepiccione.onda.ui.components.ActionPickerDialog
 import com.gabrielepiccione.onda.ui.components.actionSummary
 import com.gabrielepiccione.onda.data.HomeSuggestions
@@ -176,6 +177,7 @@ interface SettingsActions {
     fun authenticate(onSuccess: () -> Unit)
     fun wallpaper()
     fun musicWallpaper()
+    fun pickWallpaperBase()
     fun openStyles()
     /** Importa un font da file per la lista (`forClock = false`) o per l'orologio. */
     fun importFont(forClock: Boolean)
@@ -443,7 +445,19 @@ internal fun SettingsScreen(
                 SwitchRow(stringResource(R.string.music_backdrop_home), null, settings.musicBackdropHome) { v -> onEdit { it.copy(musicBackdropHome = v) } }
                 SwitchRow(stringResource(R.string.music_backdrop_list), null, settings.musicBackdropList) { v -> onEdit { it.copy(musicBackdropList = v) } }
                 SwitchRow(stringResource(R.string.music_backdrop_search), null, settings.musicBackdropSearch) { v -> onEdit { it.copy(musicBackdropSearch = v) } }
+                ClickRow(
+                    stringResource(R.string.music_wallpaper_base),
+                    stringResource(if (settings.musicWallpaperBase.isBlank()) R.string.music_wallpaper_base_none else R.string.music_wallpaper_base_set),
+                ) { actions.pickWallpaperBase() }
                 ClickRow(stringResource(R.string.music_wallpaper_set), stringResource(R.string.music_wallpaper_set_sub)) { actions.musicWallpaper() }
+                SettingsSupporting(
+                    stringResource(
+                        when (MusicWallpaper.lockSupport(Build.VERSION.SDK_INT)) {
+                            MusicWallpaper.LockSupport.CHOOSE_IN_PREVIEW -> R.string.music_wallpaper_lock_14
+                            MusicWallpaper.LockSupport.WITH_HOME_UNLESS_SEPARATE_LOCK -> R.string.music_wallpaper_lock_old
+                        },
+                    ),
+                )
             }
         }
 

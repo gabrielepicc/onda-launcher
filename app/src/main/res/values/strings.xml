@@ -951,4 +951,9 @@
     <string name="blocks_overnight_hint">If the end is before the start, the block runs past midnight and counts for the day it started.</string>
     <string name="blocks_skip_holidays">Off on public holidays</string>
     <string name="blocks_skip_holidays_sub">Uses the Google calendar “Holidays in Italy”; it may ask for the calendar permission.</string>
+    <string name="music_wallpaper_base">Base image</string>
+    <string name="music_wallpaper_base_none">Not chosen: without music you would see the theme colors. Tap to choose a photo.</string>
+    <string name="music_wallpaper_base_set">Chosen: shown when no music is playing. Tap to change it.</string>
+    <string name="music_wallpaper_lock_14">Android 14 and later: in the system preview choose “Home and lock screen” to see it on the lock screen too.</string>
+    <string name="music_wallpaper_lock_old">On this Android version the animated background is also used on the lock screen, unless you set a separate lock screen image.</string>
 </resources>
