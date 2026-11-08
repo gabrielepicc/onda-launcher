@@ -230,6 +230,8 @@ interface HomeCallbacks {
     fun shareBackup()
     fun importFont(forClock: Boolean)
     fun pickIconImage(appKey: String)
+    /** Sceglie l'immagine di base dello sfondo musicale; con [thenApply] apre subito l'anteprima di sistema. */
+    fun pickWallpaperBase(thenApply: Boolean)
     fun exportTheme(theme: com.gabrielepiccione.onda.data.LookTheme)
     fun authenticate(title: String, onSuccess: () -> Unit)
     fun importTheme()
@@ -1428,7 +1430,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun unhide(app: AppInfo) = vm.setHidden(app, false)
                         override fun authenticate(onSuccess: () -> Unit) = callbacks.authenticate(context.getString(R.string.section_hidden), onSuccess)
                         override fun wallpaper() = SystemActions.openWallpaperPicker(context)
-                        override fun musicWallpaper() = SystemActions.openMusicWallpaper(context)
+                        // Senza immagine di base si sceglie prima quella: a musica spenta si vedrà lei
+                        override fun musicWallpaper() {
+                            if (vm.settingsRepo.current.musicWallpaperBase.isBlank()) callbacks.pickWallpaperBase(true) else SystemActions.openMusicWallpaper(context)
+                        }
+                        override fun pickWallpaperBase() = callbacks.pickWallpaperBase(false)
                         override fun openStyles() { overlay = Overlay.STYLES }
                         override fun importFont(forClock: Boolean) = callbacks.importFont(forClock)
                         override fun exportBackup() = callbacks.exportBackup()

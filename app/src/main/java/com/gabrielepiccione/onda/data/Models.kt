@@ -438,6 +438,8 @@ data class Settings(
     /** Sfondo che si muove con la musica: modalità, intensità e dove mostrarlo. */
     val musicBackdrop: MusicBackdropMode = MusicBackdropMode.MOTION,
     val musicBackdropIntensity: Float = 0.7f,
+    /** Immagine di base dello sfondo musicale di sistema (percorso nello spazio privato); "" = non scelta. */
+    val musicWallpaperBase: String = "",
     val musicBackdropHome: Boolean = true,
     val musicBackdropList: Boolean = false,
     val musicBackdropSearch: Boolean = false,

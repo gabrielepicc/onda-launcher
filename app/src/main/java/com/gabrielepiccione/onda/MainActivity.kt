@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.MusicWallpaper
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -222,6 +223,43 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     }
 
     private var iconImageFor: String? = null
+    private var applyWallpaperAfterPick = false
+
+    /** Immagine di base dello sfondo musicale: copiata nello spazio privato (entra nel backup), senza permessi. */
+    private val wallpaperBaseLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+        uri ?: return@registerForActivityResult
+        lifecycleScope.launch {
+            val path = withContext(Dispatchers.IO) { copyWallpaperBase(uri) }
+            if (path == null) {
+                toast(getString(R.string.icon_image_invalid))
+                return@launch
+            }
+            val old = vm.settingsRepo.current.musicWallpaperBase
+            vm.settingsRepo.edit { it.copy(musicWallpaperBase = path) }
+            if (old.isNotBlank() && old != path) runCatching { java.io.File(old).delete() }
+            if (applyWallpaperAfterPick) SystemActions.openMusicWallpaper(this@MainActivity)
+        }
+    }
+
+    private fun copyWallpaperBase(uri: Uri): String? = runCatching {
+        val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        contentResolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, bounds) }
+        val screen = resources.displayMetrics
+        val options = android.graphics.BitmapFactory.Options().apply {
+            inSampleSize = MusicWallpaper.sampleSize(bounds.outWidth, bounds.outHeight, screen.widthPixels, screen.heightPixels)
+        }
+        val bitmap = contentResolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, options) }
+            ?: return@runCatching null
+        val dir = java.io.File(filesDir, MusicWallpaper.DIR).apply { mkdirs() }
+        val target = java.io.File(dir, "base_${System.currentTimeMillis()}.jpg")
+        target.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, WALLPAPER_QUALITY, it) }
+        target.absolutePath
+    }.getOrNull()
+
+    override fun pickWallpaperBase(thenApply: Boolean) {
+        applyWallpaperAfterPick = thenApply
+        wallpaperBaseLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
 
     /** Immagine scelta come icona: ridotta e copiata nella memoria privata, senza chiedere permessi. */
     private val iconImageLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
@@ -593,6 +631,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         /** Passaggio da colori a bianco e nero e ritorno. */
         const val GRAYSCALE_MILLIS = 1_500
         /** Pacchetto per cui mostrare la pausa (dal servizio di accessibilità). */
+        const val WALLPAPER_QUALITY = 92
         const val EXTRA_PAUSE_PACKAGE = "onda.pause_package"
         const val EXTRA_BLOCK_PACKAGE = "onda.block_package"
         const val EXTRA_BLOCK_NAME = "onda.block_name"
