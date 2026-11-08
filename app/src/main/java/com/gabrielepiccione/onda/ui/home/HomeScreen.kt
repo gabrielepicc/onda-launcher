@@ -1802,7 +1802,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         ModalBottomSheet(
             onDismissRequest = { lightsEdit = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = colors.panel,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = colors.onWallpaper,
             scrimColor = Color.Transparent,
         ) {
@@ -1826,7 +1826,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         ModalBottomSheet(
             onDismissRequest = { mediaMenu = null },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = colors.panel,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = colors.onWallpaper,
         ) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
@@ -1856,7 +1856,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         ModalBottomSheet(
             onDismissRequest = { shortcutMenu = null },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = colors.panel,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = colors.onWallpaper,
         ) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
@@ -1934,7 +1934,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         ModalBottomSheet(
             onDismissRequest = { homeMenu = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = colors.panel,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = colors.onWallpaper,
         ) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {

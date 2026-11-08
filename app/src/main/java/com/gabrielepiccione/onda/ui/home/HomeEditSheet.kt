@@ -96,7 +96,7 @@ fun HomeEditSheet(
     ModalBottomSheet(
         onDismissRequest = { actions.done() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = colors.panel,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = colors.onWallpaper,
         scrimColor = Color.Transparent,
     ) {

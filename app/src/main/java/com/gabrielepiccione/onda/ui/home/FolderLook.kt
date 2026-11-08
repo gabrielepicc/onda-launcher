@@ -275,7 +275,7 @@ fun FolderIconSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = colors.panel,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = colors.onWallpaper,
     ) {
         Column(Modifier.navigationBarsPadding().imePadding().padding(horizontal = 16.dp, vertical = 4.dp)) {
