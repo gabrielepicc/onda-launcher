@@ -559,7 +559,7 @@ internal fun SettingsScreen(
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.home_position)) {
-            HomePositionControl(settings) { onEdit(it) }
+            HomePositionControl(settings, showLabel = false) { onEdit(it) }
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_blocks)) {
