@@ -94,7 +94,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - ✅ Sfondo musicale con immagine di base (#80) · Player coerente (#81) · Pannello Home M3 (#82) · Azioni Launcher nelle automazioni con sostituzioni attive (#83).
 - ✅ Passata Material You per area (regole in `docs/design-material-you.md`): Impostazioni (#84), Elenco app e cartelle (#85), Popup e notifiche (#86), Ricerca (#87), Home.
 
-- Documento di lavoro UI/UX di novembre (`docs/prompts-ui-novembre.md`): blocchi 1, 6, 7 e 4c già fatti (#80, #83, #89, #82); blocco 2 (fondamenta) ✅ (#91); blocco 3 (carosello in home) ✅ (#92); blocco 4 (menu) ✅; prossimi: 5, 9, 8.
+- Documento di lavoro UI/UX di novembre (`docs/prompts-ui-novembre.md`): blocchi 1, 6, 7 e 4c già fatti (#80, #83, #89, #82); blocco 2 (fondamenta) ✅ (#91); blocco 3 (carosello in home) ✅ (#92); blocco 4 (menu) ✅ (#93); blocco 5 (selettore widget) ✅; prossimi: 9, 8.
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".

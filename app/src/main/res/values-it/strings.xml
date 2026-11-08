@@ -1016,6 +1016,10 @@
     <string name="suggest_analyze_wait">Potrai analizzare di nuovo tra qualche minuto (al massimo ogni 15 minuti).</string>
     <string name="suggest_ignored">Ignorati (%1$d)</string>
     <string name="suggest_restore">Ripristina</string>
+    <string name="widget_recent">Usati di recente</string>
+    <string name="widget_suggested">Suggeriti dalle tue preferite</string>
+    <string name="widget_no_results_query">Nessun widget o app corrisponde a «%1$s».</string>
+    <string name="widget_details">%1$s · misura %2$s (almeno %3$d × %4$d dp). Tocca Aggiungi per inserirlo.</string>
     <string name="popup_favorite_on">Preferita</string>
     <string name="popup_favorite_off">Ai preferiti</string>
     <string name="popup_more">Altro</string>
