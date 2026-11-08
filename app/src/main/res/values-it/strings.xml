@@ -116,7 +116,6 @@
     <string name="tap_to_copy">Tocca per copiare</string>
     <string name="contacts">Contatti</string>
     <string name="web">Web</string>
-    <string name="frequent_apps">Usate spesso</string>
     <string name="search_contacts_too">Cerca anche nei contatti…</string>
     <string name="today">Oggi</string>
     <string name="widget_remove_named">Rimuovi widget «%1$s»</string>
@@ -1026,4 +1025,13 @@
         <item quantity="one">%d notifica</item>
         <item quantity="other">%d notifiche</item>
     </plurals>
+    <string name="search_frequent">Cercate spesso</string>
+    <string name="search_most_used">Usate di frequente</string>
+    <string name="search_prefix_tip">= per calcolare · @ per i contatti · / per le impostazioni</string>
+    <string name="search_suggestions_title">Suggerimenti</string>
+    <string name="search_suggestions">Suggerimenti nella ricerca</string>
+    <string name="search_suggestions_none">Nessuno</string>
+    <string name="search_suggestions_sub">Le app che apri più spesso dalla ricerca, mostrate a campo vuoto. Si contano solo l\'app e quante volte, mai ciò che scrivi, e niente lascia il telefono o finisce nei backup.</string>
+    <string name="search_history_clear">Cancella cronologia delle ricerche</string>
+    <string name="search_history_clear_confirm">Dimenticare quali app hai aperto dalla ricerca?</string>
 </resources>

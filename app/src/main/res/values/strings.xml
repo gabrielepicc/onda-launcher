@@ -116,7 +116,6 @@
     <string name="tap_to_copy">Tap to copy</string>
     <string name="contacts">Contacts</string>
     <string name="web">Web</string>
-    <string name="frequent_apps">Frequently used</string>
     <string name="search_contacts_too">Search contacts too…</string>
     <string name="today">Today</string>
     <string name="widget_remove_named">Remove widget “%1$s”</string>
@@ -1026,4 +1025,13 @@
         <item quantity="one">%d notification</item>
         <item quantity="other">%d notifications</item>
     </plurals>
+    <string name="search_frequent">Searched often</string>
+    <string name="search_most_used">Used often</string>
+    <string name="search_prefix_tip">= to calculate · @ for contacts · / for settings</string>
+    <string name="search_suggestions_title">Suggestions</string>
+    <string name="search_suggestions">Suggestions in search</string>
+    <string name="search_suggestions_none">None</string>
+    <string name="search_suggestions_sub">Apps you open most from search, shown when the field is empty. Only the app and how often are counted, never what you type, and nothing leaves the phone or goes into backups.</string>
+    <string name="search_history_clear">Clear search history</string>
+    <string name="search_history_clear_confirm">Forget which apps you opened from search?</string>
 </resources>

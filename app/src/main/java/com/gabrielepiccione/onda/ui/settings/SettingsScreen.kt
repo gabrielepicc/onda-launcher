@@ -162,6 +162,8 @@ interface SettingsActions {
     fun postNotifications()
     fun usageAccess()
     fun accessibility()
+    /** Cancella la cronologia delle app aperte dalla ricerca. */
+    fun clearSearchHistory()
     fun shortcutsOf(app: AppInfo): List<ShortcutInfo>
     fun connectedDevices(): Set<String>
     fun addWidget()
@@ -793,6 +795,7 @@ internal fun SettingsScreen(
             ) { id -> onEdit { it.copy(searchEngine = id) } }
             Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
         }
+        if (page == SettingsPage.ALPHABET) SearchHistorySettings(settings, onEdit, actions::clearSearchHistory)
 
         if (page == SettingsPage.GESTURES) Group(stringResource(R.string.section_gestures_custom)) {
             GestureSetting(
