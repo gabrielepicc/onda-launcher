@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Selettore dei widget (blocco 5)**: ricerca anche per nome dell'app; in cima «Usati di recente» e «Suggeriti» dalle app preferite; widget raggruppati per app con intestazione fissa (icona, nome, numero) e anteprime da scorrere di lato con nome e misura (es. 4×2); barra alfabetica a destra; anteprime caricate solo quando servono, con segnaposto e cache; tocco = aggiungi, pressione lunga = dettagli (misure minime); messaggio chiaro quando la ricerca non trova nulla.
 - **Menu rifatti (blocco 4)**:
   - Popup dell'app: via il menu ⋮ a tendina; sotto l'intestazione tre azioni tonali con etichetta (Preferiti, Info app, Altro). Con notifiche si vedono solo quelle; senza, al più 4 scorciatoie e «Altre scorciatoie».
   - «Altre opzioni»: foglio a gruppi (Organizza, Comportamento, Privacy e benessere, Aggiungi, Sistema) con interruttori dal nome positivo, valore attuale dello swipe, «Scorciatoia sulla home» e Disinstalla in rosso con conferma.
