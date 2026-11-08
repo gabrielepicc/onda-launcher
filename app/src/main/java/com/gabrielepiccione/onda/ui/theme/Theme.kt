@@ -193,7 +193,9 @@ internal fun schemeFrom(r: PaletteRoles, dark: Boolean): ColorScheme {
             tertiaryContainer = c(r.accentContainer), onTertiaryContainer = c(r.onAccentContainer),
             surface = c(r.surface), background = c(r.surface),
             onSurface = c(r.onSurface), onBackground = c(r.onSurface),
+            surfaceContainerLowest = c(r.surface), surfaceContainerLow = c(r.surfaceContainerLow),
             surfaceContainer = c(r.surfaceContainer), surfaceContainerHigh = c(r.surfaceContainerHigh),
+            surfaceContainerHighest = c(r.surfaceContainerHighest),
             surfaceVariant = c(r.surfaceContainerHigh), onSurfaceVariant = c(r.onSurfaceVariant),
             outline = c(r.outline), outlineVariant = c(r.outline).copy(alpha = 0.5f),
         )
@@ -207,7 +209,9 @@ internal fun schemeFrom(r: PaletteRoles, dark: Boolean): ColorScheme {
             tertiaryContainer = c(r.accentContainer), onTertiaryContainer = c(r.onAccentContainer),
             surface = c(r.surface), background = c(r.surface),
             onSurface = c(r.onSurface), onBackground = c(r.onSurface),
+            surfaceContainerLowest = c(r.surface), surfaceContainerLow = c(r.surfaceContainerLow),
             surfaceContainer = c(r.surfaceContainer), surfaceContainerHigh = c(r.surfaceContainerHigh),
+            surfaceContainerHighest = c(r.surfaceContainerHighest),
             surfaceVariant = c(r.surfaceContainerHigh), onSurfaceVariant = c(r.onSurfaceVariant),
             outline = c(r.outline), outlineVariant = c(r.outline).copy(alpha = 0.5f),
         )

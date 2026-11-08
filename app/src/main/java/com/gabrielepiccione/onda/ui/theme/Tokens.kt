@@ -32,12 +32,13 @@ data class OndaSpacing(
     val scrollerHidden: Dp = 28.dp,
 )
 
-/** Forme Material 3 usate dal launcher. */
+/** Scala delle forme Material 3 usate dal launcher (vedi docs/design-material-you.md). */
 @Immutable
 data class OndaShapes(
     val small: RoundedCornerShape = RoundedCornerShape(12.dp),
-    val medium: RoundedCornerShape = RoundedCornerShape(20.dp),
+    val medium: RoundedCornerShape = RoundedCornerShape(16.dp),
     val large: RoundedCornerShape = RoundedCornerShape(28.dp),
+    val extraLarge: RoundedCornerShape = RoundedCornerShape(32.dp),
     val pill: RoundedCornerShape = RoundedCornerShape(50),
 )
 

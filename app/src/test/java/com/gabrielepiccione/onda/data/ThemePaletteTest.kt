@@ -29,7 +29,7 @@ class ThemePaletteTest {
 
     @Test
     fun textIsReadableOnEverySurface() = forEachPalette { where, r ->
-        listOf(r.surface, r.surfaceContainer, r.surfaceContainerHigh).forEach { bg ->
+        listOf(r.surface, r.surfaceContainerLow, r.surfaceContainer, r.surfaceContainerHigh, r.surfaceContainerHighest).forEach { bg ->
             assertAa(where, "testo su superficie", r.onSurface, bg)
             assertAa(where, "testo secondario", r.onSurfaceVariant, bg)
             assertAa(where, "primario come testo", r.primary, bg)
@@ -52,6 +52,14 @@ class ThemePaletteTest {
     fun containersStandOutFromTheSurface() = forEachPalette { where, r ->
         assertTrue("$where: contenitore troppo simile alla superficie", Wcag.contrast(r.primaryContainer, r.surface) >= ThemePalette.CONTAINER_CONTRAST - 0.001)
         assertTrue("$where: contenitore dell'accento troppo simile alla superficie", Wcag.contrast(r.accentContainer, r.surface) >= ThemePalette.CONTAINER_CONTRAST - 0.001)
+    }
+
+    @Test
+    fun surfacesStepInOrder() = forEachPalette { where, r ->
+        // Dal più lontano al più vicino al testo: le superfici tonali sono distinte e ordinate
+        val ls = listOf(r.surface, r.surfaceContainerLow, r.surfaceContainer, r.surfaceContainerHigh, r.surfaceContainerHighest).map { Wcag.luminance(it) }
+        val ordered = ls.zipWithNext().all { (a, b) -> a < b } || ls.zipWithNext().all { (a, b) -> a > b }
+        assertTrue("$where: superfici non ordinate $ls", ordered)
     }
 
     @Test

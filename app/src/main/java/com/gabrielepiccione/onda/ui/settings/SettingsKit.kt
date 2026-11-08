@@ -38,13 +38,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
+import com.gabrielepiccione.onda.ui.components.TonalIcon
 
 /*
  * Componenti delle impostazioni, uguali in tutte le pagine e fedeli alle regole di Material 3:
- * - titolo di sezione: titleSmall, colore primario, 16dp dal bordo, 24dp sopra e 8dp sotto;
- * - contenitore: surfaceContainer, angoli da 28dp (Extra Large);
+ * - titolo di sezione: labelLarge, colore primario, 16dp dal bordo, 24dp sopra e 8dp sotto;
+ * - contenitore: surfaceContainerLow, angoli da 28dp (forma large dei token);
  * - voce di elenco: titolo bodyLarge (onSurface) e testo di supporto bodyMedium (onSurfaceVariant),
- *   alta almeno 56dp con una riga e 72dp con due, icona iniziale da 24dp, controllo in fondo;
+ *   alta almeno 56dp con una riga e 72dp con due, icona in un cerchio tonale da 40dp, controllo in fondo;
  * - spiegazioni: bodyMedium onSurfaceVariant; etichette dei controlli (cursori, riquadri): bodyLarge.
  */
 
@@ -80,12 +82,12 @@ private const val FLASH_ALPHA = 0.3f
 /** Sezione: titolo e contenitore con le sue voci. */
 @Composable
 internal fun SettingsSection(title: String?, content: @Composable ColumnScope.() -> Unit) {
-    val colors = LocalOndaColors.current
     if (title != null) {
+        // Titolo di sezione: etichetta grande nel colore primario
         Text(
             title,
-            color = colors.accent,
-            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.flashIfTarget(title).padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
         )
     } else {
@@ -94,8 +96,9 @@ internal fun SettingsSection(title: String?, content: @Composable ColumnScope.()
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(colors.panel)
+            .clip(LocalOndaTokens.current.shapes.large)
+            // Superficie tonale bassa: le sezioni si staccano dallo sfondo senza riquadri tutti uguali
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         content = content,
     )
@@ -123,7 +126,7 @@ internal fun SettingsItem(
             .padding(vertical = 8.dp),
     ) {
         if (icon != null) {
-            Icon(icon, null, tint = colors.onWallpaperMuted, modifier = Modifier.size(24.dp))
+            TonalIcon(icon)
             Spacer(Modifier.width(16.dp))
         }
         Column(Modifier.weight(1f)) {
