@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Material You – Ricerca**: barra di ricerca su superficie tonale alta, titoli delle sezioni dei risultati in labelLarge nel colore primario, icone delle azioni in cerchi tonali, righe alte almeno 56 dp con forme dai token.
 - **Material You – Popup e notifiche**: titoli delle sezioni del popup e del riepilogo in labelLarge nel colore primario, scorciatoie e notifiche su superfici tonali, icona tonale della riga «Scorciatoie», forme dai token (le card di notifica restano ad angoli retti).
 - **Material You – Elenco app e cartelle**: intestazioni delle lettere e delle sezioni in labelLarge (primario sulla lettera attiva), voci del launcher e del foglio della cartella con icone tonali, cartella aperta su superficie tonale alta, forme dai token.
 - **Material You – Impostazioni**: sezioni su superficie tonale bassa con titoli in labelLarge nel colore primario, icone delle voci in cerchi tonali, scala delle forme 12/16/28/32; nuove superfici tonali (bassa e più alta) nel tema con contrasto AA verificato. Regole in `docs/design-material-you.md`.
