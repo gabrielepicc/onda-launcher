@@ -14,6 +14,10 @@ object PlayerLayout {
     const val COMPACT_PADDING = 8f
     const val FULL_PADDING = 10f
 
+    /** Titolo e artista del brano (sp), uguali in tutte le varianti del player (valori del PR #77). */
+    const val TITLE_SP = 19f
+    const val ARTIST_SP = 15f
+
     /** Altezza della riga del player compatto (dp): i comandi sono alti 48. */
     const val COMPACT_HEIGHT = 64f
 
