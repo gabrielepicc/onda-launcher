@@ -355,7 +355,28 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Cambia a ogni entrata animata da fare (la home parte piccola e trasparente al primo fotogramma). */
     val entryToken: StateFlow<Int> = _entryToken.asStateFlow()
-    fun playReturnEntry() { _entryToken.value += 1 }
+    fun playReturnEntry() {
+        entryRequested = true
+        _entryToken.value += 1
+    }
+
+    // Per la prova sull'etichetta: l'entrata richiesta è già applicata quando si disegna il primo fotogramma?
+    private var entryRequested = false
+    private var entryAppliedToken = 0
+
+    /** La composizione ha applicato lo stato iniziale dell'entrata (prima del disegno). */
+    fun entryApplied(token: Int) { entryAppliedToken = token }
+
+    private val _entryOnFirstFrame = MutableStateFlow<Boolean?>(null)
+
+    /** Ultimo ritorno: true se l'entrata partiva dal primo fotogramma disegnato, null se non c'era entrata. */
+    val entryOnFirstFrame: StateFlow<Boolean?> = _entryOnFirstFrame.asStateFlow()
+
+    /** Chiamata al primo fotogramma disegnato dopo onStart. */
+    fun reportFirstFrame() {
+        _entryOnFirstFrame.value = if (entryRequested) entryAppliedToken == _entryToken.value else null
+        entryRequested = false
+    }
 
     private val _returnTimes = MutableStateFlow<List<Long>>(emptyList())
 

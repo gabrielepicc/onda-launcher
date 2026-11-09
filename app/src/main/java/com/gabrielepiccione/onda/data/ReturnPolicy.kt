@@ -19,11 +19,14 @@ object ReturnPolicy {
     fun shouldRefresh(lastMs: Long, nowMs: Long, gapMs: Long = MIN_REFRESH_GAP_MS): Boolean =
         lastMs <= 0L || nowMs < lastMs || nowMs - lastMs >= gapMs
 
-    /** Il launcher era già visibile (tra onStart e onStop) e riceve MAIN: è il tasto Home premuto davvero. */
-    fun isHomePress(action: String?, visible: Boolean): Boolean = action == ACTION_MAIN && visible
+    /**
+     * MAIN senza uno stop dall'ultimo resume: il launcher era aperto e si preme Home davvero.
+     * [stoppedSinceResume] è true da onStop fino al resume successivo (onNewIntent arriva tra onStart e onResume).
+     */
+    fun isHomePress(action: String?, stoppedSinceResume: Boolean): Boolean = action == ACTION_MAIN && !stoppedSinceResume
 
-    /** MAIN a launcher fermo: si torna da un'app (swipe verso l'alto), il sistema lo riattiva solo a fine gesto. */
-    fun isReturnFromApp(action: String?, visible: Boolean): Boolean = action == ACTION_MAIN && !visible
+    /** MAIN dopo uno stop: si torna da un'app (swipe verso l'alto), il sistema riattiva il launcher solo a fine gesto. */
+    fun isReturnFromApp(action: String?, stoppedSinceResume: Boolean): Boolean = action == ACTION_MAIN && stoppedSinceResume
 
     /** Entrata animata solo al ritorno da un'app, se l'utente la vuole e le animazioni di sistema non sono spente. */
     fun animateEntry(returnFromApp: Boolean, enabled: Boolean, animationScale: Float): Boolean =

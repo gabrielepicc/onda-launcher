@@ -17,14 +17,54 @@ class ReturnPolicyTest {
         assertTrue(ReturnPolicy.shouldRefresh(10_000L, 5_000L))
     }
 
+    /**
+     * Simula la MainActivity: il flag «fermato dall'ultimo resume» è true da onStop a onResume, e la decisione
+     * su un MAIN si prende in onNewIntent. Restituisce (tasto Home, ritorno da un'app) per ogni MAIN ricevuto.
+     */
+    private class Sim {
+        var stopped = false
+        var homePresses = 0
+        var returns = 0
+        fun onStop() { stopped = true }
+        fun onStart() {}
+        fun onResume() { stopped = false }
+        fun onNewIntent(action: String?) {
+            if (ReturnPolicy.isHomePress(action, stopped)) homePresses++
+            if (ReturnPolicy.isReturnFromApp(action, stopped)) returns++
+        }
+    }
+
     @Test
-    fun homePressOnlyWhenAlreadyVisible() {
-        assertTrue(ReturnPolicy.isHomePress(ReturnPolicy.ACTION_MAIN, visible = true))
-        assertFalse(ReturnPolicy.isHomePress(ReturnPolicy.ACTION_MAIN, visible = false))
-        assertFalse(ReturnPolicy.isHomePress("android.intent.action.VIEW", visible = true))
-        assertTrue(ReturnPolicy.isReturnFromApp(ReturnPolicy.ACTION_MAIN, visible = false))
-        assertFalse(ReturnPolicy.isReturnFromApp(ReturnPolicy.ACTION_MAIN, visible = true))
-        assertFalse(ReturnPolicy.isReturnFromApp(null, visible = false))
+    fun swipeUpFromAppIsAReturnNotAHomePress() {
+        // singleTask: onStop → onRestart → onStart → onNewIntent(MAIN) → onResume
+        val a = Sim()
+        a.onResume()
+        a.onStop(); a.onStart(); a.onNewIntent(ReturnPolicy.ACTION_MAIN); a.onResume()
+        assertEquals(1, a.returns)
+        assertEquals(0, a.homePresses)
+        // Il flag si azzera al resume: il MAIN successivo a launcher aperto è un vero tasto Home
+        a.onNewIntent(ReturnPolicy.ACTION_MAIN)
+        assertEquals(1, a.returns)
+        assertEquals(1, a.homePresses)
+    }
+
+    @Test
+    fun swipeBackHasNoMainAndNoEntry() {
+        val a = Sim()
+        a.onResume()
+        a.onStop(); a.onStart(); a.onResume()
+        assertEquals(0, a.returns)
+        assertEquals(0, a.homePresses)
+        // Il ritorno con «indietro» non lascia stati: il MAIN dopo è un tasto Home
+        a.onNewIntent(ReturnPolicy.ACTION_MAIN)
+        assertEquals(1, a.homePresses)
+        assertEquals(0, a.returns)
+    }
+
+    @Test
+    fun otherIntentsAreNeither() {
+        assertFalse(ReturnPolicy.isHomePress("android.intent.action.VIEW", stoppedSinceResume = false))
+        assertFalse(ReturnPolicy.isReturnFromApp(null, stoppedSinceResume = true))
     }
 
     @Test

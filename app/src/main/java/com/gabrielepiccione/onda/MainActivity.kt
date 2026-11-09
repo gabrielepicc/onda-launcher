@@ -224,14 +224,19 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         val listener = object : android.view.ViewTreeObserver.OnDrawListener {
             override fun onDraw() {
                 vm.addReturnTime(android.os.SystemClock.elapsedRealtime() - startedAt)
+                vm.reportFirstFrame()
                 decor.post { decor.viewTreeObserver.removeOnDrawListener(this) }
             }
         }
         decor.viewTreeObserver.addOnDrawListener(listener)
     }
 
-    /** Si torna da un'app con lo swipe verso l'alto: c'è un MAIN a launcher fermo. */
-    private var returningFromApp = false
+    /**
+     * Il launcher si è fermato dall'ultimo resume. Con singleTask l'ordine al ritorno da un'app è
+     * onStop → onRestart → onStart → onNewIntent → onResume: solo in onNewIntent si sa se è un ritorno
+     * (MAIN dopo uno stop) o un vero tasto Home (MAIN senza stop). Con «indietro» non arriva nessun MAIN.
+     */
+    private var stoppedSinceResume = false
 
     /** Crea il backup nella cache e lo passa all'app scelta dall'utente. */
     override fun shareBackup() {
@@ -423,16 +428,13 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         val startedAt = android.os.SystemClock.elapsedRealtime()
         vm.setVisible(true)
         if (vm.settingsRepo.current.showReturnTimes) measureFirstFrame(startedAt)
-        // Entrata naturale: solo al ritorno da un'app, e non con le animazioni di sistema spente
-        val scale = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
-        if (ReturnPolicy.animateEntry(returningFromApp, vm.settingsRepo.current.returnAnimation, scale)) vm.playReturnEntry()
-        returningFromApp = false
         // I widget si ascoltano dopo il primo fotogramma
         afterFirstFrame { if (vm.visible.value) widgets.startListening() }
     }
 
     override fun onStop() {
         super.onStop()
+        stoppedSinceResume = true
         vm.setVisible(false)
         widgets.stopListening()
         runAutoBackupIfDue()
@@ -440,6 +442,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     override fun onResume() {
         super.onResume()
+        stoppedSinceResume = false
         refreshStatus()
         afterFirstFrame { if (vm.visible.value) refreshSlowStuff() }
     }
@@ -470,13 +473,13 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val visible = vm.visible.value
-        // Tasto Home premuto mentre il launcher è già a schermo: comportamento di sempre (scorre in cima animando)
-        if (ReturnPolicy.isHomePress(intent.action, visible)) vm.onHomePressed()
-        // Ritorno da un'app: il launcher era fermo, tutto si chiude subito e si prepara l'entrata animata
-        if (ReturnPolicy.isReturnFromApp(intent.action, visible)) {
-            returningFromApp = true
+        // Tasto Home con il launcher già aperto (nessuno stop dall'ultimo resume): comportamento di sempre
+        if (ReturnPolicy.isHomePress(intent.action, stoppedSinceResume)) vm.onHomePressed()
+        // Ritorno da un'app: tutto si chiude subito e la home entra animata, già dal primo fotogramma
+        if (ReturnPolicy.isReturnFromApp(intent.action, stoppedSinceResume)) {
             vm.onReturnedFromApp()
+            val scale = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+            if (ReturnPolicy.animateEntry(true, vm.settingsRepo.current.returnAnimation, scale)) vm.playReturnEntry()
         }
         // App aperta fuori dal launcher che ha bisogno della pausa di Usage Breaker
         intent.getStringExtra(EXTRA_PAUSE_PACKAGE)?.let { vm.requestPause(it) }
