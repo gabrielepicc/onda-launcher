@@ -6,6 +6,7 @@ package com.gabrielepiccione.onda.ui.home
 
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import com.gabrielepiccione.onda.data.SearchRanking
 import com.gabrielepiccione.onda.data.WidgetCatalog
 import com.gabrielepiccione.onda.data.ContextProfile
 import com.gabrielepiccione.onda.data.ProfileSuggestion
@@ -255,6 +256,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val agenda by vm.agenda.collectAsStateWithLifecycle()
     val headphones by vm.audio.headphonesConnected.collectAsStateWithLifecycle()
     val settings = state.settings
+    val searchHistory by vm.searchHistory.history.collectAsStateWithLifecycle()
+    // A ricerca vuota: «Cercate spesso», oppure le più usate se le cercate sono meno di due
+    val searchPick = remember(searchHistory, state.allApps, state.suggestions, settings.searchSuggestions, settings.protectedApps) {
+        SearchRanking.pick(
+            searchHistory, System.currentTimeMillis(), settings.searchSuggestions, state.allApps, state.suggestions,
+            settings.protectedApps.map { UsageReminders.packageOf(it) }.toSet(),
+        ) { it.packageName }
+    }
     val colors = LocalOndaColors.current
     val context = LocalContext.current
     val usageReader = remember { UsageReader(context) }
@@ -1318,12 +1327,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             ) {
                 SearchPanel(
                     results = search,
-                    suggestions = state.suggestions,
+                    suggestions = searchPick.first,
+                    suggestionsTitle = if (searchPick.second) R.string.search_frequent else R.string.search_most_used,
                     showIcons = settings.showIcons,
                     themedIcons = settings.themedIcons,
                     contactsPermission = status.contactsPermission,
                     onQueryChange = vm::updateSearch,
-                    onApp = { launchApp(it) },
+                    onApp = { vm.recordSearchOpen(it); launchApp(it) },
                     onAppLongClick = { openQuick(it) },
                     onContact = { vm.contacts.open(it); scope.launch { delay(380); closeAll() } },
                     onWebSearch = { SystemActions.webSearch(context, it, settings.searchEngine); scope.launch { delay(380); closeAll() } },
@@ -1447,6 +1457,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun postNotifications() = callbacks.requestPostNotifications()
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
+                        override fun clearSearchHistory() = vm.clearSearchHistory()
                         override fun shortcutsOf(app: AppInfo) = vm.shortcuts(app)
                         override fun connectedDevices() = vm.audio.connectedNames.value
                         override fun addWidget() = openWidgetPicker(null, WidgetTarget.Home)

@@ -365,6 +365,8 @@ data class Settings(
     val lockLayout: Boolean = false,
     /** Motore per la ricerca web: SYSTEM, DUCKDUCKGO, STARTPAGE, GOOGLE, ECOSIA, BRAVE. */
     val searchEngine: String = "SYSTEM",
+    /** Quante app mostrare in «Cercate spesso» a ricerca vuota (0 = nessun elenco). */
+    val searchSuggestions: Int = SearchRanking.DEFAULT_SHOWN,
     /** Pulsante di ricerca nell'angolo in basso, dal lato dell'alfabeto. */
     val showSearchButton: Boolean = true,
     /** Colore del pulsante (ARGB); 0 = quello del tema. */
