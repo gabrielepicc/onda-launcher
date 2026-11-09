@@ -22,6 +22,8 @@ enum class LauncherSetting(@StringRes val labelRes: Int) {
     BLOCK_SPACING(R.string.ls_block_spacing),
     MUSIC_BACKDROP(R.string.ls_music_backdrop),
     HAPTICS(R.string.ls_haptics),
+    /** Mostra o nasconde un widget («Mostra widget» / «Nascondi widget»): non compare fra le impostazioni da scegliere. */
+    WIDGET(R.string.gesture_widget_show),
 }
 
 /** Un valore proposto per un'impostazione: etichetta e testo salvato. */
@@ -85,6 +87,8 @@ object AutomationOverrides {
         )
         // Il profilo prende i valori dai profili dell'utente
         LauncherSetting.PROFILE -> listOf(LauncherPreset(R.string.ls_profile_auto, ""))
+        // I widget si scelgono con «Mostra widget» / «Nascondi widget», non da un elenco di valori
+        LauncherSetting.WIDGET -> emptyList()
         else -> listOf(LauncherPreset(R.string.ls_on, ON), LauncherPreset(R.string.ls_off, OFF))
     }
 
@@ -105,6 +109,8 @@ object AutomationOverrides {
         LauncherSetting.BLOCK_SPACING -> s.homeBlockSpacing.toString()
         LauncherSetting.MUSIC_BACKDROP -> flag(s.musicBackdrop != MusicBackdropMode.OFF)
         LauncherSetting.HAPTICS -> flag(s.haptics)
+        // Nessun valore salvato da confrontare: la sostituzione cade solo a fine condizione o se l'automazione sparisce
+        LauncherSetting.WIDGET -> ""
     }
 
     /** Le impostazioni con [setting] a [value]; un valore non valido lascia tutto com'è. */
@@ -126,6 +132,7 @@ object AutomationOverrides {
                 musicBackdrop = if (!on) MusicBackdropMode.OFF else if (s.musicBackdrop == MusicBackdropMode.OFF) MusicBackdropMode.MOTION else s.musicBackdrop,
             )
             LauncherSetting.HAPTICS -> s.copy(haptics = on)
+            LauncherSetting.WIDGET -> WidgetVisibility.apply(s, value)
         }
     }
 
@@ -136,8 +143,12 @@ object AutomationOverrides {
     /** Fa partire una sostituzione per l'automazione [a]; se ne aveva già una sulla stessa impostazione la rinnova. */
     fun start(saved: Settings, a: Automation, change: LauncherChange, now: Long, until: Long = 0L): Settings {
         val o = ActiveOverride(a.id, a.trigger, a.device, change.setting, change.value, read(saved, change.setting), now, change.restore, until)
-        return saved.copy(automationOverrides = saved.automationOverrides.filterNot { it.automationId == a.id && it.setting == change.setting } + o)
+        return saved.copy(automationOverrides = saved.automationOverrides.filterNot { it.automationId == a.id && it.setting == change.setting && sameTarget(it.value, change) } + o)
     }
+
+    /** Per i widget ogni widget è un bersaglio a sé; le altre impostazioni ne hanno uno solo. */
+    private fun sameTarget(value: String, change: LauncherChange): Boolean =
+        change.setting != LauncherSetting.WIDGET || WidgetVisibility.widgetOf(value) == WidgetVisibility.widgetOf(change.value)
 
     /**
      * La condizione del trigger vale ancora? null per gli orari e il sole, che non hanno una fine. Si legge dallo stato,
@@ -150,6 +161,8 @@ object AutomationOverrides {
         AutomationTrigger.HEADPHONES_OFF -> !env.headphones
         AutomationTrigger.CHARGING_ON -> env.charging
         AutomationTrigger.CHARGING_OFF -> !env.charging
+        AutomationTrigger.MUSIC_ON -> env.musicPlaying
+        AutomationTrigger.MUSIC_OFF -> !env.musicPlaying
         AutomationTrigger.DEVICE_ON -> connected(device, env)
         AutomationTrigger.DEVICE_OFF -> !connected(device, env)
         AutomationTrigger.TIME, AutomationTrigger.SUNSET, AutomationTrigger.SUNRISE -> null

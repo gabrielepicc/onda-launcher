@@ -32,6 +32,8 @@ class OndaApp : Application() {
         private set
     lateinit var audio: com.gabrielepiccione.onda.data.AudioDevices
         private set
+    lateinit var automation: AutomationEngine
+        private set
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -44,7 +46,7 @@ class OndaApp : Application() {
         calendar = CalendarRepository(this)
         audio = com.gabrielepiccione.onda.data.AudioDevices(this)
         // Automazioni «se… allora»: girano solo se ce n'è una accesa
-        AutomationEngine(this).start()
+        automation = AutomationEngine(this).also { it.start() }
         // Il promemoria dei profili suggeriti esiste solo con "Suggerisci profili" acceso
         scope.launch {
             settings.settings.map { it.profileSuggest.enabled }.distinctUntilChanged().collect { ProfileSuggestionWorker.syncSchedule(this@OndaApp, it) }

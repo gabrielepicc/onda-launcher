@@ -9,7 +9,7 @@ import com.gabrielepiccione.onda.R
 enum class ActionNeed { NONE, ACCESSIBILITY, POLICY_ACCESS }
 
 /** Che cosa va scelto insieme all'azione. */
-enum class ActionArg { NONE, APP, SHORTCUT, LAUNCHER }
+enum class ActionArg { NONE, APP, SHORTCUT, LAUNCHER, WIDGET }
 
 /** Gruppi del catalogo, nell'ordine in cui compaiono. */
 enum class ActionGroup(@StringRes val labelRes: Int) {
@@ -29,7 +29,7 @@ data class ActionChoice(val action: GestureAction, val arg: String = "")
 object Actions {
     /** Voci del catalogo per gruppo, nell'ordine di visualizzazione ([GestureAction.NONE] resta fuori: la gestisce chi chiama). */
     val catalog: List<Pair<ActionGroup, List<GestureAction>>> = listOf(
-        ActionGroup.LAUNCHER to listOf(GestureAction.SEARCH, GestureAction.ALL_APPS, GestureAction.SETTINGS, GestureAction.LAUNCHER_SET),
+        ActionGroup.LAUNCHER to listOf(GestureAction.SEARCH, GestureAction.ALL_APPS, GestureAction.SETTINGS, GestureAction.LAUNCHER_SET, GestureAction.WIDGET_SHOW, GestureAction.WIDGET_HIDE),
         ActionGroup.SYSTEM to listOf(
             GestureAction.NOTIFICATIONS,
             GestureAction.QUICK_SETTINGS,
@@ -57,12 +57,14 @@ object Actions {
 
     /** Azioni che hanno senso solo dentro un'automazione (bloccare e sbloccare un'app). */
     fun isAutomationOnly(action: GestureAction): Boolean =
-        action == GestureAction.BLOCK_APP || action == GestureAction.UNBLOCK_APP || action == GestureAction.LAUNCHER_SET
+        action == GestureAction.BLOCK_APP || action == GestureAction.UNBLOCK_APP || action == GestureAction.LAUNCHER_SET ||
+            action == GestureAction.WIDGET_SHOW || action == GestureAction.WIDGET_HIDE
 
     fun argOf(action: GestureAction): ActionArg = when (action) {
         GestureAction.OPEN_APP, GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP -> ActionArg.APP
         GestureAction.OPEN_SHORTCUT -> ActionArg.SHORTCUT
         GestureAction.LAUNCHER_SET -> ActionArg.LAUNCHER
+        GestureAction.WIDGET_SHOW, GestureAction.WIDGET_HIDE -> ActionArg.WIDGET
         else -> ActionArg.NONE
     }
 

@@ -129,6 +129,8 @@ enum class GestureAction(@StringRes val labelRes: Int) {
     BLOCK_APP(R.string.gesture_block_app),
     UNBLOCK_APP(R.string.gesture_unblock_app),
     LAUNCHER_SET(R.string.gesture_launcher_set),
+    WIDGET_SHOW(R.string.gesture_widget_show),
+    WIDGET_HIDE(R.string.gesture_widget_hide),
 }
 
 /** Animazione con cui si aprono le app dal launcher. */
@@ -405,6 +407,8 @@ data class Settings(
     val homeLongitude: Double = 0.0,
     /** Widget delle luci (di solito "Preferiti" di Google Home); 0 = non scelto. */
     val homeLightsWidget: Int = 0,
+    /** Collocazione e regole di visibilità dei widget della home, per id (vedi [WidgetVisibility]). */
+    val widgetRules: Map<Int, WidgetRule> = emptyMap(),
     /** Preferiti contestuali: profili con le loro regole, in ordine (a parità di priorità vince il primo). */
     val contextProfiles: List<ContextProfile> = emptyList(),
     /** Automazioni «se… allora» (vedi [Automations]). */

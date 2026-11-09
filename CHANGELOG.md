@@ -198,6 +198,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 - **Più messaggi**: la riga dell'app dice "5 messaggi da 2 chat" e sotto l'ultimo messaggio con il nome di chi l'ha scritto.
 - **Gesti**: ogni gesto dice dove si fa e cosa fa ora; quelli sempre attivi sono elencati uno per riga.
 - **Impostazioni → Ricerca in ordine di compito (blocco 8, area Ricerca)**: dopo l'alfabeto vengono il pulsante e il motore di ricerca, poi i suggerimenti con la cancellazione della cronologia, in fondo i prefissi (avanzati). Nessuna impostazione cambia.
+- **Widget con regole di visibilità (gruppo B)**: ogni widget della home può stare sotto l'orologio, accanto (dal lato libero, come le luci di casa) o al posto dell'orologio, e mostrarsi sempre oppure solo quando valgono delle condizioni: cuffie o Bluetooth collegati, in carica, a casa, tra due orari, di giorno o di notte, musica in riproduzione. Accanto e al posto dell'orologio c'è un solo widget alla volta (vince il primo nella home); le luci di casa tengono sempre il loro posto. Dal menu del widget: «Mostra solo quando…»; dopo aver aggiunto un widget si sceglie subito dove metterlo. Nelle automazioni ci sono le azioni «Mostra widget» e «Nascondi widget» (con «Ripristina al termine») e i nuovi trigger «Parte la musica» / «Si ferma la musica»: lavorano sullo strato delle sostituzioni, senza toccare le impostazioni salvate.
 
 ## [0.10.0]
 - **Usage Breaker a promemoria**: per le app scelte, una notifica dopo 5–240 minuti di uso continuo chiede se vuoi

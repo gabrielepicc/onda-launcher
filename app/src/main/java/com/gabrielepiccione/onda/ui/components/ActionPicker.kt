@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.data.WidgetVisibility
+import com.gabrielepiccione.onda.data.WidgetPlacement
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import android.content.pm.ShortcutInfo
@@ -88,6 +92,8 @@ private fun actionDescriptionRes(action: GestureAction): Int? = when (action) {
     GestureAction.SOUND_ON -> R.string.gesture_sound_on_desc
     GestureAction.SILENT -> R.string.gesture_silent_desc
     GestureAction.BLOCK_APP -> R.string.gesture_block_app_desc
+    GestureAction.WIDGET_SHOW -> R.string.gesture_widget_show_desc
+    GestureAction.WIDGET_HIDE -> R.string.gesture_widget_hide_desc
     else -> null
 }
 
@@ -116,7 +122,10 @@ fun ActionPickerDialog(
     profiles: List<Pair<String, String?>> = emptyList(),
     /** Valore iniziale di «Ripristina al termine» per le impostazioni di Onda. */
     defaultRestore: Boolean = true,
+    /** Widget della home (id → nome), per «Mostra widget» e «Nascondi widget». */
+    homeWidgets: List<Pair<Int, String>> = emptyList(),
 ) {
+    var placement by remember { mutableStateOf(WidgetPlacement.BELOW_CLOCK) }
     var step by remember { mutableStateOf(startAt) }
     var shortcutApp by remember { mutableStateOf<AppInfo?>(null) }
     // L'azione che attende un'app (aprire, bloccare, sbloccare)
@@ -170,7 +179,7 @@ fun ActionPickerDialog(
                             }
                             // Impostazioni di Onda: una voce per impostazione, poi il valore
                             if (GestureAction.LAUNCHER_SET in list) {
-                                items(LauncherSetting.entries.filter { it != LauncherSetting.PROFILE || profiles.isNotEmpty() }, key = { "ls_" + it.name }) { setting ->
+                                items(LauncherSetting.entries.filter { it != LauncherSetting.WIDGET && (it != LauncherSetting.PROFILE || profiles.isNotEmpty()) }, key = { "ls_" + it.name }) { setting ->
                                     PickRow(stringResource(setting.labelRes), content = { TonalIcon(size = 36.dp, icon = launcherSettingIcon(setting)) }) {
                                         pendingSetting = setting
                                         step = ActionArg.LAUNCHER
@@ -203,6 +212,36 @@ fun ActionPickerDialog(
                                         finish(ActionChoice(GestureAction.LAUNCHER_SET, LauncherChange(setting, preset.value, restore).encode()))
                                     }
                                 }
+                            }
+                        }
+                    }
+                    kind == ActionArg.WIDGET -> {
+                        val action = pendingAction ?: GestureAction.WIDGET_SHOW
+                        item(key = "w_restore") {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(stringResource(R.string.ls_restore), style = MaterialTheme.typography.bodyLarge)
+                                    Text(stringResource(R.string.ls_restore_sub), style = MaterialTheme.typography.bodySmall, color = LocalOndaColors.current.onWallpaperMuted)
+                                }
+                                Switch(checked = restore, onCheckedChange = { restore = it })
+                            }
+                        }
+                        if (action == GestureAction.WIDGET_SHOW) {
+                            item(key = "w_place") {
+                                ChoiceRow(
+                                    stringResource(R.string.wplace_title),
+                                    WidgetPlacement.entries.map { it to stringResource(it.labelRes) },
+                                    placement,
+                                ) { placement = it }
+                            }
+                        }
+                        if (homeWidgets.isEmpty()) {
+                            item { Text(stringResource(R.string.wrule_no_widgets), color = LocalOndaColors.current.onWallpaperMuted, modifier = Modifier.padding(vertical = 12.dp)) }
+                        }
+                        items(homeWidgets, key = { "w_" + it.first }) { (id, name) ->
+                            PickRow(name, content = { TonalIcon(size = 36.dp, icon = Icons.Filled.Widgets) }) {
+                                val arg = if (action == GestureAction.WIDGET_SHOW) WidgetVisibility.showArg(id, placement, restore) else WidgetVisibility.hideArg(id, restore)
+                                finish(ActionChoice(action, arg))
                             }
                         }
                     }
@@ -266,6 +305,10 @@ fun actionSummary(
         }
     }
     GestureAction.NONE -> noneLabel
+    GestureAction.WIDGET_SHOW -> {
+        val place = WidgetVisibility.parseArg(choice.arg)?.placement
+        stringResource(choice.action.labelRes) + (place?.let { " · " + stringResource(it.labelRes) } ?: "")
+    }
     GestureAction.OPEN_APP -> allApps.firstOrNull { it.key == choice.arg }?.label ?: stringResource(choice.action.labelRes)
     GestureAction.BLOCK_APP, GestureAction.UNBLOCK_APP ->
         stringResource(choice.action.labelRes) + ": " + (allApps.firstOrNull { it.key == choice.arg }?.label ?: "…")
@@ -288,6 +331,8 @@ fun actionIcon(action: GestureAction): ImageVector = when (action) {
     GestureAction.LAUNCHER_SET -> Icons.Filled.Settings
     GestureAction.BLOCK_APP -> Icons.Filled.Lock
     GestureAction.UNBLOCK_APP -> Icons.Filled.LockOpen
+    GestureAction.WIDGET_SHOW -> Icons.Filled.Widgets
+    GestureAction.WIDGET_HIDE -> Icons.Filled.VisibilityOff
     GestureAction.FLASHLIGHT -> Icons.Filled.FlashOn
     GestureAction.SILENT, GestureAction.SILENT_ON -> Icons.Filled.NotificationsOff
     GestureAction.SOUND_ON -> Icons.Filled.Notifications
@@ -306,4 +351,5 @@ fun launcherSettingIcon(setting: LauncherSetting): ImageVector = when (setting) 
     LauncherSetting.SHOW_CLOCK, LauncherSetting.SHOW_AGENDA, LauncherSetting.SHOW_SUMMARY, LauncherSetting.BLOCK_SPACING -> Icons.Filled.List
     LauncherSetting.SHOW_MEDIA, LauncherSetting.MUSIC_BACKDROP -> Icons.Filled.FlashOn
     LauncherSetting.HAPTICS -> Icons.Filled.Notifications
+    LauncherSetting.WIDGET -> Icons.Filled.Widgets
 }
