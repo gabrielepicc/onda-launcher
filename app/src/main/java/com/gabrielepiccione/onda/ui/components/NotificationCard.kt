@@ -21,8 +21,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,7 +28,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -61,7 +58,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -188,19 +184,13 @@ fun NotificationCard(
 
             // Azioni: Rispondi + azioni dell'app
             if (item.canReply || item.actions.isNotEmpty()) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier
-                        .padding(top = 6.dp)
-                        .horizontalScroll(rememberScrollState())
-                ) {
-                    if (item.canReply && !replying) {
-                        ActionChip(stringResource(R.string.notif_reply), primary = true) { replying = true }
-                    }
-                    item.actions.forEach { a ->
-                        ActionChip(a.title?.toString().orEmpty()) { onAction(a) }
-                    }
-                }
+                NotificationActionRow(
+                    item = item,
+                    onAction = onAction,
+                    onReply = { replying = true },
+                    showReply = !replying,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
             }
 
             // Campo di risposta diretta
@@ -260,9 +250,6 @@ fun NotificationCard(
         }
     }
 }
-
-@Composable
-private fun ActionChip(label: String, primary: Boolean = false, onClick: () -> Unit) = OndaChip(label, onClick, primary = primary)
 
 /** Immagine, GIF o sticker della notifica, intera e senza tagli; nulla se non c'è o se è spenta. */
 @Composable

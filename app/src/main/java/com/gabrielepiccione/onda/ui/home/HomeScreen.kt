@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.gabrielepiccione.onda.OndaApp
 import com.gabrielepiccione.onda.data.WidgetVisibility
 import androidx.compose.runtime.setValue
@@ -2179,7 +2181,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { restrictedHelp = null },
             title = { Text(stringResource(R.string.restricted_title)) },
-            text = { Text(stringResource(R.string.restricted_body)) },
+            // Testo lungo: scorre invece di uscire dal dialogo
+            text = { Text(stringResource(R.string.restricted_body), modifier = Modifier.verticalScroll(rememberScrollState())) },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = { restrictedHelp = null; open() }) { Text(stringResource(R.string.try_again)) }
             },
