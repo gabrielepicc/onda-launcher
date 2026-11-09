@@ -2,9 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
-import androidx.compose.material3.FilterChip
+import com.gabrielepiccione.onda.ui.components.ChoiceRow
 import androidx.compose.material3.RadioButton
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.filled.Check
@@ -26,7 +25,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -39,7 +37,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -63,7 +60,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.core.icons.IconRenderer
@@ -174,26 +170,9 @@ internal fun <T> TileGrid(items: List<T>, columns: Int, tile: @Composable (T, Mo
 /** Griglia di scelte con il solo nome (animazioni, motori di ricerca…). */
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
-internal fun <T> TextChoices(items: List<Pair<T, String>>, selected: T, columns: Int = 3, onPick: (T) -> Unit) {
-    // Le etichette non si troncano mai: poche e corte vanno in chip che tornano a capo,
-    // altrimenti diventano un elenco con i pulsanti radio (regola in CLAUDE.md, "Proporzioni")
-    if (items.size <= MAX_CHIPS && items.all { it.second.length <= MAX_CHIP_LABEL }) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 4.dp)) {
-            items.forEach { (value, label) ->
-                FilterChip(
-                    selected = selected == value,
-                    onClick = { onPick(value) },
-                    label = { Text(label, softWrap = false) },
-                    leadingIcon = if (selected == value) ({ Icon(Icons.Filled.Check, null, Modifier.size(18.dp)) }) else null,
-                )
-            }
-        }
-    } else {
-        Column(Modifier.selectableGroup()) {
-            items.forEach { (value, label) -> RadioItem(label, selected == value) { onPick(value) } }
-        }
-    }
-}
+internal fun <T> TextChoices(items: List<Pair<T, String>>, selected: T, onPick: (T) -> Unit) =
+    // Stesso controllo dappertutto: pulsanti segmentati fino a quattro opzioni, oltre un elenco a tutta riga
+    ChoiceRow(null, items, selected, onPick)
 
 /** Voce con pulsante radio: si tocca tutta la riga, che per TalkBack è un'unica scelta. */
 @Composable
@@ -214,8 +193,6 @@ internal fun RadioItem(label: String, selected: Boolean, onClick: () -> Unit) {
     }
 }
 
-private const val MAX_CHIPS = 3
-private const val MAX_CHIP_LABEL = 16
 
 /** Stili dell'orologio. [compact] li mette in una riga scorrevole, per i fogli che lasciano vedere la home. */
 @Composable

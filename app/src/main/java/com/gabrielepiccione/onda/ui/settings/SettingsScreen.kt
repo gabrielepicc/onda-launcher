@@ -400,7 +400,6 @@ internal fun SettingsScreen(
                     MusicBackdropMode.BEAT to stringResource(R.string.music_backdrop_beat),
                 ),
                 settings.musicBackdrop,
-                columns = 2,
             ) { m ->
                 // "A ritmo" chiede il microfono: prima si spiega perché, poi si chiede
                 if (m == MusicBackdropMode.BEAT && !status.microphonePermission) beatExplain = true else onEdit { it.copy(musicBackdrop = m) }
@@ -841,7 +840,7 @@ internal fun SettingsScreen(
 
         if (page == SettingsPage.GESTURES) Group(stringResource(R.string.section_feedback)) {
             Label(stringResource(R.string.open_animation))
-            TextChoices(com.gabrielepiccione.onda.data.OpenAnimation.entries.map { it to stringResource(it.labelRes) }, settings.openAnimation, columns = 2) { a ->
+            TextChoices(com.gabrielepiccione.onda.data.OpenAnimation.entries.map { it to stringResource(it.labelRes) }, settings.openAnimation) { a ->
                 onEdit { it.copy(openAnimation = a) }
             }
             SwitchRow(stringResource(R.string.haptics), stringResource(R.string.haptics_sub), settings.haptics) { v -> onEdit { it.copy(haptics = v) } }
