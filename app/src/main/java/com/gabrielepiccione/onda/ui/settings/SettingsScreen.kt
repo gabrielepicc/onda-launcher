@@ -59,7 +59,6 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import com.gabrielepiccione.onda.data.SettingsSearch
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.TouchApp
@@ -318,7 +317,7 @@ internal fun SettingsScreen(
                 if (remindersUsed && !status.usageAccess) StatusRow(stringResource(R.string.usage_access), false, stringResource(R.string.usage_access_ok), stringResource(R.string.usage_access_ko)) { actions.usageAccess() }
                 if (remindersUsed && !status.postNotifications) StatusRow(stringResource(R.string.post_notifications), false, stringResource(R.string.post_notifications_ok), stringResource(R.string.post_notifications_ko)) { actions.postNotifications() }
             }
-            OutlinedTextField(
+            OndaTextField(
                 value = query,
                 onValueChange = { query = it },
                 singleLine = true,
@@ -329,7 +328,7 @@ internal fun SettingsScreen(
                         IconButton(onClick = { query = "" }) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.settings_search_clear)) }
                     }
                 },
-                shape = RoundedCornerShape(28.dp),
+                pill = true,
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             )
             if (query.isNotBlank()) {
@@ -777,7 +776,7 @@ internal fun SettingsScreen(
                 var text by remember(kind, settings.searchPrefixes) { mutableStateOf(settings.searchPrefixes.of(kind)) }
                 val candidate = settings.searchPrefixes.with(kind, text.trim())
                 val ok = SearchPrefixes.valid(candidate)
-                OutlinedTextField(
+                OndaTextField(
                     value = text,
                     onValueChange = { v ->
                         text = v
@@ -1205,7 +1204,7 @@ internal fun SettingsScreen(
                         }
                     }
                     SettingsSupporting(stringResource(R.string.plug_play_device_hint))
-                    OutlinedTextField(typed, { typed = it }, singleLine = true, label = { Text(stringResource(R.string.ctx_bt_name)) }, modifier = Modifier.fillMaxWidth())
+                    OndaTextField(typed, { typed = it }, singleLine = true, label = { Text(stringResource(R.string.ctx_bt_name)) }, modifier = Modifier.fillMaxWidth())
                 }
             },
             confirmButton = {

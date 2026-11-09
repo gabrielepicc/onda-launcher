@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.ui.components.OndaTextField
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,7 +21,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -146,7 +146,7 @@ private fun BlockEditor(
         title = { Text(stringResource(R.string.blocks_edit_title)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                OutlinedTextField(
+                OndaTextField(
                     value = b.name,
                     onValueChange = { b = b.copy(name = it) },
                     label = { Text(stringResource(R.string.auto_name)) },
