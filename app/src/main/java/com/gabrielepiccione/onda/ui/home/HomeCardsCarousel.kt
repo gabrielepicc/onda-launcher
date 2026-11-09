@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -98,6 +100,8 @@ fun HomeCardsCarousel(
     /** Stile e dimensione del player scelti per il blocco: valgono anche dentro il carosello. */
     mediaCompact: Boolean = true,
     mediaScale: Float = 1f,
+    /** Margine a destra della lista: il carosello lo attraversa, così la scheda dopo arriva fino al bordo dello schermo. */
+    bleedEnd: Dp = 0.dp,
 ) {
     if (pages.isEmpty()) return
     val colors = LocalOndaColors.current
@@ -110,7 +114,16 @@ fun HomeCardsCarousel(
         HomeCarousel.musicTarget(pages, wasPlaying[0], playing, dragging)?.let { pager.animateScrollToPage(it) }
         wasPlaying[0] = playing
     }
-    Column(modifier.fillMaxWidth()) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .layout { measurable, constraints ->
+                val extra = bleedEnd.roundToPx()
+                val wide = constraints.maxWidth + extra
+                val placeable = measurable.measure(constraints.copy(minWidth = wide, maxWidth = wide))
+                layout(constraints.maxWidth, placeable.height) { placeable.place(0, 0) }
+            },
+    ) {
         HorizontalPager(
             state = pager,
             // Accenno della scheda successiva
@@ -262,7 +275,8 @@ private fun SummaryPage(
     )
 }
 
-private const val PEEK = 32
+/** Accenno della scheda successiva (dp): poco, per lasciare più spazio al testo. */
+private const val PEEK = 20
 private const val ICON = 32
 
 /** Nome di un'app da mostrare: quello del launcher, poi quello di sistema, mai il pacchetto se c'è un nome. */
