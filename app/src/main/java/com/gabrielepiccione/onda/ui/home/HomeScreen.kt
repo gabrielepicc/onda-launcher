@@ -911,6 +911,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 callbacks = cardsCallbacks,
                                 mediaCompact = settings.mediaCompact,
                                 mediaScale = settings.mediaScale,
+                                bleedEnd = hiddenSide,
                                 modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
                             )
                         }

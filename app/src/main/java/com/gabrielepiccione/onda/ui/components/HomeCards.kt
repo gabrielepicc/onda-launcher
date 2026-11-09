@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.data.MediaAction
 import com.gabrielepiccione.onda.data.MediaExtras
@@ -505,9 +506,12 @@ private fun CompactMediaCard(
     onAction: (MediaAction) -> Unit,
 ) {
     val colors = LocalOndaColors.current
+    // Il titolo ha sempre la precedenza: se la scheda è stretta (carosello) si tolgono prima «precedente» e «successivo»
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+    val controls = PlayerLayout.compactControls(maxWidth.value)
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .then(if (highlighted) Modifier.border(2.dp, colors.accent, LocalOndaTokens.current.shapes.large) else Modifier)
             .clip(LocalOndaTokens.current.shapes.large)
@@ -543,9 +547,10 @@ private fun CompactMediaCard(
                 )
             }
         }
-        SmallMediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
+        if (controls.prev) SmallMediaButton(onPrev) { Icon(Icons.Filled.KeyboardArrowLeft, stringResource(R.string.media_previous), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
         PlayButton(media.playing, onPlayPause, width = 40.dp, height = 40.dp)
-        SmallMediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
+        if (controls.next) SmallMediaButton(onNext) { Icon(Icons.Filled.KeyboardArrowRight, stringResource(R.string.media_next), tint = colors.onWallpaper, modifier = Modifier.size(20.dp)) }
+    }
     }
 }
 

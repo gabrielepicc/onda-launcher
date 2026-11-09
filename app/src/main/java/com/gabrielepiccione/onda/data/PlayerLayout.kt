@@ -14,6 +14,24 @@ object PlayerLayout {
     const val COMPACT_PADDING = 8f
     const val FULL_PADDING = 10f
 
+    /** Larghezza minima (dp) che deve restare a titolo e artista nel player compatto prima di togliere comandi. */
+    const val MIN_TEXT_WIDTH = 112f
+    private const val COMPACT_FIXED = 8f + 48f + 12f + 4f + 4f
+    private const val SKIP_BUTTON = 48f
+    private const val PLAY_BUTTON = 40f
+
+    /** Comandi «precedente» e «successivo» che ci stanno nel player compatto largo [widthDp] senza ridurre il testo. */
+    data class CompactControls(val prev: Boolean, val next: Boolean)
+
+    fun compactControls(widthDp: Float): CompactControls {
+        val room = widthDp - COMPACT_FIXED - PLAY_BUTTON - MIN_TEXT_WIDTH
+        return when {
+            room >= 2 * SKIP_BUTTON -> CompactControls(prev = true, next = true)
+            room >= SKIP_BUTTON -> CompactControls(prev = false, next = true)
+            else -> CompactControls(prev = false, next = false)
+        }
+    }
+
     /** Titolo e artista del brano (sp), uguali in tutte le varianti del player (abbassati: 17 e 13). */
     const val TITLE_SP = 17f
     const val ARTIST_SP = 13f

@@ -23,4 +23,15 @@ class PlayerLayoutTest {
     fun paddingStaysInTheRequestedRange() {
         listOf(PlayerLayout.COMPACT_PADDING, PlayerLayout.FULL_PADDING).forEach { assertEquals(true, it in 8f..10f) }
     }
+
+    @Test
+    fun narrowCardsDropSkipButtonsBeforeShrinkingTheText() {
+        val wide = PlayerLayout.compactControls(380f)
+        assertEquals(true, wide.prev && wide.next)
+        val medium = PlayerLayout.compactControls(300f)
+        assertEquals(false, medium.prev)
+        assertEquals(true, medium.next)
+        val narrow = PlayerLayout.compactControls(240f)
+        assertEquals(false, narrow.prev || narrow.next)
+    }
 }
