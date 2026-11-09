@@ -154,7 +154,7 @@
     <string name="notif_send">Send</string>
     <string name="notif_snooze">Snooze 1 hour</string>
     <string name="restricted_title">Blocked by Android?</string>
-    <string name="restricted_body">Since Android 13, apps installed from an APK file get “restricted settings”. Open App info → ⋮ menu (top right) → “Allow restricted settings”, then come back and grant access. On some phones the option appears only after a first attempt.</string>
+    <string name="restricted_body">Since Android 13, apps installed from an APK file get “restricted settings”.\n\n1. Tap “Try again” and let it fail: the option often appears only after an attempt.\n2. Tap “Open App info” → ⋮ menu (top right) → “Allow restricted settings”.\n3. Come back here and grant access.\n\nNo ⋮ menu (it happens on some Realme and OnePlus phones)? Reinstall Onda with a session-based installer such as Obtainium, F-Droid or SAI instead of a file manager, or from a computer (or with LADB) use USB debugging: adb shell appops set com.gabrielepiccione.onda ACCESS_RESTRICTED_SETTINGS allow</string>
     <string name="open_app_info">Open App info</string>
     <string name="try_again">Try again</string>
     <string name="clock_large_thin">Thin</string>

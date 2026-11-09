@@ -4,6 +4,8 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Azioni delle notifiche leggibili**: «Segna come letto», «Silenzia», «Rispondi» sono pulsanti tonali a pillola (Material 3) su una sola riga, mai a capo né tagliati (se non ci stanno scorrono di lato); «Rispondi» usa il colore primario. Valgono nel popup, nella card in home e nel pannello dell'app.
+- **Guida «impostazioni con limitazioni»**: passi numerati (prima fai fallire il tentativo) e alternative se il menu ⋮ non esiste (reinstallare con un installer a sessione, o il comando adb).
 - **Notifiche con angoli morbidi**: le singole notifiche del popup, la card in home e il riepilogo non sono più rettangolari ma hanno gli angoli arrotondati (16 dp) come le altre superfici tonali; i margini da 16 dp tengono il testo lontano dal bordo.
 - **Widget: carosello o righe (gruppo C)**: un gruppo di widget si può disporre come carosello orizzontale (puntini, altezza uniforme, lo scorrimento non apre il menu) oppure come righe una sotto l'altra. Dal menu del gruppo: «Disposizione», «Impila un altro widget», «Porta fuori dal gruppo» per ogni widget e «Separa il gruppo in righe»; dal menu di un widget o di un gruppo: «Raggruppa con il widget sotto». Nel riordino della home il gruppo si sposta come una voce sola. Anche nelle cartelle con più widget si sceglie carosello o righe. Le pile già create restano caroselli.
 - **Correzioni UI (gruppo A)**:

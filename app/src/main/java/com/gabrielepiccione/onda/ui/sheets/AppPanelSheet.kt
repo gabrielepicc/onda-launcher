@@ -4,12 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.ui.components.NotificationActionRow
 import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
-import com.gabrielepiccione.onda.ui.components.OndaChip
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.ui.unit.Dp
 import com.gabrielepiccione.onda.ui.components.NotificationImage
 import com.gabrielepiccione.onda.util.HapticEvent
@@ -21,8 +18,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,7 +31,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -66,7 +60,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
@@ -350,15 +343,7 @@ internal fun Conversation(
         }
         NotificationImage(item, 240.dp)
         if (item.actions.isNotEmpty() || (item.canReply && !selectedForReply)) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .padding(top = 12.dp)
-                    .horizontalScroll(rememberScrollState())
-            ) {
-                item.actions.forEach { a -> ActionChip(a.title?.toString().orEmpty()) { onAction(a) } }
-                if (item.canReply) ActionChip(stringResource(R.string.notif_reply)) { onSelectReply() }
-            }
+            NotificationActionRow(item, onAction, onSelectReply, Modifier.padding(top = 12.dp), showReply = !selectedForReply)
         }
     }
 }
@@ -427,10 +412,7 @@ internal fun CompactConversation(
             }
             NotificationImage(item, 160.dp)
             if (item.actions.isNotEmpty() || item.canReply) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-                    item.actions.forEach { a -> ActionChip(a.title?.toString().orEmpty()) { onAction(a) } }
-                    if (item.canReply) ActionChip(stringResource(R.string.notif_reply)) { onSelectReply() }
-                }
+                NotificationActionRow(item, onAction, onSelectReply, Modifier.padding(top = 4.dp))
             }
         }
     }
@@ -439,10 +421,6 @@ internal fun CompactConversation(
 
 private const val COMPACT_LINES = 4
 private const val COMPACT_MESSAGES = 3
-
-/** Azione di una notifica: il chip di Material, con il suo bersaglio di tocco da 48dp. */
-@Composable
-private fun ActionChip(label: String, onClick: () -> Unit) = OndaChip(label, onClick)
 
 @Composable
 private fun Avatar(item: NotificationItem, size: Dp = 48.dp, compact: Boolean = false) {

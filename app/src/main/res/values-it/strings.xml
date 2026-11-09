@@ -154,7 +154,7 @@
     <string name="notif_send">Invia</string>
     <string name="notif_snooze">Posticipa 1 ora</string>
     <string name="restricted_title">Accesso bloccato da Android?</string>
-    <string name="restricted_body">Da Android 13 le app installate da file APK hanno le «impostazioni con limitazioni». Apri Info app → menu ⋮ in alto a destra → «Consenti impostazioni con limitazioni», poi torna qui e attiva l\'accesso. Su alcuni telefoni la voce compare solo dopo aver provato una volta.</string>
+    <string name="restricted_body">Da Android 13 le app installate da file APK hanno le «impostazioni con limitazioni».\n\n1. Tocca «Riprova» e lascia che fallisca: spesso la voce compare solo dopo un tentativo.\n2. Tocca «Apri Info app» → menu ⋮ in alto a destra → «Consenti impostazioni con limitazioni».\n3. Torna qui e attiva l\'accesso.\n\nNon vedi il menu ⋮ (succede su alcuni Realme e OnePlus)? Reinstalla Onda con un installer a sessione come Obtainium, F-Droid o SAI invece che dal gestore di file, oppure da un computer (o con LADB) usa il debug USB: adb shell appops set com.gabrielepiccione.onda ACCESS_RESTRICTED_SETTINGS allow</string>
     <string name="open_app_info">Apri Info app</string>
     <string name="try_again">Riprova</string>
     <string name="clock_large_thin">Sottile</string>
