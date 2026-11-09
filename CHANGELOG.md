@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Carosello e orologio**: nel carosello ogni scheda è intera, senza la successiva tagliata sul bordo (restano i puntini). Con le luci di casa (o un widget accanto) l'orologio tiene la sua larghezza e non viene più schiacciato a metà: niente più «16:5» e data a capo.
 - **Carosello rifinito**: la scheda successiva non è più tagliata a metà schermo ma arriva fino al bordo (accenno di 20 dp); nel player compatto titolo e artista hanno la precedenza, e se la scheda è stretta spariscono prima «precedente» e poi «successivo» invece di ridurre il testo a «Las…».
 - **Player corretto**: nel carosello delle schede il player ignorava lo stile (esteso/compatto) e la dimensione scelti; ora li rispetta (e nell'esteso funziona anche la barra di avanzamento). Titolo 17 sp e artista 13 sp in tutte le varianti e nelle altre schede del carosello.
 - **Azioni delle notifiche leggibili**: «Segna come letto», «Silenzia», «Rispondi» sono pulsanti tonali a pillola (Material 3) su una sola riga, mai a capo né tagliati (se non ci stanno scorrono di lato); «Rispondi» usa il colore primario. Valgono nel popup, nella card in home e nel pannello dell'app.

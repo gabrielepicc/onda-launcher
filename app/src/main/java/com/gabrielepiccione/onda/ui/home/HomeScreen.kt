@@ -873,7 +873,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.CLOCK },
                                 showBattery = settings.showBattery,
                                 innerSpacing = settings.clockInnerSpacing,
-                                modifier = if (besideVisible) Modifier.weight(1f) else Modifier,
+                                // L'orologio tiene la sua larghezza intera: al widget accanto resta lo spazio che avanza
+                                modifier = Modifier,
                             )
                             if (besideVisible && settings.clockAlign != HAlign.END) {
                                 Box(Modifier.weight(1f).padding(start = 8.dp)) { besideContent() }
@@ -911,7 +912,6 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 callbacks = cardsCallbacks,
                                 mediaCompact = settings.mediaCompact,
                                 mediaScale = settings.mediaScale,
-                                bleedEnd = hiddenSide,
                                 modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
                             )
                         }

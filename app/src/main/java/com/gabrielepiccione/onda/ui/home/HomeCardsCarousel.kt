@@ -2,8 +2,6 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -13,7 +11,6 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -81,8 +78,8 @@ class CardsCallbacks(
 )
 
 /**
- * Player, agenda e riepilogo delle notifiche in un solo blocco a scorrimento orizzontale, con l'accenno della
- * scheda successiva e i puntini. Tutte le schede hanno la stessa forma e la stessa altezza del player compatto.
+ * Player, agenda e riepilogo delle notifiche in un solo blocco a scorrimento orizzontale, con i puntini della pagina
+ * (la scheda successiva non si intravede). Tutte le schede hanno la stessa forma e la stessa altezza del player compatto.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -100,8 +97,6 @@ fun HomeCardsCarousel(
     /** Stile e dimensione del player scelti per il blocco: valgono anche dentro il carosello. */
     mediaCompact: Boolean = true,
     mediaScale: Float = 1f,
-    /** Margine a destra della lista: il carosello lo attraversa, così la scheda dopo arriva fino al bordo dello schermo. */
-    bleedEnd: Dp = 0.dp,
 ) {
     if (pages.isEmpty()) return
     val colors = LocalOndaColors.current
@@ -114,20 +109,10 @@ fun HomeCardsCarousel(
         HomeCarousel.musicTarget(pages, wasPlaying[0], playing, dragging)?.let { pager.animateScrollToPage(it) }
         wasPlaying[0] = playing
     }
-    Column(
-        modifier
-            .fillMaxWidth()
-            .layout { measurable, constraints ->
-                val extra = bleedEnd.roundToPx()
-                val wide = constraints.maxWidth + extra
-                val placeable = measurable.measure(constraints.copy(minWidth = wide, maxWidth = wide))
-                layout(constraints.maxWidth, placeable.height) { placeable.place(0, 0) }
-            },
-    ) {
+    Column(modifier.fillMaxWidth()) {
         HorizontalPager(
             state = pager,
-            // Accenno della scheda successiva
-            contentPadding = PaddingValues(end = if (pages.size > 1) PEEK.dp else 0.dp),
+            // Ogni scheda è intera: la successiva non si intravede tagliata, ci sono i puntini
             pageSpacing = 8.dp,
             modifier = Modifier.fillMaxWidth(),
         ) { index ->
@@ -275,8 +260,6 @@ private fun SummaryPage(
     )
 }
 
-/** Accenno della scheda successiva (dp): poco, per lasciare più spazio al testo. */
-private const val PEEK = 20
 private const val ICON = 32
 
 /** Nome di un'app da mostrare: quello del launcher, poi quello di sistema, mai il pacchetto se c'è un nome. */
