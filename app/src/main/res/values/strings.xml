@@ -420,10 +420,10 @@
     <string name="breaker_wait">Open in %1$d s</string>
     <string name="breaker_open">Open anyway</string>
     <string name="breaker_cancel">Don\'t open</string>
-    <string name="edit_stack">Widget stack</string>
+    <string name="edit_stack">Widget group</string>
     <string name="stack_make">Stack another widget on this one</string>
-    <string name="stack_add">Add a widget to the stack</string>
-    <string name="stack_widgets">Widgets in the stack</string>
+    <string name="stack_add">Stack another widget</string>
+    <string name="stack_widgets">Widgets in the group</string>
     <string name="stack_page">Widget %1$d of %2$d</string>
     <string name="home_position">Height on screen</string>
     <string name="home_position_auto">Automatic (bottom)</string>
@@ -1110,4 +1110,10 @@
     <string name="wcond_from">From</string>
     <string name="wcond_to">To</string>
     <string name="more_options_ellipsis">More options…</string>
+    <string name="stack_layout">Layout</string>
+    <string name="stack_layout_carousel">Carousel</string>
+    <string name="stack_layout_rows">Rows</string>
+    <string name="stack_split">Split the group into rows</string>
+    <string name="stack_merge_next">Group with the widget below</string>
+    <string name="stack_detach">Move out of the group: %1$s</string>
 </resources>

@@ -4,6 +4,11 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.WidgetGroups
+import com.gabrielepiccione.onda.data.StackLayout
+import androidx.compose.material.icons.filled.ViewCarousel
+import androidx.compose.material.icons.filled.ViewAgenda
+import androidx.compose.material.icons.filled.CallSplit
 import com.gabrielepiccione.onda.data.WidgetVisibility
 import androidx.compose.material.icons.filled.Visibility
 import com.gabrielepiccione.onda.ui.components.LocalSliderDragging
@@ -197,12 +202,30 @@ fun HomeEditSheet(
                     onSize = { size -> actions.edit { WidgetSizing.set(it, key, size) } },
                     onHeight = { h -> actions.setStackHeight(stack.id, h ?: stackDefault) },
                 )
+                // Carosello orizzontale o righe una sotto l'altra
+                ChoiceRow(
+                    stringResource(R.string.stack_layout),
+                    listOf(StackLayout.CAROUSEL to stringResource(R.string.stack_layout_carousel), StackLayout.ROWS to stringResource(R.string.stack_layout_rows)),
+                    stack.layout,
+                ) { layout -> actions.edit { WidgetGroups.setLayout(it, stack.id, layout) } }
                 SectionTitle(R.string.stack_widgets)
                 stack.widgets.forEach { id ->
                     val label = widgetLabel(id) ?: stringResource(R.string.widget_number, id)
+                    SheetRow(Icons.Filled.CallSplit, stringResource(R.string.stack_detach, label)) { actions.edit { WidgetGroups.detach(it, id) } }
                     SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { widgetToDelete = id }
                 }
                 SheetRow(Icons.Filled.Add, stringResource(R.string.stack_add)) { actions.addToStack(block) }
+                SheetRow(Icons.Filled.ViewAgenda, stringResource(R.string.stack_split)) {
+                    actions.edit { WidgetGroups.split(it, stack.id) }
+                    actions.done()
+                }
+            }
+            // Unire al blocco di widget che segue: nasce un gruppo (o il gruppo si allarga)
+            if ((widgetId != null || stack != null) && WidgetGroups.nextWidgetBlock(settings, block) != null) {
+                SheetRow(Icons.Filled.ViewCarousel, stringResource(R.string.stack_merge_next)) {
+                    actions.edit { WidgetGroups.mergeWithNext(it, block, "g" + System.currentTimeMillis().toString(36)) }
+                    actions.done()
+                }
             }
 
             // Posizione: un solo gruppo con l'ordine nella home e l'altezza sullo schermo

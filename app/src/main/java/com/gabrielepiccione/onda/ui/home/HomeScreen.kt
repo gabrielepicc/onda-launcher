@@ -1983,6 +1983,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             accessibilityEnabled = status.accessibilityEnabled,
             onAccessibility = { withRestrictedHelp(callbacks::openAccessibilitySettings) },
             onSwipe = { vm.settingsRepo.setFolderSwipe(f.id, Actions.encode(it)) },
+            onWidgetLayout = { vm.settingsRepo.setFolderWidgetLayout(f.id, it) },
         )
     }
 
