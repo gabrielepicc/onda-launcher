@@ -87,6 +87,8 @@ object AutomationOverrides {
         )
         // Il profilo prende i valori dai profili dell'utente
         LauncherSetting.PROFILE -> listOf(LauncherPreset(R.string.ls_profile_auto, ""))
+        // I widget si scelgono con «Mostra widget» / «Nascondi widget», non da un elenco di valori
+        LauncherSetting.WIDGET -> emptyList()
         else -> listOf(LauncherPreset(R.string.ls_on, ON), LauncherPreset(R.string.ls_off, OFF))
     }
 
