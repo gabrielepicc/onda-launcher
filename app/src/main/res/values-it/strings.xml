@@ -1121,4 +1121,6 @@
     <string name="return_animation_sub">Tornando da un\'app con lo swipe verso l\'alto la home entra con un leggero ingrandimento e dissolvenza. Resta spenta se le animazioni di sistema sono spente.</string>
     <string name="return_times_label">Ritorno: %1$s ms</string>
     <string name="return_times_on">Misure per sviluppatori attive: i tempi di ritorno (ms) compaiono in un angolo della home. Tocca 7 volte la versione per spegnerle.</string>
+    <string name="return_entry_ok">entrata al primo fotogramma</string>
+    <string name="return_entry_late">entrata IN RITARDO</string>
 </resources>

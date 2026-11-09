@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.runtime.SideEffect
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.mutableIntStateOf
@@ -596,6 +597,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var shownToken by remember { mutableIntStateOf(entryToken) }
     val entry = remember { Animatable(1f) }
     val entryPending = entryToken != shownToken
+    // Dopo la composizione e prima del disegno: segna che lo stato iniziale dell'entrata è già applicato
+    SideEffect { vm.entryApplied(entryToken) }
     LaunchedEffect(entryToken) {
         if (entryToken != shownToken) {
             entry.snapTo(0f)
@@ -802,7 +805,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     Box(Modifier.fillMaxSize()) {
         if (settings.showReturnTimes) {
             val returnTimes by vm.returnTimes.collectAsStateWithLifecycle()
-            ReturnTimesLabel(returnTimes, Modifier.align(Alignment.TopEnd).zIndex(10f).statusBarsPadding().padding(end = 8.dp, top = 4.dp))
+            val entryOk by vm.entryOnFirstFrame.collectAsStateWithLifecycle()
+            ReturnTimesLabel(returnTimes, entryOk, Modifier.align(Alignment.TopEnd).zIndex(10f).statusBarsPadding().padding(end = 8.dp, top = 4.dp))
         }
         // Sfondo con la musica: sotto la velatura, così testo e icone restano leggibili
         val backdropHere = when (overlay) {
@@ -822,7 +826,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 beatAllowed = status.microphonePermission,
             )
         }
-        Box(Modifier.matchParentSize().background(dimColor.copy(alpha = settings.wallpaperDim)))
+        // Con l'entrata animata il velo parte da 0 e arriva al valore scelto con la stessa molla del contenuto
+        Box(
+            Modifier
+                .matchParentSize()
+                .graphicsLayer { alpha = if (entryPending) 0f else entry.value }
+                .background(dimColor.copy(alpha = settings.wallpaperDim)),
+        )
 
         val bars = WindowInsets.systemBars.asPaddingValues()
         // Su tablet e in orizzontale il contenuto resta centrato, con la stessa larghezza leggibile

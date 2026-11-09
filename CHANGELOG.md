@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Ritorno alla home, correzione**: l'entrata animata ora parte davvero. Con lo swipe in alto da un'app la decisione si prende in `onNewIntent` (MAIN dopo uno stop = ritorno, MAIN senza stop = tasto Home), quindi il tasto Home torna ad animare solo a launcher già aperto e lo swipe «indietro» non fa entrate. La home parte già nel primo fotogramma dallo stato iniziale (niente salto) e anche l'oscuramento dello sfondo arriva al valore scelto con la stessa molla. L'etichetta dei tempi dice se l'entrata era al primo fotogramma.
 - **Ritorno alla home più rapido e naturale**:
   - Primo fotogramma più veloce: lo stato dei permessi si legge fuori dal thread principale; widget, musica, calendario, contatti e meteo partono dopo il primo fotogramma e solo se l'ultimo aggiornamento ha più di un minuto; il backup automatico non gira più sul thread principale.
   - Entrata naturale: tornando da un'app con lo swipe verso l'alto la home entra con un leggero ingrandimento (0,94→1) e dissolvenza (0,4→1) con una molla da ~250 ms, mascherando il vuoto che il sistema lascia ai launcher non di sistema. Non succede con «indietro», né quando la home era già visibile, né con le animazioni di sistema spente. Impostazioni → Home → «Animazione di ritorno alla home» (sì di default).
