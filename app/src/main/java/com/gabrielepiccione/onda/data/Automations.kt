@@ -20,6 +20,8 @@ enum class AutomationTrigger(@StringRes val labelRes: Int) {
     TIME(R.string.auto_trigger_time),
     SUNSET(R.string.auto_trigger_sunset),
     SUNRISE(R.string.auto_trigger_sunrise),
+    MUSIC_ON(R.string.auto_trigger_music_on),
+    MUSIC_OFF(R.string.auto_trigger_music_off),
     ;
 
     /** Parte a un orario del giorno (fisso o legato al sole). */
@@ -62,6 +64,8 @@ data class EnvSnapshot(
     val dayOfWeek: Int,
     val sunriseMinute: Int? = null,
     val sunsetMinute: Int? = null,
+    /** Un'app sta riproducendo musica. */
+    val musicPlaying: Boolean = false,
 )
 
 /** Modello di partenza: l'utente lo completa nell'editor (scena, app, orario…). */
@@ -95,6 +99,8 @@ object Automations {
         AutomationTrigger.HEADPHONES_OFF -> prev.headphones && !now.headphones
         AutomationTrigger.CHARGING_ON -> !prev.charging && now.charging
         AutomationTrigger.CHARGING_OFF -> prev.charging && !now.charging
+        AutomationTrigger.MUSIC_ON -> !prev.musicPlaying && now.musicPlaying
+        AutomationTrigger.MUSIC_OFF -> prev.musicPlaying && !now.musicPlaying
         AutomationTrigger.DEVICE_ON -> appeared(a.device, prev.devices, now.devices)
         AutomationTrigger.DEVICE_OFF -> appeared(a.device, now.devices, prev.devices)
         AutomationTrigger.TIME, AutomationTrigger.SUNSET, AutomationTrigger.SUNRISE -> {

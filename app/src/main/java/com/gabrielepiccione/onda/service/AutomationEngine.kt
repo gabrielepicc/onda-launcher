@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.service
 
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import com.gabrielepiccione.onda.data.WidgetVisibility
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -48,14 +52,20 @@ import java.time.ZoneId
 class AutomationEngine(private val app: OndaApp) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var loop: Job? = null
+    private val _env = MutableStateFlow<EnvSnapshot?>(null)
+
+    /** L'ultima fotografia dello stato del telefono, per i widget con regole (null finché non serve). */
+    val env: StateFlow<EnvSnapshot?> = _env.asStateFlow()
 
     fun start() {
         app.settings.settings
-            .map { s -> s.automations.any { it.enabled && it.isUsable } }
+            // Si fotografa lo stato anche solo per i widget con regole
+            .map { s -> s.automations.any { it.enabled && it.isUsable } || WidgetVisibility.needsEnv(s) }
             .distinctUntilChanged()
             .onEach { on ->
                 loop?.cancel()
                 loop = if (on) scope.launch { watch() } else null
+                if (!on) _env.value = null
                 // Nessuna automazione accesa: le loro sostituzioni cadono
                 if (!on) app.settings.edit { AutomationOverrides.prune(it, null, System.currentTimeMillis()) }
             }
@@ -71,6 +81,7 @@ class AutomationEngine(private val app: OndaApp) {
             app.settings.edit { AutomationOverrides.prune(it, now, System.currentTimeMillis()) }
             Automations.fired(settings.automations, previous, now).forEach { run(it) }
             previous = now
+            _env.value = now
             delay(POLL_MS)
         }
     }
@@ -90,6 +101,7 @@ class AutomationEngine(private val app: OndaApp) {
             dayOfWeek = time.dayOfWeek.value,
             sunriseMinute = sun?.let { minuteOf(it.sunrise) },
             sunsetMinute = sun?.let { minuteOf(it.sunset) },
+            musicPlaying = app.media.media.value?.playing == true,
         )
     }
 
@@ -103,6 +115,10 @@ class AutomationEngine(private val app: OndaApp) {
                     // Per gli orari «ripristina» vuol dire: fino a mezzanotte
                     val until = if (change.restore && a.trigger.isTimed) nextMidnight() else 0L
                     app.settings.edit { AutomationOverrides.start(it, a, change, now, until) }
+                }
+                GestureAction.WIDGET_SHOW, GestureAction.WIDGET_HIDE -> WidgetVisibility.change(choice.action, choice.arg)?.let { change ->
+                    val until = if (change.restore && a.trigger.isTimed) nextMidnight() else 0L
+                    app.settings.edit { AutomationOverrides.start(it, a, change, System.currentTimeMillis(), until) }
                 }
                 GestureAction.BLOCK_APP -> app.settings.edit { AppBlocks.block(it, choice.arg) }
                 GestureAction.UNBLOCK_APP -> app.settings.edit { AppBlocks.unblock(it, choice.arg) }

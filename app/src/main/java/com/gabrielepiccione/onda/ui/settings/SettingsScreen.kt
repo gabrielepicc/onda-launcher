@@ -162,6 +162,8 @@ interface SettingsActions {
     fun postNotifications()
     fun usageAccess()
     fun accessibility()
+    /** Nome di un widget ospitato, null se non si conosce. */
+    fun widgetLabel(id: Int): String? = null
     /** Cancella la cronologia delle app aperte dalla ricerca. */
     fun clearSearchHistory()
     fun shortcutsOf(app: AppInfo): List<ShortcutInfo>
@@ -888,7 +890,7 @@ internal fun SettingsScreen(
         }
 
         if (page == SettingsPage.AUTOMATIONS) {
-            AutomationsPage(settings, allApps, actions::connectedDevices, actions::shortcutsOf, status.accessibilityEnabled, actions::accessibility, onEdit)
+            AutomationsPage(settings, allApps, actions::connectedDevices, actions::shortcutsOf, status.accessibilityEnabled, actions::accessibility, onEdit, actions::widgetLabel)
         }
 
         if (page == SettingsPage.WELLBEING && usageStats != null) {

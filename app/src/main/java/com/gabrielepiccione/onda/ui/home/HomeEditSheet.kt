@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.WidgetVisibility
+import androidx.compose.material.icons.filled.Visibility
 import com.gabrielepiccione.onda.ui.components.LocalSliderDragging
 import com.gabrielepiccione.onda.ui.components.ChoiceRow
 import com.gabrielepiccione.onda.ui.components.ActionRow
@@ -70,6 +72,8 @@ interface HomeEditActions {
     fun addToStack(block: String)
     fun setStackHeight(stackId: String, dp: Int)
     fun deleteWidget(id: Int)
+    /** «Mostra solo quando…»: collocazione e regole del widget. */
+    fun editRules(id: Int) {}
     fun done()
 }
 
@@ -245,6 +249,11 @@ fun HomeEditSheet(
                 SectionTitle(R.string.edit_group_actions)
                 ActionRow(Icons.Filled.Add, stringResource(R.string.stack_make)) { actions.addToStack(block) }
                 ActionRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_widget)) { actions.replaceWidget(widgetId) }
+                ActionRow(
+                    Icons.Filled.Visibility,
+                    stringResource(R.string.wrule_open),
+                    widgetRuleSummary(WidgetVisibility.ruleOf(settings, widgetId)),
+                ) { actions.editRules(widgetId) }
                 // Rimuovi: rosso, con la conferma già prevista
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

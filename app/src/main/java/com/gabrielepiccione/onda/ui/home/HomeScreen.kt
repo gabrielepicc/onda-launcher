@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.OndaApp
+import com.gabrielepiccione.onda.data.WidgetVisibility
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import com.gabrielepiccione.onda.data.SearchRanking
@@ -289,6 +291,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var shortcutMenu by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
     var shortcutIconFor by remember { mutableStateOf<HomeEntry.Shortcut?>(null) }
     var lightsEdit by remember { mutableStateOf(false) }
+    // «Mostra solo quando…» per un widget; dopo averne aggiunto uno si chiede subito dove metterlo
+    var ruleSheetFor by remember { mutableStateOf<Int?>(null) }
+    var widgetsBeforePick by remember { mutableStateOf<List<Int>?>(null) }
     // Widget delle luci accanto all'orologio: le sue misure come ogni altro widget; pressione lunga per cambiarle
     val lightsWidget: @Composable () -> Unit = {
         HostedWidget(
@@ -663,6 +668,28 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var undoLook by remember { mutableStateOf<Pair<com.gabrielepiccione.onda.data.LookTheme, String>?>(null) }
     var undoKeepsWallpaper by remember { mutableStateOf(false) }
     var reorderOpen by remember { mutableStateOf(false) }
+    // Widget con regole: lo stato del telefono arriva dal motore delle automazioni
+    val env by (context.applicationContext as OndaApp).automation.env.collectAsStateWithLifecycle()
+    val shownWidgets = remember(blocks, settings.widgetRules, env) {
+        WidgetVisibility.resolve(blocks.mapNotNull { HomeBlocks.widgetId(it) }, settings.widgetRules, env)
+    }
+    val ruleWidget: @Composable (Int, Modifier) -> Unit = { id, modifier ->
+        Box(modifier) {
+            HostedWidget(
+                id = id,
+                widgets = vm.widgets,
+                heightDp = settings.widgetHeights[id],
+                size = settings.widgetSizes[WidgetSizing.widgetKey(id)],
+                highlighted = editing == HomeBlocks.widget(id),
+                onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.widget(id) },
+            )
+        }
+    }
+    val besideVisible = lightsVisible || shownWidgets.beside != null
+    val besideContent: @Composable () -> Unit = {
+        val id = shownWidgets.beside
+        if (lightsVisible || id == null) lightsWidget() else ruleWidget(id, Modifier)
+    }
     // "Lo sapevi?": una scheda piccola al giorno, mai mentre c'è un pannello o una modifica in corso
     val today = remember { java.time.LocalDate.now().toString() }
     val minuteNow = java.time.LocalTime.now().let { it.hour * 60 + it.minute }
@@ -793,7 +820,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 }
         ) {
             // Orologio sostituito da un widget: la regola delle luci di casa vale lo stesso, in cima alla home
-            if (!settings.showClock && lightsVisible) {
+            if (!settings.showClock && shownWidgets.replace == null && lightsVisible) {
                 item(key = "lights_alone") {
                     Box(Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(horizontal = 4.dp)) { lightsWidget() }
                 }
@@ -801,7 +828,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             // Blocchi della home nell'ordine scelto dall'utente (orologio, musica, widget, app)
             for (block in blocks) {
                 when {
-                    block == HomeBlocks.CLOCK -> if (settings.showClock) {
+                    block == HomeBlocks.CLOCK -> if (settings.showClock || shownWidgets.replace != null) {
                         item(key = "clock") {
                             // Luci di casa: il widget di Google Home sta accanto all'orologio, dalla parte libera
                             Column(Modifier.animateItem(placementSpec = Motion.offsetEnter)) {
@@ -823,10 +850,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                     ) { _, delta -> dragged += delta }
                                 },
                             ) {
-                            if (lightsVisible && settings.clockAlign == HAlign.END) {
-                                Box(Modifier.weight(1f).padding(end = 8.dp)) { lightsWidget() }
+                            if (besideVisible && settings.clockAlign == HAlign.END) {
+                                Box(Modifier.weight(1f).padding(end = 8.dp)) { besideContent() }
                             }
-                            ClockHeader(
+                            // Un widget «al posto dell'orologio» lo sostituisce finché è visibile
+                            val replacing = shownWidgets.replace
+                            if (replacing != null) {
+                                ruleWidget(replacing, if (besideVisible) Modifier.weight(1f) else Modifier.weight(1f).padding(horizontal = 4.dp))
+                            } else ClockHeader(
                                 event = if (settings.showCalendar) nextEvent else null,
                                 onTime = { SystemActions.openAlarms(context) },
                                 onDate = { agendaOpen = true },
@@ -839,10 +870,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.CLOCK },
                                 showBattery = settings.showBattery,
                                 innerSpacing = settings.clockInnerSpacing,
-                                modifier = if (lightsVisible) Modifier.weight(1f) else Modifier,
+                                modifier = if (besideVisible) Modifier.weight(1f) else Modifier,
                             )
-                            if (lightsVisible && settings.clockAlign != HAlign.END) {
-                                Box(Modifier.weight(1f).padding(start = 8.dp)) { lightsWidget() }
+                            if (besideVisible && settings.clockAlign != HAlign.END) {
+                                Box(Modifier.weight(1f).padding(start = 8.dp)) { besideContent() }
                             }
                             }
                             val manual = settings.profileOverride
@@ -948,7 +979,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                     }
                     block.startsWith(HomeBlocks.WIDGET_PREFIX) -> {
                         val id = HomeBlocks.widgetId(block)
-                        if (id != null) {
+                        // Nascosto dalle regole, o mostrato accanto/al posto dell'orologio: qui non si disegna
+                        // (mentre si riordina la home si vedono tutti)
+                        if (id != null && (id in shownWidgets.below || reorderOpen)) {
                             item(key = block) {
                                 Box(Modifier.animateItem(placementSpec = Motion.offsetEnter).padding(horizontal = 4.dp)) {
                                     HostedWidget(
@@ -1457,6 +1490,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun postNotifications() = callbacks.requestPostNotifications()
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
+                        override fun widgetLabel(id: Int) = vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() }
                         override fun clearSearchHistory() = vm.clearSearchHistory()
                         override fun shortcutsOf(app: AppInfo) = vm.shortcuts(app)
                         override fun connectedDevices() = vm.audio.connectedNames.value
@@ -2068,8 +2102,26 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun addToStack(block: String) { editing = null; openWidgetPicker(null, WidgetTarget.ToStack(block)) }
                 override fun setStackHeight(stackId: String, dp: Int) = vm.settingsRepo.setStackHeight(stackId, dp)
                 override fun deleteWidget(id: Int) = vm.removeWidget(id)
+                override fun editRules(id: Int) { editing = null; ruleSheetFor = id }
                 override fun done() { editing = null }
             },
+        )
+    }
+
+    // Il widget appena aggiunto: si chiede dove metterlo e se mostrarlo sempre o con regole
+    LaunchedEffect(settings.widgetIds) {
+        val before = widgetsBeforePick ?: return@LaunchedEffect
+        settings.widgetIds.lastOrNull { it !in before }?.let { added ->
+            widgetsBeforePick = null
+            ruleSheetFor = added
+        }
+    }
+    ruleSheetFor?.let { id ->
+        WidgetRuleSheet(
+            title = vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() } ?: stringResource(R.string.wrule_open),
+            rule = WidgetVisibility.ruleOf(settings, id).copy(hidden = false),
+            onChange = { r -> vm.updateSettings { it.copy(widgetRules = it.widgetRules + (id to r.copy(hidden = false))) } },
+            onDismiss = { ruleSheetFor = null },
         )
     }
 
@@ -2144,6 +2196,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 widgetPicker = false
                 // Ricorda la scelta per «Usati di recente»
                 vm.updateSettings { it.copy(recentWidgets = WidgetCatalog.rememberPick(it.recentWidgets, widgetKey(p))) }
+                if (widgetTarget == WidgetTarget.Home) widgetsBeforePick = settings.widgetIds
                 callbacks.pickWidget(p, widgetTarget)
             },
             onDismiss = { widgetPicker = false },

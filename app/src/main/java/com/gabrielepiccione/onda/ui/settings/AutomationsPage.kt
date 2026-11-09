@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.HomeBlocks
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import android.content.pm.ShortcutInfo
@@ -80,6 +81,8 @@ internal fun AutomationsPage(
     accessibilityEnabled: Boolean,
     onAccessibility: () -> Unit,
     onEdit: ((Settings) -> Settings) -> Unit,
+    /** Nome di un widget della home, per «Mostra widget» e «Nascondi widget». */
+    widgetLabel: (Int) -> String? = { null },
 ) {
     val colors = LocalOndaColors.current
     var editing by remember { mutableStateOf<Automation?>(null) }
@@ -136,6 +139,7 @@ internal fun AutomationsPage(
             shortcutsOf = shortcutsOf,
             accessibilityEnabled = accessibilityEnabled,
             onAccessibility = onAccessibility,
+            widgetLabel = widgetLabel,
             onSave = { saved ->
                 onEdit { s -> s.copy(automations = Automations.upsert(s.automations, saved)) }
                 editing = null
@@ -158,6 +162,7 @@ private val TRIGGER_GROUPS: List<Pair<Int, List<AutomationTrigger>>> = listOf(
     R.string.auto_group_charging to listOf(AutomationTrigger.CHARGING_ON, AutomationTrigger.CHARGING_OFF),
     R.string.auto_group_time to listOf(AutomationTrigger.TIME),
     R.string.auto_group_sun to listOf(AutomationTrigger.SUNSET, AutomationTrigger.SUNRISE),
+    R.string.auto_group_music to listOf(AutomationTrigger.MUSIC_ON, AutomationTrigger.MUSIC_OFF),
 )
 
 /** Scheda tonale dell'editor: titolo nel colore primario e contenuto. */
@@ -187,6 +192,7 @@ private fun AutomationEditor(
     shortcutsOf: (AppInfo) -> List<ShortcutInfo>,
     accessibilityEnabled: Boolean,
     onAccessibility: () -> Unit,
+    widgetLabel: (Int) -> String?,
     onSave: (Automation) -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
@@ -338,6 +344,9 @@ private fun AutomationEditor(
             automatable = true,
             profiles = settings.contextProfiles.map { it.id to it.name },
             defaultRestore = AutomationOverrides.defaultRestore(a.trigger),
+            homeWidgets = settings.homeLayout.mapNotNull { HomeBlocks.widgetId(it) }.map { id ->
+                id to (widgetLabel(id) ?: stringResource(R.string.wrule_widget_n, id))
+            },
         )
     }
 }
