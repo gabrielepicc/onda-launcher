@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.data.StackLayout
 import kotlin.math.roundToInt
 import com.gabrielepiccione.onda.data.WidgetSize
 import com.gabrielepiccione.onda.data.WidgetSizing
@@ -137,7 +138,10 @@ fun ConfirmDeleteWidgetDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     )
 }
 
-/** Pila di widget: un blocco solo che si sfoglia in orizzontale, con i puntini della pagina. */
+/**
+ * Gruppo di widget in un solo blocco: carosello che si sfoglia in orizzontale (puntini, altezza uniforme)
+ * oppure righe una sotto l'altra, a scelta dell'utente ([com.gabrielepiccione.onda.data.StackLayout]).
+ */
 @Composable
 fun WidgetStackCard(
     stack: com.gabrielepiccione.onda.data.WidgetStack,
@@ -148,6 +152,16 @@ fun WidgetStackCard(
     size: WidgetSize? = null,
 ) {
     if (stack.widgets.isEmpty()) return
+    if (stack.layout == StackLayout.ROWS) {
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            stack.widgets.forEach { id ->
+                androidx.compose.runtime.key(id) {
+                    HostedWidget(id, widgets, heightDp = stack.heightDp, highlighted = highlighted, onLongPress = onLongPress, size = size)
+                }
+            }
+        }
+        return
+    }
     val colors = LocalOndaColors.current
     val density = LocalDensity.current
     val defaultHeight = remember(stack.widgets) {

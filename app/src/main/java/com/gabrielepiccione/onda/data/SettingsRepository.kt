@@ -217,6 +217,11 @@ class SettingsRepository(context: Context) {
     }
 
     /** Azione dello swipe a destra sulla cartella ([Actions.encode]); "" = apre la cartella. */
+    fun setFolderWidgetLayout(id: String, layout: StackLayout) = edit { s ->
+        val folder = s.folders[id] ?: return@edit s
+        s.copy(folders = s.folders + (id to folder.copy(widgetLayout = layout)))
+    }
+
     fun setFolderSwipe(id: String, encoded: String) = edit { s ->
         val folder = s.folders[id] ?: return@edit s
         s.copy(folders = s.folders + (id to folder.copy(swipe = encoded)))

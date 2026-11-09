@@ -162,6 +162,8 @@ data class Folder(
     val icon: String = "",
     /** Altezza dei widget nella cartella (dp); null = la maggiore tra le altezze predefinite. */
     val widgetHeightDp: Int? = null,
+    /** Con più widget: carosello (come prima) o righe una sotto l'altra. */
+    val widgetLayout: StackLayout = StackLayout.CAROUSEL,
     /** Azione dello swipe a destra sulla riga, nel formato di [Actions.encode]; "" = apre/chiude la cartella. */
     val swipe: String = "",
 )
@@ -196,7 +198,13 @@ data class WidgetStack(
     val widgets: List<Int> = emptyList(),
     /** Altezza scelta in dp; null = la maggiore tra le altezze predefinite dei widget. */
     val heightDp: Int? = null,
+    /** Carosello orizzontale (come le vecchie pile) o righe una sotto l'altra. */
+    val layout: StackLayout = StackLayout.CAROUSEL,
 )
+
+/** Come si dispone un gruppo di widget. */
+@Serializable
+enum class StackLayout { CAROUSEL, ROWS }
 
 /** Operazioni sulle pile di widget, senza dipendenze Android (testabili su JVM). */
 object WidgetStacks {

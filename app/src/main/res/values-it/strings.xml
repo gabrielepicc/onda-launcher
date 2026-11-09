@@ -420,10 +420,10 @@
     <string name="breaker_wait">Apri tra %1$d s</string>
     <string name="breaker_open">Apri comunque</string>
     <string name="breaker_cancel">Non aprire</string>
-    <string name="edit_stack">Pila di widget</string>
+    <string name="edit_stack">Gruppo di widget</string>
     <string name="stack_make">Impila un altro widget su questo</string>
-    <string name="stack_add">Aggiungi un widget alla pila</string>
-    <string name="stack_widgets">Widget nella pila</string>
+    <string name="stack_add">Impila un altro widget</string>
+    <string name="stack_widgets">Widget nel gruppo</string>
     <string name="stack_page">Widget %1$d di %2$d</string>
     <string name="home_position">Altezza sullo schermo</string>
     <string name="home_position_auto">Automatica (in basso)</string>
@@ -1110,4 +1110,10 @@
     <string name="wcond_from">Dalle</string>
     <string name="wcond_to">Alle</string>
     <string name="more_options_ellipsis">Altre opzioni…</string>
+    <string name="stack_layout">Disposizione</string>
+    <string name="stack_layout_carousel">Carosello</string>
+    <string name="stack_layout_rows">Righe</string>
+    <string name="stack_split">Separa il gruppo in righe</string>
+    <string name="stack_merge_next">Raggruppa con il widget sotto</string>
+    <string name="stack_detach">Porta fuori dal gruppo: %1$s</string>
 </resources>

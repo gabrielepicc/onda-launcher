@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.components.ChoiceRow
+import com.gabrielepiccione.onda.data.StackLayout
 import android.content.pm.ShortcutInfo
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -78,6 +80,7 @@ fun FolderSheet(
     accessibilityEnabled: Boolean = true,
     onAccessibility: () -> Unit = {},
     onSwipe: (ActionChoice) -> Unit = {},
+    onWidgetLayout: (StackLayout) -> Unit = {},
     apps: List<AppInfo> = emptyList(),
 ) {
     var renaming by remember { mutableStateOf(false) }
@@ -132,6 +135,14 @@ fun FolderSheet(
                 ActionRow(Icons.Filled.Widgets, labelOf(id) ?: stringResource(R.string.widget_number, id)) { widgetMenu = id }
             }
             ActionRow(Icons.Filled.Add, stringResource(R.string.folder_add_widget)) { onAddWidget(); onDismiss() }
+            if (folder.widgets.size > 1) {
+                ChoiceRow(
+                    stringResource(R.string.stack_layout),
+                    listOf(StackLayout.CAROUSEL to stringResource(R.string.stack_layout_carousel), StackLayout.ROWS to stringResource(R.string.stack_layout_rows)),
+                    folder.widgetLayout,
+                    onSelect = onWidgetLayout,
+                )
+            }
         }
         DestructiveRow(Icons.Filled.Delete, stringResource(R.string.folder_delete), stringResource(R.string.folder_delete_confirm, folder.name)) {
             onDelete(); onDismiss()

@@ -163,10 +163,10 @@ fun FolderRow(
             exit = fadeOut(Motion.exit()) + shrinkVertically(Motion.exit()),
         ) {
             Column(Modifier.padding(start = 8.dp, end = 8.dp, bottom = 10.dp)) {
-                // Più widget: un carosello orizzontale; tutti con l'altezza scelta per la cartella
+                // Più widget: carosello orizzontale o righe, a scelta; tutti con l'altezza scelta per la cartella
                 if (folder.widgets.size > 1) {
                     WidgetStackCard(
-                        stack = WidgetStack("f_" + folder.id, folder.widgets, folder.widgetHeightDp),
+                        stack = WidgetStack("f_" + folder.id, folder.widgets, folder.widgetHeightDp, folder.widgetLayout),
                         widgets = widgets,
                         highlighted = false,
                         onLongPress = onLongClick,
