@@ -2,11 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
-<<<<<<< HEAD
 import com.gabrielepiccione.onda.data.HomeBlocks
-=======
 import com.gabrielepiccione.onda.ui.components.OndaTextField
->>>>>>> origin/main
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import android.content.pm.ShortcutInfo

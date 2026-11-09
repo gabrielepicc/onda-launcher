@@ -1069,7 +1069,6 @@
     <string name="search_suggestions_sub">Apps you open most from search, shown when the field is empty. Only the app and how often are counted, never what you type, and nothing leaves the phone or goes into backups.</string>
     <string name="search_history_clear">Clear search history</string>
     <string name="search_history_clear_confirm">Forget which apps you opened from search?</string>
-<<<<<<< HEAD
     <string name="gesture_widget_show">Show widget</string>
     <string name="gesture_widget_hide">Hide widget</string>
     <string name="gesture_widget_show_desc">Shows a home widget below, beside or instead of the clock</string>
@@ -1110,7 +1109,5 @@
     <string name="wcond_time_range">From %1$s to %2$s</string>
     <string name="wcond_from">From</string>
     <string name="wcond_to">To</string>
-=======
     <string name="more_options_ellipsis">More options…</string>
->>>>>>> origin/main
 </resources>
