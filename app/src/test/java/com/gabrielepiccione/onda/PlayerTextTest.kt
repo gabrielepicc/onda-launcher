@@ -15,8 +15,8 @@ class PlayerTextTest {
 
     @Test
     fun sizes() {
-        assertEquals(19f, PlayerLayout.TITLE_SP)
-        assertEquals(15f, PlayerLayout.ARTIST_SP)
+        assertEquals(17f, PlayerLayout.TITLE_SP)
+        assertEquals(13f, PlayerLayout.ARTIST_SP)
     }
 
     @Test

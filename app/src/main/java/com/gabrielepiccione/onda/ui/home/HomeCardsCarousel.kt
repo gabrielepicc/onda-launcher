@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,6 +69,7 @@ class CardsCallbacks(
     val onPlayPause: () -> Unit,
     val onPrev: () -> Unit,
     val onNext: () -> Unit,
+    val onSeek: (Long) -> Unit,
     val onMediaAction: (MediaAction) -> Unit,
     val onEvent: (CalendarEvent) -> Unit,
     val onAgendaEmpty: () -> Unit,
@@ -93,6 +95,9 @@ fun HomeCardsCarousel(
     highlighted: String?,
     callbacks: CardsCallbacks,
     modifier: Modifier = Modifier,
+    /** Stile e dimensione del player scelti per il blocco: valgono anche dentro il carosello. */
+    mediaCompact: Boolean = true,
+    mediaScale: Float = 1f,
 ) {
     if (pages.isEmpty()) return
     val colors = LocalOndaColors.current
@@ -123,8 +128,10 @@ fun HomeCardsCarousel(
                             onPlayPause = callbacks.onPlayPause,
                             onPrev = callbacks.onPrev,
                             onNext = callbacks.onNext,
+                            onSeek = callbacks.onSeek,
                             onAction = callbacks.onMediaAction,
-                            compact = true,
+                            compact = mediaCompact,
+                            scale = mediaScale,
                             highlighted = highlighted == page.block,
                             onLongPress = { callbacks.onLongPress(page.block) },
                         )
@@ -177,9 +184,9 @@ private fun CardShell(
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             // troncamento voluto: titolo e testo di supporto stanno su una riga come nel player
-            Text(title, color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(title, color = colors.onWallpaper, style = MaterialTheme.typography.titleMedium.copy(fontSize = PlayerLayout.TITLE_SP.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
             // troncamento voluto
-            Text(supporting, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(supporting, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium.copy(fontSize = PlayerLayout.ARTIST_SP.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }

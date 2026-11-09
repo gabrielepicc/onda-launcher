@@ -745,6 +745,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         onPlayPause = { vm.media.playPause() },
         onPrev = { vm.media.previous() },
         onNext = { vm.media.next() },
+        onSeek = { vm.media.seekTo(it) },
         onMediaAction = { vm.media.customAction(it) },
         onEvent = { vm.calendar.open(it) },
         onAgendaEmpty = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
@@ -908,6 +909,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 themedIcons = settings.themedIcons,
                                 highlighted = editing,
                                 callbacks = cardsCallbacks,
+                                mediaCompact = settings.mediaCompact,
+                                mediaScale = settings.mediaScale,
                                 modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
                             )
                         }
