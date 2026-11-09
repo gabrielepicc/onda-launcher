@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Ritorno alla home più rapido e naturale**:
+  - Primo fotogramma più veloce: lo stato dei permessi si legge fuori dal thread principale; widget, musica, calendario, contatti e meteo partono dopo il primo fotogramma e solo se l'ultimo aggiornamento ha più di un minuto; il backup automatico non gira più sul thread principale.
+  - Entrata naturale: tornando da un'app con lo swipe verso l'alto la home entra con un leggero ingrandimento (0,94→1) e dissolvenza (0,4→1) con una molla da ~250 ms, mascherando il vuoto che il sistema lascia ai launcher non di sistema. Non succede con «indietro», né quando la home era già visibile, né con le animazioni di sistema spente. Impostazioni → Home → «Animazione di ritorno alla home» (sì di default).
+  - Correzione: aprendo un'app da elenco, ricerca o notifica i pannelli si chiudevano animando quando Onda era già in background, e la home restava «invisibile» fino al ritorno (150–450 ms di vuoto in più). Ora, a launcher fuori vista, tutto si chiude di colpo; il tasto Home torna ad animare solo se il launcher è davvero a schermo.
+  - Per sviluppatori: 7 tocchi sulla versione (Impostazioni) mostrano in un angolo i millisecondi da onStart al primo fotogramma, ultimi 5 valori.
 - **Luci di casa**: dopo una reinstallazione di Onda l'id del widget salvato non esiste più (Android lo perde) e il widget non compariva pur risultando «Scelto». Ora Onda se ne accorge: nelle impostazioni dice «Non più valido… tocca per sceglierlo di nuovo» e lo stato «Adesso» lo segna mancante. Con un widget accanto l'orologio si rimpicciolisce un po' (75%) e ha più spazio del widget, quindi non è più tagliato né schiacciato.
 - **Carosello e orologio**: nel carosello ogni scheda è intera, senza la successiva tagliata sul bordo (restano i puntini). Con le luci di casa (o un widget accanto) l'orologio tiene la sua larghezza e non viene più schiacciato a metà: niente più «16:5» e data a capo.
 - **Carosello rifinito**: la scheda successiva non è più tagliata a metà schermo ma arriva fino al bordo (accenno di 20 dp); nel player compatto titolo e artista hanno la precedenza, e se la scheda è stretta spariscono prima «precedente» e poi «successivo» invece di ridurre il testo a «Las…».

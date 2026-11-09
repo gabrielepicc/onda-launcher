@@ -380,11 +380,28 @@ internal fun SettingsScreen(
             if (query.isBlank()) Group(stringResource(R.string.section_app)) {
                 ClickRow(stringResource(R.string.restart_launcher), stringResource(R.string.restart_launcher_sub)) { restartConfirm = true }
             }
+            // Sette tocchi sulla versione accendono (o spengono) le misure per sviluppatori
+            var versionTaps by remember { mutableStateOf(0) }
             if (query.isBlank()) Text(
                 stringResource(R.string.version_line, com.gabrielepiccione.onda.BuildConfig.VERSION_NAME),
                 color = colors.onWallpaperMuted,
                 style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp),
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .clickable {
+                        versionTaps += 1
+                        if (versionTaps >= DEV_TAPS) {
+                            versionTaps = 0
+                            onEdit { it.copy(showReturnTimes = !it.showReturnTimes) }
+                        }
+                    }
+                    .padding(vertical = 28.dp, horizontal = 8.dp),
+            )
+            if (query.isBlank() && settings.showReturnTimes) Text(
+                stringResource(R.string.return_times_on),
+                color = colors.onWallpaperMuted,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(horizontal = 8.dp),
             )
         }
 
@@ -589,6 +606,7 @@ internal fun SettingsScreen(
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_layout)) {
             SwitchRow(stringResource(R.string.layout_lock), stringResource(R.string.layout_lock_sub), settings.lockLayout) { v -> onEdit { it.copy(lockLayout = v) } }
             SwitchRow(stringResource(R.string.hide_status_bar), null, settings.hideStatusBar) { v -> onEdit { it.copy(hideStatusBar = v) } }
+            SwitchRow(stringResource(R.string.return_animation), stringResource(R.string.return_animation_sub), settings.returnAnimation) { v -> onEdit { it.copy(returnAnimation = v) } }
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.home_block_spacing)) {
@@ -1588,3 +1606,6 @@ private enum class AppPickTarget { BREAKER, REMINDERS }
 
 /** Minuti dalla mezzanotte come "22:30". */
 private fun minuteLabel(minute: Int): String = "%d:%02d".format(minute / 60 % 24, minute % 60)
+
+/** Tocchi sulla versione per sbloccare le misure di sviluppo. */
+private const val DEV_TAPS = 7

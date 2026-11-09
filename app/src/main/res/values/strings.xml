@@ -1117,4 +1117,8 @@
     <string name="stack_merge_next">Group with the widget below</string>
     <string name="stack_detach">Move out of the group: %1$s</string>
     <string name="lights_widget_stale">No longer valid (it is lost when the app is reinstalled) · tap to choose it again</string>
+    <string name="return_animation">Return-to-home animation</string>
+    <string name="return_animation_sub">When you come back from an app with the swipe up, the home enters with a light zoom and fade. It stays off if system animations are off.</string>
+    <string name="return_times_label">Return: %1$s ms</string>
+    <string name="return_times_on">Developer measures on: the return times (ms) appear in the corner of the home. Tap the version 7 times to turn them off.</string>
 </resources>

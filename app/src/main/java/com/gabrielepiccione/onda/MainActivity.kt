@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.ReturnPolicy
 import com.gabrielepiccione.onda.data.MusicWallpaper
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -37,7 +38,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -191,12 +191,47 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         }
     }
 
-    /** Backup automatico al massimo una volta al giorno, quando si esce dal launcher. */
+    /** Backup automatico al massimo una volta al giorno, quando si esce dal launcher: mai sul thread principale. */
     private fun runAutoBackupIfDue() {
-        if (!AutoBackup.isDue(vm.settingsRepo.current, LocalDate.now().toString())) return
         val appContext = applicationContext
-        lifecycleScope.launch(Dispatchers.IO) { Backups.runAutoIfDue(appContext, vm.settingsRepo) }
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (AutoBackup.isDue(vm.settingsRepo.current, LocalDate.now().toString())) Backups.runAutoIfDue(appContext, vm.settingsRepo)
+        }
     }
+
+    /** Esegue [block] subito dopo il primo fotogramma, così il lavoro in più non ritarda il disegno della home. */
+    private fun afterFirstFrame(block: () -> Unit) {
+        window.decorView.post { android.view.Choreographer.getInstance().postFrameCallback { block() } }
+    }
+
+    private var lastMediaAt = 0L
+    private var lastCalendarAt = 0L
+    private var lastContactsAt = 0L
+    private var lastWeatherAt = 0L
+
+    /** Gli aggiornamenti non urgenti partono dopo il primo fotogramma e solo se l'ultimo ha più di un minuto. */
+    private fun refreshSlowStuff() {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (ReturnPolicy.shouldRefresh(lastMediaAt, now) && NotificationStore.isPermissionGranted(this)) { lastMediaAt = now; ondaApp.media.start() }
+        if (ReturnPolicy.shouldRefresh(lastCalendarAt, now)) { lastCalendarAt = now; vm.refreshCalendar() }
+        if (ReturnPolicy.shouldRefresh(lastContactsAt, now)) { lastContactsAt = now; vm.refreshAlphabetContacts() }
+        if (ReturnPolicy.shouldRefresh(lastWeatherAt, now)) { lastWeatherAt = now; vm.refreshWeather() }
+    }
+
+    /** Tempo da onStart al primo fotogramma disegnato, per l'etichetta di sviluppo. */
+    private fun measureFirstFrame(startedAt: Long) {
+        val decor = window.decorView
+        val listener = object : android.view.ViewTreeObserver.OnDrawListener {
+            override fun onDraw() {
+                vm.addReturnTime(android.os.SystemClock.elapsedRealtime() - startedAt)
+                decor.post { decor.viewTreeObserver.removeOnDrawListener(this) }
+            }
+        }
+        decor.viewTreeObserver.addOnDrawListener(listener)
+    }
+
+    /** Si torna da un'app con lo swipe verso l'alto: c'è un MAIN a launcher fermo. */
+    private var returningFromApp = false
 
     /** Crea il backup nella cache e lo passa all'app scelta dall'utente. */
     override fun shareBackup() {
@@ -385,11 +420,20 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     override fun onStart() {
         super.onStart()
-        widgets.startListening()
+        val startedAt = android.os.SystemClock.elapsedRealtime()
+        vm.setVisible(true)
+        if (vm.settingsRepo.current.showReturnTimes) measureFirstFrame(startedAt)
+        // Entrata naturale: solo al ritorno da un'app, e non con le animazioni di sistema spente
+        val scale = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        if (ReturnPolicy.animateEntry(returningFromApp, vm.settingsRepo.current.returnAnimation, scale)) vm.playReturnEntry()
+        returningFromApp = false
+        // I widget si ascoltano dopo il primo fotogramma
+        afterFirstFrame { if (vm.visible.value) widgets.startListening() }
     }
 
     override fun onStop() {
         super.onStop()
+        vm.setVisible(false)
         widgets.stopListening()
         runAutoBackupIfDue()
     }
@@ -397,14 +441,19 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun onResume() {
         super.onResume()
         refreshStatus()
-        if (status.notificationAccess) ondaApp.media.start()
-        vm.refreshCalendar()
-        vm.refreshAlphabetContacts()
-        vm.refreshWeather()
+        afterFirstFrame { if (vm.visible.value) refreshSlowStuff() }
     }
 
+    /** Le ~11 letture di sistema vanno fuori dal thread principale: fino al risultato resta il valore precedente. */
     private fun refreshStatus() {
-        status = HomeStatus(
+        lifecycleScope.launch(Dispatchers.Default) {
+            val fresh = readStatus()
+            withContext(Dispatchers.Main) { status = fresh }
+        }
+    }
+
+    private fun readStatus(): HomeStatus {
+        return HomeStatus(
             notificationAccess = NotificationStore.isPermissionGranted(this),
             isDefaultLauncher = SystemActions.isDefaultLauncher(this),
             contactsPermission = vm.contacts.hasPermission(),
@@ -421,8 +470,14 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // Tasto Home premuto mentre il launcher è già in primo piano
-        if (intent.action == Intent.ACTION_MAIN) vm.onHomePressed()
+        val visible = vm.visible.value
+        // Tasto Home premuto mentre il launcher è già a schermo: comportamento di sempre (scorre in cima animando)
+        if (ReturnPolicy.isHomePress(intent.action, visible)) vm.onHomePressed()
+        // Ritorno da un'app: il launcher era fermo, tutto si chiude subito e si prepara l'entrata animata
+        if (ReturnPolicy.isReturnFromApp(intent.action, visible)) {
+            returningFromApp = true
+            vm.onReturnedFromApp()
+        }
         // App aperta fuori dal launcher che ha bisogno della pausa di Usage Breaker
         intent.getStringExtra(EXTRA_PAUSE_PACKAGE)?.let { vm.requestPause(it) }
         // App bloccata aperta fuori dal launcher: si spiega il blocco
