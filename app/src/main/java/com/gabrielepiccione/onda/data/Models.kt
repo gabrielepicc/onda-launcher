@@ -375,6 +375,10 @@ data class Settings(
     val lockLayout: Boolean = false,
     /** Motore per la ricerca web: SYSTEM, DUCKDUCKGO, STARTPAGE, GOOGLE, ECOSIA, BRAVE. */
     val searchEngine: String = "SYSTEM",
+    /** Al ritorno da un'app la home entra con un leggero ingrandimento e dissolvenza. */
+    val returnAnimation: Boolean = true,
+    /** Per sviluppatori (si sblocca dalla versione, nelle impostazioni): etichetta con i tempi di ritorno. */
+    val showReturnTimes: Boolean = false,
     /** Quante app mostrare in «Cercate spesso» a ricerca vuota (0 = nessun elenco). */
     val searchSuggestions: Int = SearchRanking.DEFAULT_SHOWN,
     /** Pulsante di ricerca nell'angolo in basso, dal lato dell'alfabeto. */

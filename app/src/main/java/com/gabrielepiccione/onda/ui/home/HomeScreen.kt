@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.runtime.mutableIntStateOf
+import com.gabrielepiccione.onda.data.ReturnPolicy
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.gabrielepiccione.onda.OndaApp
@@ -338,7 +341,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var recentSheet by remember { mutableStateOf(false) }
     val iconScale = settings.iconSize
 
+    // A launcher fuori vista i pannelli si chiudono di colpo: un'animazione resterebbe ferma sul valore vecchio
+    // e si vedrebbe riprendere (o il vuoto della home) al ritorno
+    var snapClose by remember { mutableStateOf(false) }
     fun closeAll() {
+        snapClose = ReturnPolicy.closeInstantly(vm.visible.value)
         overlay = Overlay.NONE
         vm.clearSearch()
     }
@@ -492,18 +499,29 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         }
     }
 
+    fun closeSheets() {
+        quickFor = null
+        actionsFor = null
+        panelFor = null
+        folderSheet = null
+        homeMenu = false
+        widgetPicker = false
+        breakerFor = null
+        agendaOpen = false
+    }
     LaunchedEffect(Unit) {
         vm.homePressed.collect {
             if (overlay == Overlay.NONE && actionsFor == null && panelFor == null && quickFor == null) homeList.animateScrollToItem(0)
             closeAll()
-            quickFor = null
-            actionsFor = null
-            panelFor = null
-            folderSheet = null
-            homeMenu = false
-            widgetPicker = false
-            breakerFor = null
-            agendaOpen = false
+            closeSheets()
+        }
+    }
+    // Ritorno da un'app: il launcher era fermo, quindi si chiude e si sale in cima senza animazioni
+    LaunchedEffect(Unit) {
+        vm.returned.collect {
+            closeAll()
+            closeSheets()
+            homeList.scrollToItem(0)
         }
     }
 
@@ -571,16 +589,38 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     // Profondità: quando si apre un pannello la home arretra e sfuma
     // Profondità solo per ricerca e impostazioni; l'elenco app resta sullo stesso piano
-    val depth by animateFloatAsState(
+    // Entrata naturale al ritorno da un'app: la home parte un po' più piccola e trasparente e si assesta con una molla
+    val entryToken by vm.entryToken.collectAsStateWithLifecycle()
+    var shownToken by remember { mutableIntStateOf(entryToken) }
+    val entry = remember { Animatable(1f) }
+    val entryPending = entryToken != shownToken
+    LaunchedEffect(entryToken) {
+        if (entryToken != shownToken) {
+            entry.snapTo(0f)
+            shownToken = entryToken
+            entry.animateTo(1f, Motion.returnEntry())
+        }
+    }
+    val depth by animateOrSnap(
         if (overlay == Overlay.SEARCH || overlay == Overlay.SETTINGS || overlay == Overlay.STYLES) 1f else 0f,
+        snapClose,
         Motion.enter(450),
-        label = "depth",
     )
-    val listMode by animateFloatAsState(
+    val listMode by animateOrSnap(
         if (overlay == Overlay.ALL_APPS) 1f else 0f,
+        snapClose,
         androidx.compose.animation.core.tween(150, easing = Motion.Standard),
-        label = "listMode",
     )
+    // Il launcher esce di scena (si è aperta un'app): le animazioni in corso arrivano subito alla fine
+    LaunchedEffect(Unit) { vm.visible.collect { visible -> if (!visible) snapClose = true } }
+    // Dopo un paio di fotogrammi (a launcher visibile) le animazioni tornano normali
+    LaunchedEffect(snapClose) {
+        if (snapClose) {
+            withFrameNanos { }
+            withFrameNanos { }
+            snapClose = false
+        }
+    }
     val panelScale = 1f - 0.1f * backProgress
     val panelCorner = (32 * backProgress).dp
 
@@ -758,6 +798,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val dimColor = if (colors.dark) Color.Black else Color.White
     Box(Modifier.fillMaxSize()) {
+        if (settings.showReturnTimes) {
+            val returnTimes by vm.returnTimes.collectAsStateWithLifecycle()
+            ReturnTimesLabel(returnTimes, Modifier.align(Alignment.TopEnd).zIndex(10f).statusBarsPadding().padding(end = 8.dp, top = 4.dp))
+        }
         // Sfondo con la musica: sotto la velatura, così testo e icone restano leggibili
         val backdropHere = when (overlay) {
             Overlay.NONE -> settings.musicBackdropHome
@@ -804,10 +848,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
-                    val s = 1f - 0.06f * depth
+                    // Fino a quando l'entrata non parte il primo fotogramma è già nello stato iniziale
+                    val e = if (entryPending) 0f else entry.value
+                    val s = (1f - 0.06f * depth) * (Motion.RETURN_SCALE_FROM + (1f - Motion.RETURN_SCALE_FROM) * e)
                     scaleX = s; scaleY = s
                     val pr = (abs(pull.value) / threshold).coerceIn(0f, 1f)
-                    alpha = (1f - depth) * (1f - 0.35f * pr) * (1f - listMode)
+                    alpha = (1f - depth) * (1f - 0.35f * pr) * (1f - listMode) * (Motion.RETURN_ALPHA_FROM + (1f - Motion.RETURN_ALPHA_FROM) * e)
                     translationY = rubber(pull.value)
                 }
                 .nestedScroll(gestureConnection)
@@ -1253,7 +1299,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         // ---------------- SCROLLER (lettere visibili + lato opposto invisibile) ----------------
         val scrollerActive = overlay == Overlay.NONE || overlay == Overlay.ALL_APPS
         val lettersVisible = overlay == Overlay.ALL_APPS || !settings.hideAlphabet
-        val scrollerAlpha by animateFloatAsState(if (scrollerActive) 1f else 0f, Motion.enter(250), label = "scroller")
+        val scrollerAlpha by animateOrSnap(if (scrollerActive) 1f else 0f, snapClose, Motion.enter(250))
         val scrollerPadding = Modifier.padding(
             top = bars.calculateTopPadding() + 16.dp,
             bottom = bars.calculateBottomPadding() + 40.dp,
@@ -1358,7 +1404,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         AnimatedVisibility(
             visible = overlay == Overlay.SEARCH,
             enter = fadeIn(Motion.enter(260)) + slideInVertically(Motion.offsetEnter) { -it / 12 },
-            exit = fadeOut(Motion.exit()) + slideOutVertically(Motion.offsetExit) { -it / 16 },
+            exit = if (snapClose) ExitTransition.None else (fadeOut(Motion.exit()) + slideOutVertically(Motion.offsetExit) { -it / 16 }),
         ) {
             Box(
                 Modifier
@@ -1425,7 +1471,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         AnimatedVisibility(
             visible = overlay == Overlay.SETTINGS,
             enter = fadeIn(Motion.enter(300)) + slideInVertically(Motion.offsetEnter) { it / 8 },
-            exit = fadeOut(Motion.exit()) + slideOutVertically(Motion.offsetExit) { it / 12 },
+            exit = if (snapClose) ExitTransition.None else (fadeOut(Motion.exit()) + slideOutVertically(Motion.offsetExit) { it / 12 }),
         ) {
             Box(
                 Modifier
@@ -1559,7 +1605,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     AnimatedVisibility(
         visible = overlay == Overlay.STYLES,
         enter = fadeIn(Motion.enter(300)) + slideInVertically(Motion.offsetEnter) { it / 8 },
-        exit = fadeOut(Motion.exit()) + slideOutVertically(Motion.offsetExit) { it / 12 },
+        exit = if (snapClose) ExitTransition.None else (fadeOut(Motion.exit()) + slideOutVertically(Motion.offsetExit) { it / 12 }),
     ) {
         StyleGallery(
             currentPresetId = settings.stylePreset,

@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.ReturnPolicy
 import com.gabrielepiccione.onda.data.AutomationOverrides
 import com.gabrielepiccione.onda.data.SearchHistoryStore
 import com.gabrielepiccione.onda.data.SearchRanking
@@ -336,6 +337,31 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
             _alphabetContacts.value = if (settingsRepo.current.contactsInAlphabet) contacts.all() else emptyList()
         }
     }
+
+    // --- Visibilità del launcher e ritorno da un'app ---
+    private val _visible = MutableStateFlow(false)
+
+    /** Il launcher è a schermo (tra onStart e onStop). */
+    val visible: StateFlow<Boolean> = _visible.asStateFlow()
+    fun setVisible(v: Boolean) { _visible.value = v }
+
+    private val _returned = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    /** Si torna da un'app: tutto si chiude di colpo e la lista va in cima senza animazioni. */
+    val returned: SharedFlow<Unit> = _returned
+    fun onReturnedFromApp() { _returned.tryEmit(Unit) }
+
+    private val _entryToken = MutableStateFlow(0)
+
+    /** Cambia a ogni entrata animata da fare (la home parte piccola e trasparente al primo fotogramma). */
+    val entryToken: StateFlow<Int> = _entryToken.asStateFlow()
+    fun playReturnEntry() { _entryToken.value += 1 }
+
+    private val _returnTimes = MutableStateFlow<List<Long>>(emptyList())
+
+    /** Ultimi tempi (ms) da onStart al primo fotogramma, per l'etichetta di sviluppo. */
+    val returnTimes: StateFlow<List<Long>> = _returnTimes.asStateFlow()
+    fun addReturnTime(ms: Long) { _returnTimes.value = ReturnPolicy.addTime(_returnTimes.value, ms) }
 
     // --- Tasto Home premuto: chiude pannelli e torna in cima ---
     private val _homePressed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
