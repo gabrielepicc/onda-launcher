@@ -703,34 +703,6 @@ internal fun SettingsScreen(
             }
         }
 
-        if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_prefixes)) {
-            SettingsSupporting(stringResource(R.string.prefixes_sub))
-            PrefixKind.entries.forEach { kind ->
-                var text by remember(kind, settings.searchPrefixes) { mutableStateOf(settings.searchPrefixes.of(kind)) }
-                val candidate = settings.searchPrefixes.with(kind, text.trim())
-                val ok = SearchPrefixes.valid(candidate)
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { v ->
-                        text = v
-                        val next = settings.searchPrefixes.with(kind, v.trim())
-                        if (SearchPrefixes.valid(next)) onEdit { it.copy(searchPrefixes = next) }
-                    },
-                    singleLine = true,
-                    isError = !ok,
-                    label = { Text(stringResource(prefixLabel(kind))) },
-                    supportingText = { Text(stringResource(if (ok) prefixExample(kind) else R.string.prefix_invalid)) },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                )
-            }
-            val musicApps = mediaApps()
-            ClickRow(
-                stringResource(R.string.music_app),
-                settings.musicApp.takeIf { it.isNotBlank() }?.let { pkg -> allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
-                    ?: stringResource(R.string.music_app_last),
-            ) { musicAppPick = musicApps }
-        }
-
         if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_search)) {
             SwitchRow(stringResource(R.string.search_button), stringResource(R.string.search_button_sub), settings.showSearchButton) { v -> onEdit { it.copy(showSearchButton = v) } }
             if (settings.showSearchButton) {
@@ -794,7 +766,36 @@ internal fun SettingsScreen(
             ) { id -> onEdit { it.copy(searchEngine = id) } }
             Text(stringResource(R.string.search_prefix_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
         }
+
         if (page == SettingsPage.ALPHABET) SearchHistorySettings(settings, onEdit, actions::clearSearchHistory)
+
+        if (page == SettingsPage.ALPHABET) Group(stringResource(R.string.section_prefixes)) {
+            SettingsSupporting(stringResource(R.string.prefixes_sub))
+            PrefixKind.entries.forEach { kind ->
+                var text by remember(kind, settings.searchPrefixes) { mutableStateOf(settings.searchPrefixes.of(kind)) }
+                val candidate = settings.searchPrefixes.with(kind, text.trim())
+                val ok = SearchPrefixes.valid(candidate)
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { v ->
+                        text = v
+                        val next = settings.searchPrefixes.with(kind, v.trim())
+                        if (SearchPrefixes.valid(next)) onEdit { it.copy(searchPrefixes = next) }
+                    },
+                    singleLine = true,
+                    isError = !ok,
+                    label = { Text(stringResource(prefixLabel(kind))) },
+                    supportingText = { Text(stringResource(if (ok) prefixExample(kind) else R.string.prefix_invalid)) },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                )
+            }
+            val musicApps = mediaApps()
+            ClickRow(
+                stringResource(R.string.music_app),
+                settings.musicApp.takeIf { it.isNotBlank() }?.let { pkg -> allApps.firstOrNull { it.packageName == pkg }?.label ?: pkg }
+                    ?: stringResource(R.string.music_app_last),
+            ) { musicAppPick = musicApps }
+        }
 
         if (page == SettingsPage.GESTURES) Group(stringResource(R.string.section_gestures_custom)) {
             GestureSetting(
