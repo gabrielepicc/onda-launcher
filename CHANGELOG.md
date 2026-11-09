@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Luci di casa**: dopo una reinstallazione di Onda l'id del widget salvato non esiste più (Android lo perde) e il widget non compariva pur risultando «Scelto». Ora Onda se ne accorge: nelle impostazioni dice «Non più valido… tocca per sceglierlo di nuovo» e lo stato «Adesso» lo segna mancante. Con un widget accanto l'orologio si rimpicciolisce un po' (75%) e ha più spazio del widget, quindi non è più tagliato né schiacciato.
 - **Carosello e orologio**: nel carosello ogni scheda è intera, senza la successiva tagliata sul bordo (restano i puntini). Con le luci di casa (o un widget accanto) l'orologio tiene la sua larghezza e non viene più schiacciato a metà: niente più «16:5» e data a capo.
 - **Carosello rifinito**: la scheda successiva non è più tagliata a metà schermo ma arriva fino al bordo (accenno di 20 dp); nel player compatto titolo e artista hanno la precedenza, e se la scheda è stretta spariscono prima «precedente» e poi «successivo» invece di ridurre il testo a «Las…».
 - **Player corretto**: nel carosello delle schede il player ignorava lo stile (esteso/compatto) e la dimensione scelti; ora li rispetta (e nell'esteso funziona anche la barra di avanzamento). Titolo 17 sp e artista 13 sp in tutte le varianti e nelle altre schede del carosello.

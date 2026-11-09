@@ -1116,4 +1116,5 @@
     <string name="stack_split">Split the group into rows</string>
     <string name="stack_merge_next">Group with the widget below</string>
     <string name="stack_detach">Move out of the group: %1$s</string>
+    <string name="lights_widget_stale">No longer valid (it is lost when the app is reinstalled) · tap to choose it again</string>
 </resources>
