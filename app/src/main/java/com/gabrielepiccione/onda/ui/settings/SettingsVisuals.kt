@@ -172,7 +172,7 @@ internal fun <T> TileGrid(items: List<T>, columns: Int, tile: @Composable (T, Mo
 @OptIn(ExperimentalLayoutApi::class)
 internal fun <T> TextChoices(items: List<Pair<T, String>>, selected: T, onPick: (T) -> Unit) =
     // Stesso controllo dappertutto: pulsanti segmentati fino a quattro opzioni, oltre un elenco a tutta riga
-    ChoiceRow(null, items, selected, onPick)
+    ChoiceRow(null, items, selected, onSelect = onPick)
 
 /** Voce con pulsante radio: si tocca tutta la riga, che per TalkBack è un'unica scelta. */
 @Composable

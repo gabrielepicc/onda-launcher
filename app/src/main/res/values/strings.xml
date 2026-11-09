@@ -1020,10 +1020,6 @@
     <string name="widget_suggested">Suggested from your favorites</string>
     <string name="widget_no_results_query">No widget or app matches “%1$s”.</string>
     <string name="widget_details">%1$s · size %2$s (at least %3$d × %4$d dp). Tap Add to place it.</string>
-    <string name="popup_favorite_on">Favorite</string>
-    <string name="popup_favorite_off">Add to favorites</string>
-    <string name="popup_more">More</string>
-    <string name="popup_more_shortcuts">More shortcuts (%1$d)</string>
     <string name="opt_group_organize">Organize</string>
     <string name="opt_group_behavior">Behavior</string>
     <string name="opt_group_privacy">Privacy and wellbeing</string>
@@ -1073,4 +1069,5 @@
     <string name="search_suggestions_sub">Apps you open most from search, shown when the field is empty. Only the app and how often are counted, never what you type, and nothing leaves the phone or goes into backups.</string>
     <string name="search_history_clear">Clear search history</string>
     <string name="search_history_clear_confirm">Forget which apps you opened from search?</string>
+    <string name="more_options_ellipsis">More options…</string>
 </resources>

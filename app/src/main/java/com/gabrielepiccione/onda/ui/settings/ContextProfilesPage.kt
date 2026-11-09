@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.ui.components.OndaTextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +53,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -507,7 +507,7 @@ private fun ProfileEditor(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
-                OutlinedTextField(
+                OndaTextField(
                     value = p.name,
                     onValueChange = { p = p.copy(name = it) },
                     label = { Text(stringResource(R.string.ctx_name)) },
@@ -643,13 +643,13 @@ private fun TriggerEditor(trigger: Trigger, env: ContextEnvironment, onChange: (
         }
         when (trigger.type) {
             TriggerType.WIFI -> {
-                OutlinedTextField(trigger.text, { onChange(trigger.copy(text = it)) }, label = { Text(stringResource(R.string.ctx_wifi_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OndaTextField(trigger.text, { onChange(trigger.copy(text = it)) }, label = { Text(stringResource(R.string.ctx_wifi_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 TextButton(onClick = { env.currentWifi()?.let { onChange(trigger.copy(text = it)) } ?: env.requestLocation() }) {
                     Text(stringResource(R.string.ctx_use_current_wifi))
                 }
             }
             TriggerType.BLUETOOTH -> {
-                OutlinedTextField(trigger.text, { onChange(trigger.copy(text = it)) }, label = { Text(stringResource(R.string.ctx_bt_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OndaTextField(trigger.text, { onChange(trigger.copy(text = it)) }, label = { Text(stringResource(R.string.ctx_bt_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 val devices = remember { env.bondedDevices() }
                 if (devices.isEmpty()) {
                     TextButton(onClick = { env.requestBluetooth() }) { Text(stringResource(R.string.ctx_bt_permission)) }
@@ -699,7 +699,7 @@ private fun TriggerEditor(trigger: Trigger, env: ContextEnvironment, onChange: (
                 )
             }
             TriggerType.CALENDAR -> {
-                OutlinedTextField(trigger.text, { onChange(trigger.copy(text = it)) }, label = { Text(stringResource(R.string.ctx_calendar_word)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OndaTextField(trigger.text, { onChange(trigger.copy(text = it)) }, label = { Text(stringResource(R.string.ctx_calendar_word)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 Text(stringResource(R.string.ctx_calendar_hint), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             }
             TriggerType.CHARGING, TriggerType.HEADPHONES, TriggerType.FOCUS -> Unit
@@ -727,7 +727,7 @@ internal fun AppPicker(apps: List<AppInfo>, onPick: (AppInfo) -> Unit, onDismiss
         title = { Text(stringResource(R.string.ctx_add_app)) },
         text = {
             Column {
-                OutlinedTextField(query, { query = it }, singleLine = true, placeholder = { Text(stringResource(R.string.search)) }, modifier = Modifier.fillMaxWidth())
+                OndaTextField(query, { query = it }, singleLine = true, pill = true, placeholder = { Text(stringResource(R.string.search)) }, modifier = Modifier.fillMaxWidth())
                 LazyColumn(Modifier.heightIn(max = 360.dp)) {
                     items(shown, key = { it.key }) { app ->
                         Row(

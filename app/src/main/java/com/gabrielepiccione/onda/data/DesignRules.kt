@@ -7,9 +7,22 @@ object DesignRules {
     /** Come mostrare una scelta: pulsanti segmentati con poche opzioni, altrimenti un elenco. */
     enum class ChoiceStyle { SEGMENTED, LIST }
 
-    const val MAX_SEGMENTS = 4
+    /** Pulsanti segmentati solo con poche opzioni ed etichette corte: altrimenti il testo si tronca. */
+    const val MAX_SEGMENTS = 3
+    const val MAX_SEGMENT_LABEL = 10
 
-    fun choiceStyle(options: Int): ChoiceStyle = if (options in 1..MAX_SEGMENTS) ChoiceStyle.SEGMENTED else ChoiceStyle.LIST
+    /** Scala del carattere per cui le etichette devono restare intere. */
+    const val FONT_SCALE_MARGIN = 1.3f
+
+    /**
+     * Segmentato solo con 1–3 opzioni ed etichette di al più 10 caratteri (misurate con margine per la scala 1,3);
+     * con un carattere più grande di 1,3 il limite si accorcia in proporzione.
+     */
+    fun choiceStyle(labels: List<String>, fontScale: Float = 1f): ChoiceStyle {
+        val limit = if (fontScale <= FONT_SCALE_MARGIN) MAX_SEGMENT_LABEL else (MAX_SEGMENT_LABEL * FONT_SCALE_MARGIN / fontScale).toInt()
+        val fits = labels.size in 1..MAX_SEGMENTS && labels.all { it.length <= limit }
+        return if (fits) ChoiceStyle.SEGMENTED else ChoiceStyle.LIST
+    }
 
     /** Ordine standard dei gruppi in ogni menu: dall'identità al pericolo, sempre in fondo. */
     enum class MenuGroup { IDENTITY, FREQUENT, APPEARANCE, BEHAVIOR, ADVANCED, DANGER }

@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +68,7 @@ fun UsageBreakerDialog(
         },
         title = { Text(stringResource(if (overLimit) R.string.limit_reached_title else R.string.breaker_title), textAlign = TextAlign.Center) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(stringResource(R.string.breaker_body, app.label), style = MaterialTheme.typography.bodyLarge)
                 Text(stringResource(R.string.breaker_opens, opensToday), style = MaterialTheme.typography.bodyMedium)
                 if (usedTodayMs != null) {

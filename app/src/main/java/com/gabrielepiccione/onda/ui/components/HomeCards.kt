@@ -410,7 +410,7 @@ private fun FullMediaCard(
                 Text(
                     media.title,
                     color = colors.onWallpaper,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = PlayerLayout.TITLE_SP.sp, fontWeight = FontWeight.SemiBold),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(),
@@ -419,7 +419,7 @@ private fun FullMediaCard(
                     Text(
                         media.artist,
                         color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = PlayerLayout.ARTIST_SP.sp),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.fillMaxWidth(),
@@ -527,7 +527,7 @@ private fun CompactMediaCard(
             Text(
                 media.title,
                 color = colors.onWallpaper,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 19.sp),
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = PlayerLayout.TITLE_SP.sp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth(),
@@ -536,7 +536,7 @@ private fun CompactMediaCard(
                 Text(
                     media.artist,
                     color = colors.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = PlayerLayout.ARTIST_SP.sp),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(),

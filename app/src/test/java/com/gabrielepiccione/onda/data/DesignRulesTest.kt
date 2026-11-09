@@ -7,11 +7,19 @@ import org.junit.Test
 
 class DesignRulesTest {
     @Test
-    fun fewOptionsBecomeSegmentedButtons() {
-        assertEquals(DesignRules.ChoiceStyle.SEGMENTED, DesignRules.choiceStyle(2))
-        assertEquals(DesignRules.ChoiceStyle.SEGMENTED, DesignRules.choiceStyle(4))
-        assertEquals(DesignRules.ChoiceStyle.LIST, DesignRules.choiceStyle(5))
-        assertEquals(DesignRules.ChoiceStyle.LIST, DesignRules.choiceStyle(0))
+    fun segmentedOnlyWithFewShortLabels() {
+        val seg = DesignRules.ChoiceStyle.SEGMENTED
+        val list = DesignRules.ChoiceStyle.LIST
+        assertEquals(seg, DesignRules.choiceStyle(listOf("Spento", "Colori")))
+        assertEquals(seg, DesignRules.choiceStyle(listOf("Uno", "Due", "Tre")))
+        // Quattro opzioni o etichette lunghe: elenco
+        assertEquals(list, DesignRules.choiceStyle(listOf("A", "B", "C", "D")))
+        assertEquals(list, DesignRules.choiceStyle(listOf("Off", "To the bottom")))
+        assertEquals(list, DesignRules.choiceStyle(emptyList()))
+        // Dieci caratteri vanno bene fino alla scala 1,3, oltre no
+        assertEquals(seg, DesignRules.choiceStyle(listOf("Automatica", "Manuale"), fontScale = 1.3f))
+        assertEquals(list, DesignRules.choiceStyle(listOf("Automatica", "Manuale"), fontScale = 1.6f))
+        assertEquals(seg, DesignRules.choiceStyle(listOf("Sì", "No"), fontScale = 2f))
     }
 
     @Test

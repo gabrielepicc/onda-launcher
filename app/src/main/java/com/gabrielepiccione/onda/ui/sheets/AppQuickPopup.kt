@@ -2,8 +2,6 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.sheets
 
-import androidx.compose.material3.TextButton
-import androidx.compose.material.icons.filled.MoreHoriz
 import com.gabrielepiccione.onda.data.PopupLayout
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -67,10 +65,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.horizontalScroll
 import com.gabrielepiccione.onda.data.WidgetStack
 import com.gabrielepiccione.onda.ui.components.WidgetStackCard
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -85,14 +80,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -360,23 +352,17 @@ fun AppQuickPopup(
                         Text(stringResource(R.string.popup_open_app), color = colors.onWallpaperMuted, style = MaterialTheme.typography.labelSmall)
                     }
                 }
-            }
-
-            // Tre azioni tonali con etichetta, al posto del menu a tendina che copriva le scorciatoie
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.cascade(content, 0).fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-            ) {
-                PopupAction(
-                    if (app.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
-                    stringResource(if (app.isFavorite) R.string.popup_favorite_on else R.string.popup_favorite_off),
-                    Modifier.weight(1f),
-                ) { onToggleFavorite(); dismiss() }
-                PopupAction(Icons.Filled.Info, stringResource(R.string.app_info), Modifier.weight(1f)) { onInfo(); dismiss() }
-                PopupAction(Icons.Filled.MoreHoriz, stringResource(R.string.popup_more), Modifier.weight(1f)) { onMoreOptions(); dismiss() }
-            }
-            onStopSuggesting?.let { stop ->
-                TextButton(onClick = { stop(); dismiss() }, modifier = Modifier.padding(horizontal = 12.dp)) { Text(stringResource(R.string.suggested_stop)) }
+                // Tutte le altre azioni in un solo menu, sulla riga dell'intestazione
+                AppPopupMenuButton(
+                    appLabel = app.label,
+                    isFavorite = app.isFavorite,
+                    onToggleFavorite = { onToggleFavorite(); dismiss() },
+                    onInfo = { onInfo(); dismiss() },
+                    onEditPopup = { onEdit(); dismiss() },
+                    onMoreOptions = { onMoreOptions(); dismiss() },
+                    onUninstall = { onUninstall(); dismiss() },
+                    onStopSuggesting = onStopSuggesting?.let { stop -> { stop(); dismiss() } },
+                )
             }
 
             if (notifications.isNotEmpty()) Column(Modifier.cascade(content, 1)) {
@@ -401,13 +387,12 @@ fun AppQuickPopup(
             // Con notifiche il popup mostra solo quelle; le scorciatoie tornano quando non ce ne sono
             val shortcutsShown = PopupLayout.showShortcuts(notifications.isNotEmpty(), collapseExtras)
             val folded = collapseExtras && notifications.isNotEmpty() && widgetIds.isNotEmpty()
-            var moreShortcuts by remember(app.key) { mutableStateOf(false) }
             var extrasOpen by remember(app.key) { mutableStateOf(false) }
             val shortcutsBlock: @Composable () -> Unit = {
             if (shortcutsShown && shortcuts.isNotEmpty()) Column(Modifier.cascade(content, 2)) {
                 SectionLabel(R.string.popup_section_shortcuts)
                 Column(Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(LocalOndaTokens.current.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
-                    shortcuts.take(PopupLayout.visibleShortcuts(shortcuts.size, moreShortcuts)).forEach { sc ->
+                    shortcuts.forEach { sc ->
                         val icon = remember(sc.id) { shortcutIcon(sc) }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -424,11 +409,6 @@ fun AppQuickPopup(
                             }
                             Spacer(Modifier.width(12.dp))
                             Text((sc.shortLabel ?: sc.longLabel ?: "").toString(), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
-                    if (PopupLayout.hasMoreShortcuts(shortcuts.size, moreShortcuts)) {
-                        TextButton(onClick = { moreShortcuts = true }, modifier = Modifier.padding(horizontal = 4.dp)) {
-                            Text(stringResource(R.string.popup_more_shortcuts, shortcuts.size - PopupLayout.MAX_SHORTCUTS))
                         }
                     }
                 }
@@ -561,27 +541,6 @@ private fun SectionLabel(@StringRes res: Int) {
         style = MaterialTheme.typography.labelLarge,
         modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp),
     )
-}
-
-/** Azione del popup: icona in un contenitore tonale a pillola, etichetta sotto su una riga, area ≥48 dp. */
-@Composable
-private fun PopupAction(icon: ImageVector, label: String, modifier: Modifier, onClick: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .heightIn(min = 64.dp)
-            .clip(LocalOndaTokens.current.shapes.medium)
-            .clickable(onClick = onClick)
-            .semantics(mergeDescendants = true) { contentDescription = label }
-            .padding(vertical = 6.dp),
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(width = 56.dp, height = 32.dp).clip(CircleShape).background(scheme.secondaryContainer),
-        ) { Icon(icon, null, tint = scheme.onSecondaryContainer, modifier = Modifier.size(20.dp)) }
-        Text(label, color = LocalOndaColors.current.onWallpaper, style = MaterialTheme.typography.labelMedium, softWrap = false, modifier = Modifier.padding(top = 4.dp))
-    }
 }
 
 /**

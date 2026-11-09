@@ -4,6 +4,12 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Correzioni UI (gruppo A)**:
+  - Popup dell'app di nuovo com'era (intestazione, notifiche da scorrere via, scorciatoie quando non ci sono notifiche); le azioni stanno in un solo ⋮ accanto al nome: Aggiungi ai preferiti, Info app, Modifica popup, Altre opzioni…, e in fondo Disinstalla (in rosso, con conferma).
+  - Player: titolo 19 sp e artista 15 sp in tutte le varianti (compatto, esteso, schede), con un test che lo controlla.
+  - Automazioni: la barra Elimina / Annulla / Salva è fissa in basso sopra la barra di navigazione e la tastiera, e non copre più il contenuto.
+  - Campi di testo in stile Material You (pieni, angoli di 16 dp, bordo colorato a fuoco); i campi di ricerca sono a pillola.
+  - Scelte: pulsanti segmentati solo con al più tre etichette corte, altrimenti un elenco con il titolo intero; sotto il titolo si legge sempre il valore scelto. Niente più etichette troncate, anche con il carattere grande.
 - **Impostazioni → Home in ordine di compito (blocco 8, area Home)**: prima Preferiti e Blocchi (le cose che si cambiano più spesso), poi aspetto (disposizione, spaziatura, altezza sullo schermo), infine comportamento (widget, notifiche, luci). Nessuna impostazione cambia.
 - **Ricerca: app più cercate (blocco 9)**: a campo vuoto la sezione «Cercate spesso» mostra le app aperte più spesso dalla ricerca (tocco o Invio), con un calo nel tempo (emivita di 14 giorni) e almeno 2 ricerche; senza abbastanza dati si vedono le «Usate di frequente». Escluse app nascoste, protette e dello Spazio privato. Lo stesso punteggio decide a pari pertinenza mentre scrivi. Si salva solo il pacchetto, il conteggio e la data, sul telefono e fuori dai backup. Impostazioni → Ricerca: «Suggerimenti nella ricerca» (0–8, predefinito 4) e «Cancella cronologia delle ricerche». I prefissi (= @ /) restano in una riga compatta in fondo.
 - **Impostazioni coerenti (blocco 8, area Impostazioni)**: tutte le scelte a opzioni (sfondo musicale, immagini nelle notifiche, motore di ricerca, animazione di apertura, scala di grigi, promemoria) usano lo stesso controllo: pulsanti segmentati fino a quattro opzioni, elenco a tutta riga oltre. Prima c'erano chip, griglie e pulsanti radio mescolati.

@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.ui.components.OndaTextField
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import android.content.pm.ShortcutInfo
@@ -11,19 +12,15 @@ import com.gabrielepiccione.onda.ui.components.actionIcon
 import com.gabrielepiccione.onda.data.AutomationOverrides
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Dialog
+import com.gabrielepiccione.onda.ui.components.ActionBarScaffold
 import androidx.compose.ui.draw.clip
-import androidx.compose.material3.Surface
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
@@ -34,14 +31,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -199,127 +193,115 @@ private fun AutomationEditor(
     val locale = Locale.getDefault()
     val profileName: (String) -> String? = { id -> settings.contextProfiles.firstOrNull { it.id == id }?.name }
 
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(color = scheme.surface, modifier = Modifier.fillMaxSize()) {
-            Column(Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
-                Column(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(stringResource(R.string.auto_edit_title), style = MaterialTheme.typography.headlineSmall, color = colors.onWallpaper)
-                    OutlinedTextField(
-                        value = a.name,
-                        onValueChange = { a = a.copy(name = it) },
-                        label = { Text(stringResource(R.string.auto_name)) },
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+        ActionBarScaffold(
+            bottomBar = {
+                // Elimina a sinistra (colore d'errore), Annulla e Salva a destra: testi sempre interi
+                TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = scheme.error)) {
+                    Text(stringResource(R.string.auto_delete), softWrap = false)
+                }
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), softWrap = false) }
+                Button(onClick = { onSave(a.copy(name = a.name.trim().ifBlank { initial.name })) }) { Text(stringResource(R.string.auto_save), softWrap = false) }
+            },
+        ) {
+            Text(stringResource(R.string.auto_edit_title), style = MaterialTheme.typography.headlineSmall, color = colors.onWallpaper)
+            OndaTextField(
+                value = a.name,
+                onValueChange = { a = a.copy(name = it) },
+                label = { Text(stringResource(R.string.auto_name)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            EditorCard(stringResource(R.string.auto_when)) {
+                TRIGGER_GROUPS.forEach { (groupRes, triggers) ->
+                    Text(stringResource(groupRes), style = MaterialTheme.typography.labelMedium, color = colors.onWallpaperMuted)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        triggers.forEach { t ->
+                            FilterChip(selected = a.trigger == t, onClick = { a = a.copy(trigger = t) }, label = { Text(stringResource(t.labelRes)) })
+                        }
+                    }
+                }
+                if (a.trigger == AutomationTrigger.DEVICE_ON || a.trigger == AutomationTrigger.DEVICE_OFF) {
+                    OndaTextField(
+                        value = a.device,
+                        onValueChange = { a = a.copy(device = it) },
+                        label = { Text(stringResource(R.string.auto_device)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
-
-                    EditorCard(stringResource(R.string.auto_when)) {
-                        TRIGGER_GROUPS.forEach { (groupRes, triggers) ->
-                            Text(stringResource(groupRes), style = MaterialTheme.typography.labelMedium, color = colors.onWallpaperMuted)
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                triggers.forEach { t ->
-                                    FilterChip(selected = a.trigger == t, onClick = { a = a.copy(trigger = t) }, label = { Text(stringResource(t.labelRes)) })
-                                }
-                            }
+                    if (devices.isNotEmpty()) {
+                        SettingsSupporting(stringResource(R.string.auto_device_pick))
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            devices.forEach { d -> FilterChip(selected = a.device == d, onClick = { a = a.copy(device = d) }, label = { Text(d) }) }
                         }
-                        if (a.trigger == AutomationTrigger.DEVICE_ON || a.trigger == AutomationTrigger.DEVICE_OFF) {
-                            OutlinedTextField(
-                                value = a.device,
-                                onValueChange = { a = a.copy(device = it) },
-                                label = { Text(stringResource(R.string.auto_device)) },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
+                    }
+                }
+                if (a.trigger == AutomationTrigger.TIME) {
+                    ValueSlider(stringResource(R.string.auto_hour), "%02d".format(a.minute / 60), (a.minute / 60).toFloat(), 22f, 0f..23f, steps = 22) { v ->
+                        a = a.copy(minute = v.toInt() * 60 + a.minute % 60)
+                    }
+                    ValueSlider(stringResource(R.string.auto_minute), "%02d".format(a.minute % 60), (a.minute % 60).toFloat(), 0f, 0f..55f, steps = 10) { v ->
+                        a = a.copy(minute = a.minute / 60 * 60 + (v / 5).toInt() * 5)
+                    }
+                    SettingsSupporting(stringResource(R.string.auto_time, "%02d:%02d".format(a.minute / 60, a.minute % 60)))
+                }
+                if (a.trigger.isTimed) {
+                    SettingsSupporting(stringResource(R.string.auto_days_label))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        (1..7).forEach { d ->
+                            FilterChip(
+                                selected = d in a.days,
+                                onClick = { a = a.copy(days = if (d in a.days) a.days - d else a.days + d) },
+                                label = { Text(DayOfWeek.of(d).getDisplayName(TextStyle.SHORT, locale)) },
                             )
-                            if (devices.isNotEmpty()) {
-                                SettingsSupporting(stringResource(R.string.auto_device_pick))
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    devices.forEach { d -> FilterChip(selected = a.device == d, onClick = { a = a.copy(device = d) }, label = { Text(d) }) }
-                                }
-                            }
-                        }
-                        if (a.trigger == AutomationTrigger.TIME) {
-                            ValueSlider(stringResource(R.string.auto_hour), "%02d".format(a.minute / 60), (a.minute / 60).toFloat(), 22f, 0f..23f, steps = 22) { v ->
-                                a = a.copy(minute = v.toInt() * 60 + a.minute % 60)
-                            }
-                            ValueSlider(stringResource(R.string.auto_minute), "%02d".format(a.minute % 60), (a.minute % 60).toFloat(), 0f, 0f..55f, steps = 10) { v ->
-                                a = a.copy(minute = a.minute / 60 * 60 + (v / 5).toInt() * 5)
-                            }
-                            SettingsSupporting(stringResource(R.string.auto_time, "%02d:%02d".format(a.minute / 60, a.minute % 60)))
-                        }
-                        if (a.trigger.isTimed) {
-                            SettingsSupporting(stringResource(R.string.auto_days_label))
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                (1..7).forEach { d ->
-                                    FilterChip(
-                                        selected = d in a.days,
-                                        onClick = { a = a.copy(days = if (d in a.days) a.days - d else a.days + d) },
-                                        label = { Text(DayOfWeek.of(d).getDisplayName(TextStyle.SHORT, locale)) },
-                                    )
-                                }
-                            }
                         }
                     }
+                }
+            }
 
-                    EditorCard(stringResource(R.string.auto_do)) {
-                        if (a.actions.isEmpty()) {
-                            Text(stringResource(R.string.auto_actions_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
-                        }
-                        a.actions.forEach { encoded ->
-                            val choice = Actions.decode(encoded)
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                                TonalIcon(actionIcon(choice.action))
-                                Text(
-                                    actionSummary(choice, allApps, "", profileName),
-                                    color = colors.onWallpaper,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
-                                )
-                                IconButton(onClick = { a = a.copy(actions = a.actions - encoded) }) {
-                                    Icon(Icons.Filled.Delete, stringResource(R.string.remove), tint = colors.onWallpaperMuted)
-                                }
-                            }
-                        }
-                        FilledTonalButton(onClick = { pickingAction = true }, modifier = Modifier.heightIn(min = 48.dp)) {
-                            Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp))
-                            Text(stringResource(R.string.auto_add_action), modifier = Modifier.padding(start = 8.dp))
-                        }
-                        if (settings.contextProfiles.isNotEmpty()) {
-                            SettingsSupporting(stringResource(R.string.auto_profile))
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(selected = a.profile.isBlank(), onClick = { a = a.copy(profile = "") }, label = { Text(stringResource(R.string.auto_profile_none)) })
-                                settings.contextProfiles.forEach { p ->
-                                    FilterChip(selected = a.profile == p.id, onClick = { a = a.copy(profile = p.id) }, label = { Text(p.name) })
-                                }
-                            }
-                        }
-                    }
-
-                    EditorCard(stringResource(R.string.auto_reminder_title)) {
-                        OutlinedTextField(
-                            value = a.reminder,
-                            onValueChange = { a = a.copy(reminder = it) },
-                            label = { Text(stringResource(R.string.auto_reminder)) },
-                            modifier = Modifier.fillMaxWidth(),
+            EditorCard(stringResource(R.string.auto_do)) {
+                if (a.actions.isEmpty()) {
+                    Text(stringResource(R.string.auto_actions_none), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+                }
+                a.actions.forEach { encoded ->
+                    val choice = Actions.decode(encoded)
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                        TonalIcon(actionIcon(choice.action))
+                        Text(
+                            actionSummary(choice, allApps, "", profileName),
+                            color = colors.onWallpaper,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
                         )
+                        IconButton(onClick = { a = a.copy(actions = a.actions - encoded) }) {
+                            Icon(Icons.Filled.Delete, stringResource(R.string.remove), tint = colors.onWallpaperMuted)
+                        }
                     }
                 }
+                FilledTonalButton(onClick = { pickingAction = true }, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp))
+                    Text(stringResource(R.string.auto_add_action), modifier = Modifier.padding(start = 8.dp))
+                }
+                if (settings.contextProfiles.isNotEmpty()) {
+                    SettingsSupporting(stringResource(R.string.auto_profile))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(selected = a.profile.isBlank(), onClick = { a = a.copy(profile = "") }, label = { Text(stringResource(R.string.auto_profile_none)) })
+                        settings.contextProfiles.forEach { p ->
+                            FilterChip(selected = a.profile == p.id, onClick = { a = a.copy(profile = p.id) }, label = { Text(p.name) })
+                        }
+                    }
+                }
+            }
 
-                // Barra in basso: Elimina a sinistra (colore d'errore), Annulla e Salva a destra, ben separati
-                HorizontalDivider(color = scheme.outlineVariant)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = scheme.error)) {
-                        Text(stringResource(R.string.auto_delete))
-                    }
-                    Spacer(Modifier.weight(1f))
-                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
-                    Button(onClick = { onSave(a.copy(name = a.name.trim().ifBlank { initial.name })) }) { Text(stringResource(R.string.auto_save)) }
-                }
+            EditorCard(stringResource(R.string.auto_reminder_title)) {
+                OndaTextField(
+                    value = a.reminder,
+                    onValueChange = { a = a.copy(reminder = it) },
+                    label = { Text(stringResource(R.string.auto_reminder)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }

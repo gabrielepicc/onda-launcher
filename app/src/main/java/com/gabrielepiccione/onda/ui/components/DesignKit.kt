@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -164,15 +166,29 @@ fun SliderRow(
     onChange: (Float) -> Unit,
 ) = ValueSlider(label, valueText, value, default, range, DesignRules.sliderSteps(range.start, range.endInclusive, step), onChange = onChange)
 
-/** Scelta fra opzioni: pulsanti segmentati fino a quattro, altrimenti un elenco a tutta riga (mai lunghi elenchi di radio). */
+/**
+ * Scelta fra opzioni: pulsanti segmentati con al più tre etichette corte, altrimenti un elenco a tutta riga
+ * (titolo intero e [descriptions] facoltative). Sotto il titolo si legge sempre il valore scelto.
+ */
 @Composable
-fun <T> ChoiceRow(label: String?, options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
+fun <T> ChoiceRow(
+    label: String?,
+    options: List<Pair<T, String>>,
+    selected: T,
+    descriptions: Map<T, String> = emptyMap(),
+    onSelect: (T) -> Unit,
+) {
     val colors = LocalOndaColors.current
+    val fontScale = LocalDensity.current.fontScale
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         if (label != null) {
-            Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(bottom = 8.dp))
+            Text(label, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+            options.firstOrNull { it.first == selected }?.let { (_, text) ->
+                Text(text, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
+            }
+            Spacer(Modifier.height(8.dp))
         }
-        when (DesignRules.choiceStyle(options.size)) {
+        when (DesignRules.choiceStyle(options.map { it.second }, fontScale)) {
             DesignRules.ChoiceStyle.SEGMENTED -> SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 options.forEachIndexed { index, (value, text) ->
                     SegmentedButton(
@@ -195,7 +211,10 @@ fun <T> ChoiceRow(label: String?, options: List<Pair<T, String>>, selected: T, o
                 ) {
                     RadioButton(selected = value == selected, onClick = null)
                     Spacer(Modifier.width(16.dp))
-                    Text(text, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                    Column(Modifier.weight(1f)) {
+                        Text(text, color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                        descriptions[value]?.let { Text(it, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium) }
+                    }
                 }
             }
         }
