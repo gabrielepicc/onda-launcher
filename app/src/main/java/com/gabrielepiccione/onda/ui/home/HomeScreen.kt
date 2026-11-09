@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.mutableIntStateOf
 import com.gabrielepiccione.onda.data.ReturnPolicy
 import androidx.compose.animation.ExitTransition
