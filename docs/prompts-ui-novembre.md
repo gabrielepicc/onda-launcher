@@ -110,3 +110,61 @@ Oggi lo stato vuoto della ricerca mostra "Usate di frequente" (8 app). Cambia co
 6. Impostazioni → Ricerca: pulsante "Cancella cronologia delle ricerche" (con conferma). La cronologia NON entra nel backup.
 7. Il testo "Tip: = per calcolare, @ per i contatti, / per le impostazioni" resta sotto la lista, in una riga più compatta.
 8. Stringhe in values/ e values-it/, target ≥48dp. Roadmap e CHANGELOG a CI verde. Risposta breve: cosa provare sul telefono.
+
+---
+
+AGGIORNAMENTO AL DOCUMENTO UI (2026-11-09). Aggiungi questa sezione a docs/prompts-ui-novembre.md (PR docs) e poi lavora per gruppi.
+Regole come sempre: grep prima, codice nuovo in file nuovi, stringhe in values/ e values-it/, target ≥48dp, test sulla logica pura,
+una PR per gruppo da main aggiornato, merge con CI verde, roadmap e CHANGELOG, risposta breve.
+
+GRUPPO A – Correzioni (una PR "Correzioni UI")
+A1. Popup dell'app: HO SBAGLIATO A MODIFICARLO. Ripristina il popup com'era (intestazione, notifiche con swipe per eliminare, scorciatoie solo
+    se non ci sono notifiche). Cambia SOLO il menu:
+    - Via la fila dei tre pulsanti (Preferiti / Info app / Altro).
+    - Un solo pulsante ⋮ in alto a destra, sulla stessa riga dell'intestazione (icona+nome dell'app), area tocco ≥48dp.
+    - Il ⋮ apre un menu M3 ancorato al pulsante, allineato a destra, larghezza che si adatta al testo più lungo (mai testo troncato),
+      voci da 48dp con icona: Aggiungi ai preferiti (stella, riempita se già preferita), Info app, Modifica popup, Altre opzioni…,
+      divisore, Disinstalla (colore errore, con conferma). Superficie tonale con angoli morbidi (16–28dp), si chiude toccando fuori.
+      Il menu si apre verso il basso, o verso l'alto se non c'è spazio, e non copre l'intestazione.
+    - "Altre opzioni…" apre il pannello a gruppi già fatto (4b), che non cambia.
+A2. Player: i caratteri sono di nuovo troppo grandi. Cerca con grep tutte le varianti del player (compatto, esteso, schede del carosello,
+    schermata di blocco se esiste) e metti titolo 19sp e artista 15sp (valori del PR #77 per il compatto), definiti come costanti in PlayerLayout
+    con un test che ne verifica l'uso. Nessuna variante deve usare typography.titleLarge/bodyLarge per titolo/artista. Mantieni angoli concentrici.
+A3. Pagina Automazioni tagliata in basso: la barra Elimina/Annulla/Salva è tagliata dal bordo e copre il contenuto. Usa uno Scaffold con barra
+    in basso fissa che rispetta navigationBarsPadding e imePadding, contenuto scorrevole con padding finale pari all'altezza della barra,
+    pulsanti sempre interi (Salva pieno, Annulla e Elimina testo). Controlla gli STESSI problemi in tutte le schermate/fogli con barra in basso
+    o contenuto lungo (grep: Column senza verticalScroll, barre azioni senza insets) e correggili.
+A4. Campi di testo squadrati (OutlinedTextField con angoli quasi retti): non è lo stile Material You. Crea in ui/components un OndaTextField
+    (campo pieno con superficie surfaceContainerHigh, angoli 16dp, senza linea sotto, etichetta che sale, bordo primary di 2dp a fuoco,
+    stato errore e testo di supporto) e sostituisci TUTTI i TextField/OutlinedTextField del progetto (grep). Campo di ricerca: forma a pillola.
+A5. Selettori tagliati: i SegmentedButton con 4 opzioni o etichette lunghe troncano il testo ("Colours", "Colours", "To the b…") e non si capisce
+    cosa è selezionato. Regola: SegmentedButton solo con ≤3 opzioni e etichette ≤10 caratteri; altrimenti ChoiceList (una riga per opzione con
+    segno di spunta/radio, titolo intero e descrizione). Funzione pura che sceglie il layout (conteggio + lunghezza etichette, margine per scala
+    del carattere 1.3), con test. Passa tutti i selettori esistenti (grep SegmentedButton, SingleChoiceSegmentedButtonRow, FilterChip in riga) e
+    mostra sempre anche il valore scelto come testo di supporto del titolo. Etichette mai troncate a scala 1.3.
+
+GRUPPO B – Widget che compaiono con regole (PR "Widget con regole di visibilità")
+Obiettivo: "se accade X, mostra il widget Y", come già avviene per il widget delle luci, ma per qualsiasi widget.
+B1. Collocazione (per ogni widget della home): Sotto l'orologio (widget classico, nell'ordine dei blocchi) | Accanto all'orologio (nella stessa riga,
+    dal lato libero come per le luci) | Al posto dell'orologio (mentre il widget è visibile l'orologio non c'è e ricompare da solo quando il widget si nasconde).
+    Le due collocazioni speciali hanno un solo widget alla volta: se più regole sono attive vince il primo in elenco (ordine modificabile).
+    La regola delle luci vale comunque anche quando l'orologio è sostituito da un altro widget.
+B2. Visibilità: Sempre | Con regole. Le regole sono condizioni di STATO con inizio e fine (es. "dal collegamento delle cuffie allo scollegamento",
+    "durante la ricarica", "Bluetooth dell'auto connesso", "arrivo a casa → esco di casa", "tra le 8 e le 18", "da alba a tramonto",
+    "profilo X attivo", "musica in riproduzione"). Riusa il catalogo di condizioni delle automazioni (nessun catalogo duplicato).
+B3. Doppio ingresso, un solo meccanismo: (a) nel menu del widget una riga "Mostra solo quando…" che apre lo stesso editor delle automazioni;
+    (b) nelle automazioni due nuove azioni "Mostra widget" (scelta del widget + collocazione) e "Nascondi widget", con "Ripristina al termine" attivo
+    di default. Entrambe producono sostituzioni nello strato AutomationOverrides (blocco 6 del documento): la visibilità efficace
+    = impostazione salvata + sostituzioni attive; niente modifica delle impostazioni salvate, tutto sopravvive al riavvio.
+B4. Se per le luci esiste già un campo dedicato, portalo nel modello generico mantenendo compatibilità: CURRENT_SCHEMA + migrazione + test.
+B5. Dopo la scelta di un widget nel selettore (blocco 5), chiedi dove metterlo (sotto / accanto / al posto) e se mostrarlo sempre o con regole.
+B6. Logica pura testata in data/ (es. WidgetVisibility): stato→widget visibili, priorità, ripristino, conflitti, regola scaduta.
+
+GRUPPO C – Widget in caroselli o in righe, a scelta dell'utente (PR "Widget: carosello o righe")
+C1. Un gruppo di widget può essere disposto come Carosello orizzontale (come oggi con "Impila", puntini di pagina, altezza uniforme,
+    il gesto orizzontale ha precedenza e non apre mai il menu di modifica) oppure come Righe separate una sotto l'altra.
+C2. Nel menu del widget/gruppo: "Disposizione" come ChoiceRow (Carosello | Righe), "Impila un altro widget", "Separa il gruppo in righe"
+    e "Raggruppa in un carosello". Si possono avere più gruppi: ognuno può essere un carosello o un insieme di righe.
+C3. Anche il riordino della home (trascinamento) trattta il gruppo come un'unica voce e permette di spostare i widget tra i gruppi.
+C4. Stesse regole nelle cartelle (WidgetStackCard). Logica di raggruppamento/separazione pura e testata; migrazione solo se cambia
+    la struttura salvata (CURRENT_SCHEMA + test, ripristino dei vecchi impilamenti).
