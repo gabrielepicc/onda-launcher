@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.data.ConversationSummary
 import com.gabrielepiccione.onda.data.NotificationImages
 import com.gabrielepiccione.onda.ui.theme.LocalNotificationImages
@@ -115,7 +116,8 @@ fun NotificationCard(
         Column(
             Modifier
                 .fillMaxWidth()
-                // Angoli retti e margini da 16 dp: il testo non tocca il bordo
+                // Angoli morbidi (token medium) e margini da 16 dp: il testo non tocca il bordo
+                .clip(LocalOndaTokens.current.shapes.medium)
                 .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.95f))
                 .clickable(onClick = onClick)
                 .padding(start = edge, top = 10.dp, bottom = 8.dp, end = edge)

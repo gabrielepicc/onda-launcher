@@ -4,7 +4,7 @@ package com.gabrielepiccione.onda.data
 
 /**
  * Regole di impaginazione delle card di notifica (popup, riepilogo e card in home), senza dipendenze Android
- * (testabili su JVM): angoli retti, margini che tengono il testo lontano dal bordo, titoli su più righe.
+ * (testabili su JVM): angoli morbidi, margini che tengono il testo lontano dal bordo, titoli su più righe.
  */
 object NotificationLayout {
     /** Margine orizzontale minimo tra il bordo della card e il testo, in dp. */

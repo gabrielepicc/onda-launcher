@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.sheets
 
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.ui.components.OndaChip
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -377,12 +378,13 @@ internal fun CompactConversation(
 ) {
     val colors = LocalOndaColors.current
     val edge = NotificationLayout.horizontalPaddingDp(NotificationLayout.MIN_HORIZONTAL_PADDING_DP).dp
-    // Angoli retti e margini da 16 dp: il testo non tocca mai il bordo. Si elimina anche scorrendo di lato.
+    // Angoli morbidi (token medium) e margini da 16 dp: il testo non tocca mai il bordo. Si elimina anche scorrendo di lato.
     SwipeAwayCard(enabled = NotificationLayout.canSwipeAway(item.clearable), onDismiss = onDismiss) {
     Column(
         Modifier
             .fillMaxWidth()
-            // Superficie tonale alta, angoli retti (il testo non tocca il bordo)
+            // Superficie tonale alta con angoli morbidi: i margini da 16 dp tengono il testo lontano dal bordo
+            .clip(LocalOndaTokens.current.shapes.medium)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .clickable(onClick = onOpen)
             .padding(start = edge, top = 4.dp, end = edge, bottom = 8.dp)

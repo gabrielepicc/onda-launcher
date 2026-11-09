@@ -33,9 +33,9 @@ import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
 import com.gabrielepiccione.onda.data.NotificationDigest
 import com.gabrielepiccione.onda.data.NotificationItem
-import androidx.compose.ui.graphics.RectangleShape
 import com.gabrielepiccione.onda.data.NotificationLayout
 import com.gabrielepiccione.onda.ui.theme.LocalOndaColors
+import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 
 /** Blocco della home: quante notifiche ci sono e di quali app. */
 @Composable
@@ -48,8 +48,8 @@ fun NotificationSummaryCard(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalOndaColors.current
-    // Angoli retti: il testo non viene tagliato dal raggio
-    val shape = RectangleShape
+    // Angoli morbidi (token medium): i margini da 18 dp tengono il testo lontano dal raggio
+    val shape = LocalOndaTokens.current.shapes.medium
     Column(
         modifier
             .fillMaxWidth()
