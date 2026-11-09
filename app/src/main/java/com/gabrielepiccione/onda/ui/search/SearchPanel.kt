@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.search
 
+import androidx.annotation.StringRes
 import com.gabrielepiccione.onda.ui.components.TonalIcon
 import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.data.SettingsSearch
@@ -63,7 +64,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.SearchResults
@@ -77,6 +77,8 @@ import com.gabrielepiccione.onda.data.ContactHit
 internal fun SearchPanel(
     results: SearchResults,
     suggestions: List<AppInfo>,
+    /** «Cercate spesso» oppure, come ripiego, «Usate di frequente». */
+    @StringRes suggestionsTitle: Int = R.string.search_frequent,
     showIcons: Boolean,
     themedIcons: Boolean,
     contactsPermission: Boolean,
@@ -185,7 +187,7 @@ internal fun SearchPanel(
 
         LazyColumn(Modifier.fillMaxSize()) {
             if (results.query.isBlank() && suggestions.isNotEmpty()) {
-                item(key = "sugg_label") { SectionLabel(stringResource(R.string.frequent_apps)) }
+                item(key = "sugg_label") { SectionLabel(stringResource(suggestionsTitle)) }
                 items(suggestions, key = { "s_" + it.key }) { app ->
                     AppListRow(
                         app = app,
@@ -264,11 +266,12 @@ internal fun SearchPanel(
             }
             if (results.query.isBlank()) {
                 item(key = "prefix_hint") {
+                    // Riga compatta sotto l'elenco: i prefissi restano a portata senza occupare spazio
                     Text(
-                        stringResource(R.string.search_prefix_hint),
+                        stringResource(R.string.search_prefix_tip),
                         color = colors.onWallpaperMuted,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 12.dp, top = 16.dp, end = 12.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 8.dp),
                     )
                 }
             }

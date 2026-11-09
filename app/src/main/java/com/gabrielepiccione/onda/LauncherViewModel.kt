@@ -3,6 +3,8 @@
 package com.gabrielepiccione.onda
 
 import com.gabrielepiccione.onda.data.AutomationOverrides
+import com.gabrielepiccione.onda.data.SearchHistoryStore
+import com.gabrielepiccione.onda.data.SearchRanking
 import com.gabrielepiccione.onda.data.LaunchLogFormat
 import com.gabrielepiccione.onda.data.LaunchRecord
 import com.gabrielepiccione.onda.data.HomePresence
@@ -120,6 +122,8 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val contacts = ContactsRepository(app)
     val weatherRepo = WeatherRepository(app)
     val usageStats = UsageStatsRepository(app)
+    /** App aperte dalla ricerca: solo sul telefono, fuori dai backup. */
+    val searchHistory = SearchHistoryStore(app)
 
     private val collator = Collator.getInstance(Locale.getDefault()).apply { strength = Collator.PRIMARY }
 
@@ -142,6 +146,20 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     /** L'app musicale per "p": quella scelta, oppure l'ultima che ha suonato. */
     fun musicApp(): String = settingsRepo.current.let { it.musicApp.ifBlank { it.lastMusicApp } }
+
+    init {
+        viewModelScope.launch { searchHistory.load() }
+    }
+
+    /** Un'app aperta dalla ricerca (tocco o Invio): si conta solo il pacchetto, mai il testo. */
+    fun recordSearchOpen(app: AppInfo) {
+        if (app.isHidden || app.isPrivate) return
+        viewModelScope.launch { searchHistory.record(app.packageName) }
+    }
+
+    fun clearSearchHistory() {
+        viewModelScope.launch { searchHistory.clear() }
+    }
 
     init {
         // Plug & Play: collegando le cuffie, se richiesto, riprende la musica dell'app scelta
@@ -396,7 +414,16 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
                 else -> null
             }
             score?.let { it to app }
-        }.sortedWith(compareBy<Pair<Int, AppInfo>> { it.first }.thenBy { it.second.label.lowercase() })
+        }.let { scored ->
+            // A pari pertinenza vince l'app cercata più spesso (stesso punteggio di «Cercate spesso»)
+            val history = searchHistory.history.value
+            val now = System.currentTimeMillis()
+            scored.sortedWith(
+                compareBy<Pair<Int, AppInfo>> { it.first }
+                    .thenByDescending { SearchRanking.tieBreak(history, it.second.packageName, now) }
+                    .thenBy { it.second.label.lowercase() },
+            )
+        }
             .map { it.second }
             .take(8)
     }
