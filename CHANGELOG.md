@@ -5,6 +5,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 ## [Non rilasciato]
 - **Impostazioni → Home in ordine di compito (blocco 8, area Home)**: prima Preferiti e Blocchi (le cose che si cambiano più spesso), poi aspetto (disposizione, spaziatura, altezza sullo schermo), infine comportamento (widget, notifiche, luci). Nessuna impostazione cambia.
+- **Impostazioni coerenti (blocco 8, area Impostazioni)**: tutte le scelte a opzioni (sfondo musicale, immagini nelle notifiche, motore di ricerca, animazione di apertura, scala di grigi, promemoria) usano lo stesso controllo: pulsanti segmentati fino a quattro opzioni, elenco a tutta riga oltre. Prima c'erano chip, griglie e pulsanti radio mescolati.
 - **Selettore dei widget (blocco 5)**: ricerca anche per nome dell'app; in cima «Usati di recente» e «Suggeriti» dalle app preferite; widget raggruppati per app con intestazione fissa (icona, nome, numero) e anteprime da scorrere di lato con nome e misura (es. 4×2); barra alfabetica a destra; anteprime caricate solo quando servono, con segnaposto e cache; tocco = aggiungi, pressione lunga = dettagli (misure minime); messaggio chiaro quando la ricerca non trova nulla.
 - **Menu rifatti (blocco 4)**:
   - Popup dell'app: via il menu ⋮ a tendina; sotto l'intestazione tre azioni tonali con etichetta (Preferiti, Info app, Altro). Con notifiche si vedono solo quelle; senza, al più 4 scorciatoie e «Altre scorciatoie».
