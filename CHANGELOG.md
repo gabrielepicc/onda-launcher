@@ -190,6 +190,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
   si sceglie tra miniatura, solo nel popup e mai.
 - **Più messaggi**: la riga dell'app dice "5 messaggi da 2 chat" e sotto l'ultimo messaggio con il nome di chi l'ha scritto.
 - **Gesti**: ogni gesto dice dove si fa e cosa fa ora; quelli sempre attivi sono elencati uno per riga.
+- **Impostazioni → Ricerca in ordine di compito (blocco 8, area Ricerca)**: dopo l'alfabeto vengono il pulsante e il motore di ricerca, poi i suggerimenti con la cancellazione della cronologia, in fondo i prefissi (avanzati). Nessuna impostazione cambia.
 
 ## [0.10.0]
 - **Usage Breaker a promemoria**: per le app scelte, una notifica dopo 5–240 minuti di uso continuo chiede se vuoi
