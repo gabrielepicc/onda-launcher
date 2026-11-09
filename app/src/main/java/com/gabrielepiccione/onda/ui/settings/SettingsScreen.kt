@@ -326,7 +326,7 @@ internal fun SettingsScreen(
                         IconButton(onClick = { query = "" }) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.settings_search_clear)) }
                     }
                 },
-                shape = RoundedCornerShape(28.dp),
+                pill = true,
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             )
             if (query.isNotBlank()) {
