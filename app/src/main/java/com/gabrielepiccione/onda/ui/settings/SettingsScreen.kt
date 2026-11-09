@@ -161,6 +161,8 @@ interface SettingsActions {
     fun postNotifications()
     fun usageAccess()
     fun accessibility()
+    /** Il widget con questo id esiste ancora (dopo una reinstallazione gli id vanno persi). */
+    fun widgetExists(id: Int): Boolean = true
     /** Nome di un widget ospitato, null se non si conosce. */
     fun widgetLabel(id: Int): String? = null
     /** Cancella la cronologia delle app aperte dalla ricerca. */
@@ -664,9 +666,19 @@ internal fun SettingsScreen(
                 ) { wifiConfirm = actions.currentWifi().orEmpty() }
                 ClickRow(
                     stringResource(R.string.lights_widget),
-                    stringResource(if (settings.homeLightsWidget > 0) R.string.lights_widget_set else R.string.lights_widget_none),
+                    stringResource(
+                        when {
+                            settings.homeLightsWidget <= 0 -> R.string.lights_widget_none
+                            actions.widgetExists(settings.homeLightsWidget) -> R.string.lights_widget_set
+                            else -> R.string.lights_widget_stale
+                        },
+                    ),
                 ) { actions.pickLightsWidget() }
-                LightsStatus(settings, status.locationPermission, onLocate = { actions.locateHome() })
+                LightsStatus(
+                    settings.copy(homeLightsWidget = settings.homeLightsWidget.takeIf { actions.widgetExists(it) } ?: 0),
+                    status.locationPermission,
+                    onLocate = { actions.locateHome() },
+                )
             }
         }
 

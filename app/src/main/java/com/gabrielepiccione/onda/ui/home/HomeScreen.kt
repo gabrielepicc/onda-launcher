@@ -452,7 +452,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             else HomeLights.sunTimes(java.time.LocalDate.now(), settings.homeLatitude, settings.homeLongitude)
             lightsVisible = HomeLights.shouldShow(
                 settings.homeLights,
-                settings.homeLightsWidget,
+                // Dopo una reinstallazione l'id salvato può non esistere più: il widget non c'è e va scelto di nuovo
+                settings.homeLightsWidget.takeIf { vm.widgets.infoFor(it) != null } ?: 0,
                 HomePresence.currentSsid(context),
                 settings.homeWifi,
                 now,
@@ -867,14 +868,14 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 temperature = weather?.temperature,
                                 onEvent = { vm.calendar.open(it) },
                                 style = settings.clockStyle,
-                                scale = settings.clockScale,
+                                // Con un widget accanto l'orologio si rimpicciolisce un po' per lasciargli posto
+                                scale = settings.clockScale * (if (besideVisible || shownWidgets.replace != null) 0.75f else 1f),
                                 align = settings.clockAlign,
                                 highlighted = editing == HomeBlocks.CLOCK,
                                 onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.CLOCK },
                                 showBattery = settings.showBattery,
                                 innerSpacing = settings.clockInnerSpacing,
-                                // L'orologio tiene la sua larghezza intera: al widget accanto resta lo spazio che avanza
-                                modifier = Modifier,
+                                modifier = if (besideVisible) Modifier.weight(1.25f) else Modifier,
                             )
                             if (besideVisible && settings.clockAlign != HAlign.END) {
                                 Box(Modifier.weight(1f).padding(start = 8.dp)) { besideContent() }
@@ -1496,6 +1497,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun postNotifications() = callbacks.requestPostNotifications()
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
+                        override fun widgetExists(id: Int) = vm.widgets.infoFor(id) != null
                         override fun widgetLabel(id: Int) = vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() }
                         override fun clearSearchHistory() = vm.clearSearchHistory()
                         override fun shortcutsOf(app: AppInfo) = vm.shortcuts(app)
