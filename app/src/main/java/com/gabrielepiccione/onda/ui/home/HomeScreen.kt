@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.animation.core.tween
+import com.gabrielepiccione.onda.data.EntryTiming
 import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.SideEffect
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -606,7 +608,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             entry.snapTo(0f)
             vm.entryGo.first { it >= entryToken }
             startedToken = entryToken
-            entry.animateTo(1f, Motion.returnEntry())
+            entry.animateTo(1f, tween(EntryTiming.duration(settings.entryDurationMs), easing = Motion.EmphasizedDecelerate))
         }
     }
     val depth by animateOrSnap(
@@ -809,8 +811,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         if (settings.showReturnTimes) {
             val returnTimes by vm.returnTimes.collectAsStateWithLifecycle()
             val entryOk by vm.entryOnFirstFrame.collectAsStateWithLifecycle()
-            val entryStart by vm.entryStart.collectAsStateWithLifecycle()
-            ReturnTimesLabel(returnTimes, entryOk, entryStart, Modifier.align(Alignment.TopEnd).zIndex(10f).statusBarsPadding().padding(end = 8.dp, top = 4.dp))
+            val traces by vm.traces.collectAsStateWithLifecycle()
+            ReturnTimesLabel(returnTimes, entryOk, traces, Modifier.align(Alignment.TopEnd).zIndex(10f).statusBarsPadding().padding(end = 8.dp, top = 4.dp))
         }
         // Sfondo con la musica: sotto la velatura, così testo e icone restano leggibili
         val backdropHere = when (overlay) {

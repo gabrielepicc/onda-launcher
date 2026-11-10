@@ -379,6 +379,10 @@ data class Settings(
     val returnAnimation: Boolean = true,
     /** Per sviluppatori (si sblocca dalla versione, nelle impostazioni): etichetta con i tempi di ritorno. */
     val showReturnTimes: Boolean = false,
+    /** Sviluppo: ritardo (ms) tra il ritorno e l'avvio della molla dell'entrata. */
+    val entryDelayMs: Int = EntryTiming.DELAY_DEFAULT,
+    /** Sviluppo: durata (ms) dell'entrata. */
+    val entryDurationMs: Int = EntryTiming.DURATION_DEFAULT,
     /** Quante app mostrare in «Cercate spesso» a ricerca vuota (0 = nessun elenco). */
     val searchSuggestions: Int = SearchRanking.DEFAULT_SHOWN,
     /** Pulsante di ricerca nell'angolo in basso, dal lato dell'alfabeto. */

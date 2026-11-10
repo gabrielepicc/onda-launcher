@@ -403,6 +403,19 @@ internal fun SettingsScreen(
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(horizontal = 8.dp),
             )
+            if (query.isBlank() && settings.showReturnTimes) Group(stringResource(R.string.dev_entry_title)) {
+                SettingsSupporting(stringResource(R.string.dev_entry_sub))
+                val delay = EntryTiming.delay(settings.entryDelayMs)
+                SliderRow(
+                    stringResource(R.string.dev_entry_delay), stringResource(R.string.value_ms, delay), delay.toFloat(),
+                    EntryTiming.DELAY_DEFAULT.toFloat(), EntryTiming.DELAY_MIN.toFloat()..EntryTiming.DELAY_MAX.toFloat(), step = EntryTiming.STEP.toFloat(),
+                ) { v -> onEdit { it.copy(entryDelayMs = EntryTiming.delay(v.toInt())) } }
+                val duration = EntryTiming.duration(settings.entryDurationMs)
+                SliderRow(
+                    stringResource(R.string.dev_entry_duration), stringResource(R.string.value_ms, duration), duration.toFloat(),
+                    EntryTiming.DURATION_DEFAULT.toFloat(), EntryTiming.DURATION_MIN.toFloat()..EntryTiming.DURATION_MAX.toFloat(), step = EntryTiming.STEP.toFloat(),
+                ) { v -> onEdit { it.copy(entryDurationMs = EntryTiming.duration(v.toInt())) } }
+            }
         }
 
         if (page == SettingsPage.STYLE) Group(stringResource(R.string.section_styles)) {
