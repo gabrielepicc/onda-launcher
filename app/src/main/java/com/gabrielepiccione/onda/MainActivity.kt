@@ -224,7 +224,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         val listener = object : android.view.ViewTreeObserver.OnDrawListener {
             override fun onDraw() {
                 vm.addReturnTime(android.os.SystemClock.elapsedRealtime() - startedAt)
-                vm.reportFirstFrame()
+                vm.reportFirstFrame(android.os.SystemClock.elapsedRealtime())
                 decor.post { decor.viewTreeObserver.removeOnDrawListener(this) }
             }
         }
@@ -237,6 +237,27 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
      * (MAIN dopo uno stop) o un vero tasto Home (MAIN senza stop). Con «indietro» non arriva nessun MAIN.
      */
     private var stoppedSinceResume = false
+
+    private var entryGate: ReturnPolicy.EntryGate? = null
+    private var entryTimeout: kotlinx.coroutines.Job? = null
+
+    /** Il primo segnale del ritorno avvia la molla dell'entrata; gli altri si ignorano. */
+    private fun signalEntry(gate: ReturnPolicy.EntryGate?, signal: ReturnPolicy.EntrySignal) {
+        val winner = gate?.offer(signal) ?: return
+        entryTimeout?.cancel()
+        vm.startReturnEntry(winner, android.os.SystemClock.elapsedRealtime())
+    }
+
+    /** Fine della transizione di ingresso: il sistema mostra ora la finestra del launcher. */
+    override fun onEnterAnimationComplete() {
+        super.onEnterAnimationComplete()
+        signalEntry(entryGate, ReturnPolicy.EntrySignal.ENTER_COMPLETE)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) signalEntry(entryGate, ReturnPolicy.EntrySignal.FOCUS)
+    }
 
     /** Crea il backup nella cache e lo passa all'app scelta dall'utente. */
     override fun shareBackup() {
@@ -479,7 +500,17 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         if (ReturnPolicy.isReturnFromApp(intent.action, stoppedSinceResume)) {
             vm.onReturnedFromApp()
             val scale = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
-            if (ReturnPolicy.animateEntry(true, vm.settingsRepo.current.returnAnimation, scale)) vm.playReturnEntry()
+            if (ReturnPolicy.animateEntry(true, vm.settingsRepo.current.returnAnimation, scale)) {
+                // Valori di partenza subito; la molla parte con il primo segnale: il sistema mostra la finestra a fine transizione
+                vm.prepareReturnEntry()
+                val gate = ReturnPolicy.EntryGate()
+                entryGate = gate
+                entryTimeout?.cancel()
+                entryTimeout = lifecycleScope.launch {
+                    delay(ReturnPolicy.ENTRY_TIMEOUT_MS)
+                    signalEntry(gate, ReturnPolicy.EntrySignal.TIMEOUT)
+                }
+            }
         }
         // App aperta fuori dal launcher che ha bisogno della pausa di Usage Breaker
         intent.getStringExtra(EXTRA_PAUSE_PACKAGE)?.let { vm.requestPause(it) }

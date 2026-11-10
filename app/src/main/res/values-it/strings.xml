@@ -1123,4 +1123,8 @@
     <string name="return_times_on">Misure per sviluppatori attive: i tempi di ritorno (ms) compaiono in un angolo della home. Tocca 7 volte la versione per spegnerle.</string>
     <string name="return_entry_ok">entrata al primo fotogramma</string>
     <string name="return_entry_late">entrata IN RITARDO</string>
+    <string name="return_signal_enter">enter</string>
+    <string name="return_signal_focus">focus</string>
+    <string name="return_signal_timeout">timeout</string>
+    <string name="return_spring_start">molla: %1$s +%2$d ms</string>
 </resources>

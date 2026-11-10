@@ -353,29 +353,67 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _entryToken = MutableStateFlow(0)
 
-    /** Cambia a ogni entrata animata da fare (la home parte piccola e trasparente al primo fotogramma). */
+    /** Cambia a ogni ritorno da un'app: la home prende subito i valori di partenza (piccola, trasparente). */
     val entryToken: StateFlow<Int> = _entryToken.asStateFlow()
-    fun playReturnEntry() {
+
+    private val _entryGo = MutableStateFlow(0)
+
+    /** Uguale a [entryToken] quando la molla può partire (dopo uno dei segnali: vedi [ReturnPolicy.EntryGate]). */
+    val entryGo: StateFlow<Int> = _entryGo.asStateFlow()
+
+    /** Un ritorno da un'app: valori di partenza subito, molla in attesa di [startReturnEntry]. */
+    fun prepareReturnEntry() {
         entryRequested = true
+        firstFrameAt = null
+        entryStartedAt = null
+        _entryStart.value = null
         _entryToken.value += 1
+    }
+
+    /** Il segnale [signal] ha avviato la molla. */
+    fun startReturnEntry(signal: ReturnPolicy.EntrySignal, nowMs: Long) {
+        entryStartedAt = nowMs
+        entrySignal = signal
+        publishEntryStart()
+        _entryGo.value = _entryToken.value
     }
 
     // Per la prova sull'etichetta: l'entrata richiesta è già applicata quando si disegna il primo fotogramma?
     private var entryRequested = false
     private var entryAppliedToken = 0
+    private var firstFrameAt: Long? = null
+    private var entryStartedAt: Long? = null
+    private var entrySignal: ReturnPolicy.EntrySignal? = null
 
     /** La composizione ha applicato lo stato iniziale dell'entrata (prima del disegno). */
     fun entryApplied(token: Int) { entryAppliedToken = token }
 
     private val _entryOnFirstFrame = MutableStateFlow<Boolean?>(null)
 
-    /** Ultimo ritorno: true se l'entrata partiva dal primo fotogramma disegnato, null se non c'era entrata. */
+    /** Ultimo ritorno: true se i valori di partenza erano già nel primo fotogramma disegnato, null se non c'era entrata. */
     val entryOnFirstFrame: StateFlow<Boolean?> = _entryOnFirstFrame.asStateFlow()
 
+    /** Chi ha avviato la molla e dopo quanti ms dal primo fotogramma (per vedere quanto la finestra resta nascosta). */
+    data class EntryStart(val signal: ReturnPolicy.EntrySignal, val delayMs: Long)
+
+    private val _entryStart = MutableStateFlow<EntryStart?>(null)
+    val entryStart: StateFlow<EntryStart?> = _entryStart.asStateFlow()
+
     /** Chiamata al primo fotogramma disegnato dopo onStart. */
-    fun reportFirstFrame() {
+    fun reportFirstFrame(nowMs: Long) {
         _entryOnFirstFrame.value = if (entryRequested) entryAppliedToken == _entryToken.value else null
+        if (entryRequested) {
+            firstFrameAt = nowMs
+            publishEntryStart()
+        }
         entryRequested = false
+    }
+
+    private fun publishEntryStart() {
+        val first = firstFrameAt ?: return
+        val started = entryStartedAt ?: return
+        val signal = entrySignal ?: return
+        _entryStart.value = EntryStart(signal, ReturnPolicy.startDelayMs(first, started))
     }
 
     private val _returnTimes = MutableStateFlow<List<Long>>(emptyList())

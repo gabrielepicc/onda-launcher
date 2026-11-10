@@ -4,6 +4,7 @@ Tutte le modifiche rilevanti di Onda. Formato basato su [Keep a Changelog](https
 
 
 ## [Non rilasciato]
+- **Entrata animata al ritorno, tempi giusti**: il sistema mostra la finestra del launcher solo a fine transizione (~0,5 s), quando la molla era già finita. Ora la home prende subito i valori di partenza (scala 0,94, trasparenza 0,4, velo a 0) ma la molla parte con il primo di questi segnali: fine della transizione di ingresso, focus della finestra, oppure un timeout di sicurezza di 700 ms. Una sola partenza per ritorno. L'etichetta di sviluppo mostra anche quale segnale ha avviato la molla e dopo quanti ms dal primo fotogramma.
 - **Ritorno alla home, correzione**: l'entrata animata ora parte davvero. Con lo swipe in alto da un'app la decisione si prende in `onNewIntent` (MAIN dopo uno stop = ritorno, MAIN senza stop = tasto Home), quindi il tasto Home torna ad animare solo a launcher già aperto e lo swipe «indietro» non fa entrate. La home parte già nel primo fotogramma dallo stato iniziale (niente salto) e anche l'oscuramento dello sfondo arriva al valore scelto con la stessa molla. L'etichetta dei tempi dice se l'entrata era al primo fotogramma.
 - **Ritorno alla home più rapido e naturale**:
   - Primo fotogramma più veloce: lo stato dei permessi si legge fuori dal thread principale; widget, musica, calendario, contatti e meteo partono dopo il primo fotogramma e solo se l'ultimo aggiornamento ha più di un minuto; il backup automatico non gira più sul thread principale.
