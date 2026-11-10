@@ -246,15 +246,30 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
 
     private fun now() = android.os.SystemClock.elapsedRealtime()
 
-    /** Fine della transizione di ingresso (anche tardiva): solo un dato, la molla non l'aspetta. */
+    private var entryGate: ReturnPolicy.EntryGate? = null
+
+    /** Il primo segnale del ritorno avvia la molla dell'entrata (modalità normale); gli altri si ignorano. */
+    private fun signalEntry(signal: ReturnPolicy.EntrySignal) {
+        val gate = entryGate ?: return
+        if (gate.offer(signal) == null) return
+        entryJob?.cancel()
+        vm.traceMark(TraceMark.SPRING_START, now())
+        vm.startReturnEntry()
+    }
+
+    /** Fine della transizione di ingresso: il sistema mostra ora la finestra del launcher (anche tardiva, sempre misurata). */
     override fun onEnterAnimationComplete() {
         super.onEnterAnimationComplete()
         vm.traceMark(TraceMark.ENTER_COMPLETE, now())
+        signalEntry(ReturnPolicy.EntrySignal.ENTER_COMPLETE)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) vm.traceMark(TraceMark.FOCUS, now())
+        if (hasFocus) {
+            vm.traceMark(TraceMark.FOCUS, now())
+            signalEntry(ReturnPolicy.EntrySignal.FOCUS)
+        }
     }
 
     /** L'activity è tornata in cima (API 29+): solo un dato. Niente super: il metodo base è vuoto e non esiste prima di Android 10. */
@@ -526,13 +541,24 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
                 countFrames(start)
             }
             if (ReturnPolicy.animateEntry(true, settings.returnAnimation, scale)) {
-                // Valori di partenza subito; la molla parte a ritardo fisso (i segnali del sistema restano solo un dato)
+                // Valori di partenza subito; la molla parte con il primo segnale del sistema (il sistema mostra la finestra
+                // solo a fine transizione) o, in prova, a ritardo fisso
                 vm.prepareReturnEntry()
                 entryJob?.cancel()
-                entryJob = lifecycleScope.launch {
-                    delay(EntryTiming.delay(settings.entryDelayMs).toLong())
-                    vm.traceMark(TraceMark.SPRING_START, now())
-                    vm.startReturnEntry()
+                val fixedDelay = EntryTiming.delay(settings.entryDelayMs)
+                if (fixedDelay > 0) {
+                    entryGate = null
+                    entryJob = lifecycleScope.launch {
+                        delay(fixedDelay.toLong())
+                        vm.traceMark(TraceMark.SPRING_START, now())
+                        vm.startReturnEntry()
+                    }
+                } else {
+                    entryGate = ReturnPolicy.EntryGate()
+                    entryJob = lifecycleScope.launch {
+                        delay(ReturnPolicy.ENTRY_TIMEOUT_MS)
+                        signalEntry(ReturnPolicy.EntrySignal.TIMEOUT)
+                    }
                 }
             }
         }

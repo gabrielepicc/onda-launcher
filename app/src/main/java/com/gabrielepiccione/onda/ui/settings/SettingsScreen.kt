@@ -408,7 +408,7 @@ internal fun SettingsScreen(
                 SettingsSupporting(stringResource(R.string.dev_entry_sub))
                 val delay = EntryTiming.delay(settings.entryDelayMs)
                 SliderRow(
-                    stringResource(R.string.dev_entry_delay), stringResource(R.string.value_ms, delay), delay.toFloat(),
+                    stringResource(R.string.dev_entry_delay), if (delay == 0) stringResource(R.string.dev_entry_signals) else stringResource(R.string.value_ms, delay), delay.toFloat(),
                     EntryTiming.DELAY_DEFAULT.toFloat(), EntryTiming.DELAY_MIN.toFloat()..EntryTiming.DELAY_MAX.toFloat(), step = EntryTiming.STEP.toFloat(),
                 ) { v -> onEdit { it.copy(entryDelayMs = EntryTiming.delay(v.toInt())) } }
                 val duration = EntryTiming.duration(settings.entryDurationMs)

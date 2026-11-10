@@ -1128,6 +1128,7 @@
     <string name="dev_entry_title">Entrata al ritorno (sviluppo)</string>
     <string name="dev_entry_delay">Ritardo avvio entrata</string>
     <string name="dev_entry_duration">Durata entrata</string>
-    <string name="dev_entry_sub">La molla parte dopo un ritardo fisso dal ritorno, non con i segnali del sistema, che sono solo misurati. Prova 300 / 500 / 700 ms e segna quando l\'entrata si vede.</string>
+    <string name="dev_entry_sub">La molla parte con il primo segnale del sistema (fine transizione o focus), o al massimo dopo 1,5 s. Con un ritardo sopra 0 parte invece dopo quel ritardo fisso, per le prove.</string>
     <string name="value_ms">%1$d ms</string>
+    <string name="dev_entry_signals">Segnali del sistema</string>
 </resources>

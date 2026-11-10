@@ -50,11 +50,12 @@ class ReturnTrace(private val startMs: Long) {
     }
 }
 
-/** Ritardo e durata dell'entrata (impostazioni di sviluppo): la molla parte a ritardo fisso dall'onNewIntent. */
+/** Ritardo e durata dell'entrata (impostazioni di sviluppo): con ritardo 0 la molla parte con i segnali del sistema. */
 object EntryTiming {
     const val DELAY_MIN = 0
     const val DELAY_MAX = 900
-    const val DELAY_DEFAULT = 450
+    /** 0 = la molla parte con i segnali del sistema (comportamento normale); >0 = ritardo fisso, solo per prova. */
+    const val DELAY_DEFAULT = 0
     const val DURATION_MIN = 150
     const val DURATION_MAX = 1200
     const val DURATION_DEFAULT = 300
