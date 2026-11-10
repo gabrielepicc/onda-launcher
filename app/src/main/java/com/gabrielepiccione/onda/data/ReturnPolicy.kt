@@ -35,6 +35,29 @@ object ReturnPolicy {
     /** Con il launcher fuori vista i pannelli si chiudono di colpo: un'animazione resterebbe ferma sul valore vecchio. */
     fun closeInstantly(visible: Boolean): Boolean = !visible
 
+    /** Il sistema mostra la finestra del launcher solo a fine transizione: se nessun segnale arriva, si parte dopo tanto. */
+    const val ENTRY_TIMEOUT_MS = 700L
+
+    /** Chi ha avviato la molla dell'entrata. */
+    enum class EntrySignal { ENTER_COMPLETE, FOCUS, TIMEOUT }
+
+    /**
+     * Una sola partenza per ritorno: il primo segnale tra fine della transizione di ingresso, focus della finestra e
+     * timeout di sicurezza avvia la molla, gli altri (anche doppi) si ignorano. [offer] restituisce il segnale solo la
+     * prima volta.
+     */
+    class EntryGate {
+        private var fired = false
+        fun offer(signal: EntrySignal): EntrySignal? {
+            if (fired) return null
+            fired = true
+            return signal
+        }
+    }
+
+    /** Millisecondi tra il primo fotogramma e l'avvio della molla (mai negativi). */
+    fun startDelayMs(firstFrameAtMs: Long, startedAtMs: Long): Long = (startedAtMs - firstFrameAtMs).coerceAtLeast(0L)
+
     /** Aggiunge un tempo e tiene gli ultimi [KEEP_TIMES]. */
     fun addTime(times: List<Long>, ms: Long): List<Long> = (times + ms).takeLast(KEEP_TIMES)
 }

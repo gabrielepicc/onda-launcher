@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.SideEffect
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.withFrameNanos
@@ -594,15 +595,17 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     // Profondità solo per ricerca e impostazioni; l'elenco app resta sullo stesso piano
     // Entrata naturale al ritorno da un'app: la home parte un po' più piccola e trasparente e si assesta con una molla
     val entryToken by vm.entryToken.collectAsStateWithLifecycle()
-    var shownToken by remember { mutableIntStateOf(entryToken) }
+    // Il ritorno prepara subito i valori di partenza; la molla parte quando il sistema mostra la finestra (entryGo)
+    var startedToken by remember { mutableIntStateOf(entryToken) }
     val entry = remember { Animatable(1f) }
-    val entryPending = entryToken != shownToken
+    val entryPending = entryToken != startedToken
     // Dopo la composizione e prima del disegno: segna che lo stato iniziale dell'entrata è già applicato
     SideEffect { vm.entryApplied(entryToken) }
     LaunchedEffect(entryToken) {
-        if (entryToken != shownToken) {
+        if (entryToken != startedToken) {
             entry.snapTo(0f)
-            shownToken = entryToken
+            vm.entryGo.first { it >= entryToken }
+            startedToken = entryToken
             entry.animateTo(1f, Motion.returnEntry())
         }
     }
@@ -806,7 +809,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
         if (settings.showReturnTimes) {
             val returnTimes by vm.returnTimes.collectAsStateWithLifecycle()
             val entryOk by vm.entryOnFirstFrame.collectAsStateWithLifecycle()
-            ReturnTimesLabel(returnTimes, entryOk, Modifier.align(Alignment.TopEnd).zIndex(10f).statusBarsPadding().padding(end = 8.dp, top = 4.dp))
+            val entryStart by vm.entryStart.collectAsStateWithLifecycle()
+            ReturnTimesLabel(returnTimes, entryOk, entryStart, Modifier.align(Alignment.TopEnd).zIndex(10f).statusBarsPadding().padding(end = 8.dp, top = 4.dp))
         }
         // Sfondo con la musica: sotto la velatura, così testo e icone restano leggibili
         val backdropHere = when (overlay) {

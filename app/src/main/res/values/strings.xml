@@ -1123,4 +1123,8 @@
     <string name="return_times_on">Developer measures on: the return times (ms) appear in the corner of the home. Tap the version 7 times to turn them off.</string>
     <string name="return_entry_ok">entry on first frame</string>
     <string name="return_entry_late">entry LATE</string>
+    <string name="return_signal_enter">enter</string>
+    <string name="return_signal_focus">focus</string>
+    <string name="return_signal_timeout">timeout</string>
+    <string name="return_spring_start">spring: %1$s +%2$d ms</string>
 </resources>
