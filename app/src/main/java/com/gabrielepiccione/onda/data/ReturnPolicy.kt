@@ -35,6 +35,28 @@ object ReturnPolicy {
     /** Con il launcher fuori vista i pannelli si chiudono di colpo: un'animazione resterebbe ferma sul valore vecchio. */
     fun closeInstantly(visible: Boolean): Boolean = !visible
 
+    /**
+     * Timeout di sicurezza dell'entrata: deve restare più lungo dei tempi osservati (su realme enter-complete arriva
+     * a ~860 ms e il focus a ~885 ms), altrimenti la molla finisce prima che la finestra si veda.
+     */
+    const val ENTRY_TIMEOUT_MS = 1_500L
+
+    /** Chi ha avviato la molla dell'entrata. */
+    enum class EntrySignal { ENTER_COMPLETE, FOCUS, TIMEOUT }
+
+    /**
+     * Una sola partenza per ritorno: il primo tra fine della transizione di ingresso e focus della finestra (o il
+     * timeout) avvia la molla, gli altri si ignorano. [offer] restituisce il segnale solo la prima volta.
+     */
+    class EntryGate {
+        private var fired = false
+        fun offer(signal: EntrySignal): EntrySignal? {
+            if (fired) return null
+            fired = true
+            return signal
+        }
+    }
+
     /** Aggiunge un tempo e tiene gli ultimi [KEEP_TIMES]. */
     fun addTime(times: List<Long>, ms: Long): List<Long> = (times + ms).takeLast(KEEP_TIMES)
 }

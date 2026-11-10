@@ -87,4 +87,36 @@ class ReturnPolicyTest {
         val times = (1L..7L).fold(emptyList<Long>()) { acc, t -> ReturnPolicy.addTime(acc, t) }
         assertEquals(listOf(3L, 4L, 5L, 6L, 7L), times)
     }
+
+    @Test
+    fun firstSignalStartsTheSpringBeforeTheTimeout() {
+        val gate = ReturnPolicy.EntryGate()
+        assertEquals(ReturnPolicy.EntrySignal.ENTER_COMPLETE, gate.offer(ReturnPolicy.EntrySignal.ENTER_COMPLETE))
+        // Il focus (pochi ms dopo) e il timeout non riavviano nulla
+        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.FOCUS))
+        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.TIMEOUT))
+        // Se il focus arriva per primo, vince lui
+        assertEquals(ReturnPolicy.EntrySignal.FOCUS, ReturnPolicy.EntryGate().offer(ReturnPolicy.EntrySignal.FOCUS))
+    }
+
+    @Test
+    fun timeoutIsLongerThanTheObservedSystemDelay() {
+        // Misurato su realme GT 8 Pro: enter-complete ~860 ms, focus ~885 ms dall'onNewIntent
+        assertTrue(ReturnPolicy.ENTRY_TIMEOUT_MS > 885L)
+        assertEquals(1_500L, ReturnPolicy.ENTRY_TIMEOUT_MS)
+    }
+
+    @Test
+    fun noSignalFallsBackToTheTimeoutOnce() {
+        val gate = ReturnPolicy.EntryGate()
+        assertEquals(ReturnPolicy.EntrySignal.TIMEOUT, gate.offer(ReturnPolicy.EntrySignal.TIMEOUT))
+        // Un segnale arrivato dopo il timeout non riavvia la molla
+        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.ENTER_COMPLETE))
+    }
+
+    @Test
+    fun fixedDelayDefaultsToTheSystemSignals() {
+        assertEquals(0, EntryTiming.DELAY_DEFAULT)
+        assertEquals(0, EntryTiming.delay(20))
+    }
 }

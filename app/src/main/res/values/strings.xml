@@ -1128,6 +1128,7 @@
     <string name="dev_entry_title">Entry timing (developer)</string>
     <string name="dev_entry_delay">Entry start delay</string>
     <string name="dev_entry_duration">Entry duration</string>
-    <string name="dev_entry_sub">The spring starts after a fixed delay from the return, not on system signals; those are only measured. Try 300 / 500 / 700 ms and note when the entry is visible.</string>
+    <string name="dev_entry_sub">The spring starts with the first system signal (enter-complete or focus), or after 1.5 s at most. With a delay above 0 it starts after that fixed delay instead, for testing.</string>
     <string name="value_ms">%1$d ms</string>
+    <string name="dev_entry_signals">System signals</string>
 </resources>
