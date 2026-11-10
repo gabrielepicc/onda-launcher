@@ -87,43 +87,4 @@ class ReturnPolicyTest {
         val times = (1L..7L).fold(emptyList<Long>()) { acc, t -> ReturnPolicy.addTime(acc, t) }
         assertEquals(listOf(3L, 4L, 5L, 6L, 7L), times)
     }
-
-    @Test
-    fun enterCompleteBeforeFocusStartsOnce() {
-        val gate = ReturnPolicy.EntryGate()
-        assertEquals(ReturnPolicy.EntrySignal.ENTER_COMPLETE, gate.offer(ReturnPolicy.EntrySignal.ENTER_COMPLETE))
-        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.FOCUS))
-        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.TIMEOUT))
-    }
-
-    @Test
-    fun focusFirstStartsOnce() {
-        val gate = ReturnPolicy.EntryGate()
-        assertEquals(ReturnPolicy.EntrySignal.FOCUS, gate.offer(ReturnPolicy.EntrySignal.FOCUS))
-        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.ENTER_COMPLETE))
-    }
-
-    @Test
-    fun noSignalFallsBackToTimeout() {
-        val gate = ReturnPolicy.EntryGate()
-        assertEquals(ReturnPolicy.EntrySignal.TIMEOUT, gate.offer(ReturnPolicy.EntrySignal.TIMEOUT))
-        // Un segnale arrivato dopo il timeout non riavvia nulla
-        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.FOCUS))
-        assertEquals(700L, ReturnPolicy.ENTRY_TIMEOUT_MS)
-    }
-
-    @Test
-    fun doubleSignalsAreIgnored() {
-        val gate = ReturnPolicy.EntryGate()
-        assertEquals(ReturnPolicy.EntrySignal.FOCUS, gate.offer(ReturnPolicy.EntrySignal.FOCUS))
-        assertEquals(null, gate.offer(ReturnPolicy.EntrySignal.FOCUS))
-        // Un nuovo ritorno ha un cancello nuovo
-        assertEquals(ReturnPolicy.EntrySignal.ENTER_COMPLETE, ReturnPolicy.EntryGate().offer(ReturnPolicy.EntrySignal.ENTER_COMPLETE))
-    }
-
-    @Test
-    fun startDelayIsNeverNegative() {
-        assertEquals(480L, ReturnPolicy.startDelayMs(1_000L, 1_480L))
-        assertEquals(0L, ReturnPolicy.startDelayMs(2_000L, 1_500L))
-    }
 }

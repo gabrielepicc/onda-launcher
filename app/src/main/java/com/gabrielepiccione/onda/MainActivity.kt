@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.TraceMark
+import com.gabrielepiccione.onda.data.ReturnTrace
+import com.gabrielepiccione.onda.data.EntryTiming
 import com.gabrielepiccione.onda.data.ReturnPolicy
 import com.gabrielepiccione.onda.data.MusicWallpaper
 import androidx.compose.animation.core.animateFloatAsState
@@ -238,25 +241,40 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
      */
     private var stoppedSinceResume = false
 
-    private var entryGate: ReturnPolicy.EntryGate? = null
-    private var entryTimeout: kotlinx.coroutines.Job? = null
+    private var entryJob: kotlinx.coroutines.Job? = null
+    private var frameLoop: android.view.Choreographer.FrameCallback? = null
 
-    /** Il primo segnale del ritorno avvia la molla dell'entrata; gli altri si ignorano. */
-    private fun signalEntry(gate: ReturnPolicy.EntryGate?, signal: ReturnPolicy.EntrySignal) {
-        val winner = gate?.offer(signal) ?: return
-        entryTimeout?.cancel()
-        vm.startReturnEntry(winner, android.os.SystemClock.elapsedRealtime())
-    }
+    private fun now() = android.os.SystemClock.elapsedRealtime()
 
-    /** Fine della transizione di ingresso: il sistema mostra ora la finestra del launcher. */
+    /** Fine della transizione di ingresso (anche tardiva): solo un dato, la molla non l'aspetta. */
     override fun onEnterAnimationComplete() {
         super.onEnterAnimationComplete()
-        signalEntry(entryGate, ReturnPolicy.EntrySignal.ENTER_COMPLETE)
+        vm.traceMark(TraceMark.ENTER_COMPLETE, now())
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) signalEntry(entryGate, ReturnPolicy.EntrySignal.FOCUS)
+        if (hasFocus) vm.traceMark(TraceMark.FOCUS, now())
+    }
+
+    /** L'activity è tornata in cima (API 29+): solo un dato. Niente super: il metodo base è vuoto e non esiste prima di Android 10. */
+    override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
+        if (isTopResumedActivity) vm.traceMark(TraceMark.TOP_RESUMED, now())
+    }
+
+    /** Conta i fotogrammi di Choreographer nel primo secondo dopo il ritorno: se si fermano, il sistema non fa disegnare Onda. */
+    private fun countFrames(startMs: Long) {
+        val choreographer = android.view.Choreographer.getInstance()
+        frameLoop?.let { choreographer.removeFrameCallback(it) }
+        val callback = object : android.view.Choreographer.FrameCallback {
+            override fun doFrame(frameTimeNanos: Long) {
+                val t = now()
+                vm.traceFrame(t)
+                if (t - startMs < ReturnTrace.BUCKETS * ReturnTrace.BUCKET_MS) choreographer.postFrameCallback(this)
+            }
+        }
+        frameLoop = callback
+        choreographer.postFrameCallback(callback)
     }
 
     /** Crea il backup nella cache e lo passa all'app scelta dall'utente. */
@@ -464,6 +482,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun onResume() {
         super.onResume()
         stoppedSinceResume = false
+        vm.traceMark(TraceMark.RESUME, now())
         refreshStatus()
         afterFirstFrame { if (vm.visible.value) refreshSlowStuff() }
     }
@@ -500,15 +519,20 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         if (ReturnPolicy.isReturnFromApp(intent.action, stoppedSinceResume)) {
             vm.onReturnedFromApp()
             val scale = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
-            if (ReturnPolicy.animateEntry(true, vm.settingsRepo.current.returnAnimation, scale)) {
-                // Valori di partenza subito; la molla parte con il primo segnale: il sistema mostra la finestra a fine transizione
+            val settings = vm.settingsRepo.current
+            val start = now()
+            if (settings.showReturnTimes) {
+                vm.beginTrace(start)
+                countFrames(start)
+            }
+            if (ReturnPolicy.animateEntry(true, settings.returnAnimation, scale)) {
+                // Valori di partenza subito; la molla parte a ritardo fisso (i segnali del sistema restano solo un dato)
                 vm.prepareReturnEntry()
-                val gate = ReturnPolicy.EntryGate()
-                entryGate = gate
-                entryTimeout?.cancel()
-                entryTimeout = lifecycleScope.launch {
-                    delay(ReturnPolicy.ENTRY_TIMEOUT_MS)
-                    signalEntry(gate, ReturnPolicy.EntrySignal.TIMEOUT)
+                entryJob?.cancel()
+                entryJob = lifecycleScope.launch {
+                    delay(EntryTiming.delay(settings.entryDelayMs).toLong())
+                    vm.traceMark(TraceMark.SPRING_START, now())
+                    vm.startReturnEntry()
                 }
             }
         }

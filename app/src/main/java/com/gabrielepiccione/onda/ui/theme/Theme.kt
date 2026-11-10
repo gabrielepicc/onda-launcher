@@ -117,7 +117,6 @@ object Motion {
     /** Entrata della home al ritorno da un'app: scala e trasparenza di partenza, e la molla (~250 ms). */
     const val RETURN_SCALE_FROM = 0.94f
     const val RETURN_ALPHA_FROM = 0.4f
-    fun <T> returnEntry(): FiniteAnimationSpec<T> = spring(dampingRatio = 0.85f, stiffness = 520f)
     val offsetEnter: FiniteAnimationSpec<IntOffset> = tween(400, easing = EmphasizedDecelerate)
     val offsetExit: FiniteAnimationSpec<IntOffset> = tween(200, easing = EmphasizedAccelerate)
 }

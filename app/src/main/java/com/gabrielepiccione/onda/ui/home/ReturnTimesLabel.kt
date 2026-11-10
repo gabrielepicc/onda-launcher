@@ -2,8 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
-import com.gabrielepiccione.onda.data.ReturnPolicy
-import com.gabrielepiccione.onda.LauncherViewModel
+import com.gabrielepiccione.onda.data.TraceMark
+import com.gabrielepiccione.onda.data.TraceSnapshot
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,25 +17,29 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.gabrielepiccione.onda.R
 
-/** Etichetta di sviluppo: i millisecondi da onStart al primo fotogramma, gli ultimi valori (il più recente per primo). */
+/**
+ * Etichetta di sviluppo: onStart → primo fotogramma, poi per gli ultimi ritorni i ms dall'onNewIntent di ogni segnale
+ * (— = non arrivato) e i fotogrammi di Choreographer ogni 100 ms nel primo secondo. Il ritorno più recente è in cima.
+ */
 @Composable
-fun ReturnTimesLabel(times: List<Long>, entryOnFirstFrame: Boolean?, entryStart: LauncherViewModel.EntryStart?, modifier: Modifier = Modifier) {
-    if (times.isEmpty()) return
+fun ReturnTimesLabel(times: List<Long>, entryOnFirstFrame: Boolean?, traces: List<TraceSnapshot>, modifier: Modifier = Modifier) {
+    if (times.isEmpty() && traces.isEmpty()) return
+    val none = stringResource(R.string.return_trace_none)
+    fun ms(snapshot: TraceSnapshot, mark: TraceMark): String = snapshot.marks[mark]?.toString() ?: none
+    val header = stringResource(R.string.return_times_label, times.reversed().joinToString(" · ")) + when (entryOnFirstFrame) {
+        true -> " · " + stringResource(R.string.return_entry_ok)
+        false -> " · " + stringResource(R.string.return_entry_late)
+        null -> ""
+    }
+    val lines = traces.reversed().map { t ->
+        stringResource(
+            R.string.return_trace_line,
+            ms(t, TraceMark.TOP_RESUMED), ms(t, TraceMark.RESUME), ms(t, TraceMark.FOCUS), ms(t, TraceMark.ENTER_COMPLETE),
+            ms(t, TraceMark.FIRST_FRAME), ms(t, TraceMark.SPRING_START), t.framesPer100ms.joinToString(" "),
+        )
+    }
     Text(
-        stringResource(R.string.return_times_label, times.reversed().joinToString(" · ")) + when (entryOnFirstFrame) {
-            true -> " · " + stringResource(R.string.return_entry_ok)
-            false -> " · " + stringResource(R.string.return_entry_late)
-            null -> ""
-        } + (entryStart?.let { start ->
-            val signal = stringResource(
-                when (start.signal) {
-                    ReturnPolicy.EntrySignal.ENTER_COMPLETE -> R.string.return_signal_enter
-                    ReturnPolicy.EntrySignal.FOCUS -> R.string.return_signal_focus
-                    ReturnPolicy.EntrySignal.TIMEOUT -> R.string.return_signal_timeout
-                },
-            )
-            " · " + stringResource(R.string.return_spring_start, signal, start.delayMs)
-        } ?: ""),
+        (listOf(header) + lines).joinToString("\n"),
         color = Color.White,
         style = MaterialTheme.typography.labelSmall,
         modifier = modifier

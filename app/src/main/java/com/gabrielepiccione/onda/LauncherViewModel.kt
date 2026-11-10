@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.TraceSnapshot
+import com.gabrielepiccione.onda.data.TraceMark
+import com.gabrielepiccione.onda.data.ReturnTrace
 import com.gabrielepiccione.onda.data.ReturnPolicy
 import com.gabrielepiccione.onda.data.AutomationOverrides
 import com.gabrielepiccione.onda.data.SearchHistoryStore
@@ -358,32 +361,24 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _entryGo = MutableStateFlow(0)
 
-    /** Uguale a [entryToken] quando la molla può partire (dopo uno dei segnali: vedi [ReturnPolicy.EntryGate]). */
+    /** Uguale a [entryToken] quando la molla può partire (a ritardo fisso dall'onNewIntent). */
     val entryGo: StateFlow<Int> = _entryGo.asStateFlow()
 
     /** Un ritorno da un'app: valori di partenza subito, molla in attesa di [startReturnEntry]. */
     fun prepareReturnEntry() {
         entryRequested = true
-        firstFrameAt = null
-        entryStartedAt = null
-        _entryStart.value = null
+        _entryOnFirstFrame.value = null
         _entryToken.value += 1
     }
 
-    /** Il segnale [signal] ha avviato la molla. */
-    fun startReturnEntry(signal: ReturnPolicy.EntrySignal, nowMs: Long) {
-        entryStartedAt = nowMs
-        entrySignal = signal
-        publishEntryStart()
+    /** La molla parte (ritardo scaduto). */
+    fun startReturnEntry() {
         _entryGo.value = _entryToken.value
     }
 
     // Per la prova sull'etichetta: l'entrata richiesta è già applicata quando si disegna il primo fotogramma?
     private var entryRequested = false
     private var entryAppliedToken = 0
-    private var firstFrameAt: Long? = null
-    private var entryStartedAt: Long? = null
-    private var entrySignal: ReturnPolicy.EntrySignal? = null
 
     /** La composizione ha applicato lo stato iniziale dell'entrata (prima del disegno). */
     fun entryApplied(token: Int) { entryAppliedToken = token }
@@ -393,27 +388,39 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     /** Ultimo ritorno: true se i valori di partenza erano già nel primo fotogramma disegnato, null se non c'era entrata. */
     val entryOnFirstFrame: StateFlow<Boolean?> = _entryOnFirstFrame.asStateFlow()
 
-    /** Chi ha avviato la molla e dopo quanti ms dal primo fotogramma (per vedere quanto la finestra resta nascosta). */
-    data class EntryStart(val signal: ReturnPolicy.EntrySignal, val delayMs: Long)
-
-    private val _entryStart = MutableStateFlow<EntryStart?>(null)
-    val entryStart: StateFlow<EntryStart?> = _entryStart.asStateFlow()
-
     /** Chiamata al primo fotogramma disegnato dopo onStart. */
     fun reportFirstFrame(nowMs: Long) {
         _entryOnFirstFrame.value = if (entryRequested) entryAppliedToken == _entryToken.value else null
-        if (entryRequested) {
-            firstFrameAt = nowMs
-            publishEntryStart()
-        }
         entryRequested = false
+        traceMark(TraceMark.FIRST_FRAME, nowMs)
     }
 
-    private fun publishEntryStart() {
-        val first = firstFrameAt ?: return
-        val started = entryStartedAt ?: return
-        val signal = entrySignal ?: return
-        _entryStart.value = EntryStart(signal, ReturnPolicy.startDelayMs(first, started))
+    // --- Misure di sviluppo: i segnali di ogni ritorno, in ms dall'onNewIntent ---
+    private var trace: ReturnTrace? = null
+    private var traceDone = emptyList<TraceSnapshot>()
+    private val _traces = MutableStateFlow<List<TraceSnapshot>>(emptyList())
+
+    /** Gli ultimi ritorni misurati, il più recente per ultimo (l'ultimo è ancora in aggiornamento). */
+    val traces: StateFlow<List<TraceSnapshot>> = _traces.asStateFlow()
+
+    /** Un nuovo ritorno da un'app: il precedente si chiude e si comincia a contare da [nowMs]. */
+    fun beginTrace(nowMs: Long) {
+        trace?.let { traceDone = ReturnTrace.keepLast(traceDone, it.snapshot()) }
+        trace = ReturnTrace(nowMs)
+        publishTraces()
+    }
+
+    fun traceMark(mark: TraceMark, nowMs: Long) {
+        if (trace?.mark(mark, nowMs) == true) publishTraces()
+    }
+
+    /** Un fotogramma di Choreographer (i primi 1000 ms dopo il ritorno). */
+    fun traceFrame(nowMs: Long) {
+        if (trace?.frame(nowMs) == true) publishTraces()
+    }
+
+    private fun publishTraces() {
+        _traces.value = trace?.let { ReturnTrace.keepLast(traceDone.takeLast(ReturnTrace.KEEP - 1), it.snapshot()) } ?: traceDone
     }
 
     private val _returnTimes = MutableStateFlow<List<Long>>(emptyList())
