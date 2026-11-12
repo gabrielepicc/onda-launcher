@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.data.CalendarLogic
+import com.gabrielepiccione.onda.data.AllDayMode
+import com.gabrielepiccione.onda.data.CalendarDays
+import com.gabrielepiccione.onda.data.DayLabel
 import androidx.compose.runtime.LaunchedEffect
 import com.gabrielepiccione.onda.data.ClockText
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -117,6 +121,8 @@ fun ClockHeader(
     innerSpacing: Int = ClockSpacing.DEFAULT,
     /** Cifre con i secondi e lancetta dei secondi: l'orologio si aggiorna ogni secondo. */
     seconds: Boolean = false,
+    /** Eventi di tutto il giorno di oggi: etichette colorate accanto al prossimo evento (massimo due, poi «+N»). */
+    allDayLabels: List<DayLabel> = emptyList(),
 ) {
     val colors = LocalOndaColors.current
     val shadow = LocalTextShadow.current
@@ -179,6 +185,10 @@ fun ClockHeader(
                     modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onDate).padding(vertical = 2.dp),
                 )
             }
+        }
+        // Oggi solo eventi di tutto il giorno: la riga mostra quelli, non «Nessun evento»
+        if (allDayLabels.isNotEmpty()) {
+            AllDayChips(allDayLabels, onEvent, max = CalendarDays.MAX_STRIP_LABELS, onMore = onDate)
         }
         if (event != null) {
             Row(
@@ -677,11 +687,14 @@ fun AgendaCard(
     highlighted: Boolean = false,
     onLongPress: (() -> Unit)? = null,
     onEmptyClick: () -> Unit = {},
+    allDayMode: AllDayMode = AllDayMode.ALWAYS,
 ) {
     val colors = LocalOndaColors.current
     val locale = Locale.getDefault()
     val zone = ZoneId.systemDefault()
     val today = LocalDate.now()
+    // Per ogni giorno: prima gli eventi di tutto il giorno (etichette colorate, «giorno N di M»), poi quelli con l'ora
+    val groups = remember(events, allDayMode, today) { CalendarDays.groups(events, allDayMode, System.currentTimeMillis(), zone, today, CalendarLogic.DIAGNOSTIC_DAYS) }
     Column(
         modifier
             .fillMaxWidth()
@@ -691,17 +704,20 @@ fun AgendaCard(
             .combinedClickable(onClick = onEmptyClick, onLongClick = onLongPress)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        if (events.isEmpty()) {
+        if (groups.isEmpty()) {
             Text(stringResource(R.string.agenda_empty), color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             return@Column
         }
-        events.groupBy { Instant.ofEpochMilli(it.begin).atZone(zone).toLocalDate() }.forEach { (day, list) ->
+        groups.forEach { group ->
+            val day = group.date
+            val list = group.timed
             val dayLabel = when (day) {
                 today -> stringResource(R.string.today)
                 today.plusDays(1) -> stringResource(R.string.agenda_tomorrow)
                 else -> day.format(DateTimeFormatter.ofPattern("EEEE d MMMM", locale)).replaceFirstChar { it.titlecase(locale) }
             }
             Text(dayLabel, color = colors.accent, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp, bottom = 2.dp))
+            AllDayChips(group.allDay, onEvent, modifier = Modifier.padding(bottom = 4.dp))
             list.forEach { e ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

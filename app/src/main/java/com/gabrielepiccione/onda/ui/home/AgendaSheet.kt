@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.data.AllDayMode
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ fun AgendaSheet(
     onOpenWeather: () -> Unit,
     onOpenCalendar: () -> Unit,
     onDismiss: () -> Unit,
+    allDayMode: AllDayMode = AllDayMode.ALWAYS,
 ) {
     val colors = LocalOndaColors.current
     ModalBottomSheet(
@@ -72,7 +74,7 @@ fun AgendaSheet(
                 Text(weatherHint, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodyMedium)
             }
             Text(stringResource(R.string.agenda_title), color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
-            AgendaCard(events = events, onEvent = onEvent, highlighted = false, onLongPress = {}, onEmptyClick = onEmptyAgenda)
+            AgendaCard(events = events, onEvent = onEvent, highlighted = false, onLongPress = {}, onEmptyClick = onEmptyAgenda, allDayMode = allDayMode)
             TextButton(onClick = onOpenCalendar, modifier = Modifier.align(Alignment.End)) {
                 Text(stringResource(R.string.agenda_open_calendar))
             }
