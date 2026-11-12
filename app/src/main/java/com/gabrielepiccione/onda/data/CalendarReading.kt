@@ -8,18 +8,18 @@ enum class CalendarSource { CALENDARS, INSTANCES, EVENTS }
 /** Cosa ha restituito una sorgente: righe lette ed eventuale errore (tipo e messaggio, mai dati personali). */
 data class SourceReport(val source: CalendarSource, val rows: Int, val error: String? = null)
 
-/** Il percorso che ha prodotto gli eventi. */
+/** Quale sorgente ha dato gli eventi che si vedono. */
 enum class ReadPath {
-    /** Instances ha funzionato (più Events per i calendari non visibili, se ce ne sono). */
+    /** Solo Instances. */
     INSTANCES,
 
-    /** Instances ha dato errore o nessuna riga per i calendari visibili: si è ripiegato sulla tabella Events. */
-    EVENTS_FALLBACK,
+    /** Solo la tabella Events (con le ricorrenze calcolate). */
+    EVENTS,
 
-    /** Nessun calendario visibile: solo la tabella Events. */
-    EVENTS_ONLY,
+    /** Tutte e due: gli eventi sono l'unione delle sorgenti, senza doppioni. */
+    UNION,
 
-    /** Nessuna lettura riuscita. */
+    /** Nessuna sorgente ha dato righe. */
     NONE,
 }
 
@@ -44,25 +44,24 @@ object CalendarReading {
         return if (message.isEmpty()) type else (type + ": " + message).take(MAX_MESSAGE)
     }
 
-    /**
-     * Instances va sostituita con la tabella Events se lancia, o se non restituisce righe pur avendo calendari visibili
-     * (un provider che non le calcola). Senza calendari visibili non c'è nulla da aspettarsi da Instances.
-     */
-    fun needsFallback(visibleCalendars: Int, instances: SourceReport?): Boolean =
-        visibleCalendars > 0 && (instances == null || instances.error != null || instances.rows == 0)
-
-    /** Il percorso dal resoconto: chi ha funzionato davvero. */
-    fun path(visibleCalendars: Int, instances: SourceReport?, fellBack: Boolean): ReadPath = when {
-        fellBack -> ReadPath.EVENTS_FALLBACK
-        visibleCalendars == 0 -> ReadPath.EVENTS_ONLY
-        instances != null && instances.error == null -> ReadPath.INSTANCES
+    /** Il percorso dalle righe che ogni sorgente ha restituito. */
+    fun path(instancesRows: Int, eventsRows: Int): ReadPath = when {
+        instancesRows > 0 && eventsRows > 0 -> ReadPath.UNION
+        instancesRows > 0 -> ReadPath.INSTANCES
+        eventsRows > 0 -> ReadPath.EVENTS
         else -> ReadPath.NONE
     }
 
-    /** Unisce due letture senza doppioni (stesso evento e stesso inizio); l'ordine resta quello di arrivo. */
-    fun merge(first: List<CalendarEvent>, second: List<CalendarEvent>): List<CalendarEvent> {
+    /**
+     * Unisce Instances e gli eventi della tabella Events (ricorrenze già calcolate) senza doppioni, per EVENT_ID e inizio.
+     * Se Instances ha già un evento (anche solo una occorrenza) vale Instances per tutte le sue occorrenze: la tabella
+     * Events non sa delle eccezioni (occorrenze cancellate o spostate) e le farebbe rivivere. Gli eventi che Instances
+     * non ha affatto vengono aggiunti dalla tabella Events.
+     */
+    fun merge(instances: List<CalendarEvent>, fromEvents: List<CalendarEvent>): List<CalendarEvent> {
+        val known = instances.mapTo(HashSet()) { it.eventId }
         val seen = HashSet<Pair<Long, Long>>()
-        return (first + second).filter { seen.add(it.eventId to it.begin) }
+        return (instances + fromEvents.filter { it.eventId !in known }).filter { seen.add(it.eventId to it.begin) }
     }
 
     /** Dà il colore del calendario di provenienza agli eventi che non ce l'hanno (Instances non lo legge). */
@@ -74,21 +73,52 @@ object CalendarReading {
 
     fun errors(sources: List<SourceReport>): List<SourceReport> = sources.filter { it.error != null }
 
-    /** Il testo della diagnostica da copiare: solo id, flag, conteggi ed errori (nessun nome, account o titolo). */
-    fun copyText(permission: Boolean, calendars: List<CalendarInfo>, excluded: Set<Long>, read: CalendarReadInfo?, allDayMode: AllDayMode): String = buildString {
+    /**
+     * Il testo della diagnostica da copiare: id, tipo di account, flag, conteggi ed errori, più produttore e versione
+     * di Android. Nessun nome di calendario, titolo di evento o indirizzo email.
+     */
+    fun copyText(
+        permission: Boolean,
+        calendars: List<CalendarInfo>,
+        excluded: Set<Long>,
+        read: CalendarReadInfo?,
+        allDayMode: AllDayMode,
+        probe: CalendarProbe? = null,
+        device: String = "",
+    ): String = buildString {
         appendLine("Onda – diagnostica calendario")
+        if (device.isNotBlank()) appendLine("dispositivo: $device")
         appendLine("permesso: " + if (permission) "sì" else "no")
         appendLine("eventi tutto il giorno: " + allDayMode.name)
-        appendLine("calendari: ${calendars.size}")
+        appendLine("calendari: ${calendars.size}, inclusi ${CalendarLogic.includedCount(calendars, excluded)} su ${calendars.size}")
         calendars.forEach { c ->
-            appendLine("  #${c.id} visibile=${c.visible} sync=${c.synced} spento=${c.id in excluded} eventi14=${c.events14} tuttoilgiorno14=${c.allDay14}")
+            appendLine(
+                "  #${c.id} ${c.accountType.ifBlank { "?" }} visibile=${c.visible} sync=${c.synced} accesso=${CalendarLogic.accessName(c.access)}" +
+                    " principale=${c.primary ?: "?"} incluso=${CalendarLogic.isIncluded(c.id, excluded)}",
+            )
+            appendLine("      Instances oggi=${c.instances.today} 14g=${c.instances.days14} tuttoilgiorno=${c.instances.allDay14}")
+            appendLine("      Events    oggi=${c.events.today} 14g=${c.events.days14} tuttoilgiorno=${c.events.allDay14}")
         }
         if (read != null) {
             appendLine("percorso: " + read.path.name)
             read.sources.forEach { appendLine("  ${it.source.name}: righe=${it.rows}" + (it.error?.let { e -> " errore=$e" } ?: "")) }
         }
+        if (probe != null) {
+            appendLine("prova di lettura:")
+            probe.steps.forEach { appendLine("  ${it.step.name}: righe=${it.rows}" + (it.error?.let { e -> " errore=$e" } ?: "")) }
+            appendLine("  tabella Events: righe totali=${probe.eventsTotalRows}, evento futuro più vicino=${probe.nearestFuture ?: "—"}" + (probe.error?.let { e -> " errore=$e" } ?: ""))
+        }
     }.trim()
 }
+
+/** I passi della prova di lettura. */
+enum class ProbeStep { INSTANCES_TODAY, INSTANCES_14, EVENTS_14_NO_FILTER }
+
+/** Un passo della prova: righe lette ed eventuale eccezione. */
+data class ProbeResult(val step: ProbeStep, val rows: Int, val error: String? = null)
+
+/** La prova di lettura: tre letture separate e la tabella Events in generale (totale righe e data del prossimo evento, senza titolo). */
+data class CalendarProbe(val steps: List<ProbeResult>, val eventsTotalRows: Int, val nearestFuture: String?, val error: String? = null)
 
 /** Come è andata l'ultima lettura (per la diagnostica). */
 data class CalendarReadInfo(val path: ReadPath, val sources: List<SourceReport>)

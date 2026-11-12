@@ -116,4 +116,48 @@ class CalendarLogicTest {
         // Regola non capita: si vede almeno il primo evento
         assertEquals(listOf(start), Recurrence.occurrences(start, hour, "FREQ=SECONDLY", rome, start - hour, start + hour))
     }
+
+    @Test
+    fun calendarsAreAllIncludedUnlessTurnedOffByHand() {
+        val calendars = listOf(cal(1), cal(2), cal(3))
+        // Valore di partenza: nessuno spento, tutti inclusi
+        assertEquals(3, CalendarLogic.includedCount(calendars, emptySet()))
+        assertEquals(2, CalendarLogic.includedCount(calendars, setOf(2L)))
+        assertTrue(CalendarLogic.isIncluded(1, emptySet()))
+        assertEquals(false, CalendarLogic.isIncluded(2, setOf(2L)))
+        // Un calendario nuovo (id mai visto) è incluso senza che nessuno lo accenda
+        assertTrue(CalendarLogic.isIncluded(99, setOf(2L)))
+        assertEquals(emptySet<Long>(), Settings().calendarsExcluded)
+    }
+
+    @Test
+    fun countsPerSourceTodayFourteenDaysAndAllDay() {
+        val zone = ZoneId.of("Europe/Rome")
+        val today = java.time.LocalDate.of(2026, 11, 9)
+        fun allDayOn(date: java.time.LocalDate, days: Int, id: Long): CalendarEvent {
+            val b = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+            val (lb, le) = CalendarLogic.allDayLocal(b, date.plusDays(days.toLong()).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(), zone)
+            return CalendarEvent("x", lb, true, id, le, 0, 1)
+        }
+        val events = listOf(
+            allDayOn(today, 1, 1), // oggi, tutto il giorno
+            allDayOn(today.minusDays(1), 3, 2), // iniziato ieri, copre oggi
+            allDayOn(today.plusDays(2), 1, 3), // dopodomani
+            CalendarEvent("t", LocalDateTime.of(2026, 11, 9, 18, 0).atZone(zone).toInstant().toEpochMilli(), false, 4, 0, 0, 1),
+            CalendarEvent("t", LocalDateTime.of(2026, 11, 11, 18, 0).atZone(zone).toInstant().toEpochMilli(), false, 5, 0, 0, 1),
+        )
+        val c = CalendarLogic.counts(events, today, zone)
+        assertEquals(3, c.today)
+        assertEquals(5, c.days14)
+        assertEquals(3, c.allDay14)
+    }
+
+    @Test
+    fun accessLevelNames() {
+        assertEquals("owner", CalendarLogic.accessName(700))
+        assertEquals("read", CalendarLogic.accessName(200))
+        assertEquals("editor", CalendarLogic.accessName(600))
+        assertEquals("?", CalendarLogic.accessName(-1))
+        assertEquals("none", CalendarLogic.accessName(0))
+    }
 }

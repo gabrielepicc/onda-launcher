@@ -6,6 +6,9 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 
+/** Quanti eventi ha trovato una sorgente per un calendario: oggi, nei prossimi 14 giorni e, di questi, di tutto il giorno. */
+data class SourceCounts(val today: Int = 0, val days14: Int = 0, val allDay14: Int = 0)
+
 /** Un calendario del telefono, con quanti eventi ha nei prossimi 14 giorni. */
 data class CalendarInfo(
     val id: Long,
@@ -14,13 +17,30 @@ data class CalendarInfo(
     val visible: Boolean,
     val synced: Boolean,
     val color: Int,
+    /** Eventi trovati uniti dalle due sorgenti (quelli che si vedono davvero). */
     val events14: Int = 0,
     /** Di questi, quanti di tutto il giorno. */
     val allDay14: Int = 0,
+    /** Tipo di account (com.google, com.microsoft.exchange, LOCAL…): non è un dato personale, a differenza dell'account. */
+    val accountType: String = "",
+    /** Livello di accesso di Android (0 nessuno … 700 proprietario), -1 se non si legge. */
+    val access: Int = -1,
+    /** È il calendario principale dell'account; null se il telefono non lo dice. */
+    val primary: Boolean? = null,
+    /** Cosa ha trovato Instances e cosa la tabella Events, separatamente: così si vede dove si perdono gli eventi. */
+    val instances: SourceCounts = SourceCounts(),
+    val events: SourceCounts = SourceCounts(),
 )
 
 /** Stato della lettura del calendario: permesso e calendari trovati. */
-data class CalendarDiagnostics(val permission: Boolean, val calendars: List<CalendarInfo>, val read: CalendarReadInfo? = null)
+data class CalendarDiagnostics(
+    val permission: Boolean,
+    val calendars: List<CalendarInfo>,
+    val read: CalendarReadInfo? = null,
+    val probe: CalendarProbe? = null,
+    /** Produttore e versione di Android, per le particolarità del calendario di certi telefoni. */
+    val device: String = "",
+)
 
 /** Perché non compaiono eventi, nell'ordine in cui conviene sistemarlo. */
 enum class CalendarProblem { NO_PERMISSION, NO_CALENDARS, NONE_SELECTED, NONE_VISIBLE, NOT_SYNCED, NO_EVENTS }
@@ -33,6 +53,37 @@ object CalendarLogic {
     /** Giorni scelti per l'evento sotto l'orologio. */
     val NEXT_EVENT_CHOICES = listOf(1, 3, 7)
     const val DIAGNOSTIC_DAYS = 14
+
+    /** Nome del livello di accesso (CALENDAR_ACCESS_LEVEL di Android). */
+    fun accessName(level: Int): String = when {
+        level < 0 -> "?"
+        level >= 800 -> "root"
+        level >= 700 -> "owner"
+        level >= 600 -> "editor"
+        level >= 500 -> "contributor"
+        level >= 400 -> "override"
+        level >= 300 -> "respond"
+        level >= 200 -> "read"
+        level >= 100 -> "freebusy"
+        else -> "none"
+    }
+
+    /** Quanti eventi ha una sorgente: oggi (con l'ora e di tutto il giorno che cadono oggi), nella finestra e di tutto il giorno. */
+    fun counts(events: List<CalendarEvent>, today: java.time.LocalDate, zone: ZoneId): SourceCounts {
+        val todayCount = events.count { e ->
+            if (e.allDay) CalendarDays.labelsOn(today, listOf(e), zone).isNotEmpty() else CalendarDays.firstDay(e, zone) == today
+        }
+        return SourceCounts(todayCount, events.size, events.count { it.allDay })
+    }
+
+    /** Quanti calendari sono inclusi: tutti, tranne quelli che l'utente ha spento a mano (il valore di partenza è «tutti»). */
+    fun includedCount(calendars: List<CalendarInfo>, excluded: Set<Long>): Int = calendars.count { it.id !in excluded }
+
+    fun isIncluded(calendarId: Long, excluded: Set<Long>): Boolean = calendarId !in excluded
+
+    /** Gli eventi tra la finestra [startMs, endMs) : un evento che finisce prima o inizia dopo non conta. */
+    fun inRange(events: List<CalendarEvent>, startMs: Long, endMs: Long): List<CalendarEvent> =
+        events.filter { it.begin < endMs && it.end >= startMs }
 
     /** Gli eventi già iniziati da poco restano in vista: la finestra parte qualche ora prima di adesso. */
     const val PAST_MARGIN_MS = 6 * HOUR_MS
