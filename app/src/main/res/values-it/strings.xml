@@ -1187,4 +1187,11 @@
     <string name="clock_filter_classic">Classici</string>
     <string name="clock_seconds">Secondi</string>
     <string name="clock_seconds_sub">Cifre con i secondi e lancetta dei secondi; l\'orologio si aggiorna ogni secondo.</string>
+    <string name="edit_tab_style">Stile</string>
+    <string name="edit_tab_size">Misure</string>
+    <string name="edit_tab_details">Dettagli</string>
+    <string name="edit_group_size_position">Dimensione e posizione</string>
+    <string name="edit_advanced">Avanzate</string>
+    <string name="edit_advanced_sub">Ordine nella home e altezza sullo schermo</string>
+    <string name="edit_advanced_hide">Nascondi le opzioni avanzate</string>
 </resources>

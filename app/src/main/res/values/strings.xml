@@ -1187,4 +1187,11 @@
     <string name="clock_filter_classic">Classic</string>
     <string name="clock_seconds">Seconds</string>
     <string name="clock_seconds_sub">Digits with seconds and a second hand; the clock updates every second.</string>
+    <string name="edit_tab_style">Style</string>
+    <string name="edit_tab_size">Size</string>
+    <string name="edit_tab_details">Details</string>
+    <string name="edit_group_size_position">Size and position</string>
+    <string name="edit_advanced">Advanced</string>
+    <string name="edit_advanced_sub">Order on home and height on screen</string>
+    <string name="edit_advanced_hide">Hide the advanced options</string>
 </resources>
