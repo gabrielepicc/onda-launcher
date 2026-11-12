@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.components.allDayText
 import com.gabrielepiccione.onda.data.CalendarDays
 import com.gabrielepiccione.onda.data.AllDayMode
 import androidx.compose.ui.unit.sp
@@ -214,7 +215,7 @@ private fun AgendaPage(events: List<CalendarEvent>, agendaDays: Int, allDayMode:
     val next = strip.timed ?: strip.labels.firstOrNull()?.event
     val day = Instant.ofEpochMilli(next?.begin ?: System.currentTimeMillis()).atZone(zone)
     val scheme = MaterialTheme.colorScheme
-    val allDayLine = strip.labels.take(CalendarDays.MAX_STRIP_LABELS).joinToString(" · ") { l -> if (l.multiDay) stringResource(R.string.all_day_day_n, l.event.title, l.dayIndex, l.dayCount) else l.event.title } +
+    val allDayLine = strip.labels.take(CalendarDays.MAX_STRIP_LABELS).map { allDayText(it) }.joinToString(" · ") +
         (strip.labels.size - CalendarDays.MAX_STRIP_LABELS).takeIf { it > 0 }?.let { " " + stringResource(R.string.all_day_more, it) }.orEmpty()
     CardShell(
         highlighted = highlighted,
