@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import androidx.compose.runtime.LaunchedEffect
 import com.gabrielepiccione.onda.data.ClockText
 import androidx.compose.foundation.layout.BoxWithConstraints
 import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
@@ -73,7 +74,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -120,9 +120,10 @@ fun ClockHeader(
 ) {
     val colors = LocalOndaColors.current
     val shadow = LocalTextShadow.current
-    val now by produceState(LocalDateTime.now(), seconds) {
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedEffect(seconds) {
         while (true) {
-            value = LocalDateTime.now()
+            now = LocalDateTime.now()
             val period = if (seconds) 1_000L else 60_000L
             delay(period - (System.currentTimeMillis() % period) + 30)
         }
