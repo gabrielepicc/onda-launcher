@@ -4,6 +4,8 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.animation.core.animateDpAsState
+import com.gabrielepiccione.onda.data.EditSheetLayout
 import androidx.compose.animation.core.tween
 import com.gabrielepiccione.onda.data.EntryTiming
 import kotlinx.coroutines.flow.first
@@ -719,6 +721,11 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     val blocks = remember(settings) { HomeBlocks.resolve(settings) }
     var editing by remember { mutableStateOf<String?>(null) }
+    val editShift by animateDpAsState(
+        EditSheetLayout.contentShiftDp(androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp, editing != null).dp,
+        Motion.enter(300),
+        label = "editShift",
+    )
     // Annulla dopo un preset: aspetto precedente e nome del preset che era attivo
     var undoLook by remember { mutableStateOf<Pair<com.gabrielepiccione.onda.data.LookTheme, String>?>(null) }
     var undoKeepsWallpaper by remember { mutableStateOf(false) }
@@ -862,8 +869,9 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 start = hiddenSide,
                 end = hiddenSide,
                 top = bars.calculateTopPadding() + 24.dp + chosenTop,
-                // Con il pulsante di ricerca in basso le ultime righe restano sopra di lui
-                bottom = bars.calculateBottomPadding() + if (settings.showSearchButton) 88.dp else 28.dp,
+                // Con il pulsante di ricerca in basso le ultime righe restano sopra di lui; mentre si modifica un blocco
+                // la home sale, così il blocco resta sopra il foglio
+                bottom = bars.calculateBottomPadding() + (if (settings.showSearchButton) 88.dp else 28.dp) + editShift,
             ),
             modifier = Modifier
                 .fillMaxSize()

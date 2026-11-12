@@ -4,6 +4,12 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import com.gabrielepiccione.onda.data.EditTab
+import com.gabrielepiccione.onda.data.EditSheetLayout
 import com.gabrielepiccione.onda.ui.components.SwitchRow
 import com.gabrielepiccione.onda.data.WidgetGroups
 import com.gabrielepiccione.onda.data.StackLayout
@@ -112,7 +118,7 @@ fun HomeEditSheet(
     }
     // Mentre si trascina uno slider il foglio si fa traslucido: si vede il blocco cambiare dal vivo
     val dragging = remember { mutableStateOf(false) }
-    val sheetAlpha by animateFloatAsState(if (dragging.value) DRAG_ALPHA else 1f, label = "editSheetAlpha")
+    val sheetAlpha by animateFloatAsState(EditSheetLayout.sheetAlpha(dragging.value), label = "editSheetAlpha")
     CompositionLocalProvider(LocalSliderDragging provides dragging) {
     ModalBottomSheet(
         onDismissRequest = { actions.done() },
@@ -121,12 +127,16 @@ fun HomeEditSheet(
         contentColor = colors.onWallpaper,
         scrimColor = Color.Transparent,
     ) {
+        // Il foglio è alto al massimo il 55% dello schermo: il blocco che si modifica resta visibile sopra
         Column(
             Modifier
                 .navigationBarsPadding()
-                .verticalScroll(rememberScrollState())
+                .heightIn(max = EditSheetLayout.maxHeightDp(LocalConfiguration.current.screenHeightDp).dp)
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 16.dp),
+        ) {
+        Column(
+            Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             val widgetId = HomeBlocks.widgetId(block)
@@ -145,150 +155,176 @@ fun HomeEditSheet(
                 style = MaterialTheme.typography.headlineSmall,
             )
 
-            if (block == HomeBlocks.CLOCK) {
-                SectionTitle(R.string.edit_style)
-                ClockStyleTiles(settings.clockStyle, compact = true, seconds = settings.clockSeconds) { st -> actions.edit { it.copy(clockStyle = st) } }
-                ValueSlider(stringResource(R.string.edit_size), percentText(settings.clockScale), settings.clockScale, Settings().clockScale, 0.6f..1.6f, accentLabel = true) { v ->
-                    actions.edit { it.copy(clockScale = v) }
-                }
-                SwitchRow(stringResource(R.string.clock_seconds), stringResource(R.string.clock_seconds_sub), settings.clockSeconds) { v -> actions.edit { it.copy(clockSeconds = v) } }
-                SectionTitle(R.string.edit_alignment)
-                AlignTiles(settings.clockAlign) { a -> actions.edit { it.copy(clockAlign = a) } }
-            }
-
-            if (block == HomeBlocks.AGENDA) {
-                SectionTitle(R.string.agenda_days)
-                Slider(
-                    value = settings.agendaDays.toFloat(),
-                    onValueChange = { v -> actions.edit { it.copy(agendaDays = v.roundToInt().coerceIn(1, 7)) } },
-                    valueRange = 1f..7f,
-                    steps = 5,
-                )
-                Text(
-                    pluralStringResourceCompat(settings.agendaDays),
-                    color = LocalOndaColors.current.onWallpaperMuted,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            if (block == HomeBlocks.MEDIA) {
-                SectionTitle(R.string.media_style)
-                MediaStyleTiles(settings.mediaCompact) { compact -> actions.edit { it.copy(mediaCompact = compact) } }
-                ValueSlider(stringResource(R.string.edit_size), percentText(settings.mediaScale), settings.mediaScale, Settings().mediaScale, 0.75f..1.25f, accentLabel = true) { v ->
-                    actions.edit { it.copy(mediaScale = v) }
-                }
-            }
-
             val maxWidth = LocalConfiguration.current.screenWidthDp - 32
-            if (widgetId != null) {
-                val key = WidgetSizing.widgetKey(widgetId)
-                SectionTitle(R.string.widget_group_size)
-                WidgetSizeControls(
-                    size = settings.widgetSizes[key] ?: WidgetSize(),
-                    height = settings.widgetHeights[widgetId] ?: defaultWidgetHeight(widgetId),
-                    defaultHeight = defaultWidgetHeight(widgetId),
-                    maxWidth = maxWidth,
-                    onSize = { size -> actions.edit { WidgetSizing.set(it, key, size) } },
-                    onHeight = { h -> actions.setWidgetHeight(widgetId, h ?: defaultWidgetHeight(widgetId)) },
-                )
-            }
-
-            if (stack != null) {
-                val stackDefault = stack.widgets.maxOfOrNull { defaultWidgetHeight(it) } ?: 160
-                val key = WidgetSizing.stackKey(stack.id)
-                WidgetSizeControls(
-                    size = settings.widgetSizes[key] ?: WidgetSize(),
-                    height = stack.heightDp ?: stackDefault,
-                    defaultHeight = stackDefault,
-                    maxWidth = maxWidth,
-                    onSize = { size -> actions.edit { WidgetSizing.set(it, key, size) } },
-                    onHeight = { h -> actions.setStackHeight(stack.id, h ?: stackDefault) },
-                )
-                // Carosello orizzontale o righe una sotto l'altra
-                ChoiceRow(
-                    stringResource(R.string.stack_layout),
-                    listOf(StackLayout.CAROUSEL to stringResource(R.string.stack_layout_carousel), StackLayout.ROWS to stringResource(R.string.stack_layout_rows)),
-                    stack.layout,
-                ) { layout -> actions.edit { WidgetGroups.setLayout(it, stack.id, layout) } }
-                SectionTitle(R.string.stack_widgets)
-                stack.widgets.forEach { id ->
-                    val label = widgetLabel(id) ?: stringResource(R.string.widget_number, id)
-                    SheetRow(Icons.Filled.CallSplit, stringResource(R.string.stack_detach, label)) { actions.edit { WidgetGroups.detach(it, id) } }
-                    SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { widgetToDelete = id }
-                }
-                SheetRow(Icons.Filled.Add, stringResource(R.string.stack_add)) { actions.addToStack(block) }
-                SheetRow(Icons.Filled.ViewAgenda, stringResource(R.string.stack_split)) {
-                    actions.edit { WidgetGroups.split(it, stack.id) }
-                    actions.done()
-                }
-            }
-            // Unire al blocco di widget che segue: nasce un gruppo (o il gruppo si allarga)
-            if ((widgetId != null || stack != null) && WidgetGroups.nextWidgetBlock(settings, block) != null) {
-                SheetRow(Icons.Filled.ViewCarousel, stringResource(R.string.stack_merge_next)) {
-                    actions.edit { WidgetGroups.mergeWithNext(it, block, "g" + System.currentTimeMillis().toString(36)) }
-                    actions.done()
+            val hasStyle = block == HomeBlocks.CLOCK || block == HomeBlocks.MEDIA
+            val tabs = EditSheetLayout.tabs(hasStyle)
+            var savedTab by rememberSaveable(block) { mutableStateOf<EditTab?>(null) }
+            val tab = EditSheetLayout.tabOrFirst(savedTab, tabs)
+            // Una sola sezione per volta: Stile | Misure (dimensione e posizione) | Dettagli
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                tabs.forEachIndexed { i, t ->
+                    SegmentedButton(
+                        selected = t == tab,
+                        onClick = { savedTab = t },
+                        shape = SegmentedButtonDefaults.itemShape(i, tabs.size),
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    ) { Text(stringResource(tabTitle(t)), softWrap = false) }
                 }
             }
 
-            // Posizione: un solo gruppo con l'ordine nella home e l'altezza sullo schermo
-            SectionTitle(R.string.edit_group_position)
-            Text(stringResource(R.string.edit_position), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                FilledTonalButton(onClick = { actions.move(block, -1) }, enabled = index > 0, modifier = Modifier.heightIn(min = 48.dp)) {
-                    Icon(Icons.Filled.KeyboardArrowUp, null)
-                    Text(stringResource(R.string.move_up), modifier = Modifier.padding(start = 4.dp))
+            when (tab) {
+                EditTab.STYLE -> {
+                    SectionTitle(R.string.edit_style)
+                    if (block == HomeBlocks.CLOCK) {
+                        ClockStyleTiles(settings.clockStyle, compact = true, seconds = settings.clockSeconds) { st -> actions.edit { it.copy(clockStyle = st) } }
+                    }
+                    if (block == HomeBlocks.MEDIA) {
+                        MediaStyleTiles(settings.mediaCompact) { compact -> actions.edit { it.copy(mediaCompact = compact) } }
+                    }
                 }
-                FilledTonalButton(onClick = { actions.move(block, 1) }, enabled = index in 0 until blocks.lastIndex, modifier = Modifier.heightIn(min = 48.dp)) {
-                    Icon(Icons.Filled.KeyboardArrowDown, null)
-                    Text(stringResource(R.string.move_down), modifier = Modifier.padding(start = 4.dp))
-                }
-            }
-            HomePositionControl(settings) { actions.edit(it) }
 
-            if (block == HomeBlocks.CLOCK) {
-                SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_clock)) { actions.replaceClock() }
-                SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_clock)) {
-                    actions.edit { it.copy(showClock = false) }
-                    actions.done()
+                EditTab.SIZE -> {
+                    SectionTitle(R.string.edit_group_size_position)
+                    if (block == HomeBlocks.CLOCK) {
+                        ValueSlider(stringResource(R.string.edit_size), percentText(settings.clockScale), settings.clockScale, Settings().clockScale, 0.6f..1.6f, accentLabel = true) { v ->
+                            actions.edit { it.copy(clockScale = v) }
+                        }
+                        Text(stringResource(R.string.edit_alignment), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                        AlignTiles(settings.clockAlign) { a -> actions.edit { it.copy(clockAlign = a) } }
+                    }
+                    if (block == HomeBlocks.MEDIA) {
+                        ValueSlider(stringResource(R.string.edit_size), percentText(settings.mediaScale), settings.mediaScale, Settings().mediaScale, 0.75f..1.25f, accentLabel = true) { v ->
+                            actions.edit { it.copy(mediaScale = v) }
+                        }
+                    }
+                    if (block == HomeBlocks.AGENDA) {
+                        ValueSlider(
+                            stringResource(R.string.agenda_days), stringResource(R.string.agenda_days_value, settings.agendaDays),
+                            settings.agendaDays.toFloat(), Settings().agendaDays.toFloat(), 1f..7f, accentLabel = true,
+                        ) { v -> actions.edit { it.copy(agendaDays = v.roundToInt().coerceIn(1, 7)) } }
+                    }
+                    if (widgetId != null) {
+                        val key = WidgetSizing.widgetKey(widgetId)
+                        WidgetSizeControls(
+                            size = settings.widgetSizes[key] ?: WidgetSize(),
+                            height = settings.widgetHeights[widgetId] ?: defaultWidgetHeight(widgetId),
+                            defaultHeight = defaultWidgetHeight(widgetId),
+                            maxWidth = maxWidth,
+                            onSize = { size -> actions.edit { WidgetSizing.set(it, key, size) } },
+                            onHeight = { h -> actions.setWidgetHeight(widgetId, h ?: defaultWidgetHeight(widgetId)) },
+                        )
+                    }
+                    if (stack != null) {
+                        val stackDefault = stack.widgets.maxOfOrNull { defaultWidgetHeight(it) } ?: 160
+                        val key = WidgetSizing.stackKey(stack.id)
+                        WidgetSizeControls(
+                            size = settings.widgetSizes[key] ?: WidgetSize(),
+                            height = stack.heightDp ?: stackDefault,
+                            defaultHeight = stackDefault,
+                            maxWidth = maxWidth,
+                            onSize = { size -> actions.edit { WidgetSizing.set(it, key, size) } },
+                            onHeight = { h -> actions.setStackHeight(stack.id, h ?: stackDefault) },
+                        )
+                        // Carosello orizzontale o righe una sotto l'altra
+                        ChoiceRow(
+                            stringResource(R.string.stack_layout),
+                            listOf(StackLayout.CAROUSEL to stringResource(R.string.stack_layout_carousel), StackLayout.ROWS to stringResource(R.string.stack_layout_rows)),
+                            stack.layout,
+                        ) { layout -> actions.edit { WidgetGroups.setLayout(it, stack.id, layout) } }
+                    }
+
+                    // Opzioni avanzate, compresse: ordine nella home e altezza sullo schermo
+                    var advanced by rememberSaveable { mutableStateOf(false) }
+                    ActionRow(
+                        if (advanced) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                        stringResource(R.string.edit_advanced),
+                        stringResource(if (advanced) R.string.edit_advanced_hide else R.string.edit_advanced_sub),
+                    ) { advanced = !advanced }
+                    if (advanced) {
+                        Text(stringResource(R.string.edit_position), color = colors.onWallpaper, style = MaterialTheme.typography.bodyLarge)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            FilledTonalButton(onClick = { actions.move(block, -1) }, enabled = index > 0, modifier = Modifier.heightIn(min = 48.dp)) {
+                                Icon(Icons.Filled.KeyboardArrowUp, null)
+                                Text(stringResource(R.string.move_up), modifier = Modifier.padding(start = 4.dp))
+                            }
+                            FilledTonalButton(onClick = { actions.move(block, 1) }, enabled = index in 0 until blocks.lastIndex, modifier = Modifier.heightIn(min = 48.dp)) {
+                                Icon(Icons.Filled.KeyboardArrowDown, null)
+                                Text(stringResource(R.string.move_down), modifier = Modifier.padding(start = 4.dp))
+                            }
+                        }
+                        HomePositionControl(settings) { actions.edit(it) }
+                    }
                 }
-            }
-            if (block == HomeBlocks.AGENDA) {
-                SheetRow(Icons.Filled.Delete, stringResource(R.string.agenda_hide)) {
-                    actions.edit { it.copy(showAgenda = false) }
-                    actions.done()
-                }
-            }
-            if (block == HomeBlocks.NOTIFICATIONS) {
-                SheetRow(Icons.Filled.Delete, stringResource(R.string.summary_hide)) {
-                    actions.edit { it.copy(showNotificationSummary = false) }
-                    actions.done()
-                }
-            }
-            if (block == HomeBlocks.MEDIA) {
-                SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_media)) {
-                    actions.edit { it.copy(showMedia = false) }
-                    actions.done()
-                }
-            }
-            if (widgetId != null) {
-                SectionTitle(R.string.edit_group_actions)
-                ActionRow(Icons.Filled.Add, stringResource(R.string.stack_make)) { actions.addToStack(block) }
-                ActionRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_widget)) { actions.replaceWidget(widgetId) }
-                ActionRow(
-                    Icons.Filled.Visibility,
-                    stringResource(R.string.wrule_open),
-                    widgetRuleSummary(WidgetVisibility.ruleOf(settings, widgetId)),
-                ) { actions.editRules(widgetId) }
-                // Rimuovi: rosso, con la conferma già prevista
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable { widgetToDelete = widgetId },
-                ) {
-                    Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 8.dp))
-                    Text(stringResource(R.string.edit_delete_widget), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp))
+
+                EditTab.DETAILS -> {
+                    SectionTitle(R.string.edit_tab_details)
+                    if (block == HomeBlocks.CLOCK) {
+                        SwitchRow(stringResource(R.string.clock_seconds), stringResource(R.string.clock_seconds_sub), settings.clockSeconds) { v -> actions.edit { it.copy(clockSeconds = v) } }
+                        SheetRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_clock)) { actions.replaceClock() }
+                        SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_clock)) {
+                            actions.edit { it.copy(showClock = false) }
+                            actions.done()
+                        }
+                    }
+                    if (block == HomeBlocks.AGENDA) {
+                        SheetRow(Icons.Filled.Delete, stringResource(R.string.agenda_hide)) {
+                            actions.edit { it.copy(showAgenda = false) }
+                            actions.done()
+                        }
+                    }
+                    if (block == HomeBlocks.NOTIFICATIONS) {
+                        SheetRow(Icons.Filled.Delete, stringResource(R.string.summary_hide)) {
+                            actions.edit { it.copy(showNotificationSummary = false) }
+                            actions.done()
+                        }
+                    }
+                    if (block == HomeBlocks.MEDIA) {
+                        SheetRow(Icons.Filled.Delete, stringResource(R.string.edit_hide_media)) {
+                            actions.edit { it.copy(showMedia = false) }
+                            actions.done()
+                        }
+                    }
+                    if (stack != null) {
+                        SectionTitle(R.string.stack_widgets)
+                        stack.widgets.forEach { id ->
+                            val label = widgetLabel(id) ?: stringResource(R.string.widget_number, id)
+                            SheetRow(Icons.Filled.CallSplit, stringResource(R.string.stack_detach, label)) { actions.edit { WidgetGroups.detach(it, id) } }
+                            SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { widgetToDelete = id }
+                        }
+                        SheetRow(Icons.Filled.Add, stringResource(R.string.stack_add)) { actions.addToStack(block) }
+                        SheetRow(Icons.Filled.ViewAgenda, stringResource(R.string.stack_split)) {
+                            actions.edit { WidgetGroups.split(it, stack.id) }
+                            actions.done()
+                        }
+                    }
+                    // Unire al blocco di widget che segue: nasce un gruppo (o il gruppo si allarga)
+                    if ((widgetId != null || stack != null) && WidgetGroups.nextWidgetBlock(settings, block) != null) {
+                        SheetRow(Icons.Filled.ViewCarousel, stringResource(R.string.stack_merge_next)) {
+                            actions.edit { WidgetGroups.mergeWithNext(it, block, "g" + System.currentTimeMillis().toString(36)) }
+                            actions.done()
+                        }
+                    }
+                    if (widgetId != null) {
+                        ActionRow(Icons.Filled.Add, stringResource(R.string.stack_make)) { actions.addToStack(block) }
+                        ActionRow(Icons.Filled.Refresh, stringResource(R.string.edit_replace_widget)) { actions.replaceWidget(widgetId) }
+                        ActionRow(
+                            Icons.Filled.Visibility,
+                            stringResource(R.string.wrule_open),
+                            widgetRuleSummary(WidgetVisibility.ruleOf(settings, widgetId)),
+                        ) { actions.editRules(widgetId) }
+                        // Rimuovi: rosso, con la conferma già prevista
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable { widgetToDelete = widgetId },
+                        ) {
+                            Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 8.dp))
+                            Text(stringResource(R.string.edit_delete_widget), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 16.dp))
+                        }
+                    }
                 }
             }
 
+        }
             Button(onClick = { actions.done() }, modifier = Modifier.padding(top = 8.dp).align(Alignment.End)) {
                 Text(stringResource(R.string.edit_done))
             }
@@ -297,7 +333,12 @@ fun HomeEditSheet(
     }
 }
 
-private const val DRAG_ALPHA = 0.35f
+@androidx.annotation.StringRes
+private fun tabTitle(tab: EditTab): Int = when (tab) {
+    EditTab.STYLE -> R.string.edit_tab_style
+    EditTab.SIZE -> R.string.edit_tab_size
+    EditTab.DETAILS -> R.string.edit_tab_details
+}
 
 /**
  * Sceglie dove inizia il primo blocco della home: ancorato in basso (automatico) oppure in un
