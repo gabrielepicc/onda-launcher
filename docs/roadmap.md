@@ -95,7 +95,7 @@ Legenda: ✅ fatto · 🟡 parziale · ⬜ da fare. Aggiornare a ogni passo conc
 - ✅ Passata Material You per area (regole in `docs/design-material-you.md`): Impostazioni (#84), Elenco app e cartelle (#85), Popup e notifiche (#86), Ricerca (#87), Home.
 
 - Documento di lavoro UI/UX di novembre (`docs/prompts-ui-novembre.md`): blocchi 1, 6, 7 e 4c già fatti (#80, #83, #89, #82); blocco 2 (fondamenta) ✅ (#91); blocco 3 (carosello in home) ✅ (#92); blocco 4 (menu) ✅ (#93); blocco 5 (selettore widget) ✅ (#94); blocco 9 (ricerca, app più cercate) ✅ (#95); blocco 8 (coerenza) ✅: scelte uniformi (#96), Ricerca (#98), Home; Elenco app/cartelle e Notifiche/popup già coperti dal blocco 4 (#93).
-- Aggiornamento del 9 novembre (stesso documento): gruppo A (correzioni UI) ✅ (#100); gruppo B (widget con regole) ✅ (#101); gruppo C (carosello o righe) ✅. Ritorno alla home più rapido e naturale ✅. Calendario: diagnostica e calendari da mostrare ✅. Stili dell'orologio ✅. Pannello modifica orologio ✅.
+- Aggiornamento del 9 novembre (stesso documento): gruppo A (correzioni UI) ✅ (#100); gruppo B (widget con regole) ✅ (#101); gruppo C (carosello o righe) ✅. Ritorno alla home più rapido e naturale ✅. Calendario: diagnostica e calendari da mostrare ✅. Stili dell'orologio ✅. Pannello modifica orologio ✅. Riordino widget nei caroselli ✅.
 
 ## Decisioni prese (modificabili)
 - Pressione lunga e swipe a destra aprono un popup all'altezza della riga; il foglio dal basso resta solo per rispondere alle notifiche, così il campo sta sopra la tastiera, e per "Altre opzioni".

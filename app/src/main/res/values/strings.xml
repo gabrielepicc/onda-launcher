@@ -1194,4 +1194,10 @@
     <string name="edit_advanced">Advanced</string>
     <string name="edit_advanced_sub">Order on home and height on screen</string>
     <string name="edit_advanced_hide">Hide the advanced options</string>
+    <string name="order_open">Order in the carousel</string>
+    <string name="order_title">Order in the carousel</string>
+    <string name="order_hint">Drag the handle or use the arrows. Each widget is a page.</string>
+    <string name="order_drag">Drag to reorder</string>
+    <string name="order_move_to">Move to: %1$s</string>
+    <string name="order_carousel_n">Carousel %1$d</string>
 </resources>

@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.material.icons.filled.SwapVert
 import com.gabrielepiccione.onda.ui.components.ChoiceRow
 import com.gabrielepiccione.onda.data.StackLayout
 import android.content.pm.ShortcutInfo
@@ -81,6 +82,8 @@ fun FolderSheet(
     onAccessibility: () -> Unit = {},
     onSwipe: (ActionChoice) -> Unit = {},
     onWidgetLayout: (StackLayout) -> Unit = {},
+    /** «Ordine nel carosello»: apre il foglio per riordinare i widget della cartella. */
+    onEditOrder: () -> Unit = {},
     apps: List<AppInfo> = emptyList(),
 ) {
     var renaming by remember { mutableStateOf(false) }
@@ -136,6 +139,7 @@ fun FolderSheet(
             }
             ActionRow(Icons.Filled.Add, stringResource(R.string.folder_add_widget)) { onAddWidget(); onDismiss() }
             if (folder.widgets.size > 1) {
+                ActionRow(Icons.Filled.SwapVert, stringResource(R.string.order_open)) { onEditOrder(); onDismiss() }
                 ChoiceRow(
                     stringResource(R.string.stack_layout),
                     listOf(StackLayout.CAROUSEL to stringResource(R.string.stack_layout_carousel), StackLayout.ROWS to stringResource(R.string.stack_layout_rows)),

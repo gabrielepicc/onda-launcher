@@ -1194,4 +1194,10 @@
     <string name="edit_advanced">Avanzate</string>
     <string name="edit_advanced_sub">Ordine nella home e altezza sullo schermo</string>
     <string name="edit_advanced_hide">Nascondi le opzioni avanzate</string>
+    <string name="order_open">Ordine nel carosello</string>
+    <string name="order_title">Ordine nel carosello</string>
+    <string name="order_hint">Trascina la maniglia o usa le frecce. Ogni widget è una pagina.</string>
+    <string name="order_drag">Trascina per riordinare</string>
+    <string name="order_move_to">Sposta in: %1$s</string>
+    <string name="order_carousel_n">Carosello %1$d</string>
 </resources>
