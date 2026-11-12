@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.ProbeStep
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.platform.LocalClipboardManager
 import com.gabrielepiccione.onda.data.ReadPath
@@ -100,6 +101,39 @@ internal fun CalendarSettings(
                 pluralStringResource(R.plurals.cal_diag_found, data.calendars.size, data.calendars.size),
                 color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium,
             )
+            Text(
+                stringResource(R.string.cal_diag_included, CalendarLogic.includedCount(data.calendars, settings.calendarsExcluded), data.calendars.size),
+                color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium,
+            )
+            if (data.device.isNotBlank()) Text(data.device, color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall)
+            // Per ogni calendario: tipo di account, flag e quanti eventi trova ciascuna sorgente (oggi / 14 giorni / tutto il giorno)
+            data.calendars.forEach { c ->
+                Text(
+                    stringResource(
+                        R.string.cal_diag_calendar,
+                        c.id, c.accountType.ifBlank { "?" }, stringResource(if (c.visible) R.string.yes else R.string.no), stringResource(if (c.synced) R.string.yes else R.string.no),
+                        CalendarLogic.accessName(c.access), if (c.id !in settings.calendarsExcluded) stringResource(R.string.yes) else stringResource(R.string.no),
+                    ),
+                    color = colors.onWallpaper, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp),
+                )
+                Text(
+                    stringResource(R.string.cal_diag_counts, c.instances.today, c.instances.days14, c.instances.allDay14, c.events.today, c.events.days14, c.events.allDay14),
+                    color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            // Prova di lettura in tre passi e tabella Events in generale
+            data.probe?.let { probe ->
+                Text(stringResource(R.string.cal_probe_title), color = colors.accent, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+                probe.steps.forEach { step ->
+                    Text(stringResource(R.string.cal_probe_step, stringResource(probeLabel(step.step)), step.rows), color = colors.onWallpaper, style = MaterialTheme.typography.bodySmall)
+                    step.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+                }
+                Text(
+                    stringResource(R.string.cal_probe_table, probe.eventsTotalRows, probe.nearestFuture ?: stringResource(R.string.cal_probe_none)),
+                    color = colors.onWallpaper, style = MaterialTheme.typography.bodySmall,
+                )
+                probe.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+            }
             // Da dove sono arrivati gli eventi: righe per sorgente, percorso e ogni errore della lettura (mai inghiottiti)
             data.read?.let { read ->
                 Text(stringResource(R.string.cal_diag_path, stringResource(pathLabel(read.path))), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium)
@@ -123,7 +157,7 @@ internal fun CalendarSettings(
         data?.let { d ->
             val clipboard = LocalClipboardManager.current
             ActionRow(Icons.Filled.Settings, stringResource(R.string.cal_diag_copy), stringResource(R.string.cal_diag_copy_sub)) {
-                clipboard.setText(AnnotatedString(CalendarReading.copyText(permission, d.calendars, settings.calendarsExcluded, d.read, settings.allDayMode)))
+                clipboard.setText(AnnotatedString(CalendarReading.copyText(permission, d.calendars, settings.calendarsExcluded, d.read, settings.allDayMode, d.probe, d.device)))
             }
         }
         if (!permission) ActionRow(Icons.Filled.Settings, stringResource(R.string.cal_grant), stringResource(R.string.cal_grant_sub), onClick = onRequestPermission)
@@ -145,9 +179,15 @@ private fun allDayDescription(m: AllDayMode): Int = when (m) {
 
 private fun pathLabel(p: ReadPath): Int = when (p) {
     ReadPath.INSTANCES -> R.string.cal_path_instances
-    ReadPath.EVENTS_FALLBACK -> R.string.cal_path_fallback
-    ReadPath.EVENTS_ONLY -> R.string.cal_path_events
+    ReadPath.EVENTS -> R.string.cal_path_events
+    ReadPath.UNION -> R.string.cal_path_union
     ReadPath.NONE -> R.string.cal_path_none
+}
+
+private fun probeLabel(step: ProbeStep): Int = when (step) {
+    ProbeStep.INSTANCES_TODAY -> R.string.cal_probe_instances_today
+    ProbeStep.INSTANCES_14 -> R.string.cal_probe_instances_14
+    ProbeStep.EVENTS_14_NO_FILTER -> R.string.cal_probe_events_14
 }
 
 private fun problemText(p: CalendarProblem): Int = when (p) {

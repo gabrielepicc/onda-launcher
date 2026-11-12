@@ -36,19 +36,75 @@ class CalendarRepository(private val context: Context) {
         CalendarLogic.sorted(read(startOfDay, end, excluded).events).filterNot { CalendarLogic.isOver(it, now) }.take(limit)
     }
 
-    /** Permesso, calendari con i conteggi dei prossimi 14 giorni e come è andata la lettura (nessun testo personale). */
+    /**
+     * Permesso, calendari con i conteggi per sorgente (Instances e tabella Events, separati), come è andata la lettura e
+     * la prova di lettura in tre passi. Nessun testo personale: solo conteggi, tipi di account, date ed errori.
+     */
     suspend fun diagnostics(): CalendarDiagnostics = withContext(Dispatchers.IO) {
-        if (!hasPermission()) return@withContext CalendarDiagnostics(false, emptyList())
+        val device = "${android.os.Build.MANUFACTURER} Android ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})"
+        if (!hasPermission()) return@withContext CalendarDiagnostics(false, emptyList(), device = device)
+        val zone = java.time.ZoneId.systemDefault()
         val now = System.currentTimeMillis()
-        val result = read(now, CalendarLogic.windowEnd(now, CalendarLogic.DIAGNOSTIC_DAYS), emptySet())
-        val all = result.events.groupingBy { it.calendarId }.eachCount()
-        val allDay = result.events.filter { it.allDay }.groupingBy { it.calendarId }.eachCount()
-        val calendars = readCalendars().first
-        CalendarDiagnostics(true, calendars.map { it.copy(events14 = all[it.id] ?: 0, allDay14 = allDay[it.id] ?: 0) }, CalendarReadInfo(result.path, result.sources))
+        val today = java.time.LocalDate.now()
+        val startOfToday = today.atStartOfDay(zone).toInstant().toEpochMilli()
+        val endOfToday = today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val end14 = CalendarLogic.windowEnd(now, CalendarLogic.DIAGNOSTIC_DAYS)
+
+        // La lettura vera (unione delle sorgenti, calendari spenti esclusi dalle impostazioni non si conoscono qui: nessun filtro)
+        val result = read(now, end14, emptySet())
+        val (calendars, _) = readCalendars()
+
+        // Prova di lettura: tre passi separati, ognuno con righe ed eccezione
+        val steps = mutableListOf<ProbeResult>()
+        fun instancesStep(step: ProbeStep, start: Long, end: Long): List<CalendarEvent> {
+            val reports = mutableListOf<SourceReport>()
+            val events = readInstances(start, end, zone, reports)
+            val r = reports.last()
+            steps += ProbeResult(step, r.rows, r.error)
+            return events
+        }
+        instancesStep(ProbeStep.INSTANCES_TODAY, startOfToday, endOfToday)
+        val instances14 = instancesStep(ProbeStep.INSTANCES_14, now, end14)
+        val eventsReports = mutableListOf<SourceReport>()
+        val events14 = readEvents(null, now, end14, zone, eventsReports)
+        steps += ProbeResult(ProbeStep.EVENTS_14_NO_FILTER, eventsReports.last().rows, eventsReports.last().error)
+        val table = eventsTableInfo(now)
+
+        val byInstances = instances14.groupBy { it.calendarId }
+        val byEvents = events14.groupBy { it.calendarId }
+        val merged = result.events.groupBy { it.calendarId }
+        val info = calendars.map { c ->
+            c.copy(
+                events14 = merged[c.id].orEmpty().size,
+                allDay14 = merged[c.id].orEmpty().count { it.allDay },
+                instances = CalendarLogic.counts(byInstances[c.id].orEmpty(), today, zone),
+                events = CalendarLogic.counts(byEvents[c.id].orEmpty(), today, zone),
+            )
+        }
+        CalendarDiagnostics(true, info, CalendarReadInfo(result.path, result.sources), CalendarProbe(steps, table.first, table.second, table.third), device)
+    }
+
+    /** Righe totali della tabella Events e giorno dell'evento futuro più vicino (solo la data, mai il titolo). */
+    private fun eventsTableInfo(now: Long): Triple<Int, String?, String?> {
+        var total = 0
+        var nearest: String? = null
+        var error: String? = null
+        try {
+            context.contentResolver.query(CalendarContract.Events.CONTENT_URI, arrayOf(CalendarContract.Events._ID), null, null, null)?.use { total = it.count }
+            context.contentResolver.query(
+                CalendarContract.Events.CONTENT_URI, arrayOf(CalendarContract.Events.DTSTART),
+                "${CalendarContract.Events.DTSTART} >= ? AND ${CalendarContract.Events.DELETED} = 0", arrayOf(now.toString()), "${CalendarContract.Events.DTSTART} ASC",
+            )?.use { c ->
+                if (c.moveToFirst()) nearest = java.time.Instant.ofEpochMilli(c.getLong(0)).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
+            }
+        } catch (t: Throwable) {
+            error = CalendarReading.describeError(t)
+        }
+        return Triple(total, nearest, error)
     }
 
     private fun readCalendars(): Pair<List<CalendarInfo>, SourceReport> {
-        val projection = arrayOf(
+        val basic = arrayOf(
             CalendarContract.Calendars._ID,
             CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
             CalendarContract.Calendars.ACCOUNT_NAME,
@@ -56,42 +112,58 @@ class CalendarRepository(private val context: Context) {
             CalendarContract.Calendars.SYNC_EVENTS,
             CalendarContract.Calendars.CALENDAR_COLOR,
         )
-        val out = mutableListOf<CalendarInfo>()
-        val report = try {
+        // Tipo di account, livello di accesso e «principale» sono in più: se il telefono li rifiuta si riparte dalla base
+        val extended = basic + arrayOf(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, "isPrimary")
+        fun query(projection: Array<String>, wide: Boolean): List<CalendarInfo> {
+            val out = mutableListOf<CalendarInfo>()
             context.contentResolver.query(CalendarContract.Calendars.CONTENT_URI, projection, null, null, "${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME} ASC")?.use { c ->
                 while (c.moveToNext()) {
-                    out += CalendarInfo(c.getLong(0), c.getString(1).orEmpty(), c.getString(2).orEmpty(), c.getInt(3) == 1, c.getInt(4) == 1, c.getInt(5))
+                    out += CalendarInfo(
+                        c.getLong(0), c.getString(1).orEmpty(), c.getString(2).orEmpty(), c.getInt(3) == 1, c.getInt(4) == 1, c.getInt(5),
+                        accountType = if (wide) c.getString(6).orEmpty() else "",
+                        access = if (wide) c.getInt(7) else -1,
+                        primary = if (wide && !c.isNull(8)) c.getInt(8) == 1 else null,
+                    )
                 }
             }
-            SourceReport(CalendarSource.CALENDARS, out.size)
-        } catch (t: Throwable) {
-            SourceReport(CalendarSource.CALENDARS, out.size, CalendarReading.describeError(t))
+            return out
         }
-        return out to report
+        return try {
+            val list = query(extended, true)
+            list to SourceReport(CalendarSource.CALENDARS, list.size)
+        } catch (first: Throwable) {
+            try {
+                val list = query(basic, false)
+                list to SourceReport(CalendarSource.CALENDARS, list.size, CalendarReading.describeError(first) + " (riprovato con meno colonne)")
+            } catch (second: Throwable) {
+                emptyList<CalendarInfo>() to SourceReport(CalendarSource.CALENDARS, 0, CalendarReading.describeError(second))
+            }
+        }
     }
 
     /**
-     * L'UNICA lettura degli eventi tra [start] e [end], dei calendari non spenti in [excluded]; il resoconto dice da dove
-     * vengono e se qualche query ha dato errore (nessuna eccezione viene inghiottita). Instances ha le occorrenze già
-     * calcolate ma solo per i calendari visibili: per gli altri (e per tutti, se Instances dà errore o nessuna riga) si
-     * legge la tabella Events e le ripetizioni si calcolano con [Recurrence]. Il colore viene dalla tabella dei calendari.
+     * L'UNICA lettura degli eventi tra [start] e [end], dei calendari non spenti in [excluded]. Le due sorgenti si UNISCONO
+     * (non una al posto dell'altra): Instances ha le occorrenze già calcolate, la tabella Events i calendari che Instances
+     * non include (e gli eventi che non ha) con le ripetizioni calcolate da [Recurrence]; [CalendarReading.merge] toglie i
+     * doppioni. Il resoconto dice da dove vengono e se qualche query ha dato errore (nessuna eccezione viene inghiottita).
+     * Il colore viene dalla tabella dei calendari; gli eventi di tutto il giorno seguono il giorno locale.
      */
     fun read(start: Long, end: Long, excluded: Set<Long>): CalendarRead {
         val (calendars, calendarsReport) = readCalendars()
         val colors = calendars.associate { it.id to it.color }
         val zone = java.time.ZoneId.systemDefault()
         val reports = mutableListOf(calendarsReport)
-        val chosen = calendars.filter { it.id !in excluded }
-        val visible = chosen.filter { it.visible }
         val instances = readInstances(start, end, zone, reports)
-        val instancesReport = reports.lastOrNull { it.source == CalendarSource.INSTANCES }
-        val fellBack = CalendarReading.needsFallback(visible.size, instancesReport)
-        // Gli altri calendari, e quelli visibili se Instances non ha funzionato, dalla tabella Events
-        val fromEvents = chosen.filter { !it.visible || fellBack }.map { it.id }
-        val eventRows = if (fromEvents.isNotEmpty()) readEvents(fromEvents, start, end, zone, reports) else emptyList()
+        // Tutti i calendari tranne quelli spenti a mano; se l'elenco dei calendari non si legge, nessun filtro
+        val ids = if (calendars.isEmpty()) null else calendars.filter { CalendarLogic.isIncluded(it.id, excluded) }.map { it.id }
+        val eventRows = if (ids == null || ids.isNotEmpty()) readEvents(ids, start, end, zone, reports) else emptyList()
         val merged = CalendarReading.merge(instances, eventRows)
         val events = CalendarReading.withColors(CalendarLogic.filter(merged, excluded), colors)
-        return CalendarRead(events, reports, CalendarReading.path(visible.size, instancesReport, fellBack))
+        val path = CalendarReading.path(
+            reports.last { it.source == CalendarSource.INSTANCES }.rows,
+            reports.lastOrNull { it.source == CalendarSource.EVENTS }?.rows ?: 0,
+        )
+        return CalendarRead(events, reports, path)
     }
 
     /** Instances con la proiezione minima; se il provider rifiuta CALENDAR_ID si riprova senza e l'errore resta nel resoconto. */
@@ -134,7 +206,7 @@ class CalendarRepository(private val context: Context) {
         }
     }
 
-    private fun readEvents(ids: List<Long>, start: Long, end: Long, zone: java.time.ZoneId, reports: MutableList<SourceReport>): List<CalendarEvent> {
+    private fun readEvents(ids: List<Long>?, start: Long, end: Long, zone: java.time.ZoneId, reports: MutableList<SourceReport>): List<CalendarEvent> {
         val projection = arrayOf(
             CalendarContract.Events._ID,
             CalendarContract.Events.CALENDAR_ID,
@@ -146,7 +218,8 @@ class CalendarRepository(private val context: Context) {
             CalendarContract.Events.RRULE,
             CalendarContract.Events.EVENT_TIMEZONE,
         )
-        val selection = "${CalendarContract.Events.CALENDAR_ID} IN (${ids.joinToString(",")}) AND ${CalendarContract.Events.DELETED} = 0 AND " +
+        val calendarFilter = ids?.let { "${CalendarContract.Events.CALENDAR_ID} IN (${it.joinToString(",")}) AND " }.orEmpty()
+        val selection = calendarFilter + "${CalendarContract.Events.DELETED} = 0 AND " +
             "${CalendarContract.Events.DTSTART} < ? AND (${CalendarContract.Events.RRULE} IS NOT NULL OR ${CalendarContract.Events.DTEND} >= ?)"
         val out = mutableListOf<CalendarEvent>()
         var rows = 0
