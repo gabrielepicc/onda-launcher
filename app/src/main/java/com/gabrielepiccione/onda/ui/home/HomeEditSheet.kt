@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SegmentedButton
@@ -86,6 +87,8 @@ interface HomeEditActions {
     fun deleteWidget(id: Int)
     /** «Mostra solo quando…»: collocazione e regole del widget. */
     fun editRules(id: Int) {}
+    /** «Ordine nel carosello» del gruppo di widget [stackId]. */
+    fun editOrder(stackId: String) {}
     fun done()
 }
 
@@ -291,6 +294,7 @@ fun HomeEditSheet(
                             SheetRow(Icons.Filled.CallSplit, stringResource(R.string.stack_detach, label)) { actions.edit { WidgetGroups.detach(it, id) } }
                             SheetRow(Icons.Filled.Delete, stringResource(R.string.widget_remove_named, label)) { widgetToDelete = id }
                         }
+                        if (stack.widgets.size > 1) SheetRow(Icons.Filled.SwapVert, stringResource(R.string.order_open)) { actions.editOrder(stack.id) }
                         SheetRow(Icons.Filled.Add, stringResource(R.string.stack_add)) { actions.addToStack(block) }
                         SheetRow(Icons.Filled.ViewAgenda, stringResource(R.string.stack_split)) {
                             actions.edit { WidgetGroups.split(it, stack.id) }

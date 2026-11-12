@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
+import com.gabrielepiccione.onda.data.WidgetOrder
+import com.gabrielepiccione.onda.data.WidgetGroupRef
 import androidx.compose.animation.core.animateDpAsState
 import com.gabrielepiccione.onda.data.EditSheetLayout
 import androidx.compose.animation.core.tween
@@ -308,6 +312,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var lightsEdit by remember { mutableStateOf(false) }
     // «Mostra solo quando…» per un widget; dopo averne aggiunto uno si chiede subito dove metterlo
     var ruleSheetFor by remember { mutableStateOf<Int?>(null) }
+    // «Ordine nel carosello»: il gruppo di widget (della home o di una cartella) che si sta riordinando
+    var orderFor by remember { mutableStateOf<WidgetGroupRef?>(null) }
     var widgetsBeforePick by remember { mutableStateOf<List<Int>?>(null) }
     // Widget delle luci accanto all'orologio: le sue misure come ogni altro widget; pressione lunga per cambiarle
     val lightsWidget: @Composable () -> Unit = {
@@ -2072,6 +2078,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             onAccessibility = { withRestrictedHelp(callbacks::openAccessibilitySettings) },
             onSwipe = { vm.settingsRepo.setFolderSwipe(f.id, Actions.encode(it)) },
             onWidgetLayout = { vm.settingsRepo.setFolderWidgetLayout(f.id, it) },
+            onEditOrder = { orderFor = WidgetGroupRef.Folder(f.id) },
         )
     }
 
@@ -2192,6 +2199,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 override fun setStackHeight(stackId: String, dp: Int) = vm.settingsRepo.setStackHeight(stackId, dp)
                 override fun deleteWidget(id: Int) = vm.removeWidget(id)
                 override fun editRules(id: Int) { editing = null; ruleSheetFor = id }
+                override fun editOrder(stackId: String) { editing = null; orderFor = WidgetGroupRef.Stack(stackId) }
                 override fun done() { editing = null }
             },
         )
@@ -2211,6 +2219,33 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
             rule = WidgetVisibility.ruleOf(settings, id).copy(hidden = false),
             onChange = { r -> vm.updateSettings { it.copy(widgetRules = it.widgetRules + (id to r.copy(hidden = false))) } },
             onDismiss = { ruleSheetFor = null },
+        )
+    }
+
+    orderFor?.let { ref ->
+        val widgetsInGroup = WidgetOrder.widgetsOf(settings, ref)
+        // Il gruppo può sparire (un solo widget rimasto): il foglio si chiude
+        LaunchedEffect(widgetsInGroup.size) { if (widgetsInGroup.size < 2 && ref is WidgetGroupRef.Stack) orderFor = null }
+        WidgetOrderSheet(
+            widgets = widgetsInGroup,
+            labelOf = { id -> vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() } ?: context.getString(R.string.widget_number, id) },
+            iconOf = { id -> vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadIcon(context, 0)?.toBitmap(96, 96)?.asImageBitmap() }.getOrNull() } },
+            targets = WidgetOrder.targets(settings, ref),
+            targetName = { t ->
+                when (t) {
+                    is WidgetGroupRef.Folder -> settings.folders[t.id]?.name.orEmpty()
+                    is WidgetGroupRef.Stack -> context.getString(R.string.order_carousel_n, settings.widgetStacks.indexOfFirst { it.id == t.id } + 1)
+                }
+            },
+            onReorder = { from, to -> vm.updateSettings { WidgetOrder.reorder(it, ref, from, to) } },
+            onMoveTo = { id, target -> vm.updateSettings { WidgetOrder.moveToGroup(it, ref, target, id) } },
+            onRemove = { id ->
+                when (ref) {
+                    is WidgetGroupRef.Stack -> vm.removeWidget(id)
+                    is WidgetGroupRef.Folder -> vm.removeFolderWidget(ref.id, id)
+                }
+            },
+            onDismiss = { orderFor = null },
         )
     }
 
