@@ -106,6 +106,10 @@ data class CalendarEvent(
     val calendarId: Long = 0L,
 )
 
+/** Come mostrare gli eventi di tutto il giorno (compleanni, festività, ferie). */
+@Serializable
+enum class AllDayMode { ALWAYS, ONLY_IF_NONE, HIDE }
+
 @Serializable
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
@@ -398,6 +402,8 @@ data class Settings(
     val nextEventDays: Int = 1,
     /** Calendari che l'utente ha spento in «Calendari da mostrare»; vuoto = tutti quelli disponibili. */
     val calendarsExcluded: Set<Long> = emptySet(),
+    /** Eventi di tutto il giorno: sempre, solo se non ci sono altri eventi, o mai. */
+    val allDayMode: AllDayMode = AllDayMode.ALWAYS,
     /** Riepilogo delle notifiche come blocco della home. */
     val showNotificationSummary: Boolean = false,
     /** Blocca il layout: niente modifiche con la pressione lunga in home. */

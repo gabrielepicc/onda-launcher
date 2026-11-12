@@ -2,6 +2,11 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalClipboardManager
+import com.gabrielepiccione.onda.data.ReadPath
+import com.gabrielepiccione.onda.data.CalendarReading
+import com.gabrielepiccione.onda.data.AllDayMode
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -65,6 +70,14 @@ internal fun CalendarSettings(
             days,
         ) { v -> onEdit { it.copy(nextEventDays = v) } }
 
+        // Eventi di tutto il giorno: compleanni, festività, ferie
+        ChoiceRow(
+            stringResource(R.string.cal_all_day_title),
+            AllDayMode.entries.map { it to stringResource(allDayLabel(it)) },
+            settings.allDayMode,
+            descriptions = AllDayMode.entries.associateWith { stringResource(allDayDescription(it)) },
+        ) { v -> onEdit { it.copy(allDayMode = v) } }
+
         val data = info
         Text(stringResource(R.string.cal_shown_title), color = colors.accent, style = MaterialTheme.typography.titleSmall)
         if (data == null || data.calendars.isEmpty()) {
@@ -87,6 +100,19 @@ internal fun CalendarSettings(
                 pluralStringResource(R.plurals.cal_diag_found, data.calendars.size, data.calendars.size),
                 color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium,
             )
+            // Da dove sono arrivati gli eventi: righe per sorgente, percorso e ogni errore della lettura (mai inghiottiti)
+            data.read?.let { read ->
+                Text(stringResource(R.string.cal_diag_path, stringResource(pathLabel(read.path))), color = colors.onWallpaper, style = MaterialTheme.typography.bodyMedium)
+                read.sources.forEach { src ->
+                    Text(
+                        stringResource(R.string.cal_diag_source, src.source.name.lowercase().replaceFirstChar { it.uppercase() }, src.rows),
+                        color = colors.onWallpaperMuted, style = MaterialTheme.typography.bodySmall,
+                    )
+                    src.error?.let { e ->
+                        Text(stringResource(R.string.cal_diag_error, src.source.name.lowercase().replaceFirstChar { it.uppercase() }, e), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
             val problem = CalendarLogic.diagnose(permission, data.calendars, settings.calendarsExcluded)
             Text(
                 problem?.let { stringResource(problemText(it)) } ?: stringResource(R.string.cal_diag_ok),
@@ -94,9 +120,34 @@ internal fun CalendarSettings(
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
+        data?.let { d ->
+            val clipboard = LocalClipboardManager.current
+            ActionRow(Icons.Filled.Settings, stringResource(R.string.cal_diag_copy), stringResource(R.string.cal_diag_copy_sub)) {
+                clipboard.setText(AnnotatedString(CalendarReading.copyText(permission, d.calendars, settings.calendarsExcluded, d.read, settings.allDayMode)))
+            }
+        }
         if (!permission) ActionRow(Icons.Filled.Settings, stringResource(R.string.cal_grant), stringResource(R.string.cal_grant_sub), onClick = onRequestPermission)
         ActionRow(Icons.Filled.Settings, stringResource(R.string.cal_open_system), stringResource(R.string.cal_open_system_sub), onClick = onOpenSystemSettings)
     }
+}
+
+private fun allDayLabel(m: AllDayMode): Int = when (m) {
+    AllDayMode.ALWAYS -> R.string.cal_all_day_always
+    AllDayMode.ONLY_IF_NONE -> R.string.cal_all_day_if_none
+    AllDayMode.HIDE -> R.string.cal_all_day_hide
+}
+
+private fun allDayDescription(m: AllDayMode): Int = when (m) {
+    AllDayMode.ALWAYS -> R.string.cal_all_day_always_sub
+    AllDayMode.ONLY_IF_NONE -> R.string.cal_all_day_if_none_sub
+    AllDayMode.HIDE -> R.string.cal_all_day_hide_sub
+}
+
+private fun pathLabel(p: ReadPath): Int = when (p) {
+    ReadPath.INSTANCES -> R.string.cal_path_instances
+    ReadPath.EVENTS_FALLBACK -> R.string.cal_path_fallback
+    ReadPath.EVENTS_ONLY -> R.string.cal_path_events
+    ReadPath.NONE -> R.string.cal_path_none
 }
 
 private fun problemText(p: CalendarProblem): Int = when (p) {
@@ -115,7 +166,8 @@ private fun CalendarRow(c: CalendarInfo, shown: Boolean, onChange: (Boolean) -> 
         stringResource(if (c.synced) R.string.cal_synced else R.string.cal_not_synced),
     ).joinToString(" · ")
     val supporting = c.account.takeIf { it.isNotBlank() }?.let { "$it · " }.orEmpty() +
-        pluralStringResource(R.plurals.cal_events_14, c.events14, c.events14) + " · " + flags
+        pluralStringResource(R.plurals.cal_events_14, c.events14, c.events14) +
+        (if (c.allDay14 > 0) " (" + stringResource(R.string.cal_all_day_count, c.allDay14) + ")" else "") + " · " + flags
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         // Il colore del calendario, come lo mostra il telefono
         if (c.color != 0) Box(Modifier.size(12.dp).clip(CircleShape).background(Color(c.color)))

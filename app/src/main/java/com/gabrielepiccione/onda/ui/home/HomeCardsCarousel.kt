@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.components.allDayText
+import com.gabrielepiccione.onda.data.CalendarDays
+import com.gabrielepiccione.onda.data.AllDayMode
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -99,6 +102,7 @@ fun HomeCardsCarousel(
     mediaScale: Float = 1f,
     /** Giorni cercati dall'agenda: la scheda vuota dice «Nessun evento nei prossimi N giorni». */
     agendaDays: Int = 3,
+    allDayMode: AllDayMode = AllDayMode.ALWAYS,
 ) {
     if (pages.isEmpty()) return
     val colors = LocalOndaColors.current
@@ -136,7 +140,7 @@ fun HomeCardsCarousel(
                             onLongPress = { callbacks.onLongPress(page.block) },
                         )
                     }
-                    CardPage.AGENDA -> AgendaPage(events, agendaDays, highlighted == page.block, callbacks)
+                    CardPage.AGENDA -> AgendaPage(events, agendaDays, allDayMode, highlighted == page.block, callbacks)
                     CardPage.NOTIFICATIONS -> SummaryPage(digest, appOf, labelOf, themedIcons, highlighted == page.block, callbacks)
                 }
             }
@@ -203,12 +207,16 @@ private fun Tile(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun AgendaPage(events: List<CalendarEvent>, agendaDays: Int, highlighted: Boolean, callbacks: CardsCallbacks) {
-    val next = events.firstOrNull()
+private fun AgendaPage(events: List<CalendarEvent>, agendaDays: Int, allDayMode: AllDayMode, highlighted: Boolean, callbacks: CardsCallbacks) {
     val locale = Locale.getDefault()
     val zone = ZoneId.systemDefault()
+    // Il prossimo evento con l'ora e gli eventi di tutto il giorno di oggi (stessa logica della riga sotto l'orologio)
+    val strip = remember(events, allDayMode) { CalendarDays.strip(events, System.currentTimeMillis(), zone, allDayMode) }
+    val next = strip.timed ?: strip.labels.firstOrNull()?.event
     val day = Instant.ofEpochMilli(next?.begin ?: System.currentTimeMillis()).atZone(zone)
     val scheme = MaterialTheme.colorScheme
+    val allDayLine = strip.labels.take(CalendarDays.MAX_STRIP_LABELS).map { allDayText(it) }.joinToString(" · ") +
+        (strip.labels.size - CalendarDays.MAX_STRIP_LABELS).takeIf { it > 0 }?.let { " " + stringResource(R.string.all_day_more, it) }.orEmpty()
     CardShell(
         highlighted = highlighted,
         onClick = { if (next != null) callbacks.onEvent(next) else callbacks.onAgendaEmpty() },
@@ -224,8 +232,9 @@ private fun AgendaPage(events: List<CalendarEvent>, agendaDays: Int, highlighted
         title = next?.title ?: pluralStringResource(R.plurals.cards_agenda_none, agendaDays, agendaDays),
         supporting = when {
             next == null -> stringResource(R.string.cards_agenda_empty_sub)
-            next.allDay -> stringResource(R.string.cards_agenda_all_day)
-            else -> day.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+            strip.timed != null && allDayLine.isNotEmpty() -> day.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)) + " · " + allDayLine
+            strip.timed != null -> day.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+            else -> strip.labels.first().let { l -> if (l.multiDay) stringResource(R.string.all_day_day_n, stringResource(R.string.cards_agenda_all_day), l.dayIndex, l.dayCount) else stringResource(R.string.cards_agenda_all_day) }
         },
     )
 }

@@ -1200,4 +1200,23 @@
     <string name="order_drag">Drag to reorder</string>
     <string name="order_move_to">Move to: %1$s</string>
     <string name="order_carousel_n">Carousel %1$d</string>
+    <string name="all_day_day_n">%1$s · day %2$d of %3$d</string>
+    <string name="all_day_more">+%1$d</string>
+    <string name="cal_all_day_title">All-day events</string>
+    <string name="cal_all_day_always">Always</string>
+    <string name="cal_all_day_if_none">Only if there are no other events</string>
+    <string name="cal_all_day_hide">Hide</string>
+    <string name="cal_all_day_always_sub">Birthdays, holidays and time off appear as colored labels next to the next event</string>
+    <string name="cal_all_day_if_none_sub">Only when there are no events with a time</string>
+    <string name="cal_all_day_hide_sub">Never show all-day events</string>
+    <string name="cal_diag_path">Read path: %1$s</string>
+    <string name="cal_diag_source">%1$s: %2$d rows</string>
+    <string name="cal_diag_error">%1$s read error: %2$s</string>
+    <string name="cal_diag_copy">Copy diagnostics</string>
+    <string name="cal_diag_copy_sub">Puts the text on the clipboard: no names, accounts or event titles</string>
+    <string name="cal_path_instances">Instances</string>
+    <string name="cal_path_fallback">Events table (Instances gave nothing)</string>
+    <string name="cal_path_events">Events table (no visible calendar)</string>
+    <string name="cal_path_none">no read worked</string>
+    <string name="cal_all_day_count">%1$d all-day</string>
 </resources>

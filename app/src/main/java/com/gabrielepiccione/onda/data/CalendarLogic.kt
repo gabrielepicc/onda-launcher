@@ -15,10 +15,12 @@ data class CalendarInfo(
     val synced: Boolean,
     val color: Int,
     val events14: Int = 0,
+    /** Di questi, quanti di tutto il giorno. */
+    val allDay14: Int = 0,
 )
 
 /** Stato della lettura del calendario: permesso e calendari trovati. */
-data class CalendarDiagnostics(val permission: Boolean, val calendars: List<CalendarInfo>)
+data class CalendarDiagnostics(val permission: Boolean, val calendars: List<CalendarInfo>, val read: CalendarReadInfo? = null)
 
 /** Perché non compaiono eventi, nell'ordine in cui conviene sistemarlo. */
 enum class CalendarProblem { NO_PERMISSION, NO_CALENDARS, NONE_SELECTED, NONE_VISIBLE, NOT_SYNCED, NO_EVENTS }

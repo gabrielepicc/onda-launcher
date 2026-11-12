@@ -1200,4 +1200,23 @@
     <string name="order_drag">Trascina per riordinare</string>
     <string name="order_move_to">Sposta in: %1$s</string>
     <string name="order_carousel_n">Carosello %1$d</string>
+    <string name="all_day_day_n">%1$s · giorno %2$d di %3$d</string>
+    <string name="all_day_more">+%1$d</string>
+    <string name="cal_all_day_title">Eventi di tutto il giorno</string>
+    <string name="cal_all_day_always">Sempre</string>
+    <string name="cal_all_day_if_none">Solo se non ci sono altri eventi</string>
+    <string name="cal_all_day_hide">Nascondi</string>
+    <string name="cal_all_day_always_sub">Compleanni, festività e ferie compaiono come etichette colorate accanto al prossimo evento</string>
+    <string name="cal_all_day_if_none_sub">Solo quando non ci sono altri eventi con l\'ora</string>
+    <string name="cal_all_day_hide_sub">Non mostrare mai gli eventi di tutto il giorno</string>
+    <string name="cal_diag_path">Percorso di lettura: %1$s</string>
+    <string name="cal_diag_source">%1$s: %2$d righe</string>
+    <string name="cal_diag_error">Errore di lettura %1$s: %2$s</string>
+    <string name="cal_diag_copy">Copia diagnostica</string>
+    <string name="cal_diag_copy_sub">Mette il testo negli appunti: niente nomi, account o titoli di eventi</string>
+    <string name="cal_path_instances">Instances</string>
+    <string name="cal_path_fallback">Tabella Events (Instances non dava nulla)</string>
+    <string name="cal_path_events">Tabella Events (nessun calendario visibile)</string>
+    <string name="cal_path_none">nessuna lettura riuscita</string>
+    <string name="cal_all_day_count">%1$d di tutto il giorno</string>
 </resources>

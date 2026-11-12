@@ -272,11 +272,12 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val media by vm.media.media.collectAsStateWithLifecycle()
     val headphoneNames by vm.audio.connectedNames.collectAsStateWithLifecycle()
     val nextEvent by vm.nextEvent.collectAsStateWithLifecycle()
+    val allDayToday by vm.allDayToday.collectAsStateWithLifecycle()
     val agenda by vm.agenda.collectAsStateWithLifecycle()
     val headphones by vm.audio.headphonesConnected.collectAsStateWithLifecycle()
     val settings = state.settings
     // Le scelte sul calendario (giorni, calendari spenti) si vedono subito, senza aspettare il prossimo rientro
-    LaunchedEffect(settings.nextEventDays, settings.calendarsExcluded, settings.agendaDays, status.calendarPermission) { vm.refreshCalendar() }
+    LaunchedEffect(settings.nextEventDays, settings.calendarsExcluded, settings.agendaDays, settings.allDayMode, status.calendarPermission) { vm.refreshCalendar() }
     val searchHistory by vm.searchHistory.history.collectAsStateWithLifecycle()
     // A ricerca vuota: «Cercate spesso», oppure le più usate se le cercate sono meno di due
     val searchPick = remember(searchHistory, state.allApps, state.suggestions, settings.searchSuggestions, settings.protectedApps) {
@@ -943,6 +944,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 ruleWidget(replacing, if (besideVisible) Modifier.weight(1f) else Modifier.weight(1f).padding(horizontal = 4.dp))
                             } else ClockHeader(
                                 event = if (settings.showCalendar) nextEvent else null,
+                                allDayLabels = if (settings.showCalendar) allDayToday else emptyList(),
                                 onTime = { SystemActions.openAlarms(context) },
                                 onDate = { agendaOpen = true },
                                 temperature = weather?.temperature,
@@ -993,6 +995,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 highlighted = editing,
                                 callbacks = cardsCallbacks,
                                 agendaDays = settings.agendaDays,
+                                allDayMode = settings.allDayMode,
                                 mediaCompact = settings.mediaCompact,
                                 mediaScale = settings.mediaScale,
                                 modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
@@ -1006,6 +1009,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                             highlighted = editing == HomeBlocks.AGENDA,
                             onLongPress = { if (!settings.lockLayout) editing = HomeBlocks.AGENDA },
                             onEmptyClick = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
+                            allDayMode = settings.allDayMode,
                             modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
                         )
                     }
@@ -1960,6 +1964,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 else -> stringResource(R.string.weather_no_data)
             },
             events = agendaWeek,
+            allDayMode = settings.allDayMode,
             onEvent = { vm.calendar.open(it) },
             onEmptyAgenda = { if (!status.calendarPermission) callbacks.requestCalendarPermission() else SystemActions.openCalendar(context) },
             onOpenWeather = { vm.weatherRepo.open() },

@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.DayLabel
 import com.gabrielepiccione.onda.data.CalendarLogic
 import com.gabrielepiccione.onda.data.TraceSnapshot
 import com.gabrielepiccione.onda.data.TraceMark
@@ -321,13 +322,20 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     private val _nextEvent = MutableStateFlow<CalendarEvent?>(null)
     val nextEvent: StateFlow<CalendarEvent?> = _nextEvent.asStateFlow()
 
+    private val _allDayToday = MutableStateFlow<List<DayLabel>>(emptyList())
+
+    /** Gli eventi di tutto il giorno di oggi, per le etichette sotto l'orologio. */
+    val allDayToday: StateFlow<List<DayLabel>> = _allDayToday.asStateFlow()
+
     private val _agenda = MutableStateFlow<List<CalendarEvent>>(emptyList())
     val agenda: StateFlow<List<CalendarEvent>> = _agenda.asStateFlow()
 
     fun refreshCalendar() {
         viewModelScope.launch {
             val s = settingsRepo.current
-            _nextEvent.value = calendar.nextEvent(CalendarLogic.nextEventDays(s.nextEventDays), s.calendarsExcluded)
+            val strip = calendar.strip(CalendarLogic.nextEventDays(s.nextEventDays), s.calendarsExcluded, s.allDayMode)
+            _nextEvent.value = strip.timed
+            _allDayToday.value = strip.labels
             _agenda.value = if (s.showAgenda) calendar.upcoming(s.agendaDays, excluded = s.calendarsExcluded) else emptyList()
         }
     }
