@@ -178,7 +178,7 @@ const val FOLDER_PREFIX = "folder:"
 
 /** Stili dell'orologio in home (disegnati da Onda). */
 @Serializable
-enum class ClockStyle(@StringRes val labelRes: Int) {
+enum class ClockStyle(@StringRes val labelRes: Int, val group: ClockGroup = ClockGroup.CLASSIC) {
     LARGE_THIN(R.string.clock_large_thin),
     STACKED(R.string.clock_stacked),
     BOLD(R.string.clock_bold),
@@ -187,7 +187,28 @@ enum class ClockStyle(@StringRes val labelRes: Int) {
     GRADIENT(R.string.clock_gradient),
     WORDS(R.string.clock_words),
     ANALOG(R.string.clock_analog),
+
+    // Material You
+    PILL(R.string.clock_pill, ClockGroup.MATERIAL_YOU),
+    BLOCKS(R.string.clock_blocks, ClockGroup.MATERIAL_YOU),
+    COOKIE(R.string.clock_cookie, ClockGroup.MATERIAL_YOU),
+    DUAL(R.string.clock_dual, ClockGroup.MATERIAL_YOU),
+    ANALOG_M3(R.string.clock_analog_m3, ClockGroup.MATERIAL_YOU),
+    BIG_DATE(R.string.clock_big_date, ClockGroup.MATERIAL_YOU),
+    VERTICAL(R.string.clock_vertical, ClockGroup.MATERIAL_YOU),
+
+    // Classici e creativi
+    SEGMENTS(R.string.clock_segments),
+    DOTS(R.string.clock_dots),
+    SERIF(R.string.clock_serif),
+    NEON(R.string.clock_neon),
+    ROMAN(R.string.clock_roman),
+    FLIP(R.string.clock_flip),
+    TICKS(R.string.clock_ticks),
 }
+
+/** Gruppi del selettore degli stili dell'orologio. */
+enum class ClockGroup { MATERIAL_YOU, CLASSIC }
 
 @Serializable
 enum class HAlign(@StringRes val labelRes: Int) { START(R.string.align_start), CENTER(R.string.align_center), END(R.string.align_end) }
@@ -348,6 +369,8 @@ data class Settings(
     /** Altezza personalizzata dei widget in dp: id widget -> dp. */
     val widgetHeights: Map<Int, Int> = emptyMap(),
     val clockStyle: ClockStyle = ClockStyle.LARGE_THIN,
+    /** Secondi nell'orologio: cifre con i secondi e lancetta dei secondi. */
+    val clockSeconds: Boolean = false,
     val clockScale: Float = 1f,
     val clockAlign: HAlign = HAlign.START,
     /** Player: compatto su una riga (true) o esteso con barra di avanzamento. */

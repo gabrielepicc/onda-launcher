@@ -4,12 +4,12 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.data.ClockText
 import androidx.compose.foundation.layout.BoxWithConstraints
 import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.data.MediaAction
 import com.gabrielepiccione.onda.data.MediaExtras
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -115,13 +115,16 @@ fun ClockHeader(
     temperature: Int? = null,
     /** Distanza verticale tra ora e data e tra data ed evento, in dp. */
     innerSpacing: Int = ClockSpacing.DEFAULT,
+    /** Cifre con i secondi e lancetta dei secondi: l'orologio si aggiorna ogni secondo. */
+    seconds: Boolean = false,
 ) {
     val colors = LocalOndaColors.current
     val shadow = LocalTextShadow.current
-    val now by produceState(LocalDateTime.now()) {
+    val now by produceState(LocalDateTime.now(), seconds) {
         while (true) {
             value = LocalDateTime.now()
-            delay(60_000L - (System.currentTimeMillis() % 60_000L) + 30)
+            val period = if (seconds) 1_000L else 60_000L
+            delay(period - (System.currentTimeMillis() % period) + 30)
         }
     }
     val locale = Locale.getDefault()
@@ -147,7 +150,7 @@ fun ClockHeader(
             .combinedClickable(onClick = onTime, onLongClick = onLongPress)
             .padding(horizontal = 16.dp)
     ) {
-        ClockFace(now, style, scale, textAlign)
+        ClockFace(now, style, scale, textAlign, seconds)
         // Bersaglio di tocco da 48 dp con altezza minima interna, senza margini esterni
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = 48.dp)) {
             Text(
@@ -232,31 +235,32 @@ fun rememberBatteryState(): BatteryState {
 
 /** Solo il quadrante, riusato anche nelle anteprime dei preset. */
 @Composable
-fun ClockFace(now: LocalDateTime, style: ClockStyle, scale: Float, textAlign: TextAlign = TextAlign.Start) {
+fun ClockFace(now: LocalDateTime, style: ClockStyle, scale: Float, textAlign: TextAlign = TextAlign.Start, seconds: Boolean = false) {
     val colors = LocalOndaColors.current
     val locale = Locale.getDefault()
     val hh = now.format(DateTimeFormatter.ofPattern("HH", locale))
     val mm = now.format(DateTimeFormatter.ofPattern("mm", locale))
+    val time = ClockText.digits(now.hour, now.minute, now.second, seconds)
     val clockFont = LocalClockFont.current
     val base = MaterialTheme.typography.displayLarge.copy(color = colors.onWallpaper, shadow = LocalTextShadow.current)
         .let { if (clockFont != null) it.copy(fontFamily = clockFont) else it }
     when (style) {
-        ClockStyle.LARGE_THIN -> AnimatedDigits("$hh:$mm", base.copy(fontSize = 76.sp * scale, fontWeight = FontWeight.Light))
+        ClockStyle.LARGE_THIN -> AnimatedDigits(time, base.copy(fontSize = 76.sp * scale, fontWeight = FontWeight.Light))
         ClockStyle.STACKED -> Column {
             AnimatedDigits(hh, base.copy(fontSize = 92.sp * scale, fontWeight = FontWeight.Medium, lineHeight = 86.sp * scale))
             AnimatedDigits(mm, base.copy(fontSize = 92.sp * scale, fontWeight = FontWeight.Light, lineHeight = 86.sp * scale, color = colors.accent))
         }
-        ClockStyle.BOLD -> AnimatedDigits("$hh:$mm", base.copy(fontSize = 72.sp * scale, fontWeight = FontWeight.Black, color = colors.accent))
+        ClockStyle.BOLD -> AnimatedDigits(time, base.copy(fontSize = 72.sp * scale, fontWeight = FontWeight.Black, color = colors.accent))
         ClockStyle.MONO -> AnimatedDigits(
-            "$hh:$mm",
+            time,
             base.copy(fontSize = 60.sp * scale, fontFamily = FontFamily.Monospace, letterSpacing = 4.sp, fontWeight = FontWeight.Normal),
         )
         ClockStyle.OUTLINE -> AnimatedDigits(
-            "$hh:$mm",
+            time,
             base.copy(fontSize = 84.sp * scale, fontWeight = FontWeight.Bold, drawStyle = Stroke(width = 3f * scale)),
         )
         ClockStyle.GRADIENT -> AnimatedDigits(
-            "$hh:$mm",
+            time,
             base.copy(
                 fontSize = 80.sp * scale,
                 fontWeight = FontWeight.Bold,
@@ -270,12 +274,13 @@ fun ClockFace(now: LocalDateTime, style: ClockStyle, scale: Float, textAlign: Te
             textAlign = textAlign,
         )
         ClockStyle.ANALOG -> AnalogClock(now, 132.dp * scale)
+        else -> ExtraClockFace(style, now, scale, textAlign, seconds)
     }
 }
 
 /** Cifre che scorrono singolarmente al cambio (solo quelle che cambiano). */
 @Composable
-private fun AnimatedDigits(text: String, style: androidx.compose.ui.text.TextStyle) {
+internal fun AnimatedDigits(text: String, style: androidx.compose.ui.text.TextStyle) {
     Row {
         text.forEachIndexed { i, ch ->
             AnimatedContent(
@@ -732,7 +737,7 @@ fun AgendaCard(
  * Cifre grandi dell'orologio senza lo spazio sopra e sotto del carattere: l'altezza è quella delle cifre,
  * così la data sta subito sotto e non galleggia a metà.
  */
-private fun androidx.compose.ui.text.TextStyle.tight(): androidx.compose.ui.text.TextStyle = copy(
+internal fun androidx.compose.ui.text.TextStyle.tight(): androidx.compose.ui.text.TextStyle = copy(
     lineHeight = fontSize,
     lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
         alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center,

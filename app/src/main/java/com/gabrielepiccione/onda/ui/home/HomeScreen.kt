@@ -934,6 +934,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 temperature = weather?.temperature,
                                 onEvent = { vm.calendar.open(it) },
                                 style = settings.clockStyle,
+                                seconds = settings.clockSeconds,
                                 // Con un widget accanto l'orologio si rimpicciolisce un po' per lasciargli posto
                                 scale = settings.clockScale * (if (besideVisible || shownWidgets.replace != null) 0.75f else 1f),
                                 align = settings.clockAlign,

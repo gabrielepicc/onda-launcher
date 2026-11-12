@@ -4,6 +4,7 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.ui.components.SwitchRow
 import com.gabrielepiccione.onda.data.WidgetGroups
 import com.gabrielepiccione.onda.data.StackLayout
 import androidx.compose.material.icons.filled.ViewCarousel
@@ -146,10 +147,11 @@ fun HomeEditSheet(
 
             if (block == HomeBlocks.CLOCK) {
                 SectionTitle(R.string.edit_style)
-                ClockStyleTiles(settings.clockStyle, compact = true) { st -> actions.edit { it.copy(clockStyle = st) } }
+                ClockStyleTiles(settings.clockStyle, compact = true, seconds = settings.clockSeconds) { st -> actions.edit { it.copy(clockStyle = st) } }
                 ValueSlider(stringResource(R.string.edit_size), percentText(settings.clockScale), settings.clockScale, Settings().clockScale, 0.6f..1.6f, accentLabel = true) { v ->
                     actions.edit { it.copy(clockScale = v) }
                 }
+                SwitchRow(stringResource(R.string.clock_seconds), stringResource(R.string.clock_seconds_sub), settings.clockSeconds) { v -> actions.edit { it.copy(clockSeconds = v) } }
                 SectionTitle(R.string.edit_alignment)
                 AlignTiles(settings.clockAlign) { a -> actions.edit { it.copy(clockAlign = a) } }
             }
