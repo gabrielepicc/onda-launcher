@@ -1168,4 +1168,23 @@
         <item quantity="one">No events in the next day</item>
         <item quantity="other">No events in the next %d days</item>
     </plurals>
+    <string name="clock_pill">Pill</string>
+    <string name="clock_blocks">Blocks</string>
+    <string name="clock_cookie">Cookie</string>
+    <string name="clock_dual">Two colors</string>
+    <string name="clock_analog_m3">Analog M3</string>
+    <string name="clock_big_date">Big date</string>
+    <string name="clock_vertical">Vertical</string>
+    <string name="clock_segments">Segments</string>
+    <string name="clock_dots">Dot matrix</string>
+    <string name="clock_serif">Serif</string>
+    <string name="clock_neon">Neon</string>
+    <string name="clock_roman">Roman</string>
+    <string name="clock_flip">Flip</string>
+    <string name="clock_ticks">Ticks</string>
+    <string name="clock_filter_all">All</string>
+    <string name="clock_filter_material">Material You</string>
+    <string name="clock_filter_classic">Classic</string>
+    <string name="clock_seconds">Seconds</string>
+    <string name="clock_seconds_sub">Digits with seconds and a second hand; the clock updates every second.</string>
 </resources>

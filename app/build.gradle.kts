@@ -82,6 +82,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     // Colori della copertina per lo sfondo con la musica (Apache 2.0)
     implementation("androidx.palette:palette-ktx:1.0.0")
+    // Forme Material 3 (biscotto, ecc.) dell'orologio: Apache-2.0
+    implementation("androidx.graphics:graphics-shapes:1.0.1")
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
     implementation("androidx.datastore:datastore:1.1.1")
     // Sblocco con impronta/volto/PIN per le app protette (Apache 2.0)

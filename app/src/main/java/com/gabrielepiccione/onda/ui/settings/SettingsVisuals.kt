@@ -2,6 +2,16 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.ClockGroup
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyRow
 import com.gabrielepiccione.onda.ui.components.ChoiceRow
 import androidx.compose.material3.RadioButton
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -31,8 +41,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -194,24 +202,54 @@ internal fun RadioItem(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 
-/** Stili dell'orologio. [compact] li mette in una riga scorrevole, per i fogli che lasciano vedere la home. */
+/**
+ * Selettore degli stili dell'orologio: anteprima grande dal vivo dello stile scelto (se [preview]), chip per filtrare
+ * (Tutti / Material You / Classici) e un carosello di anteprime. Le anteprime si disegnano solo quando compaiono
+ * nel carosello e usano un'ora fissa presa una volta sola: non rallentano l'apertura.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ClockStyleTiles(selected: ClockStyle, compact: Boolean = false, onPick: (ClockStyle) -> Unit) {
-    val now = remember { LocalDateTime.now() }
-    val tile: @Composable (ClockStyle, Modifier) -> Unit = { style, modifier ->
-        ChoiceTile(selected == style, stringResource(style.labelRes), { onPick(style) }, modifier) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth().height(76.dp).clipToBounds()) {
-                ClockFace(now, style, TILE_CLOCK_SCALE, TextAlign.Center)
+internal fun ClockStyleTiles(selected: ClockStyle, compact: Boolean = false, seconds: Boolean = false, onPick: (ClockStyle) -> Unit) {
+    val snapshot = remember { LocalDateTime.now() }
+    var filter by rememberSaveable { mutableStateOf<ClockGroup?>(null) }
+    val styles = remember(filter) { ClockStyle.entries.filter { filter == null || it.group == filter } }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (!compact) {
+            // Anteprima dal vivo dello stile scelto (si aggiorna ogni secondo solo se i secondi sono accesi)
+            val live by produceLiveTime(seconds)
+            Box(Modifier.fillMaxWidth().heightIn(min = 120.dp).padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+                ClockFace(live, selected, 0.7f, TextAlign.Center, seconds)
+            }
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf<Pair<ClockGroup?, Int>>(null to R.string.clock_filter_all, ClockGroup.MATERIAL_YOU to R.string.clock_filter_material, ClockGroup.CLASSIC to R.string.clock_filter_classic).forEach { (group, label) ->
+                FilterChip(selected = filter == group, onClick = { filter = group }, label = { Text(stringResource(label), softWrap = false) })
+            }
+        }
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 4.dp)) {
+            items(styles, key = { it.name }) { style ->
+                ChoiceTile(selected == style, stringResource(style.labelRes), { onPick(style) }, Modifier.width(128.dp)) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth().height(76.dp).clipToBounds()) {
+                        ClockFace(snapshot, style, TILE_CLOCK_SCALE, TextAlign.Center)
+                    }
+                }
             }
         }
     }
-    if (compact) {
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ClockStyle.entries.forEach { tile(it, Modifier.width(128.dp)) }
+}
+
+/** L'ora per l'anteprima grande: cambia ogni minuto, o ogni secondo se i secondi sono accesi. */
+@Composable
+private fun produceLiveTime(seconds: Boolean): State<LocalDateTime> {
+    val time = remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedEffect(seconds) {
+        while (true) {
+            time.value = LocalDateTime.now()
+            val period = if (seconds) 1_000L else 60_000L
+            delay(period - (System.currentTimeMillis() % period) + 30)
         }
-    } else {
-        TileGrid(ClockStyle.entries, 2, tile)
     }
+    return time
 }
 
 /** Player compatto o esteso, mostrato con il disegno della scheda. */
@@ -379,6 +417,7 @@ private fun PreviewClock(settings: Settings) {
         onDate = {},
         onEvent = {},
         style = settings.clockStyle,
+        seconds = settings.clockSeconds,
         scale = settings.clockScale,
         align = settings.clockAlign,
         showBattery = settings.showBattery,

@@ -1168,4 +1168,23 @@
         <item quantity="one">Nessun evento nel prossimo giorno</item>
         <item quantity="other">Nessun evento nei prossimi %d giorni</item>
     </plurals>
+    <string name="clock_pill">Pillola</string>
+    <string name="clock_blocks">Blocchi</string>
+    <string name="clock_cookie">Biscotto</string>
+    <string name="clock_dual">Due colori</string>
+    <string name="clock_analog_m3">Analogico M3</string>
+    <string name="clock_big_date">Data grande</string>
+    <string name="clock_vertical">Verticale</string>
+    <string name="clock_segments">Segmenti</string>
+    <string name="clock_dots">Matrice a punti</string>
+    <string name="clock_serif">Serif</string>
+    <string name="clock_neon">Neon</string>
+    <string name="clock_roman">Romano</string>
+    <string name="clock_flip">Flip</string>
+    <string name="clock_ticks">Tacche</string>
+    <string name="clock_filter_all">Tutti</string>
+    <string name="clock_filter_material">Material You</string>
+    <string name="clock_filter_classic">Classici</string>
+    <string name="clock_seconds">Secondi</string>
+    <string name="clock_seconds_sub">Cifre con i secondi e lancetta dei secondi; l\'orologio si aggiorna ogni secondo.</string>
 </resources>

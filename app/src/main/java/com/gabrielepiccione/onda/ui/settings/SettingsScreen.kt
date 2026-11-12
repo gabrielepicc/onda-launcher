@@ -518,8 +518,9 @@ internal fun SettingsScreen(
             SwitchRow(stringResource(R.string.clock_date), null, settings.showClock) { v -> onEdit { it.copy(showClock = v) } }
             if (settings.showClock) {
                 Label(stringResource(R.string.clock_style_setting))
-                ClockStyleTiles(settings.clockStyle) { st -> onEdit { it.copy(clockStyle = st) } }
+                ClockStyleTiles(settings.clockStyle, seconds = settings.clockSeconds) { st -> onEdit { it.copy(clockStyle = st) } }
                 ValueSlider(stringResource(R.string.edit_size), percentText(settings.clockScale), settings.clockScale, Settings().clockScale, 0.6f..1.6f) { v -> onEdit { it.copy(clockScale = v) } }
+                SwitchRow(stringResource(R.string.clock_seconds), stringResource(R.string.clock_seconds_sub), settings.clockSeconds) { v -> onEdit { it.copy(clockSeconds = v) } }
                 Label(stringResource(R.string.edit_alignment))
                 AlignTiles(settings.clockAlign) { a -> onEdit { it.copy(clockAlign = a) } }
             }
