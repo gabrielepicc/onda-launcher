@@ -97,6 +97,8 @@ fun HomeCardsCarousel(
     /** Stile e dimensione del player scelti per il blocco: valgono anche dentro il carosello. */
     mediaCompact: Boolean = true,
     mediaScale: Float = 1f,
+    /** Giorni cercati dall'agenda: la scheda vuota dice «Nessun evento nei prossimi N giorni». */
+    agendaDays: Int = 3,
 ) {
     if (pages.isEmpty()) return
     val colors = LocalOndaColors.current
@@ -134,7 +136,7 @@ fun HomeCardsCarousel(
                             onLongPress = { callbacks.onLongPress(page.block) },
                         )
                     }
-                    CardPage.AGENDA -> AgendaPage(events, highlighted == page.block, callbacks)
+                    CardPage.AGENDA -> AgendaPage(events, agendaDays, highlighted == page.block, callbacks)
                     CardPage.NOTIFICATIONS -> SummaryPage(digest, appOf, labelOf, themedIcons, highlighted == page.block, callbacks)
                 }
             }
@@ -201,7 +203,7 @@ private fun Tile(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun AgendaPage(events: List<CalendarEvent>, highlighted: Boolean, callbacks: CardsCallbacks) {
+private fun AgendaPage(events: List<CalendarEvent>, agendaDays: Int, highlighted: Boolean, callbacks: CardsCallbacks) {
     val next = events.firstOrNull()
     val locale = Locale.getDefault()
     val zone = ZoneId.systemDefault()
@@ -219,7 +221,7 @@ private fun AgendaPage(events: List<CalendarEvent>, highlighted: Boolean, callba
                 }
             }
         },
-        title = next?.title ?: stringResource(R.string.cards_agenda_empty_title),
+        title = next?.title ?: pluralStringResource(R.plurals.cards_agenda_none, agendaDays, agendaDays),
         supporting = when {
             next == null -> stringResource(R.string.cards_agenda_empty_sub)
             next.allDay -> stringResource(R.string.cards_agenda_all_day)

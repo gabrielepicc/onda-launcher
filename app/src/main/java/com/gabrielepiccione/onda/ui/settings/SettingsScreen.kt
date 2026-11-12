@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.settings
 
+import com.gabrielepiccione.onda.data.CalendarDiagnostics
 import com.gabrielepiccione.onda.data.EntryTiming
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
@@ -162,6 +163,10 @@ interface SettingsActions {
     fun postNotifications()
     fun usageAccess()
     fun accessibility()
+    /** Permesso e calendari del telefono, con i conteggi dei prossimi 14 giorni (nessun testo personale). */
+    suspend fun calendarDiagnostics(): CalendarDiagnostics = CalendarDiagnostics(false, emptyList())
+    /** Apre le impostazioni di sistema dove si attiva la sincronizzazione dei calendari. */
+    fun openCalendarSystemSettings() {}
     /** Il widget con questo id esiste ancora (dopo una reinstallazione gli id vanno persi). */
     fun widgetExists(id: Int): Boolean = true
     /** Nome di un widget ospitato, null se non si conosce. */
@@ -615,6 +620,10 @@ internal fun SettingsScreen(
                 onEdit { it.copy(showNotificationSummary = v) }
                 if (v && !status.notificationAccess) actions.notificationAccess()
             }
+        }
+
+        if (page == SettingsPage.HOME) {
+            CalendarSettings(settings, status.calendarPermission, onEdit, actions::calendarDiagnostics, actions::openCalendarSystemSettings, actions::calendarPermission)
         }
 
         if (page == SettingsPage.HOME) Group(stringResource(R.string.section_layout)) {

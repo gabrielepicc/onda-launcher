@@ -1051,7 +1051,6 @@
     <string name="widget_width_three_quarters">¾</string>
     <string name="edit_group_position">Posizione</string>
     <string name="edit_group_actions">Azioni</string>
-    <string name="cards_agenda_empty_title">Nessun evento</string>
     <string name="cards_agenda_empty_sub">Tocca per aprire il calendario</string>
     <string name="cards_agenda_all_day">Tutto il giorno</string>
     <string name="cards_carousel">Schede in carosello</string>
@@ -1131,4 +1130,42 @@
     <string name="dev_entry_sub">La molla parte con il primo segnale del sistema (fine transizione o focus), o al massimo dopo 1,5 s. Con un ritardo sopra 0 parte invece dopo quel ritardo fisso, per le prove.</string>
     <string name="value_ms">%1$d ms</string>
     <string name="dev_entry_signals">Segnali del sistema</string>
+
+    <string name="cal_group">Agenda e calendari</string>
+    <string name="cal_next_days">Evento sotto l\'orologio: guarda avanti di</string>
+    <string name="cal_shown_title">Calendari da mostrare</string>
+    <string name="cal_none_found">Nessun calendario trovato su questo telefono.</string>
+    <string name="cal_diag_title">Diagnostica calendario</string>
+    <string name="cal_diag_permission">Permesso: %1$s</string>
+    <string name="cal_diag_ok">Eventi trovati: tutto a posto.</string>
+    <string name="cal_grant">Consenti l\'accesso al calendario</string>
+    <string name="cal_grant_sub">Serve per leggere i tuoi eventi. Restano sul telefono.</string>
+    <string name="cal_open_system">Apri le impostazioni di sistema dei calendari</string>
+    <string name="cal_open_system_sub">Account e sincronizzazione: attiva qui la sincronizzazione dei calendari</string>
+    <string name="cal_visible">visibile</string>
+    <string name="cal_not_visible">non visibile</string>
+    <string name="cal_synced">sincronizzato</string>
+    <string name="cal_not_synced">non sincronizzato</string>
+    <string name="cal_problem_permission">Permesso mancante: consenti l\'accesso al calendario.</string>
+    <string name="cal_problem_no_calendars">Nessun calendario sul telefono: aggiungi un account con un calendario.</string>
+    <string name="cal_problem_none_selected">Tutti i calendari sono spenti qui sopra: accendine uno.</string>
+    <string name="cal_problem_none_visible">Nessun calendario visibile: nell\'app calendario di sistema attivane almeno uno.</string>
+    <string name="cal_problem_not_synced">Calendario non sincronizzato: attiva la sincronizzazione nelle impostazioni di sistema.</string>
+    <string name="cal_problem_no_events">Nessun evento nei prossimi 14 giorni nei calendari scelti.</string>
+    <plurals name="cal_days_choice">
+        <item quantity="one">24 ore</item>
+        <item quantity="other">%d giorni</item>
+    </plurals>
+    <plurals name="cal_diag_found">
+        <item quantity="one">%d calendario trovato</item>
+        <item quantity="other">%d calendari trovati</item>
+    </plurals>
+    <plurals name="cal_events_14">
+        <item quantity="one">%d evento in 14 giorni</item>
+        <item quantity="other">%d eventi in 14 giorni</item>
+    </plurals>
+    <plurals name="cards_agenda_none">
+        <item quantity="one">Nessun evento nel prossimo giorno</item>
+        <item quantity="other">Nessun evento nei prossimi %d giorni</item>
+    </plurals>
 </resources>

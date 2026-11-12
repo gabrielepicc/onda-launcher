@@ -269,6 +269,8 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     val agenda by vm.agenda.collectAsStateWithLifecycle()
     val headphones by vm.audio.headphonesConnected.collectAsStateWithLifecycle()
     val settings = state.settings
+    // Le scelte sul calendario (giorni, calendari spenti) si vedono subito, senza aspettare il prossimo rientro
+    LaunchedEffect(settings.nextEventDays, settings.calendarsExcluded, settings.agendaDays, status.calendarPermission) { vm.refreshCalendar() }
     val searchHistory by vm.searchHistory.history.collectAsStateWithLifecycle()
     // A ricerca vuota: «Cercate spesso», oppure le più usate se le cercate sono meno di due
     val searchPick = remember(searchHistory, state.allApps, state.suggestions, settings.searchSuggestions, settings.protectedApps) {
@@ -322,7 +324,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
     var agendaWeek by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
     val weather by vm.weather.collectAsStateWithLifecycle()
     LaunchedEffect(agendaOpen, status.calendarPermission) {
-        if (agendaOpen) agendaWeek = vm.calendar.upcoming(AGENDA_SHEET_DAYS)
+        if (agendaOpen) agendaWeek = vm.calendar.upcoming(AGENDA_SHEET_DAYS, excluded = settings.calendarsExcluded)
     }
     var folderIconFor by remember { mutableStateOf<String?>(null) }
     var moveFor by remember { mutableStateOf<AppInfo?>(null) }
@@ -975,6 +977,7 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                                 themedIcons = settings.themedIcons,
                                 highlighted = editing,
                                 callbacks = cardsCallbacks,
+                                agendaDays = settings.agendaDays,
                                 mediaCompact = settings.mediaCompact,
                                 mediaScale = settings.mediaScale,
                                 modifier = Modifier.animateItem(placementSpec = Motion.offsetEnter),
@@ -1561,6 +1564,10 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                         override fun postNotifications() = callbacks.requestPostNotifications()
                         override fun usageAccess() = callbacks.openUsageAccess()
                         override fun accessibility() = withRestrictedHelp(callbacks::openAccessibilitySettings)
+                        override suspend fun calendarDiagnostics() = vm.calendar.diagnostics()
+                        override fun openCalendarSystemSettings() {
+                            runCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_SYNC_SETTINGS).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                        }
                         override fun widgetExists(id: Int) = vm.widgets.infoFor(id) != null
                         override fun widgetLabel(id: Int) = vm.widgets.infoFor(id)?.let { i -> runCatching { i.loadLabel(context.packageManager) }.getOrNull() }
                         override fun clearSearchHistory() = vm.clearSearchHistory()

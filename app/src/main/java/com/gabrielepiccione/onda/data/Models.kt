@@ -102,6 +102,8 @@ data class CalendarEvent(
     val end: Long = begin,
     /** Colore del calendario di provenienza (ARGB), 0 se sconosciuto. */
     val color: Int = 0,
+    /** Calendario di provenienza (0 = sconosciuto), per il filtro «Calendari da mostrare». */
+    val calendarId: Long = 0L,
 )
 
 @Serializable
@@ -369,6 +371,10 @@ data class Settings(
     /** Agenda del calendario in home (blocco) e numero di giorni mostrati. */
     val showAgenda: Boolean = false,
     val agendaDays: Int = 3,
+    /** Quanto avanti cerca l'evento sotto l'orologio: 1 (24 ore), 3 o 7 giorni. */
+    val nextEventDays: Int = 1,
+    /** Calendari che l'utente ha spento in «Calendari da mostrare»; vuoto = tutti quelli disponibili. */
+    val calendarsExcluded: Set<Long> = emptySet(),
     /** Riepilogo delle notifiche come blocco della home. */
     val showNotificationSummary: Boolean = false,
     /** Blocca il layout: niente modifiche con la pressione lunga in home. */
