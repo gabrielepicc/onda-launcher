@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.CalendarLogic
 import com.gabrielepiccione.onda.data.TraceSnapshot
 import com.gabrielepiccione.onda.data.TraceMark
 import com.gabrielepiccione.onda.data.ReturnTrace
@@ -325,9 +326,9 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     fun refreshCalendar() {
         viewModelScope.launch {
-            _nextEvent.value = calendar.nextEvent()
             val s = settingsRepo.current
-            _agenda.value = if (s.showAgenda) calendar.upcoming(s.agendaDays) else emptyList()
+            _nextEvent.value = calendar.nextEvent(CalendarLogic.nextEventDays(s.nextEventDays), s.calendarsExcluded)
+            _agenda.value = if (s.showAgenda) calendar.upcoming(s.agendaDays, excluded = s.calendarsExcluded) else emptyList()
         }
     }
 

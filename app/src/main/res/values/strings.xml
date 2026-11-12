@@ -1051,7 +1051,6 @@
     <string name="widget_width_three_quarters">¾</string>
     <string name="edit_group_position">Position</string>
     <string name="edit_group_actions">Actions</string>
-    <string name="cards_agenda_empty_title">No events</string>
     <string name="cards_agenda_empty_sub">Tap to open the calendar</string>
     <string name="cards_agenda_all_day">All day</string>
     <string name="cards_carousel">Cards in a carousel</string>
@@ -1131,4 +1130,42 @@
     <string name="dev_entry_sub">The spring starts with the first system signal (enter-complete or focus), or after 1.5 s at most. With a delay above 0 it starts after that fixed delay instead, for testing.</string>
     <string name="value_ms">%1$d ms</string>
     <string name="dev_entry_signals">System signals</string>
+
+    <string name="cal_group">Agenda and calendars</string>
+    <string name="cal_next_days">Next event under the clock: look ahead</string>
+    <string name="cal_shown_title">Calendars to show</string>
+    <string name="cal_none_found">No calendar found on this phone.</string>
+    <string name="cal_diag_title">Calendar diagnostics</string>
+    <string name="cal_diag_permission">Permission: %1$s</string>
+    <string name="cal_diag_ok">Events found: everything looks fine.</string>
+    <string name="cal_grant">Allow calendar access</string>
+    <string name="cal_grant_sub">Needed to read your events. They stay on the phone.</string>
+    <string name="cal_open_system">Open system calendar settings</string>
+    <string name="cal_open_system_sub">Accounts and sync: turn on calendar sync here</string>
+    <string name="cal_visible">visible</string>
+    <string name="cal_not_visible">not visible</string>
+    <string name="cal_synced">synced</string>
+    <string name="cal_not_synced">not synced</string>
+    <string name="cal_problem_permission">Permission missing: allow calendar access.</string>
+    <string name="cal_problem_no_calendars">No calendar on this phone: add an account with a calendar.</string>
+    <string name="cal_problem_none_selected">All calendars are turned off above: turn one on.</string>
+    <string name="cal_problem_none_visible">No visible calendar: in the system calendar app turn on at least one.</string>
+    <string name="cal_problem_not_synced">Calendar not synced: turn on sync in the system settings.</string>
+    <string name="cal_problem_no_events">No events in the next 14 days in the chosen calendars.</string>
+    <plurals name="cal_days_choice">
+        <item quantity="one">24 hours</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="cal_diag_found">
+        <item quantity="one">%d calendar found</item>
+        <item quantity="other">%d calendars found</item>
+    </plurals>
+    <plurals name="cal_events_14">
+        <item quantity="one">%d event in 14 days</item>
+        <item quantity="other">%d events in 14 days</item>
+    </plurals>
+    <plurals name="cards_agenda_none">
+        <item quantity="one">No events in the next day</item>
+        <item quantity="other">No events in the next %d days</item>
+    </plurals>
 </resources>
