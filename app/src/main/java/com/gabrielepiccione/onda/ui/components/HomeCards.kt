@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.LocalUiClock
+import com.gabrielepiccione.onda.util.LocalNow
+import com.gabrielepiccione.onda.data.UiTime
 import com.gabrielepiccione.onda.data.CalendarLogic
 import com.gabrielepiccione.onda.data.AllDayMode
 import com.gabrielepiccione.onda.data.CalendarDays
@@ -126,12 +129,16 @@ fun ClockHeader(
 ) {
     val colors = LocalOndaColors.current
     val shadow = LocalTextShadow.current
-    var now by remember { mutableStateOf(LocalDateTime.now()) }
-    LaunchedEffect(seconds) {
-        while (true) {
-            now = LocalDateTime.now()
-            val period = if (seconds) 1_000L else 60_000L
-            delay(period - (System.currentTimeMillis() % period) + 30)
+    // Ore, minuti e data vengono dall'orologio dell'interfaccia (ora reale, aggiornato anche al rientro e al cambio di ora o fuso)
+    val clock = LocalUiClock.current
+    val now = UiTime.localDateTime(LocalNow.current.value, java.time.ZoneId.systemDefault())
+    // Con i secondi accesi un ciclo da 1 s, che ricalcola l'attesa dall'ora di sistema a ogni giro
+    LaunchedEffect(seconds, clock) {
+        if (seconds && clock != null) {
+            while (true) {
+                clock.refresh()
+                delay(UiTime.nextTickDelayMs(System.currentTimeMillis(), 1_000L))
+            }
         }
     }
     val locale = Locale.getDefault()
@@ -203,7 +210,7 @@ fun ClockHeader(
                 Icon(Icons.Filled.DateRange, null, tint = colors.onAccentContainer, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "${eventWhen(event, locale, stringResource(R.string.today), stringResource(R.string.tomorrow_at, "%s"))} · ${event.title}",
+                    "${eventWhen(event, locale, stringResource(R.string.today), stringResource(R.string.tomorrow_at, "%s"), now.toLocalDate())} · ${event.title}",
                     color = colors.onAccentContainer,
                     style = MaterialTheme.typography.labelLarge,
                     // troncamento voluto: il titolo dell'evento sta in una riga sotto l'orologio
@@ -222,15 +229,15 @@ data class BatteryState(val level: Int, val charging: Boolean)
 fun rememberBatteryState(): BatteryState {
     val context = androidx.compose.ui.platform.LocalContext.current
     var state by remember { mutableStateOf(BatteryState(-1, false)) }
+    fun read(i: android.content.Intent?) {
+        if (i == null) return
+        val level = i.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1)
+        val scale = i.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, 100).coerceAtLeast(1)
+        val status = i.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1)
+        val charging = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING || status == android.os.BatteryManager.BATTERY_STATUS_FULL
+        state = BatteryState(if (level < 0) -1 else level * 100 / scale, charging)
+    }
     androidx.compose.runtime.DisposableEffect(Unit) {
-        fun read(i: android.content.Intent?) {
-            if (i == null) return
-            val level = i.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1)
-            val scale = i.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, 100).coerceAtLeast(1)
-            val status = i.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1)
-            val charging = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING || status == android.os.BatteryManager.BATTERY_STATUS_FULL
-            state = BatteryState(if (level < 0) -1 else level * 100 / scale, charging)
-        }
         val receiver = object : android.content.BroadcastReceiver() {
             override fun onReceive(c: android.content.Context?, i: android.content.Intent?) = read(i)
         }
@@ -240,6 +247,11 @@ fun rememberBatteryState(): BatteryState {
             androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED,
         ))
         onDispose { runCatching { context.unregisterReceiver(receiver) } }
+    }
+    // A ogni minuto dell'orologio dell'interfaccia (e al rientro) si rilegge l'ultimo valore, anche se un broadcast si è perso
+    val minute = LocalNow.current.value / UiTime.MINUTE_MS
+    androidx.compose.runtime.LaunchedEffect(minute) {
+        read(context.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED)))
     }
     return state
 }
@@ -346,11 +358,11 @@ private fun AnalogClock(now: LocalDateTime, size: androidx.compose.ui.unit.Dp) {
     }
 }
 
-private fun eventWhen(e: CalendarEvent, locale: Locale, today: String, tomorrowFormat: String): String {
+private fun eventWhen(e: CalendarEvent, locale: Locale, today: String, tomorrowFormat: String, todayDate: LocalDate): String {
     if (e.allDay) return today
     val start = Instant.ofEpochMilli(e.begin).atZone(ZoneId.systemDefault())
     val hour = start.format(DateTimeFormatter.ofPattern("HH:mm", locale))
-    return if (start.toLocalDate() == LocalDate.now()) hour else tomorrowFormat.format(hour)
+    return if (start.toLocalDate() == todayDate) hour else tomorrowFormat.format(hour)
 }
 
 /**
@@ -692,9 +704,10 @@ fun AgendaCard(
     val colors = LocalOndaColors.current
     val locale = Locale.getDefault()
     val zone = ZoneId.systemDefault()
-    val today = LocalDate.now()
+    val nowMs = LocalNow.current.value
+    val today = UiTime.localDate(nowMs, zone)
     // Per ogni giorno: prima gli eventi di tutto il giorno (etichette colorate, «giorno N di M»), poi quelli con l'ora
-    val groups = remember(events, allDayMode, today) { CalendarDays.groups(events, allDayMode, System.currentTimeMillis(), zone, today, CalendarLogic.DIAGNOSTIC_DAYS) }
+    val groups = remember(events, allDayMode, nowMs / UiTime.MINUTE_MS, today) { CalendarDays.groups(events, allDayMode, nowMs, zone, today, CalendarLogic.DIAGNOSTIC_DAYS) }
     Column(
         modifier
             .fillMaxWidth()

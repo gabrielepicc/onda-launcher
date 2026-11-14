@@ -4,6 +4,10 @@
 
 package com.gabrielepiccione.onda.ui.home
 
+import androidx.compose.runtime.snapshotFlow
+import com.gabrielepiccione.onda.util.LocalNow
+import com.gabrielepiccione.onda.data.CalendarLogic
+import com.gabrielepiccione.onda.data.UiTime
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
 import com.gabrielepiccione.onda.data.WidgetOrder
@@ -469,11 +473,13 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
 
     // Luci di casa: si controlla ogni minuto (e a ogni cambio di impostazione) se si è a casa e fa buio
     var lightsVisible by remember { mutableStateOf(false) }
+    // Il tempo corrente è quello dell'interfaccia (ora reale): si ricalcola a ogni tick, al rientro e al cambio di ora o fuso
+    val uiNow = LocalNow.current
     LaunchedEffect(settings.homeLights, settings.homeWifi, settings.homeLightsWidget, settings.homeLatitude, status.locationPermission) {
-        while (true) {
-            val now = System.currentTimeMillis()
+        snapshotFlow { uiNow.value }.collect { now ->
+            val zone = java.time.ZoneId.systemDefault()
             val sun = if (settings.homeLatitude == 0.0 && settings.homeLongitude == 0.0) null
-            else HomeLights.sunTimes(java.time.LocalDate.now(), settings.homeLatitude, settings.homeLongitude)
+            else HomeLights.sunTimes(UiTime.localDate(now, zone), settings.homeLatitude, settings.homeLongitude)
             lightsVisible = HomeLights.shouldShow(
                 settings.homeLights,
                 // Dopo una reinstallazione l'id salvato può non esistere più: il widget non c'è e va scelto di nuovo
@@ -482,17 +488,25 @@ fun HomeScreen(vm: LauncherViewModel, callbacks: HomeCallbacks, status: HomeStat
                 settings.homeWifi,
                 now,
                 sun,
-                java.time.LocalTime.now().let { it.hour * 60 + it.minute },
+                UiTime.minuteOfDay(now, zone),
             )
-            delay(60_000L)
         }
     }
 
-    // Preferiti contestuali: il profilo si ricalcola ogni 30 secondi, e subito se cambiano le regole
+    // Preferiti contestuali: il profilo si ricalcola a ogni tick e al rientro, ogni 30 secondi (il Wi-Fi o le cuffie
+    // cambiano anche tra un tick e l'altro) e subito se cambiano le regole; l'attesa riparte dall'ora di sistema
     LaunchedEffect(settings.contextProfiles, settings.profileOverride) {
+        launch { snapshotFlow { uiNow.value }.collect { vm.refreshContext() } }
         while (true) {
             vm.refreshContext()
-            delay(30_000L)
+            delay(UiTime.nextTickDelayMs(System.currentTimeMillis(), 30_000L))
+        }
+    }
+    // L'evento sotto l'orologio finisce: dal tick successivo si cerca il prossimo
+    val nextEventNow by rememberUpdatedState(nextEvent)
+    LaunchedEffect(Unit) {
+        snapshotFlow { uiNow.value }.collect { now ->
+            if (nextEventNow?.let { CalendarLogic.isOver(it, now) } == true) vm.refreshCalendar()
         }
     }
 

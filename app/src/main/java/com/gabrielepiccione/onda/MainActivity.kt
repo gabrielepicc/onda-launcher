@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda
 
+import com.gabrielepiccione.onda.data.UiTime
+import com.gabrielepiccione.onda.util.LocalUiClock
+import com.gabrielepiccione.onda.util.LocalNow
+import com.gabrielepiccione.onda.util.UiClock
 import com.gabrielepiccione.onda.data.TraceMark
 import com.gabrielepiccione.onda.data.ReturnTrace
 import com.gabrielepiccione.onda.data.EntryTiming
@@ -12,8 +16,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.gabrielepiccione.onda.ui.components.desaturate
 import com.gabrielepiccione.onda.data.GrayscaleSchedule
@@ -267,6 +269,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
+            uiClock.refresh()
             vm.traceMark(TraceMark.FOCUS, now())
             signalEntry(ReturnPolicy.EntrySignal.FOCUS)
         }
@@ -434,8 +437,17 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
             val state by vm.state.collectAsStateWithLifecycle()
             // Il profilo attivo può cambiare appena l'accento: l'unico segnale del cambio, niente popup
             val themed = state.activeProfile?.accent?.takeIf { it != 0L }?.let { state.settings.copy(accent = it, dynamicColor = false) } ?: state.settings
+            // Ciclo di sicurezza: ricalcola l'attesa dall'ora di sistema a ogni giro (al massimo un minuto)
+            LaunchedEffect(uiClock) {
+                while (true) {
+                    uiClock.refresh()
+                    delay(UiTime.nextTickDelayMs(System.currentTimeMillis()))
+                }
+            }
             OndaTheme(themed) {
               CompositionLocalProvider(
+                LocalNow provides uiClock.now,
+                LocalUiClock provides uiClock,
                 LocalWidgetSizes provides state.settings.widgetSizes,
                 LocalWidgetSizeSetter provides { key, size -> vm.updateSettings { WidgetSizing.set(it, key, size) } },
               ) {
@@ -455,13 +467,8 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
                 }
                 // Bianco e nero a orario: tutto ciò che Onda disegna perde il colore con un passaggio morbido
                 // (lo sfondo di sistema resta com'è: per il resto del telefono c'è il link nelle impostazioni)
-                var minute by remember { mutableIntStateOf(currentMinute()) }
-                LaunchedEffect(Unit) {
-                    while (true) {
-                        minute = currentMinute()
-                        delay(30_000L)
-                    }
-                }
+                // Il minuto viene dall'orologio dell'interfaccia (ora reale di sistema), mai da un conto sull'uptime
+                val minute = UiTime.minuteOfDay(uiClock.now.value, java.time.ZoneId.systemDefault())
                 val settings = state.settings
                 val gray = GrayscaleSchedule.active(settings.grayscaleMode, minute, settings.grayscaleStart, settings.grayscaleEnd, settings.grayscaleProfile, state.activeProfile?.id)
                 val grayProgress by animateFloatAsState(if (gray) 1f else 0f, tween(GRAYSCALE_MILLIS), label = "grayscale")
@@ -477,8 +484,13 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         }
     }
 
+    /** L'orologio dell'interfaccia: un solo tempo corrente per orologio, tempi relativi, bianco e nero, luci e agenda. */
+    private val uiClock = UiClock()
+
     override fun onStart() {
         super.onStart()
+        // Ascolta i cambi di ora (tick, ora, fuso, data) solo mentre l'app è visibile, e riallinea subito
+        uiClock.start(this)
         val startedAt = android.os.SystemClock.elapsedRealtime()
         vm.setVisible(true)
         if (vm.settingsRepo.current.showReturnTimes) measureFirstFrame(startedAt)
@@ -489,6 +501,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun onStop() {
         super.onStop()
         stoppedSinceResume = true
+        uiClock.stop(this)
         vm.setVisible(false)
         widgets.stopListening()
         runAutoBackupIfDue()
@@ -497,6 +510,7 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
     override fun onResume() {
         super.onResume()
         stoppedSinceResume = false
+        uiClock.refresh()
         vm.traceMark(TraceMark.RESUME, now())
         refreshStatus()
         afterFirstFrame { if (vm.visible.value) refreshSlowStuff() }
@@ -764,7 +778,6 @@ class MainActivity : androidx.fragment.app.FragmentActivity(), HomeCallbacks {
         }
     }
 
-    private fun currentMinute(): Int = java.time.LocalTime.now().let { it.hour * 60 + it.minute }
 
     companion object {
         /** Passaggio da colori a bianco e nero e ritorno. */

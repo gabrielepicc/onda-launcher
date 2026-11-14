@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Gabriele Piccione
 package com.gabrielepiccione.onda.ui.home
 
+import com.gabrielepiccione.onda.util.LocalNow
+import com.gabrielepiccione.onda.data.UiTime
 import com.gabrielepiccione.onda.ui.components.allDayText
 import com.gabrielepiccione.onda.data.CalendarDays
 import com.gabrielepiccione.onda.data.AllDayMode
@@ -211,9 +213,11 @@ private fun AgendaPage(events: List<CalendarEvent>, agendaDays: Int, allDayMode:
     val locale = Locale.getDefault()
     val zone = ZoneId.systemDefault()
     // Il prossimo evento con l'ora e gli eventi di tutto il giorno di oggi (stessa logica della riga sotto l'orologio)
-    val strip = remember(events, allDayMode) { CalendarDays.strip(events, System.currentTimeMillis(), zone, allDayMode) }
+    // «In corso» e «già finito» seguono l'orologio dell'interfaccia
+    val nowMs = LocalNow.current.value
+    val strip = remember(events, allDayMode, nowMs / UiTime.MINUTE_MS) { CalendarDays.strip(events, nowMs, zone, allDayMode) }
     val next = strip.timed ?: strip.labels.firstOrNull()?.event
-    val day = Instant.ofEpochMilli(next?.begin ?: System.currentTimeMillis()).atZone(zone)
+    val day = Instant.ofEpochMilli(next?.begin ?: nowMs).atZone(zone)
     val scheme = MaterialTheme.colorScheme
     val allDayLine = strip.labels.take(CalendarDays.MAX_STRIP_LABELS).map { allDayText(it) }.joinToString(" · ") +
         (strip.labels.size - CalendarDays.MAX_STRIP_LABELS).takeIf { it > 0 }?.let { " " + stringResource(R.string.all_day_more, it) }.orEmpty()
