@@ -4,6 +4,9 @@
 
 package com.gabrielepiccione.onda.ui.components
 
+import com.gabrielepiccione.onda.util.LocalNow
+import com.gabrielepiccione.onda.data.UiTime
+import com.gabrielepiccione.onda.data.AgeKind
 import com.gabrielepiccione.onda.ui.theme.LocalOndaTokens
 import com.gabrielepiccione.onda.data.ConversationSummary
 import com.gabrielepiccione.onda.data.NotificationImages
@@ -267,12 +270,13 @@ fun NotificationImage(item: NotificationItem, maxHeight: Dp, modifier: Modifier 
 /** Tempo trascorso breve e localizzato ("2 min", "1 h"…). */
 @Composable
 fun relativeTime(postTime: Long): String {
-    val minutes = ((System.currentTimeMillis() - postTime) / 60_000L).coerceAtLeast(0)
-    return when {
-        minutes < 1 -> stringResource(R.string.time_now)
-        minutes < 60 -> stringResource(R.string.time_minutes, minutes.toInt())
-        minutes < 24 * 60 -> stringResource(R.string.time_hours, (minutes / 60).toInt())
-        else -> android.text.format.DateFormat.getMediumDateFormat(androidx.compose.ui.platform.LocalContext.current)
+    // Il tempo corrente è quello dell'interfaccia: l'etichetta cambia ogni minuto e subito al rientro
+    val age = UiTime.age(postTime, LocalNow.current.value)
+    return when (age.kind) {
+        AgeKind.NOW -> stringResource(R.string.time_now)
+        AgeKind.MINUTES -> stringResource(R.string.time_minutes, age.value)
+        AgeKind.HOURS -> stringResource(R.string.time_hours, age.value)
+        AgeKind.DATE -> android.text.format.DateFormat.getMediumDateFormat(androidx.compose.ui.platform.LocalContext.current)
             .format(java.util.Date(postTime))
     }
 }
